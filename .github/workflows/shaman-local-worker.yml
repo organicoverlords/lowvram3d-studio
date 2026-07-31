@@ -51,7 +51,7 @@ jobs:
             throw "LowVRAM3D control Python is missing: $python"
           }
           $env:PYTHONPATH = "$PWD\src;$PWD"
-          & $python -m unittest tests.test_component_audit_retry -v
+          & $python -m unittest discover -s tests -p "test_component_audit_retry.py" -v
           if ($LASTEXITCODE -ne 0) {
             throw "Targeted cleanup policy tests failed with exit code $LASTEXITCODE"
           }
