@@ -80,7 +80,7 @@ $matte = Join-Path $OutputDir "shaman_matte.png"
     --image $ImagePath `
     --output $matte `
     --mode hybrid `
-    --tolerance 60 `
+    --tolerance 42 `
     --enclosed-tolerance 32 `
     --enclosed-min-area 5000 `
     --shadow-tolerance 155 `
@@ -191,3 +191,4 @@ Write-Host "LATEST:     $LatestDir"
 Write-Host "MASTER:     $rawGlb"
 Write-Host "SHA256:     $rawHash"
 Write-Host "VALIDATION: $validation"
+

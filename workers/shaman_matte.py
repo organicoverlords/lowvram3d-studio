@@ -42,6 +42,7 @@ def key_alpha(
     enclosed_tolerance: float | None = None,
     shadow_tolerance: float | None = None,
     shadow_from: float = 0.82,
+    close_radius: int = 2,
 ) -> tuple[np.ndarray, dict]:
     background = border_background_colour(rgb)
     distance = np.linalg.norm(rgb.astype(np.float32) - background, axis=-1)
@@ -107,8 +108,33 @@ def key_alpha(
         count = 0
         background_mask = candidate
 
-    alpha = np.where(background_mask, 0, 255).astype(np.uint8)
-    subject = alpha > 0
+    subject = ~background_mask
+    if close_radius > 0:
+        # Pale, desaturated parts of the character - the bone collar, the bone ornaments - sit
+        # close enough to the plate colour that the border flood nibbles speckle holes into them.
+        # A closing pass heals those intrusions. It runs on the subject mask, so the genuine large
+        # openings (the staff ring, the gaps between cords) are far too big to be closed.
+        structure = ndimage.generate_binary_structure(2, 2)
+        subject = ndimage.binary_closing(subject, structure=structure, iterations=close_radius)
+        # Closing cannot recover a speckle that punched clean through, so also fill any remaining
+        # enclosed hole below the area at which an opening is considered genuine.
+        holes = ndimage.label(~subject)
+        hole_labels, hole_count = holes
+        if hole_count:
+            hole_areas = ndimage.sum(
+                np.ones_like(hole_labels, dtype=bool), hole_labels, range(1, hole_count + 1)
+            )
+            border_hole = set(hole_labels[0].tolist()) | set(hole_labels[-1].tolist())
+            border_hole |= set(hole_labels[:, 0].tolist()) | set(hole_labels[:, -1].tolist())
+            small = [
+                i + 1
+                for i, area in enumerate(hole_areas)
+                if area < enclosed_min_area and (i + 1) not in border_hole
+            ]
+            if small:
+                subject |= np.isin(hole_labels, small)
+
+    alpha = np.where(subject, 255, 0).astype(np.uint8)
     kept_labels, kept_count = ndimage.label(subject)
     sizes = ndimage.sum(subject, kept_labels, range(1, kept_count + 1))
     stats = {
@@ -127,7 +153,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", required=True)
     parser.add_argument("--output", required=True)
-    parser.add_argument("--tolerance", type=float, default=40.0)
+    parser.add_argument("--tolerance", type=float, default=42.0)
     parser.add_argument("--preview", default="")
     parser.add_argument("--stats-json", default="")
     parser.add_argument("--sweep", default="", help="comma separated tolerances to preview instead of writing output")
@@ -135,6 +161,7 @@ def main() -> int:
     parser.add_argument("--enclosed-tolerance", type=float, default=None)
     parser.add_argument("--shadow-tolerance", type=float, default=None)
     parser.add_argument("--shadow-from", type=float, default=0.82)
+    parser.add_argument("--close-radius", type=int, default=2)
     parser.add_argument("--mode", choices=("hybrid", "colour", "flood"), default="hybrid")
     args = parser.parse_args()
 
@@ -145,7 +172,7 @@ def main() -> int:
         report = []
         for raw in args.sweep.split(","):
             tolerance = float(raw)
-            alpha, stats = key_alpha(rgb, tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from)
+            alpha, stats = key_alpha(rgb, tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.close_radius)
             preview = Image.new("RGB", source.size, (255, 0, 255))
             preview.paste(source, mask=Image.fromarray(alpha, "L"))
             path = Path(args.output).with_name(f"matte_{args.mode}_t{int(tolerance)}.png")
@@ -162,8 +189,11 @@ def main() -> int:
             Path(args.stats_json).write_text(json.dumps(report, indent=2), encoding="utf-8")
         return 0
 
-    alpha, stats = key_alpha(rgb, args.tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from)
-    rgba = np.dstack([rgb, alpha])
+    alpha, stats = key_alpha(rgb, args.tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.close_radius)
+    # Neutralise the colour under the transparent region. Leaving the original plate colour there
+    # lets any consumer that flattens without honouring alpha reintroduce the background.
+    keyed = np.where(alpha[..., None] > 0, rgb, 255).astype(np.uint8)
+    rgba = np.dstack([keyed, alpha])
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(rgba, "RGBA").save(output)
@@ -183,6 +213,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 
 
