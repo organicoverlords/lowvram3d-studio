@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$ImagePath = "C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png",
-    [string]$ExpectedSha256 = "eccef854f816f446ce2bf2e08559df519adff223b425c1dccc1c0a9b299f13f6"
+    [string]$ExpectedSha256 = "4d23adc758c5b700dd29939e37c043ce61919792b566bdcf13f58b1409d6cf6f"
 )
 
 Set-StrictMode -Version Latest
@@ -47,15 +47,29 @@ function Resolve-PipelineConfig {
     throw "Could not locate LowVRAM3D config/local.json."
 }
 
-if (-not (Test-Path $ImagePath)) { throw "Shaman source image is missing: $ImagePath" }
-$actualHash = (Get-FileHash -Path $ImagePath -Algorithm SHA256).Hash.ToLowerInvariant()
+function Get-ImageDimensions([string]$Path) {
+    Add-Type -AssemblyName System.Drawing
+    $image = [System.Drawing.Image]::FromFile($Path)
+    try {
+        return [ordered]@{ width = $image.Width; height = $image.Height; format = $image.RawFormat.Guid.ToString() }
+    } finally {
+        $image.Dispose()
+    }
+}
+
+if (-not (Test-Path -LiteralPath $ImagePath)) { throw "Shaman source image is missing: $ImagePath" }
+$actualHash = (Get-FileHash -LiteralPath $ImagePath -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($actualHash -ne $ExpectedSha256.ToLowerInvariant()) {
     throw "Shaman image SHA-256 mismatch. Expected $ExpectedSha256, got $actualHash"
+}
+$dimensions = Get-ImageDimensions $ImagePath
+if ($dimensions.width -ne 1122 -or $dimensions.height -ne 1402) {
+    throw "Shaman image dimensions mismatch. Expected 1122x1402, got $($dimensions.width)x$($dimensions.height)"
 }
 
 New-Item -ItemType Directory -Path (Split-Path $CanonicalImage) -Force | Out-Null
 if (-not (Test-Path $CanonicalImage) -or (Get-FileHash $CanonicalImage -Algorithm SHA256).Hash.ToLowerInvariant() -ne $actualHash) {
-    Copy-Item $ImagePath $CanonicalImage -Force
+    Copy-Item -LiteralPath $ImagePath -Destination $CanonicalImage -Force
 }
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 New-Item -ItemType Directory -Path $ArtifactDir -Force | Out-Null
@@ -71,7 +85,10 @@ $hardware = [ordered]@{
     repository_head = (& git -C $RepoRoot rev-parse HEAD).Trim()
     image = $ImagePath
     image_sha256 = $actualHash
+    image_width = $dimensions.width
+    image_height = $dimensions.height
     canonical_image = $CanonicalImage
+    previous_rejected_sha256 = "eccef854f816f446ce2bf2e08559df519adff223b425c1dccc1c0a9b299f13f6"
     python = $python
     config = $config
     gpu = @()
