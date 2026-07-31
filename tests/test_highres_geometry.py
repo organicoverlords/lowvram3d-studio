@@ -64,7 +64,7 @@ class ComponentAuditTests(unittest.TestCase):
         combined = trimesh.util.concatenate((main, debris))
         result = self._run(combined)
         self.assertTrue(result["success"], result["errors"])
-        self.assertGreater(result["faces_removed"], 0)
+        self.assertGreater(result["faces_removed"], 0, result["final_audit"])
         self.assertEqual(
             result["main_component_faces_before"],
             result["main_component_faces_after"],
