@@ -8,7 +8,12 @@ import numpy as np
 import trimesh
 
 from lowvram3d.component_audit import AuditConfig, audit_and_cleanup
-from lowvram3d.geometry_compare import silhouette_metrics, topology_counts
+from lowvram3d.geometry_compare import (
+    sample_face_subset,
+    sample_surface,
+    silhouette_metrics,
+    topology_counts,
+)
 from workers.component_audit_cleanup import config_for_asset_type
 
 
@@ -33,6 +38,110 @@ class GeometryComparisonPrimitiveTests(unittest.TestCase):
         self.assertEqual(counts["boundary_edges"], 0)
         self.assertEqual(counts["non_manifold_edges"], 0)
         self.assertEqual(counts["faces"], 12)
+
+
+class SubsetSamplingTests(unittest.TestCase):
+    """Per-component sampling must not scale with the size of the whole mesh.
+
+    Regression for the component-audit OOM: ``_component_points`` used
+    ``mesh.submesh(..., append=True)``, and ``trimesh.util.submesh`` allocates an index array
+    the size of the entire source mesh on every call. A 750k-vertex master split into 223,679
+    components therefore churned >1 TiB of transient memory and exhausted the heap.
+    """
+
+    def _two_component_mesh(self) -> tuple[trimesh.Trimesh, np.ndarray]:
+        main = trimesh.creation.icosphere(subdivisions=2, radius=1.0)
+        debris = trimesh.creation.icosphere(subdivisions=1, radius=0.1)
+        debris.apply_translation((2.0, 0.0, 0.0))
+        combined = trimesh.util.concatenate((main, debris))
+        debris_faces = np.arange(len(main.faces), len(combined.faces), dtype=np.int64)
+        return combined, debris_faces
+
+    def test_subset_sampling_matches_submesh_sampling_exactly(self):
+        mesh, debris_faces = self._two_component_mesh()
+        legacy = sample_surface(
+            mesh.submesh([debris_faces], append=True, repair=False), 512, 11
+        )
+        subset = sample_face_subset(mesh, debris_faces, 512, 11)
+        np.testing.assert_allclose(subset.points, legacy.points, rtol=0, atol=1e-12)
+        np.testing.assert_allclose(subset.normals, legacy.normals, rtol=0, atol=1e-12)
+
+    def test_subset_sampling_returns_global_face_ids_within_the_subset(self):
+        mesh, debris_faces = self._two_component_mesh()
+        subset = sample_face_subset(mesh, debris_faces, 256, 3)
+        self.assertTrue(np.isin(subset.face_ids, debris_faces).all())
+        self.assertEqual(len(subset.points), 256)
+
+    def test_sampled_points_lie_on_the_requested_faces_only(self):
+        mesh, debris_faces = self._two_component_mesh()
+        points = sample_face_subset(mesh, debris_faces, 400, 5).points
+        # Every sample must sit inside the debris sphere's bounds, never on the main body.
+        debris_bounds = mesh.submesh([debris_faces], append=True, repair=False).bounds
+        self.assertTrue((points >= debris_bounds[0] - 1e-9).all())
+        self.assertTrue((points <= debris_bounds[1] + 1e-9).all())
+
+    def test_subset_sampling_is_deterministic_for_a_fixed_seed(self):
+        mesh, debris_faces = self._two_component_mesh()
+        first = sample_face_subset(mesh, debris_faces, 300, 42).points
+        second = sample_face_subset(mesh, debris_faces, 300, 42).points
+        np.testing.assert_array_equal(first, second)
+
+    def test_subset_sampling_rejects_empty_and_non_positive_counts(self):
+        mesh, debris_faces = self._two_component_mesh()
+        with self.assertRaises(ValueError):
+            sample_face_subset(mesh, np.array([], dtype=np.int64), 16, 0)
+        with self.assertRaises(ValueError):
+            sample_face_subset(mesh, debris_faces, 0, 0)
+
+    def test_audit_submesh_calls_do_not_scale_with_component_count(self):
+        """``Trimesh.submesh`` is O(whole mesh) per call.
+
+        One call per removal pass is fine; one call per *component* is the defect. This builds a
+        mesh with many components and asserts the call count stays bounded by the pass budget.
+        """
+        main = trimesh.creation.icosphere(subdivisions=2, radius=1.0)
+        parts = [main]
+        for index in range(24):
+            debris = trimesh.creation.icosphere(subdivisions=1, radius=0.05)
+            debris.apply_translation((2.0 + 0.3 * index, 0.2 * index, 0.0))
+            parts.append(debris)
+        mesh = trimesh.util.concatenate(parts)
+
+        max_passes = 2
+        calls = []
+        original = trimesh.Trimesh.submesh
+
+        def counting_submesh(self, *args, **kwargs):
+            calls.append(1)
+            return original(self, *args, **kwargs)
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "source.glb"
+            mesh.export(source)
+            trimesh.Trimesh.submesh = counting_submesh
+            try:
+                audit_and_cleanup(
+                    source,
+                    root / "clean.glb",
+                    asset_type="creature",
+                    config=AuditConfig(
+                        render_size=128,
+                        total_samples=20_000,
+                        min_component_samples=64,
+                        max_component_samples=512,
+                        max_passes=max_passes,
+                    ),
+                )
+            finally:
+                trimesh.Trimesh.submesh = original
+
+        self.assertLessEqual(
+            len(calls),
+            max_passes,
+            f"submesh called {len(calls)} times for {len(parts)} components -- "
+            "per-component submeshing has regressed",
+        )
 
 
 class ComponentAuditPolicyTests(unittest.TestCase):

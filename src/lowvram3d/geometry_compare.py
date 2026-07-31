@@ -82,6 +82,46 @@ def sample_surface(mesh: trimesh.Trimesh, count: int, seed: int) -> SurfaceSampl
     return SurfaceSamples(points=points, normals=normals, face_ids=face_ids)
 
 
+def sample_face_subset(
+    mesh: trimesh.Trimesh,
+    face_subset: np.ndarray,
+    count: int,
+    seed: int,
+) -> SurfaceSamples:
+    """Area-weighted surface sampling restricted to a subset of a mesh's faces.
+
+    Numerically identical to sampling the equivalent ``mesh.submesh([face_subset], append=True)``,
+    but it never materialises a submesh. ``trimesh.util.submesh`` allocates an index array the
+    size of the *whole* source mesh on every call, so per-component sampling on a high-resolution
+    master costs O(components x total_vertices) memory churn -- 223,679 components against a
+    750k-vertex master is over a terabyte of transient allocation, which exhausts the heap long
+    before the audit finishes. Cost here scales with the subset instead.
+
+    Returned ``face_ids`` are global indices into ``mesh.faces``.
+    """
+    if count <= 0:
+        raise ValueError("sample count must be positive")
+    subset = np.asarray(face_subset, np.int64).reshape(-1)
+    if subset.size == 0:
+        raise ValueError("face subset is empty")
+    areas = np.asarray(mesh.area_faces, np.float64)[subset]
+    total = float(areas.sum())
+    if not np.isfinite(total) or total <= 0:
+        raise ValueError("face subset has no finite positive surface area")
+    rng = np.random.default_rng(seed)
+    local_ids = rng.choice(subset.size, size=count, replace=True, p=areas / total)
+    global_ids = subset[local_ids]
+    triangles = np.asarray(mesh.triangles, np.float64)[global_ids]
+    random_uv = rng.random((count, 2))
+    root = np.sqrt(random_uv[:, 0])
+    barycentric = np.column_stack((1.0 - root, root * (1.0 - random_uv[:, 1]), root * random_uv[:, 1]))
+    points = np.einsum("ni,nij->nj", barycentric, triangles)
+    normals = np.asarray(mesh.face_normals, np.float64)[global_ids]
+    length = np.linalg.norm(normals, axis=1)
+    normals = normals / np.maximum(length, 1e-12)[:, None]
+    return SurfaceSamples(points=points, normals=normals, face_ids=global_ids)
+
+
 def topology_counts(mesh: trimesh.Trimesh) -> dict[str, int]:
     faces = np.asarray(mesh.faces, np.int64)
     edges = np.concatenate((faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]), axis=0)

@@ -16,7 +16,12 @@ import numpy as np
 import trimesh
 from scipy.spatial import cKDTree
 
-from .geometry_compare import VIEW_DIRECTIONS, load_mesh, sample_surface, topology_counts
+from .geometry_compare import (
+    VIEW_DIRECTIONS,
+    load_mesh,
+    sample_face_subset,
+    topology_counts,
+)
 from .quality_ladder import AssetFamily, family_for_asset_type
 
 
@@ -161,8 +166,7 @@ def _component_points(
 ) -> np.ndarray:
     count = round(config.total_samples * component.area_fraction)
     count = min(config.max_component_samples, max(config.min_component_samples, count))
-    submesh = mesh.submesh([component.face_ids], append=True, repair=False)
-    return sample_surface(submesh, count, seed + component.component_id).points
+    return sample_face_subset(mesh, component.face_ids, count, seed + component.component_id).points
 
 
 def _basis(direction: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -176,6 +180,27 @@ def _basis(direction: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return right, np.cross(axis, right), axis
 
 
+def _project_coordinates(
+    points: np.ndarray,
+    direction: np.ndarray,
+    center: np.ndarray,
+    half_extent: float,
+    size: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Pixel coordinates, depth and in-frame validity for a point set.
+
+    Shared by the dense reference projection and the sparse per-view raster path so both
+    place points on exactly the same pixels.
+    """
+    right, up, axis = _basis(direction)
+    relative = points - center
+    px = np.rint(((relative @ right) / half_extent * 0.5 + 0.5) * (size - 1)).astype(np.int32)
+    py = np.rint((1.0 - ((relative @ up) / half_extent * 0.5 + 0.5)) * (size - 1)).astype(np.int32)
+    depth = relative @ axis
+    valid = (px >= 0) & (px < size) & (py >= 0) & (py < size)
+    return px, py, depth, valid
+
+
 def _project(
     points: np.ndarray,
     direction: np.ndarray,
@@ -183,12 +208,7 @@ def _project(
     half_extent: float,
     size: int,
 ) -> tuple[np.ndarray, np.ndarray]:
-    right, up, axis = _basis(direction)
-    relative = points - center
-    px = np.rint(((relative @ right) / half_extent * 0.5 + 0.5) * (size - 1)).astype(np.int32)
-    py = np.rint((1.0 - ((relative @ up) / half_extent * 0.5 + 0.5)) * (size - 1)).astype(np.int32)
-    depth = relative @ axis
-    valid = (px >= 0) & (px < size) & (py >= 0) & (py < size)
+    px, py, depth, valid = _project_coordinates(points, direction, center, half_extent, size)
     flat = py[valid] * size + px[valid]
     depth_buffer = np.full(size * size, np.nan, np.float64)
     if len(flat):
@@ -236,6 +256,50 @@ def _source_support(
     return float((resized & target).sum() / pixels * 100.0) if pixels else 0.0
 
 
+_DILATION_OFFSETS = tuple((dy, dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1))
+
+# Components processed per grouped-reduction batch. Bounds the 9x expansion of the 3x3
+# dilation; it does not affect results, only peak working memory.
+_PROJECTION_CHUNK = 4096
+
+
+def _dilate_sparse(
+    component_slots: np.ndarray,
+    pixels: np.ndarray,
+    size: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Per-component 3x3 dilation of sparse pixel sets.
+
+    Equivalent to ``cv2.dilate(mask, ones((3, 3)))`` applied to each component's own raster,
+    without ever materialising that raster. Out-of-frame neighbours are dropped, matching
+    OpenCV's constant border for morphological dilation. Returns sorted, de-duplicated
+    ``(component_slot, pixel)`` pairs.
+    """
+    plane = size * size
+    rows, cols = np.divmod(pixels, size)
+    slot_parts, pixel_parts = [], []
+    for dy, dx in _DILATION_OFFSETS:
+        ny, nx = rows + dy, cols + dx
+        keep = (ny >= 0) & (ny < size) & (nx >= 0) & (nx < size)
+        slot_parts.append(component_slots[keep])
+        pixel_parts.append(ny[keep] * size + nx[keep])
+    keys = np.unique(
+        np.concatenate(slot_parts).astype(np.int64) * plane
+        + np.concatenate(pixel_parts).astype(np.int64)
+    )
+    return keys // plane, keys % plane
+
+
+def _grouped_median(group: np.ndarray, values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Median of ``values`` within each group, matching numpy's even-length convention."""
+    order = np.lexsort((values, group))
+    sorted_group, sorted_values = group[order], values[order]
+    unique, starts, counts = np.unique(sorted_group, return_index=True, return_counts=True)
+    low = sorted_values[starts + (counts - 1) // 2]
+    high = sorted_values[starts + counts // 2]
+    return unique, 0.5 * (low + high)
+
+
 def _projection_metrics(
     samples: dict[int, np.ndarray],
     main_id: int,
@@ -245,6 +309,21 @@ def _projection_metrics(
     source_mask: np.ndarray | None,
     config: AuditConfig,
 ) -> dict[int, dict]:
+    """Per-view projection metrics using bounded view-sized buffers.
+
+    The previous implementation kept one HxW mask and one HxW float64 depth image per
+    component, all resident at once. On a raw high-resolution master that is fatal: 223,679
+    components at 384x384 needs roughly 276 GiB of resident projection data against 15.3 GiB
+    of physical memory. Here every component's projection is a sparse pixel list, and the only
+    dense arrays are a fixed number of view-sized buffers for the main body.
+
+    Memory is O(H*W + total_samples + component_count); work is linear in projected samples
+    rather than component_count * H * W. Metrics, thresholds and decisions are unchanged --
+    ``_projection_metrics_dense`` is retained as the equivalence reference for tests.
+    """
+    size = config.render_size
+    plane = size * size
+    order_ids = [component_id for component_id in samples if component_id != main_id]
     metrics = {
         component_id: {
             "visible_views": 0,
@@ -262,46 +341,109 @@ def _projection_metrics(
     }
     front_index = 3
     for view_index, direction in enumerate(VIEW_DIRECTIONS):
-        main_mask, main_depth = _project(samples[main_id], direction, center, half_extent, config.render_size)
+        main_mask, main_depth = _project(samples[main_id], direction, center, half_extent, size)
         dilated_main = cv2.dilate(main_mask.astype(np.uint8), np.ones((5, 5), np.uint8), iterations=1) > 0
         distance_to_main = cv2.distanceTransform((~main_mask).astype(np.uint8), cv2.DIST_L2, 3)
-        projected: dict[int, tuple[np.ndarray, np.ndarray]] = {}
-        complete_mask = main_mask.copy()
-        for component_id, points in samples.items():
-            if component_id == main_id:
+        # A component is an island exactly when none of its pixels is 8-adjacent to the main
+        # body, which is what labelling the union of the two masks tests one component at a time.
+        main_neighbourhood = cv2.dilate(main_mask.astype(np.uint8), np.ones((3, 3), np.uint8), iterations=1) > 0
+
+        main_mask_flat = main_mask.reshape(-1)
+        main_depth_flat = main_depth.reshape(-1)
+        dilated_main_flat = dilated_main.reshape(-1)
+        distance_flat = distance_to_main.reshape(-1)
+        main_neighbourhood_flat = main_neighbourhood.reshape(-1)
+
+        needs_source_support = view_index == front_index and source_mask is not None
+        complete_mask = main_mask.copy() if needs_source_support else None
+        scratch = np.zeros(plane, dtype=bool) if needs_source_support else None
+
+        # `complete_mask` is consumed only for its bounding box, but it must cover every
+        # component before any support value is measured, so it is accumulated up front.
+        if needs_source_support:
+            complete_flat = complete_mask.reshape(-1)
+            for start in range(0, len(order_ids), _PROJECTION_CHUNK):
+                ids = order_ids[start : start + _PROJECTION_CHUNK]
+                points = np.concatenate([samples[cid] for cid in ids])
+                slots = np.repeat(np.arange(len(ids)), [len(samples[cid]) for cid in ids])
+                px, py, _, valid = _project_coordinates(points, direction, center, half_extent, size)
+                if not valid.any():
+                    continue
+                _, dilated_pixels = _dilate_sparse(
+                    slots[valid], (py[valid].astype(np.int64) * size + px[valid]), size
+                )
+                complete_flat[dilated_pixels] = True
+
+        for start in range(0, len(order_ids), _PROJECTION_CHUNK):
+            ids = order_ids[start : start + _PROJECTION_CHUNK]
+            points = np.concatenate([samples[cid] for cid in ids])
+            slots = np.repeat(np.arange(len(ids)), [len(samples[cid]) for cid in ids])
+            px, py, depth, valid = _project_coordinates(points, direction, center, half_extent, size)
+            if not valid.any():
                 continue
-            component_mask, component_depth = _project(points, direction, center, half_extent, config.render_size)
-            projected[component_id] = component_mask, component_depth
-            complete_mask |= component_mask
+            slots, depth = slots[valid], depth[valid]
+            flat = py[valid].astype(np.int64) * size + px[valid]
 
-        for component_id, (component_mask, component_depth) in projected.items():
-            if not component_mask.any():
-                continue
-            item = metrics[component_id]
-            visible = int(component_mask.sum())
-            item["visible_views"] += 1
-            item["visible_pixels"] += visible
-            item["outside_pixels"] += int((component_mask & ~dilated_main).sum())
-            if float(distance_to_main[component_mask].min()) >= 2.0:
-                item["gap_views"] += 1
+            # Raw (undilated) per-pixel depth per component: farthest sample wins, as in _project.
+            raw_keys = slots.astype(np.int64) * plane + flat
+            order = np.argsort(raw_keys, kind="stable")
+            sorted_keys, sorted_depth = raw_keys[order], depth[order]
+            unique_raw, raw_starts = np.unique(sorted_keys, return_index=True)
+            raw_depth = np.maximum.reduceat(sorted_depth, raw_starts)
+            raw_slots, raw_pixels = unique_raw // plane, unique_raw % plane
 
-            overlap = component_mask & main_mask
-            if overlap.any():
-                item["overlap_views"] += 1
-                finite = overlap & np.isfinite(component_depth) & np.isfinite(main_depth)
-                if finite.any():
-                    gap = float(np.median(np.abs(component_depth[finite] - main_depth[finite]))) / model_diagonal
-                    item["depth_gaps"].append(gap)
-                    if gap >= config.hover_depth_gap_diag:
-                        item["depth_separated_views"] += 1
+            dil_slots, dil_pixels = _dilate_sparse(raw_slots, raw_pixels, size)
+            present, group_starts, group_counts = np.unique(
+                dil_slots, return_index=True, return_counts=True
+            )
 
-            labels = cv2.connectedComponents((component_mask | main_mask).astype(np.uint8), 8)[1]
-            component_labels = set(np.unique(labels[component_mask])) - {0}
-            main_labels = set(np.unique(labels[main_mask])) - {0}
-            if component_labels.isdisjoint(main_labels):
-                item["island_views"] += 1
-            if view_index == front_index:
-                item["source_support_percent"] = _source_support(component_mask, complete_mask, source_mask)
+            visible_pixels = group_counts
+            outside_pixels = np.add.reduceat(
+                (~dilated_main_flat[dil_pixels]).astype(np.int64), group_starts
+            )
+            min_distance = np.minimum.reduceat(distance_flat[dil_pixels], group_starts)
+            overlaps = np.maximum.reduceat(
+                main_mask_flat[dil_pixels].astype(np.uint8), group_starts
+            ) > 0
+            islands = np.maximum.reduceat(
+                main_neighbourhood_flat[dil_pixels].astype(np.uint8), group_starts
+            ) == 0
+
+            # Depth agreement is measured on raw pixels where the main body also has depth.
+            main_here = main_depth_flat[raw_pixels]
+            finite = np.isfinite(main_here)
+            gap_slots, gap_values = (
+                _grouped_median(raw_slots[finite], np.abs(raw_depth[finite] - main_here[finite]))
+                if finite.any()
+                else (np.empty(0, np.int64), np.empty(0, np.float64))
+            )
+            gap_lookup = dict(zip(gap_slots.tolist(), (gap_values / model_diagonal).tolist()))
+
+            for index, slot in enumerate(present.tolist()):
+                item = metrics[ids[slot]]
+                item["visible_views"] += 1
+                item["visible_pixels"] += int(visible_pixels[index])
+                item["outside_pixels"] += int(outside_pixels[index])
+                if float(min_distance[index]) >= 2.0:
+                    item["gap_views"] += 1
+                if overlaps[index]:
+                    item["overlap_views"] += 1
+                    gap = gap_lookup.get(slot)
+                    if gap is not None:
+                        item["depth_gaps"].append(gap)
+                        if gap >= config.hover_depth_gap_diag:
+                            item["depth_separated_views"] += 1
+                if islands[index]:
+                    item["island_views"] += 1
+
+            if needs_source_support:
+                for index, slot in enumerate(present.tolist()):
+                    pixels = dil_pixels[group_starts[index] : group_starts[index] + group_counts[index]]
+                    scratch[pixels] = True
+                    metrics[ids[slot]]["source_support_percent"] = _source_support(
+                        scratch.reshape(size, size), complete_mask, source_mask
+                    )
+                    scratch[pixels] = False
 
     for item in metrics.values():
         visible = max(int(item["visible_pixels"]), 1)
