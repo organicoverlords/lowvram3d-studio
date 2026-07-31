@@ -87,9 +87,10 @@ class PreserveOriginalTests(unittest.TestCase):
                     config=AuditConfig(),
                     seed=0,
                 )
+            self.assertTrue(output.is_file())
+            self.assertEqual(output.read_bytes(), payload)
 
         self.assertTrue(result["success"])
-        self.assertEqual(output.read_bytes() if output.exists() else payload, payload)
         self.assertEqual(result["faces_removed"], 0)
         self.assertTrue(result["manual_review_required"])
         self.assertEqual(
@@ -119,8 +120,9 @@ class PreserveOriginalTests(unittest.TestCase):
                     config=AuditConfig(),
                     seed=0,
                 )
+            self.assertFalse(output.exists())
+
         self.assertFalse(result["success"])
-        self.assertFalse(output.exists())
         self.assertEqual(result["audit_policy"]["selected"], "hard_failure")
 
 
