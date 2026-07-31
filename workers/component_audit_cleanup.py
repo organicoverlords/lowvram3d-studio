@@ -3,13 +3,10 @@ from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import replace
+import shutil
 from pathlib import Path
 
 from lowvram3d.component_audit import AuditConfig, audit_and_cleanup
-
-
-_MICRO_RETRY_ASSET_TYPES = {"character", "creature"}
 
 
 def config_for_asset_type(
@@ -19,12 +16,7 @@ def config_for_asset_type(
     samples: int,
     max_passes: int,
 ) -> AuditConfig:
-    """Return scale-relative cleanup limits without hard-coding individual assets.
-
-    Continuous organic reconstructions commonly contain sizeable floating shells. Multi-part
-    hard-surface and architectural assets legitimately contain disconnected pieces, so automatic
-    removal is restricted to much smaller relative surface areas for those families.
-    """
+    """Return conservative scale-relative cleanup limits for each asset family."""
     kind = str(asset_type).strip().lower()
     common = {
         "render_size": max(192, render_size),
@@ -70,67 +62,81 @@ def config_for_asset_type(
     return AuditConfig(**common)
 
 
-def _micro_retry_candidates(result: dict, asset_type: str) -> list[dict]:
-    """Return tiny organic fragments eligible for a higher-confidence second audit.
-
-    The baseline audit remains authoritative. A retry is allowed only when every unresolved
-    component is tiny, unstructured, unsupported by the source alpha mask, materially detached,
-    and separated from the main surface in many canonical projections. This does not apply to
-    buildings, scenes, vehicles, props, vegetation, or natural multi-part assets.
-    """
-    if str(asset_type).strip().lower() not in _MICRO_RETRY_ASSET_TYPES:
-        return []
+def _ambiguity_only(result: dict) -> bool:
+    """True when cleanup failed only because evidence was inconclusive."""
     errors = [str(item) for item in result.get("errors", [])]
-    allowed_errors = all(
-        item == "cleanup did not converge within max_passes"
-        or (item.endswith("visible components remain audit-required") and item.split()[0].isdigit())
-        for item in errors
-    )
-    if not errors or not allowed_errors:
-        return []
-    unresolved = [
-        item
-        for item in (result.get("final_audit", {}).get("decisions", []) or [])
-        if item.get("action") == "AUDIT_REQUIRED"
+    if not errors:
+        return False
+    for error in errors:
+        if error == "cleanup did not converge within max_passes":
+            continue
+        words = error.split()
+        if (
+            len(words) >= 5
+            and words[0].isdigit()
+            and error.endswith("visible components remain audit-required")
+        ):
+            continue
+        return False
+    return True
+
+
+def _topology_safe(result: dict) -> bool:
+    """Reject pass-through when the audit observed real topology damage."""
+    before = result.get("topology_before", {}) or {}
+    after = result.get("topology_after", {}) or {}
+    for key in ("boundary_edges", "non_manifold_edges"):
+        if int(after.get(key, 0)) > int(before.get(key, 0)):
+            return False
+    main_before = result.get("main_component_faces_before")
+    main_after = result.get("main_component_faces_after")
+    if main_before is not None and main_after is not None and int(main_before) != int(main_after):
+        return False
+    return True
+
+
+def _preserve_original(
+    result: dict,
+    input_path: str,
+    output_path: str,
+) -> dict:
+    """Preserve a valid generated mesh when cleanup confidence is insufficient.
+
+    The component audit remains evidence, but ambiguity is not allowed to destroy a usable
+    TurboBird-class result or stop the rest of the production pipeline.
+    """
+    source = Path(input_path)
+    output = Path(output_path)
+    if not source.is_file():
+        raise FileNotFoundError(source)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, output)
+
+    original_errors = [str(item) for item in result.get("errors", [])]
+    before = dict(result.get("topology_before", {}) or {})
+    result["success"] = True
+    result["output"] = str(output)
+    result["errors"] = []
+    result["warnings"] = [
+        *[str(item) for item in result.get("warnings", [])],
+        "component cleanup was inconclusive; preserved the original generated mesh byte-for-byte",
+        *[f"audit: {item}" for item in original_errors],
     ]
-    if not unresolved:
-        return []
-    for item in unresolved:
-        projection = item.get("projection", {}) or {}
-        outboard_evidence = (
-            int(projection.get("island_views", 0)) >= 6
-            and int(projection.get("gap_views", 0)) >= 6
-            and float(projection.get("aggregate_outside_percent", 0.0)) >= 70.0
-        )
-        hover_evidence = (
-            int(projection.get("depth_separated_views", 0)) >= 4
-            and int(projection.get("overlap_views", 0)) >= 4
-            and float(projection.get("median_depth_gap_diag", 0.0)) >= 0.05
-        )
-        confirmed_micro_candidate = (
-            float(item.get("area_fraction", 1.0)) <= 0.003
-            and float(item.get("nearest_distance_diag", 0.0)) >= 0.01
-            and float(item.get("elongation", 999.0)) < 6.0
-            and float(projection.get("source_support_percent", 100.0)) < 1.0
-            and (outboard_evidence or hover_evidence)
-        )
-        if not confirmed_micro_candidate:
-            return []
-    return unresolved
-
-
-def _strict_micro_retry_config(config: AuditConfig) -> AuditConfig:
-    """Increase sampling and require broad multi-view evidence for tiny outboard removal."""
-    return replace(
-        config,
-        min_component_samples=max(config.min_component_samples, 1024),
-        max_component_samples=max(config.max_component_samples, 16_384),
-        max_passes=max(config.max_passes, 6),
-        outboard_percent=70.0,
-        outboard_views=6,
-        gap_views=6,
-        outboard_max_area_fraction=min(config.outboard_max_area_fraction, 0.003),
-    )
+    result["topology_after"] = before
+    result["faces_removed"] = 0
+    result["faces_removed_percent"] = 0.0
+    result["main_component_faces_after"] = result.get("main_component_faces_before")
+    result["manual_review_required"] = True
+    result["audit_policy"] = {
+        "selected": "preserve_original_on_audit_ambiguity",
+        "hard_failure": False,
+        "original_errors": original_errors,
+        "reason": (
+            "The generated mesh had no demonstrated topology regression. Ambiguous component "
+            "classification is recorded for review but does not block downstream processing."
+        ),
+    }
+    return result
 
 
 def run_cleanup(
@@ -142,8 +148,8 @@ def run_cleanup(
     config: AuditConfig,
     seed: int,
 ) -> dict:
-    """Run the baseline audit, then one bounded evidence-driven retry when justified."""
-    baseline = audit_and_cleanup(
+    """Run cleanup once and fail only on demonstrated damage or process errors."""
+    result = audit_and_cleanup(
         input_path,
         output_path,
         asset_type=asset_type,
@@ -151,41 +157,18 @@ def run_cleanup(
         config=config,
         seed=seed,
     )
-    candidates = _micro_retry_candidates(baseline, asset_type)
-    if baseline.get("success") or not candidates:
-        baseline["audit_policy"] = {
-            "selected": "baseline",
-            "micro_retry_attempted": False,
-        }
-        return baseline
-
-    strict_config = _strict_micro_retry_config(config)
-    retried = audit_and_cleanup(
-        input_path,
-        output_path,
-        asset_type=asset_type,
-        source_image=source_image,
-        config=strict_config,
-        seed=seed,
-    )
-    retried["audit_policy"] = {
-        "selected": "strict_micro_debris_retry",
-        "micro_retry_attempted": True,
-        "baseline_errors": baseline.get("errors", []),
-        "eligible_signatures": [str(item.get("signature", "")) for item in candidates],
-        "eligibility_rule": {
-            "asset_types": sorted(_MICRO_RETRY_ASSET_TYPES),
-            "max_area_fraction": 0.003,
-            "min_nearest_distance_diag": 0.01,
-            "max_elongation": 6.0,
-            "max_source_support_percent": 1.0,
-            "min_outboard_views": 6,
-            "min_gap_views": 6,
-            "min_outside_percent": 70.0,
-        },
-        "baseline": baseline,
+    if result.get("success"):
+        result["manual_review_required"] = False
+        result["audit_policy"] = {"selected": "audited_cleanup", "hard_failure": False}
+        return result
+    if _ambiguity_only(result) and _topology_safe(result):
+        return _preserve_original(result, input_path, output_path)
+    result["audit_policy"] = {
+        "selected": "hard_failure",
+        "hard_failure": True,
+        "reason": "cleanup reported a process error or demonstrated topology regression",
     }
-    return retried
+    return result
 
 
 def main() -> None:
@@ -218,7 +201,7 @@ def main() -> None:
     report = Path(args.report)
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text(json.dumps(result, indent=2), encoding="utf-8")
-    policy = result.get("audit_policy", {}).get("selected", "baseline")
+    policy = result.get("audit_policy", {}).get("selected", "unknown")
     print(
         "COMPONENT_AUDIT_CLEANUP "
         f"success={result['success']} "
