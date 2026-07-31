@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "service_version": "0.6.0",
+  "health": {
+    "status": "ok",
+    "config": "/tmp/lv3d-smoke-config.json",
+    "lanes": [
+      "A",
+      "B",
+      "C"
+    ],
+    "vram_ceiling_mb": 5600,
+    "studio_url": "http://127.0.0.1:8311",
+    "resume": {
+      "installer": true,
+      "asset_jobs": true,
+      "automatic_failed_card_resume": true
+    }
+  },
+  "elapsed_ms": 1842
+}

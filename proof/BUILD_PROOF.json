@@ -1,0 +1,25 @@
+{
+  "version": "0.6.1",
+  "status": "release_candidate_verified_in_build_container",
+  "target_machine_runtime_status": "RESUME_STAGE_08_WITH_DIAGNOSTIC_READINESS",
+  "tests": {
+    "unittest_count": 69,
+    "unittest_status": "passed",
+    "compileall": "passed",
+    "file_limit": 600,
+    "largest_implementation_file": "src/lowvram3d/pipeline.py",
+    "largest_implementation_file_lines": 546
+  },
+  "fixed": [
+    "removed simultaneous opencv-python and opencv-contrib-python installation",
+    "pinned the single OpenCV wheel to opencv-contrib-python 4.11.0.86",
+    "preserved cached MediaPipe JAX Torch Diffusers and Transformers packages",
+    "added per-component MV-Adapter/avatar readiness JSON and log output",
+    "verified Torch CUDA Diffusers Transformers BiRefNet API OpenCV MediaPipe Pose and MV-Adapter independently"
+  ],
+  "not_proven_here": [
+    "Windows import result for the repaired target environment",
+    "remaining installer stages 10 through 15",
+    "BiRefNet inference and avatar output on GTX 1660 SUPER"
+  ]
+}

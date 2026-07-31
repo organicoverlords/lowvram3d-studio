@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+envs/
+
+# Local install state and per-machine artefacts
+patch-backups/
+install-state/
+jobs/
+*.log
+
+# Generated 3D / texture artefacts (regenerate from the pipeline, do not version)
+*.glb
+*.fbx
+*.npz
+*.blend
+*.blend1

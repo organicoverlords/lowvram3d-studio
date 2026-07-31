@@ -1,0 +1,29 @@
+{
+  "install_root": "%LOCALAPPDATA%\\LowVRAM3DStudio",
+  "jobs_root": "%LOCALAPPDATA%\\LowVRAM3DStudio\\jobs",
+  "comfyui_url": "http://127.0.0.1:8188",
+  "comfyui_path": "",
+  "mini_turbo_workflow": "",
+  "blender_path": "blender",
+  "studio_url": "http://127.0.0.1:8311",
+  "meshtools_url": "http://127.0.0.1:8200",
+  "vram_ceiling_mb": 5600,
+  "target_faces": 50000,
+  "texture_size": 2048,
+  "lane_order": ["A", "B", "C"],
+  "mv_adapter_python": "%LOCALAPPDATA%\\LowVRAM3DStudio\\envs\\mv-adapter\\Scripts\\python.exe",
+  "mv_adapter_root": "%LOCALAPPDATA%\\LowVRAM3DStudio\\thirdparty\\MV-Adapter",
+  "sf3d_python": "%LOCALAPPDATA%\\LowVRAM3DStudio\\envs\\sf3d\\Scripts\\python.exe",
+  "sf3d_root": "%LOCALAPPDATA%\\LowVRAM3DStudio\\thirdparty\\stable-fast-3d",
+  "tripo_python": "",
+  "tripo_root": "",
+  "models_offline": false,
+  "keep_intermediates": true,
+  "extra": {
+    "studio_commit": "98bdc4a3aa5e898251a2172c227f0d5f756d21d0",
+    "mv_adapter_commit": "4277e0018232bac82bb2c103caf0893cedb711be",
+    "preferred_lane": "A",
+    "fallback_lane_1": "B",
+    "fallback_lane_2": "C"
+  }
+}

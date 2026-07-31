@@ -1,0 +1,16 @@
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+requests==2.32.4
+python-multipart==0.0.20
+psutil==7.0.0
+pillow==11.3.0
+numpy==2.2.6
+trimesh==4.7.1
+scipy==1.16.1
+# Headless wheel only: the control environment never opens a GUI window, and mixing
+# it with a desktop opencv build puts two cv2 modules in one environment.
+# The MV-Adapter environment keeps its own separate opencv-contrib-python.
+opencv-python-headless==4.11.0.86
+# starlette 0.47.3 TestClient requires httpx>=0.27.0,<0.29.0
+httpx==0.27.2

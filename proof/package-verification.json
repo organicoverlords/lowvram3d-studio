@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "version": "0.6.0",
+  "clean_extract_compileall": "passed",
+  "clean_extract_blender_compile": "passed",
+  "clean_extract_unit_tests": 68,
+  "required_file_contract": "passed",
+  "zip_contains_no_pycache_or_pyc": true,
+  "release_candidate_file_count": 100,
+  "avatar_mask_tests": "passed",
+  "birefnet_revision_pin": "passed",
+  "stage10_extensible_property_merge": "passed"
+}
