@@ -55,12 +55,16 @@ def fingerprint_command_inputs(
     for token in command[1:]:
         if not token or token.startswith("-"):
             continue
-        candidate = _resolved(Path(token), cwd)
-        if candidate in outputs or not candidate.is_file():
+        try:
+            candidate = _resolved(Path(token), cwd)
+            if candidate in outputs or not candidate.is_file():
+                continue
+            key = str(candidate)
+            if key not in fingerprints:
+                fingerprints[key] = sha256_file(candidate)
+        except (OSError, ValueError):
+            # Inline code, prompts and other long arguments are not filesystem inputs.
             continue
-        key = str(candidate)
-        if key not in fingerprints:
-            fingerprints[key] = sha256_file(candidate)
     return dict(sorted(fingerprints.items()))
 
 
