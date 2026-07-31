@@ -9,6 +9,7 @@ import trimesh
 
 from lowvram3d.component_audit import AuditConfig, audit_and_cleanup
 from lowvram3d.geometry_compare import silhouette_metrics, topology_counts
+from workers.component_audit_cleanup import config_for_asset_type
 
 
 class GeometryComparisonPrimitiveTests(unittest.TestCase):
@@ -32,6 +33,22 @@ class GeometryComparisonPrimitiveTests(unittest.TestCase):
         self.assertEqual(counts["boundary_edges"], 0)
         self.assertEqual(counts["non_manifold_edges"], 0)
         self.assertEqual(counts["faces"], 12)
+
+
+class ComponentAuditPolicyTests(unittest.TestCase):
+    def test_architecture_uses_tighter_auto_removal_caps_than_organic_assets(self):
+        building = config_for_asset_type("building", render_size=384, samples=220_000, max_passes=4)
+        creature = config_for_asset_type("creature", render_size=384, samples=220_000, max_passes=4)
+        self.assertLess(building.outboard_max_area_fraction, creature.outboard_max_area_fraction)
+        self.assertLess(building.hover_max_area_fraction, creature.hover_max_area_fraction)
+        self.assertEqual(building.internal_max_area_fraction, 0.0)
+
+    def test_scene_policy_preserves_disconnected_structural_parts(self):
+        scene = config_for_asset_type("scene", render_size=100, samples=10_000, max_passes=20)
+        self.assertGreaterEqual(scene.render_size, 192)
+        self.assertGreaterEqual(scene.total_samples, 50_000)
+        self.assertLessEqual(scene.max_passes, 6)
+        self.assertLessEqual(scene.outboard_max_area_fraction, 0.0015)
 
 
 class ComponentAuditTests(unittest.TestCase):
