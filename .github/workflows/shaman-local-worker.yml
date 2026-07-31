@@ -1,4 +1,4 @@
-name: Shaman image-to-3D on local PC
+name: Shaman textured baseline on local PC
 
 on:
   workflow_dispatch:
@@ -7,12 +7,13 @@ on:
       - infra/windows-self-hosted-runner-20260731
     paths:
       - .github/workflows/shaman-local-worker.yml
-      - scripts/register-local-github-worker.ps1
-      - scripts/run-shaman-image-to-3d.ps1
-      - workers/run_full_image.py
-      - workers/component_audit_cleanup.py
-      - src/lowvram3d/component_audit.py
-      - tests/test_component_audit_retry.py
+      - scripts/recover-shaman-textured-baseline.ps1
+      - workers/recover_textured_baseline.py
+      - src/lowvram3d/raster_route.py
+      - workers/raster_project.py
+      - blender/raster_cleanup_extract.py
+      - blender/raster_export.py
+      - blender/geometry_quality_validate.py
 
 permissions:
   contents: read
@@ -22,10 +23,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  shaman-image-to-3d:
+  recover-textured-baseline:
     if: github.repository_owner == 'organicoverlords'
     runs-on: [self-hosted, Windows, X64, lowvram3d-pc]
-    timeout-minutes: 360
+    timeout-minutes: 45
     steps:
       - name: Checkout exact worker branch
         uses: actions/checkout@v4
@@ -43,7 +44,7 @@ jobs:
           if ($dirty.Count -gt 0) { throw "Runner checkout is dirty before execution: $($dirty -join '; ')" }
           git rev-parse HEAD
 
-      - name: Test targeted cleanup policy
+      - name: Preflight recovery code
         shell: powershell
         run: |
           $python = "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe"
@@ -51,21 +52,25 @@ jobs:
             throw "LowVRAM3D control Python is missing: $python"
           }
           $env:PYTHONPATH = "$PWD\src;$PWD"
-          & $python -m unittest discover -s tests -p "test_component_audit_retry.py" -v
+          & $python -m py_compile `
+            workers\recover_textured_baseline.py `
+            src\lowvram3d\raster_route.py `
+            workers\raster_project.py
           if ($LASTEXITCODE -ne 0) {
-            throw "Targeted cleanup policy tests failed with exit code $LASTEXITCODE"
+            throw "Recovery Python preflight failed with exit code $LASTEXITCODE"
           }
+          $null = [scriptblock]::Create((Get-Content .\scripts\recover-shaman-textured-baseline.ps1 -Raw))
 
-      - name: Run full shaman PNG to 3D pipeline
+      - name: Recover first textured shaman GLB
         shell: powershell
         run: |
-          & .\scripts\run-shaman-image-to-3d.ps1
+          & .\scripts\recover-shaman-textured-baseline.ps1 -AtlasSize 512
 
-      - name: Upload proof and deliverable
+      - name: Upload textured baseline and proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: shaman-image-to-3d-${{ github.run_id }}
-          path: ${{ runner.temp }}\shaman-image-to-3d
-          if-no-files-found: warn
+          name: shaman-textured-baseline-${{ github.run_id }}
+          path: ${{ runner.temp }}\shaman-textured-baseline
+          if-no-files-found: error
           retention-days: 14
