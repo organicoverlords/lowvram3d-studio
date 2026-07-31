@@ -96,6 +96,8 @@ def run_highres_geometry_phase(
         )
         if not placeholder_mode:
             raise RuntimeError("high-resolution geometry ladder did not pass")
+        if receipt.stages and receipt.stages[-1].stage == stage:
+            receipt.stages.pop()
         payload = {
             "success": True,
             "master_faces": profile.target_triangles,
