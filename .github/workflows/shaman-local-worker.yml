@@ -10,13 +10,15 @@ on:
       - scripts/register-local-github-worker.ps1
       - scripts/run-shaman-image-to-3d.ps1
       - workers/run_full_image.py
+      - workers/component_audit_cleanup.py
+      - src/lowvram3d/component_audit.py
 
 permissions:
   contents: read
 
 concurrency:
   group: shaman-local-worker
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   shaman-image-to-3d:
@@ -53,5 +55,3 @@ jobs:
           path: ${{ runner.temp }}\shaman-image-to-3d
           if-no-files-found: warn
           retention-days: 14
-
-# forced trigger 2026-07-31T22:07+03:00
