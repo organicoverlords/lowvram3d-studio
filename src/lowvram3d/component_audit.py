@@ -1,9 +1,9 @@
-"""Generic deterministic debris audit for a clean high-resolution geometry master.
+"""Deterministic disconnected-component audit for high-resolution geometry masters.
 
-Runs before any retopology or decimation.  Decisions combine connected-component geometry,
-scale-relative proximity, fourteen projected views, screen-space isolation, source-mask support and
-depth separation.  Face count alone is never sufficient.  Suspicious-but-unproven components fail
-closed instead of being silently kept or deleted.
+The audit runs before retopology or decimation. It combines scale-relative geometry,
+14 canonical projections, source-mask support, screen-space separation, and depth separation.
+No decision is made from face count alone. Strong debris evidence is evaluated before generic
+size-preservation rules so highly tessellated fragments cannot masquerade as important parts.
 """
 from __future__ import annotations
 
@@ -27,18 +27,27 @@ class AuditConfig:
     min_component_samples: int = 128
     max_component_samples: int = 8192
     max_passes: int = 4
+
     attach_distance_diag: float = 0.0015
     detached_distance_diag: float = 0.0020
     hover_distance_diag: float = 0.0040
     hover_depth_gap_diag: float = 0.0060
-    meaningful_fraction: float = 0.03
+
     source_keep_percent: float = 10.0
     outboard_percent: float = 85.0
     outboard_views: int = 3
     gap_views: int = 3
     hover_views: int = 5
-    hover_max_area_fraction: float = 0.015
+
+    # Size is only a preservation signal. Strong outboard/depth evidence is checked first.
+    preserve_area_fraction: float = 0.08
+    preserve_face_fraction: float = 0.25
+    outboard_max_area_fraction: float = 0.08
+    hover_max_area_fraction: float = 0.025
     internal_max_area_fraction: float = 0.002
+
+    structured_elongation: float = 6.0
+    structured_near_diag: float = 0.03
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,6 +108,7 @@ def _component_records(
     total_area = max(float(area_faces.sum()), 1e-12)
     total_faces = max(len(faces), 1)
     records: list[Component] = []
+
     for component_id, face_ids in enumerate(groups):
         vertex_ids = np.unique(faces[face_ids])
         points = vertices[vertex_ids]
@@ -108,6 +118,7 @@ def _component_records(
         area = float(area_faces[face_ids].sum())
         area_fraction = area / total_area
         centroid = points.mean(axis=0)
+        denominator = max(float(ordered[2]), model_diagonal * 1e-9)
         records.append(
             Component(
                 component_id=component_id,
@@ -118,13 +129,14 @@ def _component_records(
                 area_fraction=area_fraction,
                 centroid=centroid,
                 extent=extent,
-                elongation=float(ordered[0] / max(ordered[2], model_diagonal * 1e-9)),
-                flatness=float(ordered[1] / max(ordered[2], model_diagonal * 1e-9)),
+                elongation=float(ordered[0] / denominator),
+                flatness=float(ordered[1] / denominator),
                 nearest_distance_diag=0.0,
                 signature=_signature(len(face_ids), area_fraction, centroid, extent),
             )
         )
-    main_id = max(records, key=lambda item: item.faces).component_id
+
+    main_id = max(records, key=lambda item: item.area).component_id
     main_vertex_ids = np.unique(faces[records[main_id].face_ids])
     main_tree = cKDTree(vertices[main_vertex_ids])
     updated: list[Component] = []
@@ -134,7 +146,7 @@ def _component_records(
         else:
             vertex_ids = np.unique(faces[record.face_ids])
             points = vertices[vertex_ids]
-            step = max(1, len(points) // 256)
+            step = max(1, len(points) // 512)
             distance, _ = main_tree.query(points[::step], k=1, workers=-1)
             nearest = float(np.min(distance)) / model_diagonal
         updated.append(replace(record, nearest_distance_diag=nearest))
@@ -248,11 +260,9 @@ def _projection_metrics(
         for component_id in samples
         if component_id != main_id
     }
-    front_index = 3  # VIEW_DIRECTIONS[3] == (0, -1, 0)
+    front_index = 3
     for view_index, direction in enumerate(VIEW_DIRECTIONS):
-        main_mask, main_depth = _project(
-            samples[main_id], direction, center, half_extent, config.render_size
-        )
+        main_mask, main_depth = _project(samples[main_id], direction, center, half_extent, config.render_size)
         dilated_main = cv2.dilate(main_mask.astype(np.uint8), np.ones((5, 5), np.uint8), iterations=1) > 0
         distance_to_main = cv2.distanceTransform((~main_mask).astype(np.uint8), cv2.DIST_L2, 3)
         projected: dict[int, tuple[np.ndarray, np.ndarray]] = {}
@@ -260,9 +270,7 @@ def _projection_metrics(
         for component_id, points in samples.items():
             if component_id == main_id:
                 continue
-            component_mask, component_depth = _project(
-                points, direction, center, half_extent, config.render_size
-            )
+            component_mask, component_depth = _project(points, direction, center, half_extent, config.render_size)
             projected[component_id] = component_mask, component_depth
             complete_mask |= component_mask
 
@@ -293,16 +301,12 @@ def _projection_metrics(
             if component_labels.isdisjoint(main_labels):
                 item["island_views"] += 1
             if view_index == front_index:
-                item["source_support_percent"] = _source_support(
-                    component_mask, complete_mask, source_mask
-                )
+                item["source_support_percent"] = _source_support(component_mask, complete_mask, source_mask)
 
     for item in metrics.values():
         visible = max(int(item["visible_pixels"]), 1)
         item["aggregate_outside_percent"] = item["outside_pixels"] / visible * 100.0
-        item["median_depth_gap_diag"] = (
-            float(np.median(item["depth_gaps"])) if item["depth_gaps"] else 0.0
-        )
+        item["median_depth_gap_diag"] = float(np.median(item["depth_gaps"])) if item["depth_gaps"] else 0.0
         del item["outside_pixels"]
         del item["depth_gaps"]
     return metrics
@@ -319,69 +323,72 @@ def _decision(
         action, reason = "KEEP_CONFIRMED", "largest connected surface"
     else:
         attached = component.nearest_distance_diag <= config.attach_distance_diag
-        meaningful = (
-            component.area_fraction >= config.meaningful_fraction
-            or component.face_fraction >= config.meaningful_fraction
-        )
-        structured = component.elongation >= 6.0
+        structured = component.elongation >= config.structured_elongation
         support_admissible = not (
             projection["island_views"] >= config.outboard_views
             and projection["aggregate_outside_percent"] >= 80.0
         )
         source_support = projection["source_support_percent"] if support_admissible else 0.0
+        strong_preservation = (
+            component.area_fraction >= config.preserve_area_fraction
+            or component.face_fraction >= config.preserve_face_fraction
+        )
+
+        outboard = (
+            component.nearest_distance_diag >= config.detached_distance_diag
+            and source_support < 1.0
+            and projection["island_views"] >= config.outboard_views
+            and projection["aggregate_outside_percent"] >= config.outboard_percent
+            and projection["gap_views"] >= config.gap_views
+            and component.area_fraction <= config.outboard_max_area_fraction
+        )
+        strict_outboard = (
+            component.nearest_distance_diag >= config.detached_distance_diag
+            and source_support < 1.0
+            and projection["island_views"] >= 2
+            and projection["aggregate_outside_percent"] >= 95.0
+            and projection["gap_views"] >= 2
+            and component.area_fraction <= 0.02
+        )
+        hover = (
+            component.nearest_distance_diag >= config.hover_distance_diag
+            and source_support < 1.0
+            and projection["depth_separated_views"] >= config.hover_views
+            and projection["overlap_views"] >= config.hover_views
+            and projection["median_depth_gap_diag"] >= config.hover_depth_gap_diag
+            and component.area_fraction <= config.hover_max_area_fraction
+            and not structured
+        )
+        internal = (
+            family in {AssetFamily.ORGANIC, AssetFamily.MIXED}
+            and projection["visible_views"] == 0
+            and component.nearest_distance_diag >= config.detached_distance_diag
+            and component.area_fraction <= config.internal_max_area_fraction
+        )
+
         if attached:
             action, reason = "KEEP_CONFIRMED", "within scale-relative attachment distance"
-        elif meaningful:
-            action, reason = "KEEP_CONFIRMED", "meaningful share of master surface"
+        elif outboard or strict_outboard:
+            action, reason = "REMOVE_CONFIRMED_DEBRIS", "detached outboard island in multiple views"
+        elif hover:
+            action, reason = "REMOVE_CONFIRMED_DEBRIS", "depth-separated surface hovering over main body"
+        elif internal:
+            action, reason = "REMOVE_CONFIRMED_DEBRIS", "small detached internal component invisible in every view"
         elif source_support >= config.source_keep_percent:
             action, reason = "KEEP_CONFIRMED", "admissible source-foreground support"
-        elif structured and component.nearest_distance_diag < 0.03:
+        elif structured and component.nearest_distance_diag < config.structured_near_diag:
             action, reason = "KEEP_CONFIRMED", "nearby elongated or structured component"
+        elif strong_preservation:
+            action, reason = "KEEP_CONFIRMED", "substantial share of geometric surface"
         else:
-            outboard = (
-                component.nearest_distance_diag >= config.detached_distance_diag
-                and source_support < 1.0
-                and projection["island_views"] >= config.outboard_views
-                and projection["aggregate_outside_percent"] >= config.outboard_percent
-                and projection["gap_views"] >= config.gap_views
+            suspicious = (
+                projection["island_views"] >= 2
+                or projection["depth_separated_views"] >= 3
+                or projection["aggregate_outside_percent"] >= 70.0
             )
-            strict_outboard = (
-                component.nearest_distance_diag >= config.detached_distance_diag
-                and source_support < 1.0
-                and projection["island_views"] >= 2
-                and projection["aggregate_outside_percent"] >= 95.0
-                and projection["gap_views"] >= 2
-                and component.area_fraction <= 0.01
-            )
-            hover = (
-                component.nearest_distance_diag >= config.hover_distance_diag
-                and source_support < 1.0
-                and projection["depth_separated_views"] >= config.hover_views
-                and projection["overlap_views"] >= config.hover_views
-                and projection["median_depth_gap_diag"] >= config.hover_depth_gap_diag
-                and component.area_fraction <= config.hover_max_area_fraction
-                and not structured
-            )
-            internal = (
-                family in {AssetFamily.ORGANIC, AssetFamily.MIXED}
-                and projection["visible_views"] == 0
-                and component.nearest_distance_diag >= config.detached_distance_diag
-                and component.area_fraction <= config.internal_max_area_fraction
-            )
-            if outboard or strict_outboard:
-                action, reason = "REMOVE_CONFIRMED_DEBRIS", "detached outboard island in multiple views"
-            elif hover:
-                action, reason = "REMOVE_CONFIRMED_DEBRIS", "depth-separated surface hovering over main body"
-            elif internal:
-                action, reason = "REMOVE_CONFIRMED_DEBRIS", "small detached internal component invisible in every view"
-            else:
-                suspicious = (
-                    projection["island_views"] >= 2
-                    or projection["depth_separated_views"] >= 3
-                    or projection["aggregate_outside_percent"] >= 70.0
-                )
-                action = "AUDIT_REQUIRED" if suspicious else "KEEP_AMBIGUOUS"
-                reason = "visible evidence inconclusive; fail closed" if suspicious else "no destructive rule matched"
+            action = "AUDIT_REQUIRED" if suspicious else "KEEP_AMBIGUOUS"
+            reason = "visible evidence inconclusive; fail closed" if suspicious else "no destructive rule matched"
+
     return {
         "component_id": component.component_id,
         "signature": component.signature,
@@ -411,13 +418,8 @@ def audit_pass(
     half_extent = max(float(extent.max()) * 0.60, 1e-9)
     groups = _connected_faces(mesh)
     components, main_id = _component_records(mesh, groups, model_diagonal)
-    samples = {
-        component.component_id: _component_points(mesh, component, config, seed)
-        for component in components
-    }
-    projections = _projection_metrics(
-        samples, main_id, center, half_extent, model_diagonal, source_mask, config
-    )
+    samples = {component.component_id: _component_points(mesh, component, config, seed) for component in components}
+    projections = _projection_metrics(samples, main_id, center, half_extent, model_diagonal, source_mask, config)
     zero_projection = {
         "visible_views": 0,
         "island_views": 0,
@@ -430,13 +432,7 @@ def audit_pass(
         "median_depth_gap_diag": 0.0,
     }
     decisions = [
-        _decision(
-            component,
-            projections.get(component.component_id, zero_projection),
-            main_id,
-            family,
-            config,
-        )
+        _decision(component, projections.get(component.component_id, zero_projection), main_id, family, config)
         for component in components
     ]
     remove_ids = {
@@ -444,8 +440,9 @@ def audit_pass(
         for decision in decisions
         if decision["action"] == "REMOVE_CONFIRMED_DEBRIS"
     }
+    by_id = {component.component_id: component for component in components}
     removal = (
-        np.concatenate([components[component_id].face_ids for component_id in sorted(remove_ids)])
+        np.concatenate([by_id[component_id].face_ids for component_id in sorted(remove_ids)])
         if remove_ids
         else np.empty(0, np.int64)
     )
@@ -453,13 +450,11 @@ def audit_pass(
         "faces": int(len(mesh.faces)),
         "components": len(components),
         "main_component_id": main_id,
-        "main_component_faces": components[main_id].faces,
+        "main_component_faces": by_id[main_id].faces,
         "model_diagonal": model_diagonal,
         "removed_component_ids": sorted(remove_ids),
         "removed_faces": int(len(removal)),
-        "audit_required_count": sum(
-            decision["action"] == "AUDIT_REQUIRED" for decision in decisions
-        ),
+        "audit_required_count": sum(decision["action"] == "AUDIT_REQUIRED" for decision in decisions),
         "decisions": decisions,
     }
     return report, removal
@@ -498,25 +493,19 @@ def audit_and_cleanup(
         current.remove_unreferenced_vertices()
         removed_total += int(len(removal))
 
-    final_audit, remaining_removal = audit_pass(
-        current, family, source_mask, config, seed + 99_000
-    )
+    final_audit, remaining_removal = audit_pass(current, family, source_mask, config, seed + 99_000)
     after = topology_counts(current)
     errors = []
     if len(remaining_removal):
         errors.append("cleanup did not converge within max_passes")
     if initial_main_faces is not None and final_audit["main_component_faces"] != initial_main_faces:
-        errors.append(
-            f"main component changed {initial_main_faces} -> {final_audit['main_component_faces']}"
-        )
+        errors.append(f"main component changed {initial_main_faces} -> {final_audit['main_component_faces']}")
     if after["boundary_edges"] > before["boundary_edges"]:
         errors.append("boundary-edge count increased")
     if after["non_manifold_edges"] > before["non_manifold_edges"]:
         errors.append("non-manifold-edge count increased")
     if final_audit["audit_required_count"]:
-        errors.append(
-            f"{final_audit['audit_required_count']} visible components remain audit-required"
-        )
+        errors.append(f"{final_audit['audit_required_count']} visible components remain audit-required")
 
     output = Path(output_path)
     if not errors:
@@ -528,9 +517,7 @@ def audit_and_cleanup(
         "output": str(output),
         "asset_type": asset_type,
         "asset_family": family.value,
-        "config": {
-            field: getattr(config, field) for field in config.__dataclass_fields__
-        },
+        "config": {field: getattr(config, field) for field in config.__dataclass_fields__},
         "topology_before": before,
         "topology_after": after,
         "faces_removed": removed_total,
