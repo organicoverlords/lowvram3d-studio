@@ -317,10 +317,17 @@ def main() -> None:
         obj.data.update()
         object_reports.append({"object": obj.name, "before": item["before"], "after": after})
 
+    # Partition in a single pass and never touch a removed object again. Reading obj.name after
+    # bpy.data.objects.remove() dereferences a freed StructRNA and raises ReferenceError, which
+    # Blender reports on stderr while still exiting 0 -- so this aborted the whole raster route
+    # silently, leaving no npz and no cleanup report for the caller to diagnose.
+    surviving: list = []
     for obj in list(objects):
         if len(obj.data.polygons) == 0:
             bpy.data.objects.remove(obj, do_unlink=True)
-    objects = [obj for obj in objects if obj.name in bpy.data.objects and len(obj.data.polygons) > 0]
+        else:
+            surviving.append(obj)
+    objects = surviving
 
     gate_passed, gate_errors = topology_gate(
         faces_before=faces_before,
