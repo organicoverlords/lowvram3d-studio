@@ -21,11 +21,12 @@ class PresetTests(unittest.TestCase):
         self.assertFalse(profile.rigid_rig)
         self.assertTrue(profile.generate_rig)
 
-    def test_vehicle_uses_rigid_parts(self):
+    def test_vehicle_uses_rigid_parts_and_high_resolution_envelope(self):
         profile = get_profile("vehicle", "hero")
         self.assertTrue(profile.detect_round_parts)
         self.assertTrue(profile.rigid_rig)
-        self.assertEqual(profile.target_triangles, 70_000)
+        self.assertEqual(profile.target_triangles, 500_000)
+        self.assertEqual((profile.target_min, profile.target_max), (300_000, 750_000))
 
     def test_world_profiles_chunk(self):
         self.assertTrue(get_profile("scene").spatial_chunking)
@@ -35,7 +36,7 @@ class PresetTests(unittest.TestCase):
     def test_scene_uses_per_object_budget_and_preserves_materials(self):
         profile = get_profile("scene", "gameplay")
         self.assertEqual(profile.budget_mode, "per_object")
-        self.assertEqual(profile.per_object_target, 15_000)
+        self.assertEqual(profile.per_object_target, 60_000)
         self.assertEqual(profile.texture_strategy, "preserve_existing")
         self.assertEqual(profile.cell_divisions, 4)
 
