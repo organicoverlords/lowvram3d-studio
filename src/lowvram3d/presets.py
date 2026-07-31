@@ -23,22 +23,26 @@ class QualityPreset(str, Enum):
     HERO = "hero"
 
 
+# These are LOD0 envelopes, not permission to destroy the clean high-resolution master.  The
+# adaptive quality ladder compares descending candidates against that master and selects the lowest
+# passing candidate.  The old 45k/70k targets discarded nearly all detail from a ~1.8M-face Turbo
+# result before similarity was measured.
 QUALITY_TRIANGLES = {
-    QualityPreset.BACKGROUND: (8_000, 15_000, 12_000),
-    QualityPreset.GAMEPLAY: (25_000, 50_000, 45_000),
-    QualityPreset.HERO: (50_000, 80_000, 70_000),
+    QualityPreset.BACKGROUND: (25_000, 80_000, 50_000),
+    QualityPreset.GAMEPLAY: (120_000, 300_000, 200_000),
+    QualityPreset.HERO: (300_000, 750_000, 500_000),
 }
 
 WORLD_OBJECT_TARGETS = {
-    QualityPreset.BACKGROUND: 6_000,
-    QualityPreset.GAMEPLAY: 15_000,
-    QualityPreset.HERO: 30_000,
+    QualityPreset.BACKGROUND: 15_000,
+    QualityPreset.GAMEPLAY: 60_000,
+    QualityPreset.HERO: 150_000,
 }
 
 LOD_RATIOS = {
-    QualityPreset.BACKGROUND: (0.45,),
-    QualityPreset.GAMEPLAY: (0.55, 0.25),
-    QualityPreset.HERO: (0.65, 0.35),
+    QualityPreset.BACKGROUND: (0.35,),
+    QualityPreset.GAMEPLAY: (0.50, 0.20),
+    QualityPreset.HERO: (0.50, 0.20),
 }
 
 
@@ -248,7 +252,9 @@ def get_profile(
         resolved_type = infer_asset_type(prompt, filename)
     resolved_quality = QualityPreset(quality)
     target_min, target_max, target = QUALITY_TRIANGLES[resolved_quality]
-    size = texture_size or (4096 if resolved_quality is QualityPreset.HERO else 2048)
+    # 2048 is the validated default.  4096 remains available only as an explicit request until a
+    # complete 4K run passes the same memory and export gates on the 6 GB target card.
+    size = texture_size or 2048
     size = min(4096, max(512, int(size)))
     padding = max(4, round(size / 256))
     base = dict(_BASE[resolved_type])
