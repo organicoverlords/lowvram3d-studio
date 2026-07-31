@@ -12,21 +12,35 @@ $ProgressPreference = "SilentlyContinue"
 function Require-Administrator {
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = [Security.Principal.WindowsPrincipal]::new($identity)
-    if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        $args = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -Repository `"$Repository`" -RunnerRoot `"$RunnerRoot`" -RunnerName `"$RunnerName`""
-        Start-Process powershell.exe -Verb RunAs -ArgumentList $args
-        exit 0
+    if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        return
     }
+
+    $arguments = @(
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-File", ('"{0}"' -f $PSCommandPath),
+        "-Repository", ('"{0}"' -f $Repository),
+        "-RunnerRoot", ('"{0}"' -f $RunnerRoot),
+        "-RunnerName", ('"{0}"' -f $RunnerName)
+    ) -join " "
+
+    $child = Start-Process powershell.exe -Verb RunAs -ArgumentList $arguments -Wait -PassThru
+    if ($child.ExitCode -ne 0) {
+        throw "Elevated worker registration failed with exit code $($child.ExitCode)."
+    }
+    exit 0
 }
 
 function Ensure-GitHubCli {
     $gh = Get-Command gh.exe -ErrorAction SilentlyContinue
     if ($gh) { return $gh.Source }
+    $candidate = "$env:ProgramFiles\GitHub CLI\gh.exe"
+    if (Test-Path $candidate) { return $candidate }
     $winget = Get-Command winget.exe -ErrorAction SilentlyContinue
     if (-not $winget) { throw "GitHub CLI is missing and winget is unavailable." }
     & $winget.Source install --id GitHub.cli --exact --accept-package-agreements --accept-source-agreements
     if ($LASTEXITCODE -ne 0) { throw "GitHub CLI installation failed." }
-    $candidate = "$env:ProgramFiles\GitHub CLI\gh.exe"
     if (-not (Test-Path $candidate)) { throw "GitHub CLI installed but gh.exe was not found." }
     return $candidate
 }
@@ -96,8 +110,13 @@ $principal = New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -Ru
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero)
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
 Start-ScheduledTask -TaskName $taskName
-Start-Sleep -Seconds 5
+Start-Sleep -Seconds 8
+
+$task = Get-ScheduledTask -TaskName $taskName
+if ($task.State -notin @("Running", "Ready")) {
+    throw "Runner scheduled task did not start correctly. State: $($task.State)"
+}
 
 Write-Host "GitHub worker registered and started: $RunnerName" -ForegroundColor Green
 Write-Host "Labels: self-hosted, Windows, X64, lowvram3d-pc, gtx1660s, blender52, windows10" -ForegroundColor Green
-Write-Host "The queued shaman image-to-3D workflow can now be accepted by this PC." -ForegroundColor Cyan
+Write-Host "The corrected shaman PNG workflow is already queued on the dedicated worker branch." -ForegroundColor Cyan
