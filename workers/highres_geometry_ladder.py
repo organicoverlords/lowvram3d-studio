@@ -1,4 +1,4 @@
-"""Run the high-resolution-master geometry phase with bounded descending candidates."""
+"""Run clean-master cleanup, measured descending LOD selection, and LOD derivation."""
 from __future__ import annotations
 
 import argparse
@@ -245,42 +245,48 @@ def main() -> None:
         selection = "clean_master_fallback_no_candidate_passed" if budgets else "clean_master_within_lod_envelope"
 
     selected_lod0 = geometry_dir / "selected_lod0.glb"
+    final_mesh = geometry_dir / "game_ready_untextured.glb"
     shutil.copy2(selected_source, selected_lod0)
+    shutil.copy2(selected_lod0, final_mesh)
+    if sha256(selected_lod0) != sha256(final_mesh):
+        raise RuntimeError("selected LOD0 was not preserved byte-identically")
+
     lod1 = geometry_dir / "lod1.glb"
     lod2 = geometry_dir / "lod2.glb"
-    final_stats = reports_dir / "selected_lod_generation.json"
-    final_mesh = geometry_dir / "game_ready_untextured.glb"
-    actual_faces = int(selected["face_count"])
-    final_command = [
-        str(Path(args.blender).resolve()),
-        "--background",
-        "--python-use-system-env",
-        "--python", str(repo / "blender" / "optimize_asset.py"),
-        "--",
-        "--input", str(selected_lod0),
-        "--output", str(final_mesh),
-        "--stats", str(final_stats),
-        "--asset-type", asset_type,
-        "--target-triangles", str(actual_faces),
-        "--target-min", str(max(1, round(actual_faces * 0.95))),
-        "--target-max", str(max(1, round(actual_faces * 1.05))),
-        "--budget-mode", profile.budget_mode,
-        "--per-object-target", str(max(profile.per_object_target, actual_faces)),
-        "--planar-angle-deg", "0.0",
-        "--lod1", str(lod1),
-        "--lod2", str(lod2),
-        "--lod-ratios", ",".join(str(value) for value in profile.lod_ratios),
-        "--lod-count", str(profile.lod_count),
-    ]
-    run_process(
-        "materialize_selected_lods",
-        final_command,
-        cwd=repo,
-        env=env,
-        logs_dir=logs,
-        timeout=7200,
-    )
+    lod_report = reports_dir / "selected_lod_generation.json"
+    if profile.lod_count > 0:
+        lod_command = [
+            str(Path(args.blender).resolve()),
+            "--background",
+            "--python-use-system-env",
+            "--python", str(repo / "blender" / "generate_lods.py"),
+            "--",
+            "--input", str(selected_lod0),
+            "--report", str(lod_report),
+            "--lod1", str(lod1),
+            "--lod2", str(lod2),
+            "--lod-ratios", ",".join(str(value) for value in profile.lod_ratios),
+            "--lod-count", str(profile.lod_count),
+        ]
+        run_process(
+            "generate_secondary_lods",
+            lod_command,
+            cwd=repo,
+            env=env,
+            logs_dir=logs,
+            timeout=7200,
+        )
+        expected_lods = [lod1, lod2][: profile.lod_count]
+        missing = [str(path) for path in expected_lods if not path.is_file()]
+        if missing:
+            raise RuntimeError(f"secondary LOD generation missed: {missing}")
+    else:
+        lod_report.write_text(
+            json.dumps({"success": True, "input": str(selected_lod0), "lods": []}, indent=2),
+            encoding="utf-8",
+        )
 
+    actual_faces = int(selected["face_count"])
     result = {
         "success": True,
         "benchmark_fixture": fixture.as_dict() if fixture else None,
@@ -301,6 +307,8 @@ def main() -> None:
         "selected_lod0_sha256": sha256(selected_lod0),
         "game_ready_untextured": str(final_mesh),
         "game_ready_untextured_sha256": sha256(final_mesh),
+        "lod0_byte_identical_to_selected": True,
+        "lod_report": str(lod_report),
         "lod1": str(lod1) if lod1.is_file() else None,
         "lod2": str(lod2) if lod2.is_file() else None,
         "external_inference_calls": 0,
