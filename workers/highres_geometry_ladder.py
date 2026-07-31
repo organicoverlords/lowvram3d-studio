@@ -155,77 +155,78 @@ def main() -> None:
         max_candidates=max(1, min(args.max_candidates, 9)),
     )
     budgets = [plan.target_faces for plan in plans]
-    if not budgets:
-        shutil.copy2(clean_master, geometry_dir / "selected_lod0.glb")
-        raise RuntimeError("clean master is already below the minimum candidate floor; no ladder generated")
+    evaluations: list[dict] = []
 
-    candidate_manifest = reports_dir / "candidate_generation.json"
-    blender_command = [
-        str(Path(args.blender).resolve()),
-        "--background",
-        "--python-use-system-env",
-        "--python", str(repo / "blender" / "optimize_ladder_candidates.py"),
-        "--",
-        "--input", str(clean_master),
-        "--output-dir", str(candidate_dir),
-        "--manifest", str(candidate_manifest),
-        "--asset-type", asset_type,
-        "--budgets", ",".join(str(value) for value in budgets),
-        "--budget-mode", profile.budget_mode,
-        "--per-object-target", str(profile.per_object_target),
-        "--planar-angle-deg", str(profile.planar_angle_deg),
-    ]
-    run_process(
-        "generate_lod_candidates",
-        blender_command,
-        cwd=repo,
-        env=env,
-        logs_dir=logs,
-        timeout=14_400,
-    )
-    generated = json.loads(candidate_manifest.read_text(encoding="utf-8"))
-
-    evaluations = []
-    passed_once = False
-    consecutive_failures = 0
-    for item in generated["candidates"]:
-        candidate_path = Path(item["path"])
-        name = candidate_path.stem
-        comparison_report = reports_dir / f"compare_{name}.json"
-        compare_command = [
-            sys.executable,
-            str(repo / "workers" / "geometry_compare.py"),
-            "--master", str(clean_master),
-            "--candidate", str(candidate_path),
-            "--report", str(comparison_report),
-            "--asset-family", family.value,
-            "--quality", args.quality,
-            "--samples", str(max(20_000, args.samples)),
-            "--silhouette-size", str(max(128, args.silhouette_size)),
-            "--name", name,
+    if budgets:
+        candidate_manifest = reports_dir / "candidate_generation.json"
+        blender_command = [
+            str(Path(args.blender).resolve()),
+            "--background",
+            "--python-use-system-env",
+            "--python", str(repo / "blender" / "optimize_ladder_candidates.py"),
+            "--",
+            "--input", str(clean_master),
+            "--output-dir", str(candidate_dir),
+            "--manifest", str(candidate_manifest),
+            "--asset-type", asset_type,
+            "--budgets", ",".join(str(value) for value in budgets),
+            "--budget-mode", profile.budget_mode,
+            "--per-object-target", str(profile.per_object_target),
+            "--planar-angle-deg", str(profile.planar_angle_deg),
         ]
-        code = run_process(
-            f"compare_{name}",
-            compare_command,
+        run_process(
+            "generate_lod_candidates",
+            blender_command,
             cwd=repo,
             env=env,
             logs_dir=logs,
-            timeout=7200,
-            accepted_exit_codes={0, 2},
+            timeout=14_400,
         )
-        comparison = json.loads(comparison_report.read_text(encoding="utf-8"))
-        evaluation = comparison["evaluation"]
-        evaluation["path"] = str(candidate_path)
-        evaluation["report"] = str(comparison_report)
-        evaluations.append(evaluation)
-        if code == 0 and evaluation["valid"]:
-            passed_once = True
-            consecutive_failures = 0
-        else:
-            consecutive_failures += 1
-        if passed_once and consecutive_failures >= 2:
-            print("STATUS stage=compare_candidates state=stopped reason=two_consecutive_quality_failures", flush=True)
-            break
+        generated = json.loads(candidate_manifest.read_text(encoding="utf-8"))
+
+        passed_once = False
+        consecutive_failures = 0
+        for item in generated["candidates"]:
+            candidate_path = Path(item["path"])
+            name = candidate_path.stem
+            comparison_report = reports_dir / f"compare_{name}.json"
+            compare_command = [
+                sys.executable,
+                str(repo / "workers" / "geometry_compare.py"),
+                "--master", str(clean_master),
+                "--candidate", str(candidate_path),
+                "--report", str(comparison_report),
+                "--asset-family", family.value,
+                "--quality", args.quality,
+                "--samples", str(max(20_000, args.samples)),
+                "--silhouette-size", str(max(128, args.silhouette_size)),
+                "--name", name,
+            ]
+            code = run_process(
+                f"compare_{name}",
+                compare_command,
+                cwd=repo,
+                env=env,
+                logs_dir=logs,
+                timeout=7200,
+                accepted_exit_codes={0, 2},
+            )
+            comparison = json.loads(comparison_report.read_text(encoding="utf-8"))
+            evaluation = comparison["evaluation"]
+            evaluation["path"] = str(candidate_path)
+            evaluation["report"] = str(comparison_report)
+            evaluations.append(evaluation)
+            if code == 0 and evaluation["valid"]:
+                passed_once = True
+                consecutive_failures = 0
+            else:
+                consecutive_failures += 1
+            if passed_once and consecutive_failures >= 2:
+                print(
+                    "STATUS stage=compare_candidates state=stopped reason=two_consecutive_quality_failures",
+                    flush=True,
+                )
+                break
 
     valid = [evaluation for evaluation in evaluations if evaluation["valid"]]
     if valid:
@@ -241,7 +242,7 @@ def main() -> None:
             "errors": [],
         }
         selected_source = clean_master
-        selection = "clean_master_fallback_no_candidate_passed"
+        selection = "clean_master_fallback_no_candidate_passed" if budgets else "clean_master_within_lod_envelope"
 
     selected_lod0 = geometry_dir / "selected_lod0.glb"
     shutil.copy2(selected_source, selected_lod0)
@@ -264,7 +265,7 @@ def main() -> None:
         "--target-min", str(max(1, round(actual_faces * 0.95))),
         "--target-max", str(max(1, round(actual_faces * 1.05))),
         "--budget-mode", profile.budget_mode,
-        "--per-object-target", str(profile.per_object_target),
+        "--per-object-target", str(max(profile.per_object_target, actual_faces)),
         "--planar-angle-deg", "0.0",
         "--lod1", str(lod1),
         "--lod2", str(lod2),
