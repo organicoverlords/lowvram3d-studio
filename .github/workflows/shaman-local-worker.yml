@@ -7,6 +7,7 @@ on:
       - infra/windows-self-hosted-runner-20260731
     paths:
       - .github/workflows/shaman-local-worker.yml
+      - scripts/register-local-github-worker.ps1
       - scripts/run-shaman-image-to-3d.ps1
       - workers/run_full_image.py
 
