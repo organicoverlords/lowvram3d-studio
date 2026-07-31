@@ -71,7 +71,9 @@ def run_raster_texture_route(
     progress = candidate / "raster-progress.json"
     project_report = candidate / "raster_report.json"
     atlas = candidate / "basecolor.png"
-    atlas_size = min(int(engine.config.texture_size), 1024)
+    # The production run has now validated 2048 end-to-end.  The previous hard 1024 cap silently
+    # discarded the profile's requested quality even when config.texture_size was 2048.
+    atlas_size = min(max(int(engine.config.texture_size), 512), 2048)
     engine._command_stage(
         "raster_project_v2",
         [
@@ -137,6 +139,7 @@ def run_raster_texture_route(
                 "candidate_texture": str(atlas),
                 "output_glb": str(output),
                 "output_texture": str(texture),
+                "atlas_size": atlas_size,
                 "cleanup_mode": cleanup_mode,
                 "geometry_validation": str(validation_report),
             },
