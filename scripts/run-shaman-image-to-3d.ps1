@@ -57,6 +57,12 @@ function Get-ImageDimensions([string]$Path) {
     }
 }
 
+function Copy-DiagnosticDirectory([string]$Source, [string]$Name) {
+    if (-not $Source -or -not (Test-Path -LiteralPath $Source)) { return }
+    $destination = Join-Path $ArtifactDir $Name
+    Copy-Item -LiteralPath $Source -Destination $destination -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 if (-not (Test-Path -LiteralPath $ImagePath)) { throw "Shaman source image is missing: $ImagePath" }
 $actualHash = (Get-FileHash -LiteralPath $ImagePath -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($actualHash -ne $ExpectedSha256.ToLowerInvariant()) {
@@ -111,10 +117,28 @@ $prompt = "Antlered bird-shaman character, preserve the exact silhouette, beak, 
     --animation-preset idle
 $exitCode = $LASTEXITCODE
 
-Copy-Item (Join-Path $OutputDir "run_result.json") $ArtifactDir -Force -ErrorAction SilentlyContinue
+$resultPath = Join-Path $OutputDir "run_result.json"
+Copy-Item -LiteralPath $resultPath -Destination $ArtifactDir -Force -ErrorAction SilentlyContinue
 if (Test-Path (Join-Path $OutputDir "deliverable")) {
     Copy-Item (Join-Path $OutputDir "deliverable") (Join-Path $ArtifactDir "deliverable") -Recurse -Force
 }
 
-if ($exitCode -ne 0) { throw "Shaman image-to-3D pipeline failed with exit code $exitCode. See $OutputDir\run_result.json" }
+if (Test-Path -LiteralPath $resultPath) {
+    try {
+        $runResult = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+        $jobDir = [string]$runResult.job_dir
+        if ($jobDir) {
+            Set-Content -LiteralPath (Join-Path $ArtifactDir "job_dir.txt") -Value $jobDir -Encoding utf8
+            Copy-DiagnosticDirectory (Join-Path $jobDir "logs") "job-logs"
+            Copy-DiagnosticDirectory (Join-Path $jobDir "proof") "job-proof"
+            Copy-DiagnosticDirectory (Join-Path $jobDir "reports") "job-reports"
+            Copy-DiagnosticDirectory (Join-Path $jobDir "highres_geometry\logs") "highres-logs"
+            Copy-DiagnosticDirectory (Join-Path $jobDir "highres_geometry\reports") "highres-reports"
+        }
+    } catch {
+        Set-Content -LiteralPath (Join-Path $ArtifactDir "diagnostic-copy-error.txt") -Value $_.Exception.ToString() -Encoding utf8
+    }
+}
+
+if ($exitCode -ne 0) { throw "Shaman image-to-3D pipeline failed with exit code $exitCode. See $resultPath" }
 Write-Host "SHAMAN_RUN_PASSED output=$OutputDir artifact=$ArtifactDir" -ForegroundColor Green
