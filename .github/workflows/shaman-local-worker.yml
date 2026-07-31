@@ -1,4 +1,5 @@
 name: Shaman geometry-first pipeline on local PC
+run-name: Shaman geometry iteration ${{ github.run_id }}
 
 on:
   workflow_dispatch:
@@ -11,6 +12,8 @@ on:
       - workers/run_geometry_iteration.py
       - blender/geometry_iteration_validate.py
       - workers/comfyui_mini_turbo.py
+      - workers/proxy_generate.py
+      - src/lowvram3d/comfyui_client.py
       - src/lowvram3d/pipeline.py
       - src/lowvram3d/avatar.py
 
@@ -24,7 +27,7 @@ concurrency:
 jobs:
   geometry-first:
     if: github.repository_owner == 'organicoverlords'
-    runs-on: [self-hosted, Windows, X64, lowvram3d-pc]
+    runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 120
     steps:
       - name: Checkout exact worker branch
@@ -55,6 +58,8 @@ jobs:
           $env:PYTHONPATH = "$PWD\src;$PWD"
           & $python -m py_compile `
             workers\run_geometry_iteration.py `
+            workers\proxy_generate.py `
+            src\lowvram3d\comfyui_client.py `
             blender\geometry_iteration_validate.py
           if ($LASTEXITCODE -ne 0) {
             throw "Geometry iteration Python preflight failed with exit code $LASTEXITCODE"
