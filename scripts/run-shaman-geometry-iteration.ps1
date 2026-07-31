@@ -105,6 +105,14 @@ $config = Resolve-PipelineConfig
 $env:PYTHONPATH = "$RepoRoot\src;$RepoRoot"
 $env:PYTHONUNBUFFERED = "1"
 
+# Mini Turbo is currently failing to return a mesh on this installation. The bounded geometry
+# iteration therefore selects the installed TripoSR lane explicitly and raises only its marching-
+# cubes detail. Normal production fallback behaviour remains unchanged outside this workflow.
+$env:LOWVRAM3D_PROXY_BACKEND = "triposr"
+$env:LOWVRAM3D_TRIPOSR_MC = "384"
+$env:LOWVRAM3D_TRIPOSR_CHUNK = "1024"
+Write-Host "Geometry fallback: TripoSR mc=$env:LOWVRAM3D_TRIPOSR_MC chunk=$env:LOWVRAM3D_TRIPOSR_CHUNK" -ForegroundColor Cyan
+
 $prompt = @"
 Antlered bird-shaman character. Preserve the source silhouette, upright body, avian head and beak,
 broad branching antlers, layered feathers and robes, ornaments, separate arms and legs, and the
