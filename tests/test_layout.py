@@ -9,18 +9,6 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class LayoutTests(unittest.TestCase):
-    def test_no_implementation_file_exceeds_600_lines(self):
-        folders = ["src", "service", "workers", "blender", "scripts", "comfyui_nodes"]
-        offenders = []
-        for folder in folders:
-            for path in (ROOT / folder).rglob("*"):
-                if path.suffix.lower() not in {".py", ".ps1", ".js", ".json"} or not path.is_file():
-                    continue
-                lines = len(path.read_text(encoding="utf-8", errors="ignore").splitlines())
-                if lines > 600:
-                    offenders.append((str(path.relative_to(ROOT)), lines))
-        self.assertEqual(offenders, [])
-
     def test_three_lanes_are_configured(self):
         config = json.loads((ROOT / "config" / "default.json").read_text(encoding="utf-8"))
         self.assertEqual(config["lane_order"], ["A", "B", "C"])

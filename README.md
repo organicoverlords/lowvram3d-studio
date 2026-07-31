@@ -2,17 +2,20 @@
 
 A resumable, proof-first local 3D production pipeline for Windows 10, GTX 1660 SUPER 6 GB, and 16 GB RAM. **3D Gen Studio is the control layer.**
 
+Read `docs/CURRENT_STATE.md` before changing the active high-resolution route. It records the TurboBird reference success, the verified shaman source, the latest failed-run evidence, and the current preserve-first cleanup policy.
+
 ## One-click paths
 
 ```text
 Source image or high-poly GLB
 → Mini Turbo geometry when starting from an image
-→ import and validation
-→ class-specific component analysis and geometric splitting
+→ import and topology validation
+→ conservative component audit
+→ preserve the original mesh when audit evidence is ambiguous
 → guarded 3D Gen Studio Auto Retopo/Auto UV or object-aware Blender fallback
-→ source-aware high-to-low PBR transfer
+→ measured LOD selection and source-aware PBR transfer
 → optional class-specific rig and animations
-→ LODs, collision, sockets, GLB/FBX, previews
+→ collision, sockets, GLB/FBX and previews
 → clean Blender re-import validation
 ```
 
@@ -29,6 +32,18 @@ Supported classes:
 - Level / world chunk
 
 The package registers Auto Class, class-specific one-click generation providers, and class-specific post-processing providers in 3D Gen Studio.
+
+## Core production principle
+
+TurboBird is the user's first real successful result and the current qualitative reference. New gates must detect demonstrated corruption without rejecting a useful TurboBird-class mesh merely because a classifier is uncertain.
+
+Component cleanup therefore distinguishes **damage** from **ambiguity**:
+
+- subprocess failure, invalid artifacts, changed main geometry, or increased boundary/non-manifold edges fail closed;
+- unresolved component classification alone is recorded as a warning and `manual_review_required=true`;
+- when topology remains safe, the generated master is preserved byte-for-byte and downstream LOD, texture, rig/export and independent validation continue.
+
+See `docs/CURRENT_STATE.md` for the exact proof boundary.
 
 ## Human avatar mode
 
@@ -103,10 +118,12 @@ See `docs/UPSTREAM_SETTINGS.md` for the complete profile settings.
 
 - Avatar/character/creature bodies remain continuous rather than being split into rigid limbs.
 - Avatar source alpha is preserved through view creation instead of being removed twice.
+- Ambiguous tiny character/creature components do not block a topology-safe generated master.
 - Vehicles preserve detached wheels and likely movable rigid parts.
 - Buildings and rooms preserve openings and receive a lightmap UV.
 - Scenes and levels use per-object budgets and spatial manifests instead of one global triangle target.
 - Studio Auto Retopo/UV is guarded because its service flattens a multi-mesh scene into one mesh.
+- Rigging or pose normalization must never overwrite a valid unrigged asset when they fail.
 
 ## Output
 
@@ -143,10 +160,14 @@ preprocess/avatar_report.json
 
 ## Current proof status
 
-- Mini Turbo geometry on the target GTX 1660 SUPER: **PROVEN by the user’s prior run**.
+- TurboBird: **USER-VALIDATED QUALITATIVE REFERENCE** and the project's first real successful result. Its exact canonical hashes and quantitative receipt still need consolidation.
+- Mini Turbo geometry on the target GTX 1660 SUPER: **PROVEN by local successful generation**, including the shaman run reaching a valid 55,684-face manifold mesh.
+- Verified shaman source PNG identity and Windows self-hosted runner execution: **PROVEN**.
+- Full shaman route through LOD, texture, rigging, final export and visual validation: **NOT PROVEN yet**.
+- Preserve-original-on-audit-ambiguity policy: **IMPLEMENTED AND TARGET-TESTED**, pending proof in the replacement full run.
 - TripoSR CPU marching-cubes compatibility on the target PC: **PROVEN by the resumed installer**.
 - Resume contracts, foreground-mask mathematics, source-alpha preservation, source appearance forwarding, animation validation, class profiles, Studio registration, installer checkpoints, and command ordering: **UNIT/INTEGRATION-TESTED**.
 - Control-service `/health` startup and clean shutdown in the build container: **SMOKE-TESTED**.
-- Photorealistic identity, real Blender bake, final dance deformation, and clean target-PC avatar export: **NOT PROVEN yet**.
+- A-pose policy and normalizer exist, but main-route integration and Blender/Unreal deformation quality: **NOT PROVEN yet**.
 - Automatic organic weights require visual inspection before shipping.
 - P3-SAM remains experimental and disabled by default.
