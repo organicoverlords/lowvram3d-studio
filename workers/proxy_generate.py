@@ -39,12 +39,13 @@ def run_triposr(python: str, root: Path, image: Path, output: Path) -> bool:
     # OBJ even when the filename ends in .glb, producing a file no glTF reader accepts. The
     # Blender stages bake PBR maps from the source image anyway, so the vertex-coloured
     # trimesh GLB export is both valid and sufficient as the high-poly source.
-    # Marching-cubes resolution drives the face count of every downstream stage, so it is the
-    # single most effective knob for a fast smoke run. 192 is the production default.
+    # Marching-cubes resolution drives the face count of every downstream stage. 192 remains the
+    # production fallback default, while bounded geometry experiments may raise it explicitly.
     mc_resolution = os.environ.get("LOWVRAM3D_TRIPOSR_MC", "192")
+    chunk_size = os.environ.get("LOWVRAM3D_TRIPOSR_CHUNK", "1024")
     subprocess.check_call([
         python, str(root / "run.py"), str(image), "--output-dir", str(work),
-        "--chunk-size", "1024", "--mc-resolution", mc_resolution,
+        "--chunk-size", chunk_size, "--mc-resolution", mc_resolution,
         "--model-save-format", "glb",
     ], cwd=str(root))
     result = newest_glb(work)
@@ -66,11 +67,33 @@ def main() -> None:
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     image = Path(args.input_image)
-    if run_sf3d(args.sf3d_python, Path(args.sf3d_root), image, output):
-        return
-    if run_triposr(args.tripo_python, Path(args.tripo_root), image, output):
-        return
-    raise RuntimeError("No usable SF3D or TripoSR fallback installation was found")
+
+    preference = os.environ.get("LOWVRAM3D_PROXY_BACKEND", "auto").strip().lower()
+    if preference not in {"auto", "sf3d", "triposr"}:
+        raise RuntimeError(
+            "LOWVRAM3D_PROXY_BACKEND must be one of auto, sf3d or triposr; "
+            f"got {preference!r}"
+        )
+
+    if preference == "triposr":
+        if run_triposr(args.tripo_python, Path(args.tripo_root), image, output):
+            return
+        if run_sf3d(args.sf3d_python, Path(args.sf3d_root), image, output):
+            return
+    elif preference == "sf3d":
+        if run_sf3d(args.sf3d_python, Path(args.sf3d_root), image, output):
+            return
+        if run_triposr(args.tripo_python, Path(args.tripo_root), image, output):
+            return
+    else:
+        if run_sf3d(args.sf3d_python, Path(args.sf3d_root), image, output):
+            return
+        if run_triposr(args.tripo_python, Path(args.tripo_root), image, output):
+            return
+
+    raise RuntimeError(
+        f"No usable SF3D or TripoSR fallback installation was found for preference {preference}"
+    )
 
 
 if __name__ == "__main__":

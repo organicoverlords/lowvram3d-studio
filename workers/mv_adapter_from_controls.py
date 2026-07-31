@@ -3,13 +3,21 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import time
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from lowvram3d.view_validation import validate_generated_views, view_statistics
+
 VIEW_ORDER = ("front", "right", "back", "left", "top", "bottom")
+# top/bottom are excluded: raster_cleanup_extract.py never rasterises them, so they are not
+# load-bearing for texturing and should not gate the worker.
+REQUIRED_VIEWS = ("front", "right", "back", "left")
 
 
 def image_tensor(torch, path: Path):
@@ -107,19 +115,53 @@ def main() -> None:
         control_conditioning_scale=1.0,
         negative_prompt="watermark, text, deformed, noisy, blurry, inconsistent materials, unrelated details",
         generator=generator,
+        # Take float arrays rather than PIL images. diffusers converts with
+        # (images * 255).round().astype("uint8"), and NaN casts silently to 0 -- so by the time we
+        # hold PIL images, a non-finite generation is indistinguishable from a legitimately black
+        # one. Keeping the floats lets the finiteness check below see the actual failure.
+        output_type="np",
     ).images
+    duration = round(time.time() - started, 2)
+
+    views = {name: array for name, array in zip(VIEW_ORDER, result)}
+    problems = validate_generated_views(views, REQUIRED_VIEWS)
+    statistics = {name: view_statistics(array) for name, array in views.items()}
+
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    for name, image in zip(VIEW_ORDER, result):
+
+    if problems:
+        # Write the receipt describing the failure, then exit non-zero. The images are deliberately
+        # NOT written: a previous run left six black PNGs on disk beside "success": true, and every
+        # later stage consumed them as if they were real renders.
+        (output_dir / "worker_receipt.json").write_text(json.dumps({
+            "success": False,
+            "backend": "mv_adapter_sd21_tg2mv",
+            "error": "generated view validation failed",
+            "problems": problems,
+            "view_statistics": statistics,
+            "view_order": VIEW_ORDER,
+            "duration_seconds": duration,
+            "torch_version": torch.__version__,
+            "cuda_version": torch.version.cuda,
+            "device": torch.cuda.get_device_name(0),
+        }, indent=2), encoding="utf-8")
+        for problem in problems:
+            print(f"MV_ADAPTER_INVALID {problem}", file=sys.stderr, flush=True)
+        raise SystemExit(1)
+
+    images = [Image.fromarray(np.clip(array * 255.0, 0, 255).astype("uint8")) for array in result]
+    for name, image in zip(VIEW_ORDER, images):
         image.save(output_dir / f"{name}.png")
-    width, height = result[0].size
-    contact = Image.new("RGB", (width * len(result), height))
-    for index, image in enumerate(result):
+    width, height = images[0].size
+    contact = Image.new("RGB", (width * len(images), height))
+    for index, image in enumerate(images):
         contact.paste(image, (index * width, 0))
     contact.save(output_dir / "contact_sheet.png")
     (output_dir / "worker_receipt.json").write_text(json.dumps({
         "success": True,
         "backend": "mv_adapter_sd21_tg2mv",
+        "view_statistics": statistics,
         "view_order": VIEW_ORDER,
         "duration_seconds": round(time.time() - started, 2),
         "torch_version": torch.__version__,
