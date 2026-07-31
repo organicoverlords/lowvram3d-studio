@@ -1,110 +1,127 @@
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from lowvram3d.component_audit import AuditConfig
 from workers.component_audit_cleanup import (
-    _micro_retry_candidates,
-    _strict_micro_retry_config,
+    _ambiguity_only,
+    _topology_safe,
     run_cleanup,
 )
 
 
-def unresolved_result(*, source_support: float = 0.0, area_fraction: float = 0.0012) -> dict:
+def audit_result(*, errors: list[str], boundary_after: int = 0) -> dict:
     return {
-        "success": False,
-        "errors": [
-            "cleanup did not converge within max_passes",
-            "1 visible components remain audit-required",
-        ],
-        "final_audit": {
-            "decisions": [
-                {
-                    "component_id": 32,
-                    "signature": "micro-fragment",
-                    "action": "AUDIT_REQUIRED",
-                    "area_fraction": area_fraction,
-                    "nearest_distance_diag": 0.045,
-                    "elongation": 1.4,
-                    "projection": {
-                        "source_support_percent": source_support,
-                        "island_views": 8,
-                        "gap_views": 8,
-                        "aggregate_outside_percent": 75.0,
-                        "depth_separated_views": 4,
-                        "overlap_views": 4,
-                        "median_depth_gap_diag": 0.17,
-                    },
-                }
-            ]
+        "success": not errors,
+        "errors": errors,
+        "warnings": [],
+        "output": "unused.glb",
+        "topology_before": {
+            "faces": 100,
+            "boundary_edges": 0,
+            "non_manifold_edges": 0,
         },
+        "topology_after": {
+            "faces": 96,
+            "boundary_edges": boundary_after,
+            "non_manifold_edges": 0,
+        },
+        "faces_removed": 4,
+        "faces_removed_percent": 4.0,
+        "main_component_faces_before": 80,
+        "main_component_faces_after": 80,
+        "passes": [{}],
+        "final_audit": {"audit_required_count": 2, "decisions": []},
     }
 
 
-class MicroDebrisEligibilityTests(unittest.TestCase):
-    def test_tiny_unsupported_character_fragment_is_eligible(self):
-        candidates = _micro_retry_candidates(unresolved_result(), "character")
-        self.assertEqual([item["signature"] for item in candidates], ["micro-fragment"])
-
-    def test_source_supported_fragment_is_not_eligible(self):
-        self.assertEqual(
-            _micro_retry_candidates(unresolved_result(source_support=12.0), "character"),
-            [],
+class AmbiguityPolicyTests(unittest.TestCase):
+    def test_expected_audit_ambiguity_is_classified(self):
+        result = audit_result(
+            errors=[
+                "cleanup did not converge within max_passes",
+                "2 visible components remain audit-required",
+            ]
         )
+        self.assertTrue(_ambiguity_only(result))
+        self.assertTrue(_topology_safe(result))
 
-    def test_larger_fragment_is_not_eligible(self):
-        self.assertEqual(
-            _micro_retry_candidates(unresolved_result(area_fraction=0.01), "creature"),
-            [],
+    def test_unrelated_process_error_is_not_ambiguity(self):
+        result = audit_result(errors=["worker process crashed"])
+        self.assertFalse(_ambiguity_only(result))
+
+    def test_topology_regression_is_not_safe(self):
+        result = audit_result(
+            errors=["2 visible components remain audit-required"],
+            boundary_after=3,
         )
-
-    def test_non_organic_asset_never_uses_retry(self):
-        self.assertEqual(_micro_retry_candidates(unresolved_result(), "prop"), [])
+        self.assertFalse(_topology_safe(result))
 
 
-class MicroDebrisRetryTests(unittest.TestCase):
-    def test_retry_raises_sampling_without_widening_area_cap(self):
-        baseline = AuditConfig(min_component_samples=128, max_component_samples=8192)
-        strict = _strict_micro_retry_config(baseline)
-        self.assertGreaterEqual(strict.min_component_samples, 1024)
-        self.assertGreaterEqual(strict.max_component_samples, 16_384)
-        self.assertGreaterEqual(strict.max_passes, 6)
-        self.assertEqual(strict.outboard_views, 6)
-        self.assertEqual(strict.gap_views, 6)
-        self.assertLessEqual(strict.outboard_max_area_fraction, 0.003)
+class PreserveOriginalTests(unittest.TestCase):
+    def test_safe_ambiguity_preserves_original_bytes_and_continues(self):
+        baseline = audit_result(
+            errors=[
+                "cleanup did not converge within max_passes",
+                "2 visible components remain audit-required",
+            ]
+        )
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "source.glb"
+            output = root / "clean.glb"
+            payload = b"turbo-bird-class-valid-glb"
+            source.write_bytes(payload)
+            with patch(
+                "workers.component_audit_cleanup.audit_and_cleanup",
+                return_value=baseline,
+            ):
+                result = run_cleanup(
+                    str(source),
+                    str(output),
+                    asset_type="character",
+                    source_image=None,
+                    config=AuditConfig(),
+                    seed=0,
+                )
 
-    def test_run_cleanup_retries_once_from_original_input(self):
-        baseline = unresolved_result()
-        passed = {
-            "success": True,
-            "errors": [],
-            "topology_before": {"faces": 100, "boundary_edges": 0},
-            "topology_after": {"faces": 96, "boundary_edges": 0},
-            "faces_removed_percent": 4.0,
-            "passes": [{}],
-        }
-        config = AuditConfig()
-        with patch(
-            "workers.component_audit_cleanup.audit_and_cleanup",
-            side_effect=[baseline, passed],
-        ) as mocked:
-            result = run_cleanup(
-                "source.glb",
-                "clean.glb",
-                asset_type="character",
-                source_image="source.png",
-                config=config,
-                seed=0,
-            )
         self.assertTrue(result["success"])
-        self.assertEqual(mocked.call_count, 2)
+        self.assertEqual(output.read_bytes() if output.exists() else payload, payload)
+        self.assertEqual(result["faces_removed"], 0)
+        self.assertTrue(result["manual_review_required"])
         self.assertEqual(
             result["audit_policy"]["selected"],
-            "strict_micro_debris_retry",
+            "preserve_original_on_audit_ambiguity",
         )
-        second_config = mocked.call_args_list[1].kwargs["config"]
-        self.assertGreaterEqual(second_config.min_component_samples, 1024)
+
+    def test_real_topology_regression_still_fails(self):
+        baseline = audit_result(
+            errors=["2 visible components remain audit-required"],
+            boundary_after=4,
+        )
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "source.glb"
+            output = root / "clean.glb"
+            source.write_bytes(b"mesh")
+            with patch(
+                "workers.component_audit_cleanup.audit_and_cleanup",
+                return_value=baseline,
+            ):
+                result = run_cleanup(
+                    str(source),
+                    str(output),
+                    asset_type="character",
+                    source_image=None,
+                    config=AuditConfig(),
+                    seed=0,
+                )
+        self.assertFalse(result["success"])
+        self.assertFalse(output.exists())
+        self.assertEqual(result["audit_policy"]["selected"], "hard_failure")
 
 
 if __name__ == "__main__":
