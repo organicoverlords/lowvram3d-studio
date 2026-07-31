@@ -1,19 +1,28 @@
-"""UV unwrap the shaman LOD0 and measure the result honestly.
+"""UV unwrap shaman LOD0 and validate it with exact positive-area overlap.
 
-Smart UV Project is used rather than seam-and-unwrap because there is no authored seam set on a
-generated mesh. The metrics that matter for a 4K atlas are reported rather than assumed: true
-triangle overlap measured by rasterising the charts, atlas utilisation, and any degenerate or
-non-finite UV.
+The acceptance gate deliberately does not rasterise every triangle into a 4K occupancy grid.
+That approach is both slow on a 220k-triangle mesh and mathematically unsound as an overlap test:
+shared chart edges and sub-texel boundary rounding distort the result. Atlas utilisation is
+computed from analytic triangle area, while bake safety is decided only by exact positive-area
+triangle intersections from ``lowvram3d.uv_overlap``.
 """
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import bpy
 import numpy as np
 
 from common import argv_after_double_dash, import_mesh, reset_scene, save_json
+
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_SRC_ROOT = _REPO_ROOT / "src"
+if str(_SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(_SRC_ROOT))
+
+from lowvram3d.uv_overlap import positive_area_uv_overlaps
 
 
 def weld(obj: bpy.types.Object, merge_distance: float) -> None:
@@ -32,6 +41,7 @@ def unwrap(obj: bpy.types.Object, angle_limit: float, island_margin: float) -> N
     bpy.context.view_layer.objects.active = obj
     if not obj.data.uv_layers:
         obj.data.uv_layers.new(name="UVMap")
+
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.uv.smart_project(
@@ -40,101 +50,138 @@ def unwrap(obj: bpy.types.Object, angle_limit: float, island_margin: float) -> N
         correct_aspect=True,
         scale_to_bounds=False,
     )
-    # Smart Project packs conservatively and leaves most of the atlas empty. Normalising island
-    # scale gives uniform texel density, then a concave repack recovers the wasted area.
     bpy.ops.uv.select_all(action="SELECT")
     bpy.ops.uv.average_islands_scale()
-    bpy.ops.uv.pack_islands(rotate=True, margin=island_margin, shape_method="CONCAVE")
+    bpy.ops.uv.pack_islands(
+        rotate=True,
+        margin=island_margin,
+        shape_method="CONCAVE",
+    )
     bpy.ops.object.mode_set(mode="OBJECT")
 
 
-def uv_metrics(obj: bpy.types.Object, resolution: int, shrink: float = 0.82) -> dict:
+def triangle_uvs(obj: bpy.types.Object) -> tuple[np.ndarray, int]:
     mesh = obj.data
     layer = mesh.uv_layers.active
     if layer is None:
         raise RuntimeError("LOD0 has no active UV layer after unwrap")
 
-    loops = np.array([tuple(d.uv) for d in layer.data], dtype=np.float64)
-    finite = np.isfinite(loops).all()
-    umin, vmin = loops.min(axis=0)
-    umax, vmax = loops.max(axis=0)
-
-    # Rasterise every triangle into an occupancy grid. A texel covered more than once is a true
-    # overlap; total covered texels give atlas utilisation. This measures the atlas as the baker
-    # will actually sample it rather than trusting the packer.
-    grid = np.zeros((resolution, resolution), dtype=np.int32)
-    degenerate = 0
-    tri_uvs = []
-    for poly in mesh.polygons:
-        idx = list(poly.loop_indices)
-        if len(idx) != 3:
+    loops = np.asarray([tuple(data.uv) for data in layer.data], dtype=np.float64)
+    triangles: list[np.ndarray] = []
+    non_triangles = 0
+    for polygon in mesh.polygons:
+        indices = list(polygon.loop_indices)
+        if len(indices) != 3:
+            non_triangles += 1
             continue
-        tri_uvs.append(loops[idx])
-    tri_uvs = np.array(tri_uvs)
+        triangles.append(loops[indices])
 
-    # Shrink each triangle toward its centroid before rasterising. Neighbouring triangles inside
-    # one chart legitimately share the texels along their common edge; without this inset those
-    # seams dominate the count and masquerade as chart overlap.
-    centroids = tri_uvs.mean(axis=1, keepdims=True)
-    tri_uvs_inset = centroids + (tri_uvs - centroids) * shrink
-
-    for tri in tri_uvs_inset:
-        pts = tri * (resolution - 1)
-        x0, y0 = np.floor(pts.min(axis=0)).astype(int)
-        x1, y1 = np.ceil(pts.max(axis=0)).astype(int)
-        x0 = max(x0, 0); y0 = max(y0, 0)
-        x1 = min(x1, resolution - 1); y1 = min(y1, resolution - 1)
-        if x1 < x0 or y1 < y0:
-            continue
-        area = (pts[1, 0] - pts[0, 0]) * (pts[2, 1] - pts[0, 1]) - (pts[2, 0] - pts[0, 0]) * (
-            pts[1, 1] - pts[0, 1]
+    if non_triangles:
+        raise RuntimeError(
+            f"LOD0 must be triangulated before UV validation; found {non_triangles} non-triangles"
         )
-        if abs(area) < 1e-12:
-            degenerate += 1
-            continue
-        ys, xs = np.mgrid[y0 : y1 + 1, x0 : x1 + 1]
-        px = xs + 0.5
-        py = ys + 0.5
-        w0 = ((pts[1, 0] - pts[0, 0]) * (py - pts[0, 1]) - (px - pts[0, 0]) * (pts[1, 1] - pts[0, 1])) / area
-        w1 = ((px - pts[0, 0]) * (pts[2, 1] - pts[0, 1]) - (pts[2, 0] - pts[0, 0]) * (py - pts[0, 1])) / area
-        inside = (w0 >= 0) & (w1 >= 0) & (w0 + w1 <= 1)
-        if inside.any():
-            grid[ys[inside], xs[inside]] += 1
+    if not triangles:
+        raise RuntimeError("LOD0 contains no triangles")
+    return np.asarray(triangles, dtype=np.float64), len(loops)
 
-    covered = int((grid > 0).sum())
-    overlapped = int((grid > 1).sum())
-    total = resolution * resolution
 
-    # Blender's own overlap test is the authoritative answer. The raster grid above cannot
-    # distinguish genuine chart overlap from several sub-texel triangles crowding one texel, which
-    # is common at 220k triangles in a 4K atlas.
-    # Analytic overlap: the summed UV area of every chart, expressed in texels, against the number
-    # of texels actually covered. Disjoint charts give a ratio of ~1; anything materially above 1
-    # means charts are stacked on the same texels. This avoids both the shared-edge false positive
-    # of a raw raster count and the Blender UV-selection API, which moved in 5.x.
-    areas = np.abs(
-        (tri_uvs[:, 1, 0] - tri_uvs[:, 0, 0]) * (tri_uvs[:, 2, 1] - tri_uvs[:, 0, 1])
-        - (tri_uvs[:, 2, 0] - tri_uvs[:, 0, 0]) * (tri_uvs[:, 1, 1] - tri_uvs[:, 0, 1])
-    ) * 0.5
-    chart_area_texels = float(areas.sum() * total)
-    area_ratio = chart_area_texels / max(covered, 1)
+def uv_metrics(
+    obj: bpy.types.Object,
+    resolution: int,
+    *,
+    max_overlap_texels: float,
+    overlap_timeout_seconds: float,
+    max_candidate_pairs: int,
+    min_utilisation: float,
+) -> dict:
+    triangles, loop_count = triangle_uvs(obj)
+    finite = bool(np.isfinite(triangles).all())
 
+    flat = triangles.reshape((-1, 2))
+    umin, vmin = flat.min(axis=0)
+    umax, vmax = flat.max(axis=0)
+
+    signed_twice_area = (
+        (triangles[:, 1, 0] - triangles[:, 0, 0])
+        * (triangles[:, 2, 1] - triangles[:, 0, 1])
+        - (triangles[:, 2, 0] - triangles[:, 0, 0])
+        * (triangles[:, 1, 1] - triangles[:, 0, 1])
+    )
+    triangle_area = np.abs(signed_twice_area) * 0.5
+    analytic_area_fraction = float(triangle_area.sum())
+
+    exact = positive_area_uv_overlaps(
+        triangles,
+        resolution,
+        timeout_seconds=overlap_timeout_seconds,
+        max_candidate_pairs=max_candidate_pairs,
+    )
+    exact_dict = exact.as_dict()
+
+    overlap_area = float(exact.positive_overlap_total_area_uv)
+    effective_unique_area = max(0.0, analytic_area_fraction - overlap_area)
+    estimated_covered_texels = effective_unique_area * float(resolution * resolution)
+
+    errors: list[str] = []
+    warnings: list[str] = []
+    if not finite:
+        errors.append("non-finite UV coordinates present")
+    if exact.errors:
+        errors.extend(str(error) for error in exact.errors)
+    if exact.out_of_bounds_triangle_count:
+        errors.append(
+            f"{exact.out_of_bounds_triangle_count} UV triangles are outside the atlas"
+        )
+    if exact.degenerate_uv_triangle_count:
+        errors.append(
+            f"{exact.degenerate_uv_triangle_count} UV triangles are degenerate"
+        )
+    if exact.positive_overlap_total_texels_equivalent > max_overlap_texels:
+        errors.append(
+            "positive-area UV overlap exceeds budget: "
+            f"{exact.positive_overlap_total_texels_equivalent:.6f} > {max_overlap_texels:.6f} texels"
+        )
+    if effective_unique_area < min_utilisation:
+        warnings.append(
+            "atlas utilisation is below the preferred packing target: "
+            f"{effective_unique_area * 100.0:.2f}% < {min_utilisation * 100.0:.2f}%"
+        )
+
+    overlap_fraction = overlap_area / max(analytic_area_fraction, 1e-12)
     return {
-        "chart_area_texels": chart_area_texels,
-        "area_to_covered_ratio": area_ratio,
-        "estimated_overlap_fraction": max(0.0, 1.0 - 1.0 / max(area_ratio, 1e-6)),
         "resolution": resolution,
-        "uv_finite": bool(finite),
+        "uv_finite": finite,
         "uv_min": [float(umin), float(vmin)],
         "uv_max": [float(umax), float(vmax)],
-        "uv_out_of_bounds": bool(umin < -1e-6 or vmin < -1e-6 or umax > 1 + 1e-6 or vmax > 1 + 1e-6),
-        "triangles": int(len(tri_uvs)),
-        "degenerate_uv_triangles": degenerate,
-        "covered_texels": covered,
-        "atlas_utilisation": covered / total,
-        "overlapping_texels": overlapped,
-        "true_overlap_fraction_of_covered": overlapped / max(covered, 1),
-        "uv_islands": len({tuple(np.round(t.mean(axis=0), 3)) for t in tri_uvs}),
+        "uv_out_of_bounds": bool(exact.out_of_bounds_triangle_count),
+        "triangles": int(len(triangles)),
+        "uv_loops": int(loop_count),
+        "degenerate_uv_triangles": int(exact.degenerate_uv_triangle_count),
+        "analytic_uv_area_fraction": analytic_area_fraction,
+        "atlas_utilisation": effective_unique_area,
+        "estimated_covered_texels": estimated_covered_texels,
+        "estimated_overlap_fraction": overlap_fraction,
+        "positive_overlap_pair_count": int(exact.positive_overlap_pair_count),
+        "positive_overlap_total_area_uv": overlap_area,
+        "positive_overlap_total_texels_equivalent": float(
+            exact.positive_overlap_total_texels_equivalent
+        ),
+        "positive_overlap_max_area_uv": float(exact.positive_overlap_max_area_uv),
+        "exact_overlap": exact_dict,
+        "max_overlap_texels": max_overlap_texels,
+        "minimum_preferred_utilisation": min_utilisation,
+        "gate_passed": not errors,
+        "manual_review_required": bool(warnings),
+        "errors": errors,
+        "warnings": warnings,
+        "deprecated_metrics": {
+            "area_to_covered_ratio": None,
+            "raster_collision_overlap": None,
+            "reason": (
+                "Removed from acceptance: analytic-area/raster-coverage ratios and raster "
+                "collision counts conflate discretisation/shared edges with real overlap."
+            ),
+        },
     }
 
 
@@ -147,7 +194,10 @@ def main() -> None:
     parser.add_argument("--angle-limit", type=float, default=1.15192)  # 66 degrees
     parser.add_argument("--island-margin", type=float, default=0.003)
     parser.add_argument("--merge-distance", type=float, default=1e-4)
-    parser.add_argument("--overlap-shrink", type=float, default=0.82)
+    parser.add_argument("--max-overlap-texels", type=float, default=1.0)
+    parser.add_argument("--overlap-timeout-seconds", type=float, default=180.0)
+    parser.add_argument("--max-candidate-pairs", type=int, default=10_000_000)
+    parser.add_argument("--min-utilisation", type=float, default=0.35)
     args = parser.parse_args(argv_after_double_dash())
 
     reset_scene()
@@ -164,7 +214,14 @@ def main() -> None:
 
     weld(obj, args.merge_distance)
     unwrap(obj, args.angle_limit, args.island_margin)
-    metrics = uv_metrics(obj, args.resolution, args.overlap_shrink)
+    metrics = uv_metrics(
+        obj,
+        args.resolution,
+        max_overlap_texels=args.max_overlap_texels,
+        overlap_timeout_seconds=args.overlap_timeout_seconds,
+        max_candidate_pairs=args.max_candidate_pairs,
+        min_utilisation=args.min_utilisation,
+    )
     metrics["input"] = args.input
     metrics["output"] = args.output
     metrics["angle_limit_radians"] = args.angle_limit
@@ -175,19 +232,25 @@ def main() -> None:
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     bpy.ops.export_scene.gltf(
-        filepath=args.output, export_format="GLB", use_selection=True, export_yup=True
+        filepath=args.output,
+        export_format="GLB",
+        use_selection=True,
+        export_yup=True,
     )
     save_json(args.report, metrics)
+
     print(
-        f"UV: utilisation={metrics['atlas_utilisation']*100:.2f}% "
-        f"overlap~={metrics['estimated_overlap_fraction']*100:.3f}% "
+        "UV_EXACT "
+        f"gate={metrics['gate_passed']} "
+        f"utilisation={metrics['atlas_utilisation'] * 100.0:.2f}% "
+        f"overlap_pairs={metrics['positive_overlap_pair_count']} "
+        f"overlap_texels={metrics['positive_overlap_total_texels_equivalent']:.6f} "
         f"degenerate={metrics['degenerate_uv_triangles']}",
         flush=True,
     )
+    if not metrics["gate_passed"]:
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":
     main()
-
-
-
