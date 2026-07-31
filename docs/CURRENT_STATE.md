@@ -1,20 +1,18 @@
 # Current production state
 
-**Updated:** 2026-07-31
+**Updated:** 2026-08-01
 
-This file is the short, current source of truth for the active high-resolution pipeline work. Older session notes remain useful history, but this document takes precedence when they conflict.
+This file is the short source of truth for active high-resolution pipeline work. Older session notes remain useful history, but this document takes precedence when they conflict.
 
 ## Reference success: TurboBird
 
-TurboBird is the user's first real successful result and the current qualitative reference for the project. The user considers it a good result. It proves that the practical route can produce a useful asset on the target Windows 10 / GTX 1660 SUPER 6 GB machine.
+TurboBird is the user's first real successful result and the current qualitative reference. The user considers it a good result, and it proves that the practical route can produce a useful asset on the target Windows 10 / GTX 1660 SUPER 6 GB machine.
 
-Do not redesign the pipeline so aggressively that it can no longer preserve a TurboBird-class result. New validation should catch demonstrated damage, not reject usable geometry merely because a classifier is uncertain.
+Do not redesign the pipeline so aggressively that it can no longer preserve a TurboBird-class result. Validation must catch demonstrated damage, not reject usable geometry because a classifier or proxy metric is uncertain.
 
-The exact canonical TurboBird receipt, source identity and comparison statistics still need to be consolidated into the benchmark pack. Until that is done, TurboBird is a **user-validated qualitative reference**, not a fully reproduced quantitative benchmark.
+The exact canonical TurboBird receipt, source identity and comparison statistics still need to be consolidated. Until then, TurboBird is a **user-validated qualitative reference**, not a fully reproduced quantitative benchmark.
 
-## Shaman anchor run: what actually worked
-
-The full-resolution shaman PNG was verified locally:
+## Canonical shaman source
 
 - path: `C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png`
 - dimensions: `1122x1402`
@@ -22,50 +20,83 @@ The full-resolution shaman PNG was verified locally:
 
 The prior recorded hash `eccef854f816f446ce2bf2e08559df519adff223b425c1dccc1c0a9b299f13f6` is rejected because it did not match that exact file.
 
-GitHub Actions run `30657995651` proved the following:
+## Earlier full-route lesson
 
-1. the self-hosted runner `LOWVRAM3D-KONE` registered and accepted the job;
-2. the PNG-to-3D entrypoint ran geometry generation successfully;
-3. ingest produced a valid single-mesh GLB with 55,684 faces;
-4. topology at the cleanup boundary was manifold: boundary edges `0 -> 0`;
-5. the run failed because the component classifier left two tiny visible fragments as `AUDIT_REQUIRED`, not because geometry generation crashed or the mesh was corrupt.
+GitHub Actions run `30657995651` proved that the self-hosted worker, PNG entrypoint, geometry generation and ingest worked. It produced a valid 55,684-face mesh with boundary edges `0 -> 0`. The run stopped because component audit treated two tiny `AUDIT_REQUIRED` fragments as fatal.
 
-That failure was a pipeline-policy defect: an inconclusive cleanup classifier was being treated as a hard production failure.
+`workers/component_audit_cleanup.py` now follows a preserve-first policy: ambiguity-only failures with safe topology preserve the original generated GLB byte-for-byte, record `manual_review_required=true`, and continue. Real process errors, changed main geometry and increased boundary/non-manifold edges still fail closed.
 
-## Current cleanup policy
+## Current high-detail final-pipeline state
 
-`workers/component_audit_cleanup.py` now follows a preserve-first policy:
+A later geometry-first run produced and preserved:
 
-- confirmed cleanup with safe topology continues normally;
-- audit ambiguity alone is not a hard failure;
-- when the only errors are non-convergence and unresolved `AUDIT_REQUIRED` components, and no topology regression is demonstrated, the original generated GLB is copied byte-for-byte to `clean_master.glb`;
-- the report sets `manual_review_required=true` and records the original audit errors as warnings;
-- real process errors, increased boundary/non-manifold edges, or a changed main component still fail closed.
+- high master: `final-pipeline/high/shaman_high_master.glb`
+- SHA-256: `db1818a3b804c64e38767fde3235dc388621f08a8e8dd3da9ffc3b9692c654d4`
+- bytes: `24,237,656`
+- clean master: `1,093,124` triangles and `59` connected components
+- confirmed cleanup removed `28` of `90` welded components and `0.196%` of faces
 
-This matches the TurboBird lesson: preserve a usable generated asset and continue to LOD, texture, rig/export and independent validation. Cleanup confidence is evidence, not permission to discard the only valid mesh.
+The measured run reports that cords, bowl charm, leaf pendants, hollow pod, lantern, far-right pendant, staff ring/charm, robe fringe and strips survive cleanup. Visual review remains required.
+
+### LOD chain
+
+| LOD | triangles | components | boundary edges |
+|---:|---:|---:|---:|
+| 0 | 219,967 | 59 | 100 |
+| 1 | 89,965 | 59 | 109 |
+| 2 | 39,961 | 59 | 115 |
+| 3 | 14,951 | 59 | 151 |
+
+Constant component count is evidence that the LOD route did not fragment cords or fuse ornaments into the main body.
+
+## Current UV correction
+
+The provisional 4096 UV run reported finite, in-bounds UVs, zero degenerate triangles and approximately `47.99%` raster-estimated utilisation. It then stopped because an analytic-area / raster-covered ratio of `1.1016` was interpreted as roughly 10% real overlap.
+
+That interpretation is invalid. The repository already proved that:
+
+- raster collision counts include ordinary shared chart edges and sub-texel collisions;
+- analytic triangle area divided by rasterised coverage conflates boundary rounding with genuine overlap.
+
+`src/lowvram3d/uv_overlap.py` is the canonical detector. It uses exact convex clipping and counts only positive-area triangle intersections.
+
+Commit `18b9b29fca28a99cae127e2e88021aec1472d660` changes `blender/final_pipeline_uv.py` to:
+
+- remove the slow 4096x4096 Python raster loop over approximately 220,000 triangles;
+- compute utilisation analytically;
+- use exact positive-area intersection as the only bake-safety overlap gate;
+- permit at most `1.0` texel-equivalent of exact overlap;
+- treat low utilisation as a packing warning, not proof of corrupt UVs.
+
+The exact next action is a **Stage-4-only rerun** against the existing `final-pipeline/game/shaman_lod0.glb`. Do not regenerate, clean or decimate geometry. If exact overlap is within budget, promote the UV GLB and start Stage 5 baking. Only if exact overlap really exceeds budget should the unwrap or atlas strategy change.
+
+See `evidence/SHAMAN_FINAL_PIPELINE_GEOMETRY_UV_20260801.md` for the measured handoff.
+
+## Semantic part separation
+
+Stage 2 remains incomplete. Loose-part splitting cannot isolate the staff because the main connected surface contains about `98.97%` of faces and spans the body, staff, antlers, cords and ornaments. Movable-part extraction requires semantic segmentation or authored cuts. It is not required before validating the current fused-character LOD and UV route.
+
+## Remaining proof boundary
+
+- Exact UV overlap has not yet been rerun on the current LOD0.
+- Baking, texturing, A-pose, rigging, animation and Unreal export have not started for this high-detail chain.
+- The model is genuinely shallow in depth (`Y` extent about `0.595` versus `Z` extent about `1.981`), a single-view reconstruction limitation that texturing and rigging cannot repair.
+- The A-pose normalizer is not yet connected to the main route or visually validated in Blender/Unreal.
+- Final GLBs, reports and renders must be inspected before any production claim.
 
 ## Current workflow branches
 
 - `fix/highres-production-pipeline-20260731`: high-resolution geometry, benchmark ordering, component audit, measured LOD selection and pose-policy work.
-- `infra/windows-self-hosted-runner-20260731`: trusted Windows worker and shaman PNG-to-3D execution, stacked on the high-resolution branch through PR #3.
+- `infra/windows-self-hosted-runner-20260731`: trusted Windows worker and current shaman execution, stacked through PR #3.
 - `improve/stage-provenance-20260731`: stage artifact provenance, stacked separately through PR #2.
 
-Do not merge these branches into `main` until the required local evidence is complete.
-
-## Still not proven
-
-- A replacement shaman run has not yet proven the full route through LOD selection, texture, rigging, final export and fresh-process validation.
-- The shaman comparison-master GLB has not been recovered and hash-verified.
-- The A-pose normalizer exists but is not yet connected to the main postprocess route and has not been visually validated in Blender or Unreal.
-- TurboBird's exact source/master hashes and quantitative receipt are not yet committed as a canonical benchmark record.
-- A successful GitHub job is not enough by itself: final GLBs, reports and preview renders must be downloaded and inspected.
+Do not merge into `main` until required local evidence is complete.
 
 ## Production rules
 
 1. Preserve source and generated masters byte-for-byte.
-2. Hard-fail on demonstrated corruption, topology regression, missing required inputs, invalid exports or subprocess failure.
-3. Do not hard-fail solely because a quality classifier is uncertain.
-4. Record ambiguity as `manual_review_required` and continue with the preserved mesh.
-5. Compare every major change against TurboBird and the shaman anchor.
-6. Promote a final deliverable only after fresh-process re-import, renders and receipt validation.
-7. Rigging or pose normalization must never overwrite a valid unrigged result when they fail.
+2. Hard-fail on demonstrated corruption, topology regression, missing inputs, invalid exports or subprocess failure.
+3. Do not hard-fail solely because a classifier or proxy metric is uncertain.
+4. Exact geometry/UV measurements outrank raster proxies.
+5. Promote final deliverables only after fresh-process re-import, renders and receipt validation.
+6. Rigging or pose normalization must never overwrite a valid unrigged result when they fail.
