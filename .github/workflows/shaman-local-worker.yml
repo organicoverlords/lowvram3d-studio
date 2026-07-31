@@ -12,6 +12,7 @@ on:
       - workers/run_full_image.py
       - workers/component_audit_cleanup.py
       - src/lowvram3d/component_audit.py
+      - tests/test_component_audit_retry.py
 
 permissions:
   contents: read
@@ -41,6 +42,19 @@ jobs:
           $dirty = @(git status --short)
           if ($dirty.Count -gt 0) { throw "Runner checkout is dirty before execution: $($dirty -join '; ')" }
           git rev-parse HEAD
+
+      - name: Test targeted cleanup policy
+        shell: powershell
+        run: |
+          $python = "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe"
+          if (-not (Test-Path -LiteralPath $python)) {
+            throw "LowVRAM3D control Python is missing: $python"
+          }
+          $env:PYTHONPATH = "$PWD\src;$PWD"
+          & $python -m unittest tests.test_component_audit_retry -v
+          if ($LASTEXITCODE -ne 0) {
+            throw "Targeted cleanup policy tests failed with exit code $LASTEXITCODE"
+          }
 
       - name: Run full shaman PNG to 3D pipeline
         shell: powershell
