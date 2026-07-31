@@ -34,7 +34,7 @@ The order is deliberate:
 4. Validate output formats without trusting provenance yet.
 5. Write provenance sidecars atomically.
 6. Revalidate the outputs with provenance enabled.
-7. Mark the stage passed only after all six steps succeed.
+7. Mark the stage passed only after all seven steps succeed.
 
 A provenance-write or verification failure is reported as `failure_class=provenance_write`. The artifact remains invalid and cannot be silently reused.
 
