@@ -12,6 +12,14 @@ from pathlib import Path
 import psutil
 
 from .contracts import StageReceipt, now_ms
+from .provenance import (
+    PROVENANCE_SCHEMA,
+    arm_artifact_provenance,
+    artifact_provenance_is_valid,
+    fingerprint_command_inputs,
+    stage_command_fingerprint,
+    write_artifact_provenance,
+)
 
 
 GPU_HEAVY_STAGE_TOKENS = ("subject_preprocess", "birefnet", "mini_turbo", "mv_adapter", "proxy_geometry", "texture_proxy", "triposr")
@@ -160,24 +168,28 @@ def _glb_artifact_is_valid(path: Path) -> bool:
     return offset == len(data) and saw_json
 
 
-def artifact_is_valid(path: Path) -> bool:
+def artifact_is_valid(path: Path, *, check_provenance: bool = True) -> bool:
     if not path.is_file() or path.stat().st_size <= 0:
         return False
     suffix = path.suffix.lower()
     try:
         if suffix in {".json", ".gltf"}:
-            return _json_artifact_is_valid(path)
-        if suffix in {".png", ".jpg", ".jpeg", ".webp"}:
-            return _image_artifact_is_valid(path)
-        if suffix == ".glb":
-            return _glb_artifact_is_valid(path)
-        return True
+            valid = _json_artifact_is_valid(path)
+        elif suffix in {".png", ".jpg", ".jpeg", ".webp"}:
+            valid = _image_artifact_is_valid(path)
+        elif suffix == ".glb":
+            valid = _glb_artifact_is_valid(path)
+        else:
+            valid = True
+        if not valid:
+            return False
+        return not check_provenance or artifact_provenance_is_valid(path)
     except (OSError, ValueError, json.JSONDecodeError, struct.error):
         return False
 
 
-def ensure_artifacts(paths: dict[str, str]) -> list[str]:
-    return [name for name, raw in paths.items() if not artifact_is_valid(Path(raw))]
+def ensure_artifacts(paths: dict[str, str], *, check_provenance: bool = True) -> list[str]:
+    return [name for name, raw in paths.items() if not artifact_is_valid(Path(raw), check_provenance=check_provenance)]
 
 
 def read_tail(path: Path, limit: int = 6000) -> str:
@@ -222,8 +234,23 @@ def _run_stage_impl(
     logs_dir.mkdir(parents=True, exist_ok=True)
     stdout_path = logs_dir / f"{stage}.stdout.log"
     stderr_path = logs_dir / f"{stage}.stderr.log"
-    receipt = StageReceipt(stage=stage, status="running", started_at=now_ms(), command=command)
-    receipt.notes.extend([f"stdout={stdout_path}", f"stderr={stderr_path}"])
+    input_fingerprints = fingerprint_command_inputs(command, cwd, required_artifacts)
+    command_fingerprint = stage_command_fingerprint(command, cwd, env, required_artifacts, input_fingerprints)
+    receipt = StageReceipt(
+        stage=stage,
+        status="running",
+        started_at=now_ms(),
+        command=command,
+        provenance_schema=PROVENANCE_SCHEMA,
+        command_fingerprint=command_fingerprint,
+        input_fingerprints=input_fingerprints,
+    )
+    receipt.notes.extend([
+        f"stdout={stdout_path}",
+        f"stderr={stderr_path}",
+        f"provenance_schema={PROVENANCE_SCHEMA}",
+    ])
+    arm_artifact_provenance(required_artifacts)
     peak_vram = 0
     peak_ram = 0
     stop_monitor = threading.Event()
@@ -298,7 +325,7 @@ def _run_stage_impl(
     receipt.peak_vram_mb = peak_vram or None
     receipt.peak_ram_mb = peak_ram or None
     receipt.artifacts = required_artifacts
-    missing = ensure_artifacts(required_artifacts)
+    missing = ensure_artifacts(required_artifacts, check_provenance=False)
     if violation or exit_code != 0 or missing:
         log_tail = "\n".join(part for part in (read_tail(stdout_path), read_tail(stderr_path)) if part)
         receipt.status = "failed"
@@ -310,6 +337,28 @@ def _run_stage_impl(
         if log_tail:
             receipt.notes.append("log_tail=" + log_tail[-2000:])
         raise StageFailure(receipt.error, receipt)
+
+    try:
+        artifact_fingerprints, provenance_files = write_artifact_provenance(
+            stage=stage,
+            command=command,
+            cwd=cwd,
+            env=env,
+            artifact_paths=required_artifacts,
+            input_fingerprints=input_fingerprints,
+            command_fingerprint=command_fingerprint,
+        )
+        receipt.artifact_fingerprints = artifact_fingerprints
+        receipt.provenance_files = provenance_files
+        invalid_provenance = ensure_artifacts(required_artifacts)
+        if invalid_provenance:
+            raise OSError("Provenance verification failed for: " + ", ".join(invalid_provenance))
+    except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+        receipt.status = "failed"
+        receipt.failure_class = "provenance_write"
+        receipt.error = f"Could not seal stage artifacts with provenance: {exc}"
+        raise StageFailure(receipt.error, receipt) from exc
+
     receipt.status = "passed"
     return receipt
 
