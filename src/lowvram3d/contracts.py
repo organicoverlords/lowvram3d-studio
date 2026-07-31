@@ -26,6 +26,11 @@ class StageReceipt:
     error: str | None = None
     failure_class: str | None = None
     notes: list[str] = field(default_factory=list)
+    provenance_schema: int | None = None
+    command_fingerprint: str | None = None
+    input_fingerprints: dict[str, str] = field(default_factory=dict)
+    artifact_fingerprints: dict[str, str] = field(default_factory=dict)
+    provenance_files: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
