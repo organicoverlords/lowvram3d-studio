@@ -4,7 +4,9 @@ param(
     [string]$FinalPipelineRoot = "",
     [string]$BlenderPath = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe",
     [int]$Resolution = 4096,
-    [double]$MaxOverlapTexels = 1.0
+    [double]$MaxOverlapTexels = 1.0,
+    [double]$OverlapTimeoutSeconds = 120.0,
+    [int]$MaxCandidatePairs = 10000000
 )
 
 Set-StrictMode -Version Latest
@@ -70,6 +72,7 @@ Write-Host "input=$Input"
 Write-Host "input_sha256=$InputHashBefore"
 Write-Host "candidate=$Candidate"
 Write-Host "report=$Report"
+Write-Host "overlap_timeout_seconds=$OverlapTimeoutSeconds"
 
 & $BlenderPath `
     --background `
@@ -80,7 +83,9 @@ Write-Host "report=$Report"
     --output $Candidate `
     --report $Report `
     --resolution $Resolution `
-    --max-overlap-texels $MaxOverlapTexels
+    --max-overlap-texels $MaxOverlapTexels `
+    --overlap-timeout-seconds $OverlapTimeoutSeconds `
+    --max-candidate-pairs $MaxCandidatePairs
 $BlenderExit = $LASTEXITCODE
 
 $InputHashAfter = (Get-FileHash -LiteralPath $Input -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -136,6 +141,8 @@ $ReceiptObject = [ordered]@{
     blender_exit = $BlenderExit
     gate_passed = $GatePassed
     promoted = $Promoted
+    overlap_timeout_seconds = $OverlapTimeoutSeconds
+    max_candidate_pairs = $MaxCandidatePairs
     atlas_utilisation = $Metrics.atlas_utilisation
     exact_overlap_pairs = $Metrics.positive_overlap_pair_count
     exact_overlap_texels = $Metrics.positive_overlap_total_texels_equivalent
