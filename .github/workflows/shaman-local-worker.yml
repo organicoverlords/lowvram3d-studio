@@ -53,3 +53,5 @@ jobs:
           path: ${{ runner.temp }}\shaman-image-to-3d
           if-no-files-found: warn
           retention-days: 14
+
+# forced trigger 2026-07-31T22:07+03:00
