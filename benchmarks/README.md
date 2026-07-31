@@ -1,17 +1,11 @@
-# Creature benchmark
+# Benchmark media
 
-`raccoon_creature_benchmark.jpg` is the first end-to-end image benchmark.
+This directory keeps lightweight repository-visible previews and immutable provenance manifests.
 
-Classification: **Creature**, not vehicle.
+The full-resolution canonical source images and large GLB masters remain in the local benchmark pack under `C:\AI\LowVRAM3D-benchmarks`. Production benchmark runs resolve those files by manifest name and verify their SHA-256 values before execution.
 
-Expected semantic policy:
+A preview is never a generation input. It exists only so reviewers can identify a fixture in GitHub. A run must fail closed when the canonical source image or master is absent, mismatched, or ambiguous.
 
-- keep the organic body, head, limbs, paws, and tail continuous for deformation;
-- separate rifle, backpack, armour, pouches, straps, and rigid equipment where geometry permits;
-- do not claim semantic separation unless the generated mesh contains separable geometry;
-- use 2K gameplay textures first;
-- target approximately 40–50k triangles;
-- produce two LODs, PBR maps, a template creature rig, previews, and validation;
-- mark skinning/deformation as requiring visual review.
+## Mandatory first gate
 
-In 3D Gen Studio import this image and choose **LowVRAM One-Click — Creature**.
+`antlered_bird_shaman_anchor` is priority 0. Its full source image and verified comparison master must pass before the bird, panda, or any later fixture can produce an overall benchmark PASS.
