@@ -1,0 +1,1013 @@
+{
+  "success": true,
+  "policy_version": 2,
+  "cleanup_mode": "conservative",
+  "weld_distance": 0.0004,
+  "scene_diagonal": 3.1608030885563045,
+  "faces_before": 44951,
+  "faces_after": 44779,
+  "removed_faces": 172,
+  "removed_faces_percent": 0.3826,
+  "components_before": 65,
+  "components_kept": 42,
+  "components_removed": 23,
+  "boundary_edges_before": 135,
+  "boundary_edges_after": 117,
+  "small_holes_filled": 0,
+  "hole_fills": [],
+  "gate_errors": [],
+  "objects": [
+    {
+      "object": "accessory",
+      "before": {
+        "faces": 503,
+        "components": 14,
+        "boundary_edges": 9,
+        "non_manifold_edges": 10
+      },
+      "after": {
+        "faces": 472,
+        "components": 9,
+        "boundary_edges": 6,
+        "non_manifold_edges": 6
+      }
+    },
+    {
+      "object": "accessory_02",
+      "before": {
+        "faces": 400,
+        "components": 7,
+        "boundary_edges": 8,
+        "non_manifold_edges": 9
+      },
+      "after": {
+        "faces": 374,
+        "components": 4,
+        "boundary_edges": 8,
+        "non_manifold_edges": 8
+      }
+    },
+    {
+      "object": "deform_body",
+      "before": {
+        "faces": 36710,
+        "components": 3,
+        "boundary_edges": 18,
+        "non_manifold_edges": 19
+      },
+      "after": {
+        "faces": 36705,
+        "components": 1,
+        "boundary_edges": 15,
+        "non_manifold_edges": 16
+      }
+    },
+    {
+      "object": "organic_attachment",
+      "before": {
+        "faces": 1606,
+        "components": 8,
+        "boundary_edges": 24,
+        "non_manifold_edges": 24
+      },
+      "after": {
+        "faces": 1597,
+        "components": 4,
+        "boundary_edges": 15,
+        "non_manifold_edges": 15
+      }
+    },
+    {
+      "object": "organic_attachment_02",
+      "before": {
+        "faces": 1582,
+        "components": 5,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      },
+      "after": {
+        "faces": 1546,
+        "components": 3,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      }
+    },
+    {
+      "object": "organic_attachment_03",
+      "before": {
+        "faces": 950,
+        "components": 2,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      },
+      "after": {
+        "faces": 950,
+        "components": 2,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      }
+    },
+    {
+      "object": "organic_attachment_04",
+      "before": {
+        "faces": 596,
+        "components": 3,
+        "boundary_edges": 0,
+        "non_manifold_edges": 1
+      },
+      "after": {
+        "faces": 592,
+        "components": 2,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      }
+    },
+    {
+      "object": "organic_attachment_05",
+      "before": {
+        "faces": 438,
+        "components": 3,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      },
+      "after": {
+        "faces": 438,
+        "components": 3,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      }
+    },
+    {
+      "object": "organic_attachment_06",
+      "before": {
+        "faces": 415,
+        "components": 4,
+        "boundary_edges": 73,
+        "non_manifold_edges": 73
+      },
+      "after": {
+        "faces": 374,
+        "components": 1,
+        "boundary_edges": 70,
+        "non_manifold_edges": 70
+      }
+    },
+    {
+      "object": "organic_attachment_07",
+      "before": {
+        "faces": 405,
+        "components": 8,
+        "boundary_edges": 3,
+        "non_manifold_edges": 4
+      },
+      "after": {
+        "faces": 385,
+        "components": 5,
+        "boundary_edges": 3,
+        "non_manifold_edges": 3
+      }
+    },
+    {
+      "object": "organic_attachment_08",
+      "before": {
+        "faces": 400,
+        "components": 2,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      },
+      "after": {
+        "faces": 400,
+        "components": 2,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      }
+    },
+    {
+      "object": "organic_attachment_09",
+      "before": {
+        "faces": 400,
+        "components": 3,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      },
+      "after": {
+        "faces": 400,
+        "components": 3,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      }
+    },
+    {
+      "object": "organic_attachment_10",
+      "before": {
+        "faces": 282,
+        "components": 2,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      },
+      "after": {
+        "faces": 282,
+        "components": 2,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      }
+    },
+    {
+      "object": "organic_attachment_11",
+      "before": {
+        "faces": 264,
+        "components": 1,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      },
+      "after": {
+        "faces": 264,
+        "components": 1,
+        "boundary_edges": 0,
+        "non_manifold_edges": 0
+      }
+    }
+  ],
+  "components": [
+    {
+      "object": "accessory",
+      "component_id": 0,
+      "faces": 318,
+      "face_fraction": 0.007074,
+      "area_fraction": 0.001571,
+      "extent_fraction": 0.050449,
+      "contact_ratio": 0.024691,
+      "nearest_distance_fraction": 0.004483,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory",
+      "component_id": 1,
+      "faces": 58,
+      "face_fraction": 0.00129,
+      "area_fraction": 0.000182,
+      "extent_fraction": 0.01725,
+      "contact_ratio": 0.709677,
+      "nearest_distance_fraction": 0.001669,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory",
+      "component_id": 2,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.000899,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.003552,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory",
+      "component_id": 3,
+      "faces": 10,
+      "face_fraction": 0.000222,
+      "area_fraction": 1.4e-05,
+      "extent_fraction": 0.004342,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.011363,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "accessory",
+      "component_id": 4,
+      "faces": 30,
+      "face_fraction": 0.000667,
+      "area_fraction": 5.7e-05,
+      "extent_fraction": 0.008834,
+      "contact_ratio": 0.352941,
+      "nearest_distance_fraction": 0.003514,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory",
+      "component_id": 5,
+      "faces": 6,
+      "face_fraction": 0.000133,
+      "area_fraction": 2e-06,
+      "extent_fraction": 0.001844,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.001403,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory",
+      "component_id": 6,
+      "faces": 38,
+      "face_fraction": 0.000845,
+      "area_fraction": 7e-05,
+      "extent_fraction": 0.009065,
+      "contact_ratio": 0.857143,
+      "nearest_distance_fraction": 0.000594,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory",
+      "component_id": 7,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.000909,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.00155,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory",
+      "component_id": 8,
+      "faces": 12,
+      "face_fraction": 0.000267,
+      "area_fraction": 2.5e-05,
+      "extent_fraction": 0.007296,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.001321,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory",
+      "component_id": 9,
+      "faces": 8,
+      "face_fraction": 0.000178,
+      "area_fraction": 1e-05,
+      "extent_fraction": 0.003989,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.002184,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory",
+      "component_id": 10,
+      "faces": 6,
+      "face_fraction": 0.000133,
+      "area_fraction": 2e-06,
+      "extent_fraction": 0.001664,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.006165,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "accessory",
+      "component_id": 11,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 1e-06,
+      "extent_fraction": 0.002419,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.00971,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "accessory",
+      "component_id": 12,
+      "faces": 8,
+      "face_fraction": 0.000178,
+      "area_fraction": 2e-06,
+      "extent_fraction": 0.002108,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.00694,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "accessory",
+      "component_id": 13,
+      "faces": 6,
+      "face_fraction": 0.000133,
+      "area_fraction": 3e-06,
+      "extent_fraction": 0.002759,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.010463,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "accessory_02",
+      "component_id": 0,
+      "faces": 350,
+      "face_fraction": 0.007786,
+      "area_fraction": 0.001594,
+      "extent_fraction": 0.051762,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.012103,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "accessory_02",
+      "component_id": 1,
+      "faces": 10,
+      "face_fraction": 0.000222,
+      "area_fraction": 2.2e-05,
+      "extent_fraction": 0.006145,
+      "contact_ratio": 0.857143,
+      "nearest_distance_fraction": 0.002242,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory_02",
+      "component_id": 2,
+      "faces": 6,
+      "face_fraction": 0.000133,
+      "area_fraction": 6e-06,
+      "extent_fraction": 0.00452,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.006066,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "accessory_02",
+      "component_id": 3,
+      "faces": 8,
+      "face_fraction": 0.000178,
+      "area_fraction": 2.1e-05,
+      "extent_fraction": 0.007654,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.003104,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "accessory_02",
+      "component_id": 4,
+      "faces": 8,
+      "face_fraction": 0.000178,
+      "area_fraction": 6e-06,
+      "extent_fraction": 0.004708,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.006291,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "accessory_02",
+      "component_id": 5,
+      "faces": 12,
+      "face_fraction": 0.000267,
+      "area_fraction": 2.3e-05,
+      "extent_fraction": 0.00685,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.020377,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "accessory_02",
+      "component_id": 6,
+      "faces": 6,
+      "face_fraction": 0.000133,
+      "area_fraction": 9e-06,
+      "extent_fraction": 0.005158,
+      "contact_ratio": 0.5,
+      "nearest_distance_fraction": 0.00409,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "deform_body",
+      "component_id": 0,
+      "faces": 36705,
+      "face_fraction": 0.816556,
+      "area_fraction": 0.955043,
+      "extent_fraction": 0.903517,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.0,
+      "action": "KEEP_MAIN",
+      "reason": "largest welded surface"
+    },
+    {
+      "object": "deform_body",
+      "component_id": 1,
+      "faces": 4,
+      "face_fraction": 8.9e-05,
+      "area_fraction": 2.7e-05,
+      "extent_fraction": 0.006931,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.012995,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "deform_body",
+      "component_id": 2,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.001433,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.006569,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment",
+      "component_id": 0,
+      "faces": 1524,
+      "face_fraction": 0.033904,
+      "area_fraction": 0.011679,
+      "extent_fraction": 0.128258,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.060862,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment",
+      "component_id": 1,
+      "faces": 66,
+      "face_fraction": 0.001468,
+      "area_fraction": 0.000328,
+      "extent_fraction": 0.019743,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.158328,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment",
+      "component_id": 2,
+      "faces": 6,
+      "face_fraction": 0.000133,
+      "area_fraction": 7e-06,
+      "extent_fraction": 0.003575,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.00203,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment",
+      "component_id": 3,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.001297,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.002447,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment",
+      "component_id": 4,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.00098,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.013223,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment",
+      "component_id": 5,
+      "faces": 6,
+      "face_fraction": 0.000133,
+      "area_fraction": 4e-06,
+      "extent_fraction": 0.002682,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.009786,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment",
+      "component_id": 6,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.001493,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.010434,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment",
+      "component_id": 7,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.001472,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.008054,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_02",
+      "component_id": 0,
+      "faces": 1460,
+      "face_fraction": 0.03248,
+      "area_fraction": 0.011223,
+      "extent_fraction": 0.111111,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.050834,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_02",
+      "component_id": 1,
+      "faces": 36,
+      "face_fraction": 0.000801,
+      "area_fraction": 0.000133,
+      "extent_fraction": 0.013454,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.006465,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_02",
+      "component_id": 2,
+      "faces": 14,
+      "face_fraction": 0.000311,
+      "area_fraction": 3.8e-05,
+      "extent_fraction": 0.008336,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.007035,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_02",
+      "component_id": 3,
+      "faces": 22,
+      "face_fraction": 0.000489,
+      "area_fraction": 3.6e-05,
+      "extent_fraction": 0.011338,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.008494,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_02",
+      "component_id": 4,
+      "faces": 50,
+      "face_fraction": 0.001112,
+      "area_fraction": 0.000192,
+      "extent_fraction": 0.017836,
+      "contact_ratio": 0.037037,
+      "nearest_distance_fraction": 0.005964,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_03",
+      "component_id": 0,
+      "faces": 946,
+      "face_fraction": 0.021045,
+      "area_fraction": 0.005735,
+      "extent_fraction": 0.088186,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.055417,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_03",
+      "component_id": 1,
+      "faces": 4,
+      "face_fraction": 8.9e-05,
+      "area_fraction": 4e-06,
+      "extent_fraction": 0.002885,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.002482,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_04",
+      "component_id": 0,
+      "faces": 534,
+      "face_fraction": 0.01188,
+      "area_fraction": 0.00284,
+      "extent_fraction": 0.053311,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.032941,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_04",
+      "component_id": 1,
+      "faces": 58,
+      "face_fraction": 0.00129,
+      "area_fraction": 0.000183,
+      "extent_fraction": 0.014559,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.080608,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_04",
+      "component_id": 2,
+      "faces": 4,
+      "face_fraction": 8.9e-05,
+      "area_fraction": 1e-06,
+      "extent_fraction": 0.001591,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.029077,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_05",
+      "component_id": 0,
+      "faces": 344,
+      "face_fraction": 0.007653,
+      "area_fraction": 0.001684,
+      "extent_fraction": 0.044791,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.050873,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_05",
+      "component_id": 1,
+      "faces": 16,
+      "face_fraction": 0.000356,
+      "area_fraction": 3e-05,
+      "extent_fraction": 0.007983,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.001197,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_05",
+      "component_id": 2,
+      "faces": 78,
+      "face_fraction": 0.001735,
+      "area_fraction": 0.000229,
+      "extent_fraction": 0.017891,
+      "contact_ratio": 0.634146,
+      "nearest_distance_fraction": 0.00235,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_06",
+      "component_id": 0,
+      "faces": 374,
+      "face_fraction": 0.00832,
+      "area_fraction": 0.001959,
+      "extent_fraction": 0.075415,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.024477,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_06",
+      "component_id": 1,
+      "faces": 8,
+      "face_fraction": 0.000178,
+      "area_fraction": 1.2e-05,
+      "extent_fraction": 0.004807,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.015167,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_06",
+      "component_id": 2,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.000866,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.015147,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_06",
+      "component_id": 3,
+      "faces": 32,
+      "face_fraction": 0.000712,
+      "area_fraction": 7.9e-05,
+      "extent_fraction": 0.011573,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.011916,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_07",
+      "component_id": 0,
+      "faces": 242,
+      "face_fraction": 0.005384,
+      "area_fraction": 0.000846,
+      "extent_fraction": 0.044593,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.01126,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_07",
+      "component_id": 1,
+      "faces": 38,
+      "face_fraction": 0.000845,
+      "area_fraction": 0.000114,
+      "extent_fraction": 0.013356,
+      "contact_ratio": 0.238095,
+      "nearest_distance_fraction": 0.004535,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_07",
+      "component_id": 2,
+      "faces": 6,
+      "face_fraction": 0.000133,
+      "area_fraction": 6e-06,
+      "extent_fraction": 0.003737,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.010887,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_07",
+      "component_id": 3,
+      "faces": 1,
+      "face_fraction": 2.2e-05,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.002949,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.002945,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_07",
+      "component_id": 4,
+      "faces": 8,
+      "face_fraction": 0.000178,
+      "area_fraction": 9e-06,
+      "extent_fraction": 0.005058,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.008538,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_07",
+      "component_id": 5,
+      "faces": 8,
+      "face_fraction": 0.000178,
+      "area_fraction": 1.1e-05,
+      "extent_fraction": 0.005899,
+      "contact_ratio": 0.666667,
+      "nearest_distance_fraction": 0.002154,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_07",
+      "component_id": 6,
+      "faces": 6,
+      "face_fraction": 0.000133,
+      "area_fraction": 1.8e-05,
+      "extent_fraction": 0.005708,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.006666,
+      "action": "REMOVE_TINY_DEBRIS",
+      "reason": "detached component is tiny by faces, area, and extent"
+    },
+    {
+      "object": "organic_attachment_07",
+      "component_id": 7,
+      "faces": 96,
+      "face_fraction": 0.002136,
+      "area_fraction": 0.000431,
+      "extent_fraction": 0.022497,
+      "contact_ratio": 0.12,
+      "nearest_distance_fraction": 0.003678,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_08",
+      "component_id": 0,
+      "faces": 314,
+      "face_fraction": 0.006985,
+      "area_fraction": 0.000989,
+      "extent_fraction": 0.033205,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.031225,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_08",
+      "component_id": 1,
+      "faces": 86,
+      "face_fraction": 0.001913,
+      "area_fraction": 0.000222,
+      "extent_fraction": 0.01806,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.053482,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_09",
+      "component_id": 0,
+      "faces": 276,
+      "face_fraction": 0.00614,
+      "area_fraction": 0.00082,
+      "extent_fraction": 0.030437,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.054957,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_09",
+      "component_id": 1,
+      "faces": 40,
+      "face_fraction": 0.00089,
+      "area_fraction": 7.6e-05,
+      "extent_fraction": 0.00926,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.053097,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_09",
+      "component_id": 2,
+      "faces": 84,
+      "face_fraction": 0.001869,
+      "area_fraction": 0.000196,
+      "extent_fraction": 0.015291,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.045492,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    },
+    {
+      "object": "organic_attachment_10",
+      "component_id": 0,
+      "faces": 274,
+      "face_fraction": 0.006096,
+      "area_fraction": 0.000612,
+      "extent_fraction": 0.030815,
+      "contact_ratio": 0.214286,
+      "nearest_distance_fraction": 0.003204,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_10",
+      "component_id": 1,
+      "faces": 8,
+      "face_fraction": 0.000178,
+      "area_fraction": 0.0,
+      "extent_fraction": 0.000907,
+      "contact_ratio": 1.0,
+      "nearest_distance_fraction": 0.001756,
+      "action": "KEEP_ATTACHED",
+      "reason": "surface contact with main component"
+    },
+    {
+      "object": "organic_attachment_11",
+      "component_id": 0,
+      "faces": 264,
+      "face_fraction": 0.005873,
+      "area_fraction": 0.000562,
+      "extent_fraction": 0.02302,
+      "contact_ratio": 0.0,
+      "nearest_distance_fraction": 0.11607,
+      "action": "KEEP_AMBIGUOUS_DETACHED",
+      "reason": "not enough evidence for destructive automatic removal"
+    }
+  ]
+}

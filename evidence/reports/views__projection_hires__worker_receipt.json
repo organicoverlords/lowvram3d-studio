@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "backend": "deterministic_source_projection_views",
+  "source_image": "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\jobs\\highres-20260731\\source\\modeling_input_upscaled.png",
+  "view_order": [
+    "front",
+    "right",
+    "back",
+    "left",
+    "top",
+    "bottom"
+  ],
+  "background_removal": {
+    "backend": "border_colour_estimation",
+    "background_rgb": [
+      254.0,
+      254.0,
+      254.0
+    ],
+    "threshold_low": 8.0,
+    "threshold_high": 26.06,
+    "foreground_bbox_found": true
+  },
+  "limitations": [
+    "Unseen views are mirrored and palette-preserving approximations, not semantic reconstructions.",
+    "MV-Adapter is preferred when it passes the target-machine VRAM gate."
+  ]
+}

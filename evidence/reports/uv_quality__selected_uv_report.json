@@ -1,0 +1,74 @@
+{
+  "selected_preset": "B",
+  "all_candidates_valid": false,
+  "selection_reason": [
+    "exact positive-area overlap measured by convex clipping, not raster collision",
+    "valid xref triangle mapping (41,319 in = 41,319 out)",
+    "B and C tied for chart count and utilization",
+    "B selected as the less aggressive maxCost on that tie",
+    "utilization improved materially over the 27.89% baseline"
+  ],
+  "candidates": [
+    {
+      "preset": "A",
+      "max_cost": 2.0,
+      "chart_count": 1272,
+      "atlas_utilization": 0.8187564015388489,
+      "atlas_count": 1,
+      "atlas_width": 2680,
+      "atlas_height": 2676,
+      "overlap_pair_count": 2,
+      "overlap_texel_area": 0.7980918661342002,
+      "degenerate_triangle_count": 10,
+      "out_of_bounds_triangle_count": 0,
+      "stretch_p95": 1.1148094533891115,
+      "tiny_chart_surface_percent": 0.0,
+      "runtime_seconds": 4.9339213371276855,
+      "valid": false,
+      "errors": [
+        "atlas 2680x2676 exceeds 2048",
+        "chart_count 1272 above 1250"
+      ]
+    },
+    {
+      "preset": "B",
+      "max_cost": 4.0,
+      "chart_count": 1161,
+      "atlas_utilization": 0.8165588974952698,
+      "atlas_count": 1,
+      "atlas_width": 2656,
+      "atlas_height": 2656,
+      "overlap_pair_count": 2,
+      "overlap_texel_area": 0.811428869375959,
+      "degenerate_triangle_count": 10,
+      "out_of_bounds_triangle_count": 0,
+      "stretch_p95": 1.1109078471914828,
+      "tiny_chart_surface_percent": 0.0,
+      "runtime_seconds": 5.875840663909912,
+      "valid": false,
+      "errors": [
+        "atlas 2656x2656 exceeds 2048"
+      ]
+    },
+    {
+      "preset": "C",
+      "max_cost": 8.0,
+      "chart_count": 1161,
+      "atlas_utilization": 0.8165588974952698,
+      "atlas_count": 1,
+      "atlas_width": 2656,
+      "atlas_height": 2656,
+      "overlap_pair_count": 2,
+      "overlap_texel_area": 0.811428869375959,
+      "degenerate_triangle_count": 10,
+      "out_of_bounds_triangle_count": 0,
+      "stretch_p95": 1.1109078471914828,
+      "tiny_chart_surface_percent": 0.0,
+      "runtime_seconds": 5.942594289779663,
+      "valid": false,
+      "errors": [
+        "atlas 2656x2656 exceeds 2048"
+      ]
+    }
+  ]
+}

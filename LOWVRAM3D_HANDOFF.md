@@ -1,5 +1,108 @@
 # LowVRAM3DStudio — Session Handoff
 
+> **Read `evidence/RESULTS.md` first.** It carries the current measured state, the known
+> limitations, and the six measurement bugs that invalidated earlier conclusions. Everything below
+> the "CURRENT STATE" section is older history, kept for context but partly superseded.
+
+---
+
+## CURRENT STATE (latest session)
+
+Geometry repair and texturing are done and measured. Rigging is still untested and is the next
+step. The pipeline stops at a validated unrigged export by design.
+
+Accepted asset: `evidence/deliverable/game_ready_unrigged.glb` (40,317 faces, 2048 atlas,
+smooth-shaded, one material, UVs embedded).
+
+| | value |
+|---|---|
+| faces | 40,317 (main component 36,705, never modified) |
+| components | 52 |
+| boundary edges | 54 (down from 136 — no removal opened a hole) |
+| non-manifold edges | 1 |
+| detached screen-space islands | 0 in all six views |
+| UV charts | 1,139 |
+| native atlas utilization | 81.03% (was 27.89%) |
+| observed / synthesized coverage | 23.36% / 76.64% |
+
+### How to reproduce this run
+
+Prerequisites (installed into the control env this session):
+
+```bash
+"%LOCALAPPDATA%\LowVRAM3DStudio\envs\control\Scripts\python.exe" -m pip install xatlas open3d pytest
+```
+
+Paths below assume `CONTROL` is the control-env python, `SRC` the repo root, `BL` the Blender 5.2
+executable, and `JOB` a writable job directory. Blender stages need
+`PYTHONPATH=$SRC/blender:$SRC/src` and `--python-use-system-env`, or they die on
+`No module named 'common'`.
+
+1. **Component audit** (Open3D clustering; caches every geometric metric so nothing is recomputed
+   later):
+   `$CONTROL analysis/stage1_component_audit.py <input.glb> $JOB/geometry_audit/cache.npz $JOB/geometry_audit/geometry.json`
+
+2. **Six-view ID/depth/mask buffers** (deterministic numpy ortho rasteriser — six renders total,
+   never one per component):
+   `$CONTROL analysis/stage2_component_id_render.py $JOB/geometry_audit/cache.npz <front_view.png> $JOB/geometry_audit/idrenders $JOB/geometry_audit/screen.json`
+
+3. **Classification** (pure rules, zero inference calls):
+   `$CONTROL analysis/stage3_classify.py $JOB/geometry_audit/geometry.json $JOB/geometry_audit/screen.json $JOB/geometry_audit/decisions.json`
+
+4. **Debris removal** (deletes only `REMOVE_OUTBOARD_DEBRIS`; asserts the main component and
+   boundary-edge count are unchanged, and that the source file stays byte-identical):
+   `$CONTROL analysis/stage4_remove_debris.py $JOB/geometry_audit/cache.npz $JOB/geometry_audit/decisions.json <input.glb> $JOB/cleanup`
+
+   Repeat steps 1–4 until `removed_component_ids` comes back empty. Removing debris can reveal
+   fragments that were previously hidden behind it, and component IDs are renumbered each pass, so
+   one pass is not enough. It converged in three passes here.
+
+5. **UV unwrap + full metrics + selection**:
+   `$CONTROL analysis/stage5b_finalize_uv.py $JOB/cleanup/debris_clean_candidate.glb $JOB/uv $SRC/src`
+
+6. **Rebuild the raster NPZ** (never reuse an NPZ across a geometry or UV change — it is indexed by
+   topology):
+   `$CONTROL analysis/stage6_build_npz.py $JOB/uv/game_ready_uv.glb $JOB/raster/mesh_uv.npz $JOB/raster/report.json`
+
+7. **One 2048 texture pass**:
+   `$CONTROL workers/raster_project.py --npz $JOB/raster/mesh_uv.npz --views-dir <views> --view-metadata <views>/view_metadata.json --output-dir $JOB/textured --atlas-size 2048 --report $JOB/textured/report.json`
+
+8. **Export** (applies smooth shading and packs the atlas):
+   `$BL --background --python-use-system-env --python $SRC/blender/raster_export.py -- --cleaned-mesh $JOB/uv/game_ready_uv.glb --atlas $JOB/textured/basecolor.png --output $JOB/candidate.glb --texture $JOB/basecolor_2048.png --report $JOB/export.json`
+
+9. **Validate in a fresh Blender process, then render**:
+   `$BL --background --python analysis/phaseA_darkness_diagnosis.py -- $JOB/candidate.glb $JOB/textured/basecolor.png $JOB/diag`
+   `$CONTROL analysis/phaseA_stats.py $JOB/diag $JOB/textured/basecolor.png $JOB/textured/debug_coverage.png $JOB/luminance.json`
+
+Tests: `PYTHONPATH="src;." python -m pytest tests -q` from the repo root.
+
+### Rules that must not be relaxed
+
+* **Never diagnose darkness from a lit render.** Use `BASECOLOR_EMISSION` (texture straight to
+  Emission, lighting disabled). Doing this closed a darkness hypothesis that had already caused one
+  wrong fix: the texture was uniform (rear/front emission ratio 0.92) and the apparent darkness was
+  the QA render's single-sun lighting plus a genuinely dark ghillie suit.
+* **Never use raster pixel collision or area/coverage ratio as a UV overlap gate.** Use
+  `src/lowvram3d/uv_overlap.py`. See `evidence/RESULTS.md` for why both are wrong.
+* **Weld by position before computing 3D connectivity** on any mesh that has been UV-unwrapped.
+* **Never treat mirrored fallback views as real observations.** `view_metadata.json` governs this.
+* **Keep observed, synthesized and inpainted coverage separate** in every receipt.
+* **Promote outputs only after fresh-process validation.** A stale canonical GLB was published once
+  because stages were verified in scratch directories without re-running the export chain.
+
+### Next step: rigging
+
+Rigging has never been executed successfully in any session. Start at `blender/rig_animate.py`,
+dry-run it against `evidence/deliverable/game_ready_unrigged.glb`, and if it damages the mesh,
+preserve the unrigged asset and report rigging as a separately failed stage. Do not let a rig
+failure overwrite a working texture result.
+
+Also open: the rear carries no real material detail because 77% of the surface has no observation.
+That needs generated rear views (the MV-Adapter lane, still NaN-blocked on this GPU), not another
+repair pass.
+
+---
+
 ## UPDATE (continuation session, same day)
 
 Steps 1-7 of the "Immediate next steps" list below are now DONE:

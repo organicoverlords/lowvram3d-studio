@@ -1,0 +1,35 @@
+{
+  "removed_component_ids": [
+    24,
+    25,
+    37,
+    59,
+    60,
+    61,
+    64
+  ],
+  "components_before": 65,
+  "components_after": 58,
+  "verified_debris_removed_faces": 3200,
+  "verified_debris_removed_faces_percent": 7.1189,
+  "main_surface_removed_faces": 0,
+  "main_surface_removed_faces_percent": 0.0,
+  "main_component_faces_before": 36705,
+  "main_component_faces_after": 36705,
+  "topology_before": {
+    "faces": 44951,
+    "boundary_edges": 136,
+    "non_manifold_edges": 1
+  },
+  "topology_after": {
+    "faces": 41751,
+    "boundary_edges": 124,
+    "non_manifold_edges": 1
+  },
+  "source_glb_sha256": "98f2716e0049ba69359449322bc2c663e5ed38e933262e47c79ebd775590b0a0",
+  "source_unmodified": true,
+  "candidate_glb": "C:/Users/Lauri/AppData/Local/LowVRAM3DStudio/jobs/highres-20260731/geometry_cleanup_v6\\debris_clean_candidate.glb",
+  "removed_glb": "C:/Users/Lauri/AppData/Local/LowVRAM3DStudio/jobs/highres-20260731/geometry_cleanup_v6\\removed_components.glb",
+  "errors": [],
+  "success": true
+}

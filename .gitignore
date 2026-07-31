@@ -17,3 +17,6 @@ jobs/
 *.npz
 *.blend
 *.blend1
+
+# ...except the curated evidence set for the documented run.
+!evidence/deliverable/*.glb

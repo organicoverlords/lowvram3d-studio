@@ -1,0 +1,46 @@
+{
+  "job_type": "single_image",
+  "views": [
+    {
+      "view": "front",
+      "source_type": "real",
+      "confidence": 1.0
+    },
+    {
+      "view": "right",
+      "source_type": "mirrored",
+      "confidence": 0.0
+    },
+    {
+      "view": "back",
+      "source_type": "mirrored",
+      "confidence": 0.0
+    },
+    {
+      "view": "left",
+      "source_type": "mirrored",
+      "confidence": 0.0
+    },
+    {
+      "view": "top",
+      "source_type": "mirrored",
+      "confidence": 0.0
+    },
+    {
+      "view": "bottom",
+      "source_type": "mirrored",
+      "confidence": 0.0
+    }
+  ],
+  "policy": {
+    "semantic_projection": [
+      "real",
+      "generated"
+    ],
+    "low_frequency_fill_only": [
+      "mirrored",
+      "synthetic"
+    ],
+    "rule": "A front face must never be projected onto rear-facing polygons."
+  }
+}

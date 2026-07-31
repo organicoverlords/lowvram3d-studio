@@ -1,0 +1,32 @@
+{
+  "source_mesh": "C:/Users/Lauri/AppData/Local/LowVRAM3DStudio/jobs/highres-20260731/uv_quality/game_ready_uv.glb",
+  "source_mesh_sha256": "b4c34974bbf4fed0d46ff24bdbc9cc0cb6f01de1d87640130035665572afeb6e",
+  "npz_sha256": "48597f43d0f431b587a9bd4935af7505f60d3760fbceee3e9385fe3bc2d774fc",
+  "vertices": 30580,
+  "triangles": 41319,
+  "uv_shape": [
+    41319,
+    3,
+    2
+  ],
+  "normals_shape": [
+    41319,
+    3
+  ],
+  "uv_min": [
+    0.00018825300503522158,
+    0.0001882314682006836
+  ],
+  "uv_max": [
+    0.9998117685317993,
+    0.9998117685317993
+  ],
+  "visible_triangles": {
+    "front": 12315,
+    "right": 10747,
+    "back": 11624,
+    "left": 11880
+  },
+  "axis_convention": "converted glTF Y-up to Blender Z-up as (x, -z, y)",
+  "reused_from_previous_job": false
+}

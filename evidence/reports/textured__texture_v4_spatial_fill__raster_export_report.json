@@ -1,0 +1,48 @@
+{
+  "success": true,
+  "backend": "raster_uv_atlas_projection_export",
+  "output": "C:/Users/Lauri/AppData/Local/LowVRAM3DStudio/jobs/highres-20260731/textured/texture_v4_spatial_fill/textured_candidate.glb",
+  "texture": "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\jobs\\highres-20260731\\textured\\texture_v4_spatial_fill\\embedded_basecolor.png",
+  "output_stats": {
+    "objects": 14,
+    "vertices": 37824,
+    "faces": 44779,
+    "edges": 80400,
+    "uv_layers": 14,
+    "materials": 14,
+    "armatures": 0,
+    "actions": 0,
+    "bounds_min": [
+      -1.0075594186782837,
+      -0.7473747134208679,
+      -1.010337233543396
+    ],
+    "bounds_max": [
+      0.7177436947822571,
+      1.0102534294128418,
+      0.9707604646682739
+    ],
+    "finite_bounds": true,
+    "triangles": 44779,
+    "non_manifold_edges": 26463,
+    "texture_paths": [
+      "packed:embedded_basecolor.png"
+    ],
+    "object_names": [
+      "accessory",
+      "accessory_02",
+      "deform_body",
+      "organic_attachment",
+      "organic_attachment_02",
+      "organic_attachment_03",
+      "organic_attachment_04",
+      "organic_attachment_05",
+      "organic_attachment_06",
+      "organic_attachment_07",
+      "organic_attachment_08",
+      "organic_attachment_09",
+      "organic_attachment_10",
+      "organic_attachment_11"
+    ]
+  }
+}

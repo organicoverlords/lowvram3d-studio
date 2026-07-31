@@ -1,0 +1,1580 @@
+{
+  "input_mesh": "C:/Users/Lauri/AppData/Local/LowVRAM3DStudio/jobs/highres-20260731/geometry_cleanup_v6/pass2/debris_clean_candidate.glb",
+  "input_mesh_sha256": "2b185df81af46b52408ab147e9f147837a7c11df5aec314b61e021a18509881d",
+  "component_signature_version": 1,
+  "weld_distance": 0.0004,
+  "model_diagonal": 2.8676891856888442,
+  "total_faces": 41319,
+  "component_count": 56,
+  "main_component_id": 21,
+  "components": [
+    {
+      "component_id": 21,
+      "is_main": true,
+      "faces": 36705,
+      "surface_area": 9.402337172990798,
+      "bbox_diagonal": 2.855840525994621,
+      "bbox_extent": [
+        1.5067141652107239,
+        1.9195570349693298,
+        1.4835559725761414
+      ],
+      "centroid_normalized": [
+        0.4064899791127792,
+        0.41891176112014467,
+        0.40415103517480594
+      ],
+      "centroid_world": [
+        -0.17650626088303115,
+        -0.20621221545383092,
+        -0.15011594958761057
+      ],
+      "nearest_surface_distance_to_main": 0.0,
+      "distance_as_model_ratio": 0.0,
+      "compactness": 1.1528370270670047,
+      "elongation": 1.293889189523526,
+      "boundary_edge_count": 16,
+      "watertight": false
+    },
+    {
+      "component_id": 30,
+      "is_main": false,
+      "faces": 1460,
+      "surface_area": 0.11048754837904287,
+      "bbox_diagonal": 0.35120126293763093,
+      "bbox_extent": [
+        0.14289853535592556,
+        0.1917676329612732,
+        0.25719158351421356
+      ],
+      "centroid_normalized": [
+        0.46041056595268126,
+        0.3056454735480496,
+        0.3169724938332553
+      ],
+      "centroid_world": [
+        -0.09526334889487573,
+        -0.42363331458770515,
+        -0.28142762668634375
+      ],
+      "nearest_surface_distance_to_main": 0.16406068448348163,
+      "distance_as_model_ratio": 0.05721006491994453,
+      "compactness": 0.8957796645050337,
+      "elongation": 1.7998195913877757,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 36,
+      "is_main": false,
+      "faces": 534,
+      "surface_area": 0.02795604263459586,
+      "bbox_diagonal": 0.16850530326476898,
+      "bbox_extent": [
+        0.11525329947471619,
+        0.09076838195323944,
+        0.0828964114189148
+      ],
+      "centroid_normalized": [
+        0.23474730778794117,
+        0.6320972706560201,
+        0.6807920015783913
+      ],
+      "centroid_world": [
+        -0.43527337653929415,
+        0.20300952912928003,
+        0.26657133025972374
+      ],
+      "nearest_surface_distance_to_main": 0.10447580430865303,
+      "distance_as_model_ratio": 0.03643205296795685,
+      "compactness": 0.9845744164440778,
+      "elongation": 1.3903291771254938,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 14,
+      "is_main": false,
+      "faces": 350,
+      "surface_area": 0.01569701256263561,
+      "bbox_diagonal": 0.1636104885640901,
+      "bbox_extent": [
+        0.04046756029129028,
+        0.13041827082633972,
+        0.09012126922607422
+      ],
+      "centroid_normalized": [
+        0.03131203451385095,
+        0.2632135888325802,
+        0.2513236332771199
+      ],
+      "centroid_world": [
+        -0.7417921844848805,
+        -0.505083737400292,
+        -0.38031046925965
+      ],
+      "nearest_surface_distance_to_main": 0.04216826039124626,
+      "distance_as_model_ratio": 0.014704613248076629,
+      "compactness": 0.5864010277978124,
+      "elongation": 3.2227856062380233,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 38,
+      "is_main": false,
+      "faces": 344,
+      "surface_area": 0.01657429180381588,
+      "bbox_diagonal": 0.14157704246185315,
+      "bbox_extent": [
+        0.042662955820560455,
+        0.08915802836418152,
+        0.10136457532644272
+      ],
+      "centroid_normalized": [
+        0.4601802774761381,
+        0.31256241575561733,
+        0.49226846014462056
+      ],
+      "centroid_world": [
+        -0.09561032780456817,
+        -0.41035584951269216,
+        -0.017390089802052252
+      ],
+      "nearest_surface_distance_to_main": 0.16080016408556275,
+      "distance_as_model_ratio": 0.056073079637791054,
+      "compactness": 0.8268929882567123,
+      "elongation": 2.3759388766399616,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 0,
+      "is_main": false,
+      "faces": 318,
+      "surface_area": 0.015466736828823402,
+      "bbox_diagonal": 0.15945858106019328,
+      "bbox_extent": [
+        0.06050870567560196,
+        0.11828017979860306,
+        0.08817899227142334
+      ],
+      "centroid_normalized": [
+        0.4818664543818444,
+        0.6154699461566682,
+        0.10216027917703233
+      ],
+      "centroid_world": [
+        -0.06293545787147484,
+        0.17109243141383118,
+        -0.6049860589992926
+      ],
+      "nearest_surface_distance_to_main": 0.009421031081984704,
+      "distance_as_model_ratio": 0.003285234372330239,
+      "compactness": 0.6082791151566976,
+      "elongation": 1.9547630126601014,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 52,
+      "is_main": false,
+      "faces": 314,
+      "surface_area": 0.009732018709821698,
+      "bbox_diagonal": 0.10495419649256109,
+      "bbox_extent": [
+        0.036721356213092804,
+        0.08283805847167969,
+        0.05296018719673157
+      ],
+      "centroid_normalized": [
+        0.43085302955878624,
+        0.06509849852742583,
+        0.7774204603568969
+      ],
+      "centroid_world": [
+        -0.13979810766828885,
+        -0.8853769527291352,
+        0.4121168370141923
+      ],
+      "nearest_surface_distance_to_main": 0.09872295112005028,
+      "distance_as_model_ratio": 0.034425959275058655,
+      "compactness": 0.8834934192054831,
+      "elongation": 2.2558550939941653,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 54,
+      "is_main": false,
+      "faces": 274,
+      "surface_area": 0.00602978844657325,
+      "bbox_diagonal": 0.09742294217211525,
+      "bbox_extent": [
+        0.032228365540504456,
+        0.08826595544815063,
+        0.025723204016685486
+      ],
+      "centroid_normalized": [
+        0.36036020445677486,
+        0.2268809191010495,
+        0.6575908724312134
+      ],
+      "centroid_world": [
+        -0.2460106457952115,
+        -0.574826369182669,
+        0.23162489582737572
+      ],
+      "nearest_surface_distance_to_main": 0.010725360600441778,
+      "distance_as_model_ratio": 0.003740070804732435,
+      "compactness": 0.6353010791689687,
+      "elongation": 3.431374854815772,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 44,
+      "is_main": false,
+      "faces": 242,
+      "surface_area": 0.008329157290932402,
+      "bbox_diagonal": 0.14094852056447424,
+      "bbox_extent": [
+        0.029320567846298218,
+        0.12978202104568481,
+        0.04651254415512085
+      ],
+      "centroid_normalized": [
+        0.715725716513859,
+        0.5251916100170996,
+        0.24462235666158783
+      ],
+      "centroid_world": [
+        0.2894236050485595,
+        -0.0022019838282035862,
+        -0.3904041902321141
+      ],
+      "nearest_surface_distance_to_main": 0.035639487239187126,
+      "distance_as_model_ratio": 0.012427946311980183,
+      "compactness": 0.41925670809680154,
+      "elongation": 4.426313355389877,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 51,
+      "is_main": false,
+      "faces": 96,
+      "surface_area": 0.00424487911725269,
+      "bbox_diagonal": 0.07110819834861488,
+      "bbox_extent": [
+        0.02361956238746643,
+        0.04806094244122505,
+        0.046782881021499634
+      ],
+      "centroid_normalized": [
+        0.7340507469024331,
+        0.5719782506256904,
+        0.2956354588152212
+      ],
+      "centroid_world": [
+        0.31703418791294097,
+        0.08760764129459858,
+        -0.3135662907361984
+      ],
+      "nearest_surface_distance_to_main": 0.012120784818334642,
+      "distance_as_model_ratio": 0.004226673127207516,
+      "compactness": 0.8395101994760636,
+      "elongation": 2.0347939412598213,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 53,
+      "is_main": false,
+      "faces": 86,
+      "surface_area": 0.0021862026086447205,
+      "bbox_diagonal": 0.05708334475313321,
+      "bbox_extent": [
+        0.017913520336151123,
+        0.048773109912872314,
+        0.023638904094696045
+      ],
+      "centroid_normalized": [
+        0.29391574571492707,
+        0.04449502762020737,
+        0.7774828448225826
+      ],
+      "centroid_world": [
+        -0.3461234529813131,
+        -0.9249264902538723,
+        0.4122108028994666
+      ],
+      "nearest_surface_distance_to_main": 0.16904523973591631,
+      "distance_as_model_ratio": 0.05894824326831995,
+      "compactness": 0.6709213057382879,
+      "elongation": 2.7226982188667694,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 40,
+      "is_main": false,
+      "faces": 78,
+      "surface_area": 0.0022552185144826264,
+      "bbox_diagonal": 0.05655005761585223,
+      "bbox_extent": [
+        0.020398885011672974,
+        0.04728943109512329,
+        0.023356031626462936
+      ],
+      "centroid_normalized": [
+        0.6861640561843652,
+        0.22350655214653756,
+        0.4750650708763829
+      ],
+      "centroid_world": [
+        0.24488263268296312,
+        -0.5813036590087705,
+        -0.04330249739492812
+      ],
+      "nearest_surface_distance_to_main": 0.008205778267177914,
+      "distance_as_model_ratio": 0.002861460128987728,
+      "compactness": 0.7052165971414315,
+      "elongation": 2.3182360735923844,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 1,
+      "is_main": false,
+      "faces": 58,
+      "surface_area": 0.0017903218285491096,
+      "bbox_diagonal": 0.05452307830959549,
+      "bbox_extent": [
+        0.019969940185546875,
+        0.04612445831298828,
+        0.02113059163093567
+      ],
+      "centroid_normalized": [
+        0.1573010229479509,
+        0.639080713409433,
+        0.1790399427263084
+      ],
+      "centroid_world": [
+        -0.551962790950652,
+        0.21641464579489925,
+        -0.4891869483455535
+      ],
+      "nearest_surface_distance_to_main": 0.0065415408843917475,
+      "distance_as_model_ratio": 0.0022811192081196247,
+      "compactness": 0.6022410735938696,
+      "elongation": 2.309694364851958,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 34,
+      "is_main": false,
+      "faces": 50,
+      "surface_area": 0.0018900546953987585,
+      "bbox_diagonal": 0.05637531387544799,
+      "bbox_extent": [
+        0.01918134093284607,
+        0.04837149381637573,
+        0.021689876914024353
+      ],
+      "centroid_normalized": [
+        0.7374333784334921,
+        0.17665566105723657,
+        0.4029191011287104
+      ],
+      "centroid_world": [
+        0.32213084675647596,
+        -0.6712366165938201,
+        -0.1519715361021183
+      ],
+      "nearest_surface_distance_to_main": 0.02060780616671968,
+      "distance_as_model_ratio": 0.007186206325832868,
+      "compactness": 0.5946979294862099,
+      "elongation": 2.5217993875258498,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 6,
+      "is_main": false,
+      "faces": 38,
+      "surface_area": 0.000686029282512787,
+      "bbox_diagonal": 0.028653114589520003,
+      "bbox_extent": [
+        0.01862204074859619,
+        0.01641678810119629,
+        0.014307677745819092
+      ],
+      "centroid_normalized": [
+        0.4189727695402228,
+        0.8868712023425217,
+        0.19067146907623206
+      ],
+      "centroid_world": [
+        -0.157698263724645,
+        0.6920626220248994,
+        -0.4716670953092121
+      ],
+      "nearest_surface_distance_to_main": 0.0018776655197143555,
+      "distance_as_model_ratio": 0.0006547660496419258,
+      "compactness": 0.8356010563135339,
+      "elongation": 1.301541807092896,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 45,
+      "is_main": false,
+      "faces": 38,
+      "surface_area": 0.0011226747560889234,
+      "bbox_diagonal": 0.042216138700466956,
+      "bbox_extent": [
+        0.015666842460632324,
+        0.03498992323875427,
+        0.017676472663879395
+      ],
+      "centroid_normalized": [
+        0.7008451615671895,
+        0.590041062549633,
+        0.27374568923345444
+      ],
+      "centroid_world": [
+        0.267002862124216,
+        0.12228023899453026,
+        -0.34653750487736296
+      ],
+      "nearest_surface_distance_to_main": 0.015884820516081092,
+      "distance_as_model_ratio": 0.005539240652492616,
+      "compactness": 0.6299367440068937,
+      "elongation": 2.2333742952146887,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 31,
+      "is_main": false,
+      "faces": 36,
+      "surface_area": 0.0013130717639781844,
+      "bbox_diagonal": 0.04252560746830703,
+      "bbox_extent": [
+        0.016687527298927307,
+        0.035372138023376465,
+        0.016696274280548096
+      ],
+      "centroid_normalized": [
+        0.41367841145759265,
+        0.1275073581370095,
+        0.14901617455839497
+      ],
+      "centroid_world": [
+        -0.16567534804344178,
+        -0.7655795872211456,
+        -0.5344099044799805
+      ],
+      "nearest_surface_distance_to_main": 0.02043483949782025,
+      "distance_as_model_ratio": 0.007125890629919023,
+      "compactness": 0.726084908605811,
+      "elongation": 2.119675215491646,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 43,
+      "is_main": false,
+      "faces": 32,
+      "surface_area": 0.0007786125669269713,
+      "bbox_diagonal": 0.036581434340398705,
+      "bbox_extent": [
+        0.011841461062431335,
+        0.023287594318389893,
+        0.02560603618621826
+      ],
+      "centroid_normalized": [
+        0.3646020315857649,
+        0.8879741087227836,
+        0.6412895998086059
+      ],
+      "centroid_world": [
+        -0.2396194247735871,
+        0.6941797137260437,
+        0.20707129107581246
+      ],
+      "nearest_surface_distance_to_main": 0.040621015554403186,
+      "distance_as_model_ratio": 0.014165069128524003,
+      "compactness": 0.5818351428772167,
+      "elongation": 2.1624051332193233,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 4,
+      "is_main": false,
+      "faces": 30,
+      "surface_area": 0.000557152353557098,
+      "bbox_diagonal": 0.027923391042822505,
+      "bbox_extent": [
+        0.014830440282821655,
+        0.014974355697631836,
+        0.018317818641662598
+      ],
+      "centroid_normalized": [
+        0.25851469276319,
+        0.6860707715954807,
+        0.128070381877873
+      ],
+      "centroid_world": [
+        -0.3994627209270702,
+        0.3066147425595452,
+        -0.5659592642503626
+      ],
+      "nearest_surface_distance_to_main": 0.011107869865182335,
+      "distance_as_model_ratio": 0.003873456691407136,
+      "compactness": 0.7145582748245518,
+      "elongation": 1.2351500220044331,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 33,
+      "is_main": false,
+      "faces": 22,
+      "surface_area": 0.0003568032642825672,
+      "bbox_diagonal": 0.0358378602964527,
+      "bbox_extent": [
+        0.005673065781593323,
+        0.03392976522445679,
+        0.01004686951637268
+      ],
+      "centroid_normalized": [
+        0.6721559667727808,
+        0.0412780575897448,
+        0.23836373693867546
+      ],
+      "centroid_world": [
+        0.22377644593899065,
+        -0.9311016477071322,
+        -0.3998311643417065
+      ],
+      "nearest_surface_distance_to_main": 0.02684766373571951,
+      "distance_as_model_ratio": 0.00936212469248841,
+      "compactness": 0.27780795312520057,
+      "elongation": 5.980851717698108,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 39,
+      "is_main": false,
+      "faces": 16,
+      "surface_area": 0.00029576358591869507,
+      "bbox_diagonal": 0.025232925095869572,
+      "bbox_extent": [
+        0.010292638093233109,
+        0.02238285541534424,
+        0.00545617938041687
+      ],
+      "centroid_normalized": [
+        0.5576184776063772,
+        0.0555082510467454,
+        0.4176441302738542
+      ],
+      "centroid_world": [
+        0.05120118856430054,
+        -0.9037859797477722,
+        -0.12979212999343873
+      ],
+      "nearest_surface_distance_to_main": 0.0037830432675645506,
+      "distance_as_model_ratio": 0.0013191957086715555,
+      "compactness": 0.4645254429473751,
+      "elongation": 4.102294637833941,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 32,
+      "is_main": false,
+      "faces": 14,
+      "surface_area": 0.00037299887815870394,
+      "bbox_diagonal": 0.02634736914764306,
+      "bbox_extent": [
+        0.011231750249862671,
+        0.022009849548339844,
+        0.009143203496932983
+      ],
+      "centroid_normalized": [
+        0.6674125166010296,
+        0.04630326816438507,
+        0.2356936517268555
+      ],
+      "centroid_world": [
+        0.21662942237324184,
+        -0.9214554693963792,
+        -0.40385294953982037
+      ],
+      "nearest_surface_distance_to_main": 0.023922952936777642,
+      "distance_as_model_ratio": 0.00834224052458849,
+      "compactness": 0.5373200085928477,
+      "elongation": 2.4072361022832838,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 8,
+      "is_main": false,
+      "faces": 12,
+      "surface_area": 0.00024944395440532573,
+      "bbox_diagonal": 0.023060682764249843,
+      "bbox_extent": [
+        0.010262133553624153,
+        0.020064979791641235,
+        0.004886746406555176
+      ],
+      "centroid_normalized": [
+        0.5065575019347492,
+        0.7347805987010082,
+        0.19303800373629493
+      ],
+      "centroid_world": [
+        -0.025733106769621372,
+        0.4001160338521004,
+        -0.4681025296449661
+      ],
+      "nearest_surface_distance_to_main": 0.005643641950962292,
+      "distance_as_model_ratio": 0.001968010333590821,
+      "compactness": 0.4690602814983159,
+      "elongation": 4.105999804844729,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 19,
+      "is_main": false,
+      "faces": 12,
+      "surface_area": 0.00022853180971294643,
+      "bbox_diagonal": 0.021651917866670638,
+      "bbox_extent": [
+        0.008846580982208252,
+        0.019182801246643066,
+        0.0047501251101493835
+      ],
+      "centroid_normalized": [
+        0.1765301826625655,
+        0.17906472424953243,
+        0.44915778848304044
+      ],
+      "centroid_world": [
+        -0.5229899436235428,
+        -0.6666122823953629,
+        -0.08232504408806562
+      ],
+      "nearest_surface_distance_to_main": 0.06443141412520854,
+      "distance_as_model_ratio": 0.022468060502076885,
+      "compactness": 0.4874767609442152,
+      "elongation": 4.0383781062220905,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 3,
+      "is_main": false,
+      "faces": 10,
+      "surface_area": 0.00013732213758995486,
+      "bbox_diagonal": 0.01372304807582875,
+      "bbox_extent": [
+        0.00970393419265747,
+        0.008125096559524536,
+        0.005304574966430664
+      ],
+      "centroid_normalized": [
+        0.2580034500620158,
+        0.6797579844307349,
+        0.1203048798484724
+      ],
+      "centroid_world": [
+        -0.40023301754678997,
+        0.2944969875471933,
+        -0.5776559625353131
+      ],
+      "nearest_surface_distance_to_main": 0.03591583135708274,
+      "distance_as_model_ratio": 0.012524311050277034,
+      "compactness": 0.7291877859758293,
+      "elongation": 1.829351880983415,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 15,
+      "is_main": false,
+      "faces": 10,
+      "surface_area": 0.0002159636692064393,
+      "bbox_diagonal": 0.019423069026810236,
+      "bbox_extent": [
+        0.0022046566009521484,
+        0.014680206775665283,
+        0.012525439262390137
+      ],
+      "centroid_normalized": [
+        0.10898600250332745,
+        0.2556235798239644,
+        0.3289070956583841
+      ],
+      "centroid_world": [
+        -0.6247597166470119,
+        -0.5196531925882611,
+        -0.26345126969473703
+      ],
+      "nearest_surface_distance_to_main": 0.007087355074346373,
+      "distance_as_model_ratio": 0.0024714516167636653,
+      "compactness": 0.5724597944769372,
+      "elongation": 6.658727154752893,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 9,
+      "is_main": false,
+      "faces": 8,
+      "surface_area": 9.526756537216984e-05,
+      "bbox_diagonal": 0.012607980052299078,
+      "bbox_extent": [
+        0.00782778114080429,
+        0.002520263195037842,
+        0.009556949138641357
+      ],
+      "centroid_normalized": [
+        0.5782335725118479,
+        0.7986393114679333,
+        0.30539232277354555
+      ],
+      "centroid_world": [
+        0.08226224407553673,
+        0.5226964751879374,
+        -0.29887012640635174
+      ],
+      "nearest_surface_distance_to_main": 0.007773426829026399,
+      "distance_as_model_ratio": 0.0027106936371694523,
+      "compactness": 0.5993134723812592,
+      "elongation": 3.7920440839107914,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 12,
+      "is_main": false,
+      "faces": 8,
+      "surface_area": 2.343095082621856e-05,
+      "bbox_diagonal": 0.006663873682990185,
+      "bbox_extent": [
+        0.003485731780529022,
+        0.0023831725120544434,
+        0.005155324935913086
+      ],
+      "centroid_normalized": [
+        0.5887898338503016,
+        0.7945029279206616,
+        0.30811007126402135
+      ],
+      "centroid_world": [
+        0.09816751256585121,
+        0.5147564510504404,
+        -0.2947765489419301
+      ],
+      "nearest_surface_distance_to_main": 0.02206777590649201,
+      "distance_as_model_ratio": 0.007695316499647481,
+      "compactness": 0.5276384066174107,
+      "elongation": 2.1632193682314984,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 17,
+      "is_main": false,
+      "faces": 8,
+      "surface_area": 0.00020982528180984046,
+      "bbox_diagonal": 0.024195782956064466,
+      "bbox_extent": [
+        0.002796173095703125,
+        0.02241802215576172,
+        0.0086631178855896
+      ],
+      "centroid_normalized": [
+        0.1612075214417983,
+        0.22794167610650534,
+        0.4015624080985004
+      ],
+      "centroid_world": [
+        -0.5460768143335978,
+        -0.5727901856104533,
+        -0.1540150394042333
+      ],
+      "nearest_surface_distance_to_main": 0.011125235343971862,
+      "distance_as_model_ratio": 0.003879512256590486,
+      "compactness": 0.35840862714737515,
+      "elongation": 8.017394270122782,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 18,
+      "is_main": false,
+      "faces": 8,
+      "surface_area": 5.682817948540787e-05,
+      "bbox_diagonal": 0.014881360854747337,
+      "bbox_extent": [
+        0.0019239187240600586,
+        0.014497995376586914,
+        0.002749830484390259
+      ],
+      "centroid_normalized": [
+        0.1662621392669522,
+        0.23207813210669304,
+        0.40707137351662115
+      ],
+      "centroid_world": [
+        -0.5384609500567118,
+        -0.5648500223954519,
+        -0.14571722348531088
+      ],
+      "nearest_surface_distance_to_main": 0.020963331857099945,
+      "distance_as_model_ratio": 0.007310182694037104,
+      "compactness": 0.25661287809493516,
+      "elongation": 7.535658962761014,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 41,
+      "is_main": false,
+      "faces": 8,
+      "surface_area": 0.00011650025439330479,
+      "bbox_diagonal": 0.015193564154230857,
+      "bbox_extent": [
+        0.009358644485473633,
+        0.0019252300262451172,
+        0.01181328296661377
+      ],
+      "centroid_normalized": [
+        0.2556910388837235,
+        0.9993140468432321,
+        0.3294442679759778
+      ],
+      "centroid_world": [
+        -0.40371716022491455,
+        0.9079030752182007,
+        -0.26264216005802155
+      ],
+      "nearest_surface_distance_to_main": 0.051870043081163525,
+      "distance_as_model_ratio": 0.018087749307010022,
+      "compactness": 0.5046700659737086,
+      "elongation": 6.136037151702786,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 48,
+      "is_main": false,
+      "faces": 8,
+      "surface_area": 8.530675742671018e-05,
+      "bbox_diagonal": 0.015987603494156923,
+      "bbox_extent": [
+        0.0024320781230926514,
+        0.015164587646722794,
+        0.0044411420822143555
+      ],
+      "centroid_normalized": [
+        0.7245419214272827,
+        0.5061909658169317,
+        0.2976600294517451
+      ],
+      "centroid_world": [
+        0.30270710587501526,
+        -0.038674804071585335,
+        -0.3105168044567108
+      ],
+      "nearest_surface_distance_to_main": 0.026986966658886002,
+      "distance_as_model_ratio": 0.009410701408494343,
+      "compactness": 0.3337464821315432,
+      "elongation": 6.23523870501305,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 49,
+      "is_main": false,
+      "faces": 8,
+      "surface_area": 0.00010862105775298668,
+      "bbox_diagonal": 0.018644925360147283,
+      "bbox_extent": [
+        0.0021688640117645264,
+        0.017719797790050507,
+        0.005379408597946167
+      ],
+      "centroid_normalized": [
+        0.7244493591232392,
+        0.5160526882689279,
+        0.3028553945539664
+      ],
+      "centroid_world": [
+        0.3025676409403483,
+        -0.01974466536194086,
+        -0.3026913454135259
+      ],
+      "nearest_surface_distance_to_main": 0.006808238716255626,
+      "distance_as_model_ratio": 0.0023741201627540493,
+      "compactness": 0.3124587776081162,
+      "elongation": 8.17008244589488,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 55,
+      "is_main": false,
+      "faces": 8,
+      "surface_area": 3.944263822917932e-06,
+      "bbox_diagonal": 0.0028678274562107284,
+      "bbox_extent": [
+        0.0008282549679279327,
+        0.002459228038787842,
+        0.0012209117412567139
+      ],
+      "centroid_normalized": [
+        0.5575287720648746,
+        0.1845723180448262,
+        0.6629087193366143
+      ],
+      "centroid_world": [
+        0.05106602795422077,
+        -0.6560401419798533,
+        0.23963484168052673
+      ],
+      "nearest_surface_distance_to_main": 0.005860751308872645,
+      "distance_as_model_ratio": 0.002043719151336424,
+      "compactness": 0.4795787369837266,
+      "elongation": 2.9691678698168964,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 5,
+      "is_main": false,
+      "faces": 6,
+      "surface_area": 1.9224601146576685e-05,
+      "bbox_diagonal": 0.0058271980192651585,
+      "bbox_extent": [
+        0.0024105310440063477,
+        0.002859175205230713,
+        0.004468858242034912
+      ],
+      "centroid_normalized": [
+        0.38541770468773245,
+        0.6308723820652576,
+        0.05804528752886423
+      ],
+      "centroid_world": [
+        -0.20825615525245667,
+        0.20065828561782836,
+        -0.6714337587356567
+      ],
+      "nearest_surface_distance_to_main": 0.007753433083585887,
+      "distance_as_model_ratio": 0.0027037215616947845,
+      "compactness": 0.5661581783892425,
+      "elongation": 1.8538895207952129,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 10,
+      "is_main": false,
+      "faces": 6,
+      "surface_area": 1.539926119811154e-05,
+      "bbox_diagonal": 0.005258542318566841,
+      "bbox_extent": [
+        0.0031301528215408325,
+        0.001427292823791504,
+        0.003977090120315552
+      ],
+      "centroid_normalized": [
+        0.5838193721304878,
+        0.7946210851710006,
+        0.3028375153326079
+      ],
+      "centroid_world": [
+        0.09067844748497009,
+        0.5149832606315613,
+        -0.3027182757854462
+      ],
+      "nearest_surface_distance_to_main": 0.020388702447231503,
+      "distance_as_model_ratio": 0.007109802048625419,
+      "compactness": 0.5568896402615467,
+      "elongation": 2.786457028313706,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 13,
+      "is_main": false,
+      "faces": 6,
+      "surface_area": 2.8011516732752365e-05,
+      "bbox_diagonal": 0.008721968787720592,
+      "bbox_extent": [
+        0.0027700886130332947,
+        0.0016627311706542969,
+        0.00810152292251587
+      ],
+      "centroid_normalized": [
+        0.5941091942712194,
+        0.7905382557140588,
+        0.30735284544750996
+      ],
+      "centroid_world": [
+        0.10618226826190949,
+        0.5071460366249084,
+        -0.2959171116352081
+      ],
+      "nearest_surface_distance_to_main": 0.033071467194132176,
+      "distance_as_model_ratio": 0.01153244478487236,
+      "compactness": 0.36822016538845836,
+      "elongation": 4.872418984800689,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 16,
+      "is_main": false,
+      "faces": 6,
+      "surface_area": 5.6341329423712045e-05,
+      "bbox_diagonal": 0.014287294512075742,
+      "bbox_extent": [
+        0.0010221600532531738,
+        0.013724207878112793,
+        0.0038377195596694946
+      ],
+      "centroid_normalized": [
+        0.16118007779664187,
+        0.21431157687157604,
+        0.4070830920604663
+      ],
+      "centroid_world": [
+        -0.5461181640625,
+        -0.5989539384841919,
+        -0.1456995725631714
+      ],
+      "nearest_surface_distance_to_main": 0.024579791725243702,
+      "distance_as_model_ratio": 0.00857128863473376,
+      "compactness": 0.2760114483196124,
+      "elongation": 13.426672109160885,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 20,
+      "is_main": false,
+      "faces": 6,
+      "surface_area": 8.649856217402279e-05,
+      "bbox_diagonal": 0.01630499450455975,
+      "bbox_extent": [
+        0.010973453521728516,
+        0.00020956993103027344,
+        0.012057870626449585
+      ],
+      "centroid_normalized": [
+        0.209705134832335,
+        0.00020348660199126075,
+        0.17414686257159487
+      ],
+      "centroid_world": [
+        -0.4730047732591629,
+        -1.0099466294050217,
+        -0.4965570941567421
+      ],
+      "nearest_surface_distance_to_main": 0.012927889831780011,
+      "distance_as_model_ratio": 0.004508120997316039,
+      "compactness": 0.3253625588087079,
+      "elongation": 57.53626279863481,
+      "boundary_edge_count": 8,
+      "watertight": false
+    },
+    {
+      "component_id": 24,
+      "is_main": false,
+      "faces": 6,
+      "surface_area": 6.962302140893168e-05,
+      "bbox_diagonal": 0.011301302015048037,
+      "bbox_extent": [
+        0.009379684925079346,
+        0.004458978772163391,
+        0.004456281661987305
+      ],
+      "centroid_normalized": [
+        0.21232054045678161,
+        0.5450610689585221,
+        0.06796018866116914
+      ],
+      "centroid_world": [
+        -0.46906410455703734,
+        0.035938575863838196,
+        -0.6564995527267456
+      ],
+      "nearest_surface_distance_to_main": 0.01063368146095357,
+      "distance_as_model_ratio": 0.003708101112917251,
+      "compactness": 0.5451247544404355,
+      "elongation": 2.1048231769300734,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 27,
+      "is_main": false,
+      "faces": 6,
+      "surface_area": 4.286773234009804e-05,
+      "bbox_diagonal": 0.00847627200540213,
+      "bbox_extent": [
+        0.005741119384765625,
+        0.005021773278713226,
+        0.0036970973014831543
+      ],
+      "centroid_normalized": [
+        0.2917272996240397,
+        0.49150815469471765,
+        0.005201751339279614
+      ],
+      "centroid_world": [
+        -0.34942081570625305,
+        -0.06685929745435715,
+        -0.7510287284851074
+      ],
+      "nearest_surface_distance_to_main": 0.031206880517204025,
+      "distance_as_model_ratio": 0.010882239495459078,
+      "compactness": 0.5966515052945163,
+      "elongation": 1.5528721363277282,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 46,
+      "is_main": false,
+      "faces": 6,
+      "surface_area": 5.936804399576121e-05,
+      "bbox_diagonal": 0.011813137914970032,
+      "bbox_extent": [
+        0.0029748380184173584,
+        0.011100035160779953,
+        0.0027367472648620605
+      ],
+      "centroid_normalized": [
+        0.7039809808101907,
+        0.5547500637559785,
+        0.24525621961648625
+      ],
+      "centroid_world": [
+        0.2717276453971863,
+        0.05453715398907662,
+        -0.3894494414329529
+      ],
+      "nearest_surface_distance_to_main": 0.035745364679444114,
+      "distance_as_model_ratio": 0.012464867133380691,
+      "compactness": 0.4254242010398075,
+      "elongation": 4.0559226287705545,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 50,
+      "is_main": false,
+      "faces": 6,
+      "surface_area": 0.00017721191318270681,
+      "bbox_diagonal": 0.01804239271130805,
+      "bbox_extent": [
+        0.001782059669494629,
+        0.0093124620616436,
+        0.015350252389907837
+      ],
+      "centroid_normalized": [
+        0.7246751375646998,
+        0.5553963605854937,
+        0.29826813402779817
+      ],
+      "centroid_world": [
+        0.3029078245162964,
+        0.055777757614851,
+        -0.30960085391998293
+      ],
+      "nearest_surface_distance_to_main": 0.021241555889771214,
+      "distance_as_model_ratio": 0.007407202982727992,
+      "compactness": 0.544383121280554,
+      "elongation": 8.613770151849621,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 22,
+      "is_main": false,
+      "faces": 4,
+      "surface_area": 0.00026996386113505423,
+      "bbox_diagonal": 0.021906541711261013,
+      "bbox_extent": [
+        0.012680837884545326,
+        0.014802921563386917,
+        0.009998321533203125
+      ],
+      "centroid_normalized": [
+        0.501284622461214,
+        0.49515884526830034,
+        0.7793994558237476
+      ],
+      "centroid_world": [
+        -0.03367782896384597,
+        -0.05985158868134022,
+        0.415097676217556
+      ],
+      "nearest_surface_distance_to_main": 0.04162406581757353,
+      "distance_as_model_ratio": 0.014514845620403267,
+      "compactness": 0.5625459279220424,
+      "elongation": 1.480540660172644,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 35,
+      "is_main": false,
+      "faces": 4,
+      "surface_area": 3.9356804490242477e-05,
+      "bbox_diagonal": 0.009119996285387753,
+      "bbox_extent": [
+        0.003201425075531006,
+        0.008242208510637283,
+        0.0022341012954711914
+      ],
+      "centroid_normalized": [
+        0.2962570043304442,
+        0.4988791338218192,
+        0.016156592775074516
+      ],
+      "centroid_world": [
+        -0.3425958454608917,
+        -0.05271028261631727,
+        -0.734528124332428
+      ],
+      "nearest_surface_distance_to_main": 0.007921168206663057,
+      "distance_as_model_ratio": 0.0027622129504806577,
+      "compactness": 0.4731844960784549,
+      "elongation": 3.6892725174750547,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 37,
+      "is_main": false,
+      "faces": 4,
+      "surface_area": 1.2823079553792386e-05,
+      "bbox_diagonal": 0.005029116210170964,
+      "bbox_extent": [
+        0.0012694001197814941,
+        0.002275019884109497,
+        0.004301734268665314
+      ],
+      "centroid_normalized": [
+        0.1139703812758597,
+        0.6759837299835494,
+        0.43888515943439005
+      ],
+      "centroid_world": [
+        -0.6172496825456619,
+        0.2872520908713341,
+        -0.0977980736643076
+      ],
+      "nearest_surface_distance_to_main": 0.09341718648402875,
+      "distance_as_model_ratio": 0.03257577109479844,
+      "compactness": 0.5070012081721679,
+      "elongation": 3.3887930224914307,
+      "boundary_edge_count": 0,
+      "watertight": true
+    },
+    {
+      "component_id": 2,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 1.1150003822827038e-06,
+      "bbox_diagonal": 0.002841215110951603,
+      "bbox_extent": [
+        0.000719904899597168,
+        0.0004551410675048828,
+        0.0027105510234832764
+      ],
+      "centroid_normalized": [
+        0.17151819334206253,
+        0.8314240489175592,
+        0.1936939170429191
+      ],
+      "centroid_world": [
+        -0.5305415789286295,
+        0.5856286485989889,
+        -0.46711456775665283
+      ],
+      "nearest_surface_distance_to_main": 0.011233743869530384,
+      "distance_as_model_ratio": 0.003917350571181912,
+      "compactness": 0.1381232487520092,
+      "elongation": 5.9554085908852805,
+      "boundary_edge_count": 3,
+      "watertight": false
+    },
+    {
+      "component_id": 7,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 1.4530899658346356e-06,
+      "bbox_diagonal": 0.002874140281494285,
+      "bbox_extent": [
+        0.0010756254196166992,
+        0.002599865198135376,
+        0.0005868673324584961
+      ],
+      "centroid_normalized": [
+        0.5001099404002671,
+        0.7415216192928619,
+        0.19324384001169637
+      ],
+      "centroid_world": [
+        -0.03544773906469345,
+        0.41305580735206604,
+        -0.4677924911181132
+      ],
+      "nearest_surface_distance_to_main": 0.005788018608387947,
+      "distance_as_model_ratio": 0.0020183563258085843,
+      "compactness": 0.17590435062289453,
+      "elongation": 4.430073126142596,
+      "boundary_edge_count": 3,
+      "watertight": false
+    },
+    {
+      "component_id": 11,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 1.3450781339794998e-05,
+      "bbox_diagonal": 0.007646151451754316,
+      "bbox_extent": [
+        0.006364323198795319,
+        0.0001360177993774414,
+        0.004235625267028809
+      ],
+      "centroid_normalized": [
+        0.5901598741337276,
+        0.7904675540886117,
+        0.30213050751280146
+      ],
+      "centroid_world": [
+        0.10023177166779836,
+        0.5070103208223978,
+        -0.3037831981976827
+      ],
+      "nearest_surface_distance_to_main": 0.03175613804604071,
+      "distance_as_model_ratio": 0.011073772640535521,
+      "compactness": 0.23007091544475872,
+      "elongation": 46.790370289219986,
+      "boundary_edge_count": 3,
+      "watertight": false
+    },
+    {
+      "component_id": 23,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 1.3169514974047322e-06,
+      "bbox_diagonal": 0.0045309292925689,
+      "bbox_extent": [
+        0.00048754364252090454,
+        0.004489094018936157,
+        0.00037370622158050537
+      ],
+      "centroid_normalized": [
+        0.5053697159395478,
+        0.6877060412141788,
+        0.6211910198228984
+      ],
+      "centroid_world": [
+        -0.027522760753830273,
+        0.3097537358601888,
+        0.17679803570111594
+      ],
+      "nearest_surface_distance_to_main": 0.021550494164832488,
+      "distance_as_model_ratio": 0.007514933721680814,
+      "compactness": 0.06414978582310946,
+      "elongation": 12.012360939431396,
+      "boundary_edge_count": 3,
+      "watertight": false
+    },
+    {
+      "component_id": 25,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 2.5737438113211316e-06,
+      "bbox_diagonal": 0.004100835891809193,
+      "bbox_extent": [
+        0.0035963058471679688,
+        0.0018543414771556854,
+        0.0006669759750366211
+      ],
+      "centroid_normalized": [
+        0.21353466198183652,
+        0.5284065752469617,
+        0.05249548857826479
+      ],
+      "centroid_world": [
+        -0.4672347704569499,
+        0.0039693252959599095,
+        -0.6797930796941122
+      ],
+      "nearest_surface_distance_to_main": 0.007841941436110495,
+      "distance_as_model_ratio": 0.002734585559427282,
+      "compactness": 0.15304548975140594,
+      "elongation": 5.39195710455764,
+      "boundary_edge_count": 3,
+      "watertight": false
+    },
+    {
+      "component_id": 26,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 1.9533365803933525e-06,
+      "bbox_diagonal": 0.003098560855225131,
+      "bbox_extent": [
+        0.0011308789253234863,
+        0.0027117878198623657,
+        0.0009840726852416992
+      ],
+      "centroid_normalized": [
+        0.2915195866226445,
+        0.4877683693526277,
+        0.0003021574559426233
+      ],
+      "centroid_world": [
+        -0.3497337798277537,
+        -0.07403802871704102,
+        -0.7584086855252584
+      ],
+      "nearest_surface_distance_to_main": 0.041953870715789786,
+      "distance_as_model_ratio": 0.014629852818485311,
+      "compactness": 0.2034496856445073,
+      "elongation": 2.755678376741369,
+      "boundary_edge_count": 3,
+      "watertight": false
+    },
+    {
+      "component_id": 28,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 3.470588264719817e-06,
+      "bbox_diagonal": 0.00472028946643761,
+      "bbox_extent": [
+        0.0009542703628540039,
+        0.004441581666469574,
+        0.00128173828125
+      ],
+      "centroid_normalized": [
+        0.2965995026571163,
+        0.4879963722100465,
+        0.005454913568682187
+      ],
+      "centroid_world": [
+        -0.3420797983805339,
+        -0.07360036422808965,
+        -0.7506474057833353
+      ],
+      "nearest_surface_distance_to_main": 0.03338639049869876,
+      "distance_as_model_ratio": 0.011642262580377606,
+      "compactness": 0.15576354755883784,
+      "elongation": 4.654426920674578,
+      "boundary_edge_count": 3,
+      "watertight": false
+    },
+    {
+      "component_id": 29,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 3.408719725914848e-06,
+      "bbox_diagonal": 0.004652212018935844,
+      "bbox_extent": [
+        0.0010908842086791992,
+        0.00113745778799057,
+        0.004377126693725586
+      ],
+      "centroid_normalized": [
+        0.2966169219610043,
+        0.49147774775846464,
+        0.009919317350764364
+      ],
+      "centroid_world": [
+        -0.34205355246861774,
+        -0.06691766530275345,
+        -0.7439229488372803
+      ],
+      "nearest_surface_distance_to_main": 0.025457003841254704,
+      "distance_as_model_ratio": 0.008877183750699853,
+      "compactness": 0.15749700368509081,
+      "elongation": 4.0124576549011035,
+      "boundary_edge_count": 3,
+      "watertight": false
+    },
+    {
+      "component_id": 42,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 9.149941395765261e-07,
+      "bbox_diagonal": 0.00273788635200398,
+      "bbox_extent": [
+        0.0004855692386627197,
+        0.0005106329917907715,
+        0.00264565646648407
+      ],
+      "centroid_normalized": [
+        0.3645184662884449,
+        0.8805442692025768,
+        0.6520729542141692
+      ],
+      "centroid_world": [
+        -0.2397453337907791,
+        0.6799177130063375,
+        0.22331359485785165
+      ],
+      "nearest_surface_distance_to_main": 0.04805194644404974,
+      "distance_as_model_ratio": 0.016756330038782512,
+      "compactness": 0.12206396660328389,
+      "elongation": 5.448566869207635,
+      "boundary_edge_count": 3,
+      "watertight": false
+    },
+    {
+      "component_id": 47,
+      "is_main": false,
+      "faces": 1,
+      "surface_area": 1.0050576205991773e-06,
+      "bbox_diagonal": 0.009321083643401517,
+      "bbox_extent": [
+        0.00015631318092346191,
+        0.009318549884483218,
+        0.00015097856521606445
+      ],
+      "centroid_normalized": [
+        0.7192386202924974,
+        0.5312641408118824,
+        0.3029139575943043
+      ],
+      "centroid_world": [
+        0.29471654693285626,
+        0.009454585378989577,
+        -0.30260313550631207
+      ],
+      "nearest_surface_distance_to_main": 0.00930921729771325,
+      "distance_as_model_ratio": 0.003246243471632402,
+      "compactness": 0.011567996552541461,
+      "elongation": 61.72101232481248,
+      "boundary_edge_count": 3,
+      "watertight": false
+    }
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "views": {},
+  "modes": {
+    "BASECOLOR_EMISSION": {
+      "front": {
+        "model_pixels": 71113,
+        "mean": 0.219,
+        "median": 0.1727,
+        "p10": 0.0339,
+        "p90": 0.4676,
+        "pct_below_0.05": 14.82,
+        "pct_below_0.10": 29.58
+      },
+      "back": {
+        "model_pixels": 71111,
+        "mean": 0.1814,
+        "median": 0.1585,
+        "p10": 0.1287,
+        "p90": 0.2819,
+        "pct_below_0.05": 0.53,
+        "pct_below_0.10": 4.24
+      },
+      "left": {
+        "model_pixels": 69943,
+        "mean": 0.1682,
+        "median": 0.1548,
+        "p10": 0.0509,
+        "p90": 0.296,
+        "pct_below_0.05": 9.81,
+        "pct_below_0.10": 24.89
+      },
+      "right": {
+        "model_pixels": 69938,
+        "mean": 0.2387,
+        "median": 0.2103,
+        "p10": 0.0994,
+        "p90": 0.4143,
+        "pct_below_0.05": 3.93,
+        "pct_below_0.10": 10.13
+      },
+      "top": {
+        "model_pixels": 52230,
+        "mean": 0.24,
+        "median": 0.2111,
+        "p10": 0.0946,
+        "p90": 0.3928,
+        "pct_below_0.05": 4.51,
+        "pct_below_0.10": 10.88
+      },
+      "underside": {
+        "model_pixels": 52244,
+        "mean": 0.1654,
+        "median": 0.1506,
+        "p10": 0.0409,
+        "p90": 0.3277,
+        "pct_below_0.05": 14.07,
+        "pct_below_0.10": 29.28
+      }
+    },
+    "NEUTRAL_CLAY": {
+      "front": {
+        "model_pixels": 71113,
+        "mean": 0.4442,
+        "median": 0.5255,
+        "p10": 0.0039,
+        "p90": 0.6941,
+        "pct_below_0.05": 14.21,
+        "pct_below_0.10": 16.25
+      },
+      "back": {
+        "model_pixels": 71111,
+        "mean": 0.353,
+        "median": 0.4039,
+        "p10": 0.0039,
+        "p90": 0.5216,
+        "pct_below_0.05": 12.97,
+        "pct_below_0.10": 14.76
+      },
+      "left": {
+        "model_pixels": 69943,
+        "mean": 0.2927,
+        "median": 0.3216,
+        "p10": 0.0,
+        "p90": 0.5216,
+        "pct_below_0.05": 22.47,
+        "pct_below_0.10": 25.62
+      },
+      "right": {
+        "model_pixels": 69938,
+        "mean": 0.4093,
+        "median": 0.4667,
+        "p10": 0.0,
+        "p90": 0.6745,
+        "pct_below_0.05": 15.54,
+        "pct_below_0.10": 17.2
+      },
+      "top": {
+        "model_pixels": 52230,
+        "mean": 0.5568,
+        "median": 0.5922,
+        "p10": 0.3843,
+        "p90": 0.702,
+        "pct_below_0.05": 1.52,
+        "pct_below_0.10": 1.79
+      },
+      "underside": {
+        "model_pixels": 52244,
+        "mean": 0.0944,
+        "median": 0.0,
+        "p10": 0.0,
+        "p90": 0.3725,
+        "pct_below_0.05": 69.11,
+        "pct_below_0.10": 72.44
+      }
+    },
+    "CURRENT_MATERIAL": {
+      "front": {
+        "model_pixels": 71113,
+        "mean": 0.1729,
+        "median": 0.1331,
+        "p10": 0.0,
+        "p90": 0.3996,
+        "pct_below_0.05": 29.08,
+        "pct_below_0.10": 41.72
+      },
+      "back": {
+        "model_pixels": 71111,
+        "mean": 0.1164,
+        "median": 0.091,
+        "p10": 0.0,
+        "p90": 0.24,
+        "pct_below_0.05": 30.4,
+        "pct_below_0.10": 54.74
+      },
+      "left": {
+        "model_pixels": 69943,
+        "mean": 0.1084,
+        "median": 0.0669,
+        "p10": 0.0,
+        "p90": 0.282,
+        "pct_below_0.05": 44.45,
+        "pct_below_0.10": 59.83
+      },
+      "right": {
+        "model_pixels": 69938,
+        "mean": 0.1829,
+        "median": 0.1631,
+        "p10": 0.0,
+        "p90": 0.3882,
+        "pct_below_0.05": 23.8,
+        "pct_below_0.10": 35.17
+      },
+      "top": {
+        "model_pixels": 52230,
+        "mean": 0.2125,
+        "median": 0.1862,
+        "p10": 0.0596,
+        "p90": 0.3844,
+        "pct_below_0.05": 7.96,
+        "pct_below_0.10": 22.01
+      },
+      "underside": {
+        "model_pixels": 52244,
+        "mean": 0.0585,
+        "median": 0.0,
+        "p10": 0.0,
+        "p90": 0.2085,
+        "pct_below_0.05": 75.41,
+        "pct_below_0.10": 82.07
+      }
+    }
+  },
+  "atlas": {
+    "observed": {
+      "pixels": 216683,
+      "mean": 0.2072,
+      "median": 0.1448,
+      "pct_below_0.05": 22.76
+    },
+    "synthesized": {
+      "pixels": 949352,
+      "mean": 0.1783,
+      "median": 0.1582,
+      "pct_below_0.05": 5.86
+    }
+  },
+  "front_vs_rear": {
+    "emission_rear_over_front": 0.9178,
+    "clay_rear_over_front": 0.7686,
+    "note": "emission is lighting-independent, so a low emission ratio is texture darkness; a low clay ratio with a healthy emission ratio is lighting darkness"
+  },
+  "verdict": "NO_SIGNIFICANT_DARKNESS_ASYMMETRY"
+}

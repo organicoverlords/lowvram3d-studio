@@ -1,0 +1,125 @@
+{
+  "success": true,
+  "validator_version": 2,
+  "input": "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\jobs\\highres-20260731\\textured\\projection\\candidate_v2\\textured_candidate.glb",
+  "cleanup_report": "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\jobs\\highres-20260731\\textured\\projection\\candidate_v2\\geometry_cleanup_report.json",
+  "faces": 44779,
+  "components": 42,
+  "boundary_edges": 117,
+  "non_manifold_edges": 118,
+  "uv_layers": 14,
+  "material_count": 1,
+  "image_nodes": [
+    {
+      "material": "RasterAtlas",
+      "image": "embedded_basecolor",
+      "size": [
+        1024,
+        1024
+      ],
+      "packed": true,
+      "has_data": true
+    }
+  ],
+  "objects": [
+    {
+      "object": "accessory",
+      "faces": 472,
+      "components": 9,
+      "boundary_edges": 6,
+      "non_manifold_edges": 6
+    },
+    {
+      "object": "accessory_02",
+      "faces": 374,
+      "components": 4,
+      "boundary_edges": 8,
+      "non_manifold_edges": 8
+    },
+    {
+      "object": "deform_body",
+      "faces": 36705,
+      "components": 1,
+      "boundary_edges": 15,
+      "non_manifold_edges": 16
+    },
+    {
+      "object": "organic_attachment",
+      "faces": 1597,
+      "components": 4,
+      "boundary_edges": 15,
+      "non_manifold_edges": 15
+    },
+    {
+      "object": "organic_attachment_02",
+      "faces": 1546,
+      "components": 3,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0
+    },
+    {
+      "object": "organic_attachment_03",
+      "faces": 950,
+      "components": 2,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0
+    },
+    {
+      "object": "organic_attachment_04",
+      "faces": 592,
+      "components": 2,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0
+    },
+    {
+      "object": "organic_attachment_05",
+      "faces": 438,
+      "components": 3,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0
+    },
+    {
+      "object": "organic_attachment_06",
+      "faces": 374,
+      "components": 1,
+      "boundary_edges": 70,
+      "non_manifold_edges": 70
+    },
+    {
+      "object": "organic_attachment_07",
+      "faces": 385,
+      "components": 5,
+      "boundary_edges": 3,
+      "non_manifold_edges": 3
+    },
+    {
+      "object": "organic_attachment_08",
+      "faces": 400,
+      "components": 2,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0
+    },
+    {
+      "object": "organic_attachment_09",
+      "faces": 400,
+      "components": 3,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0
+    },
+    {
+      "object": "organic_attachment_10",
+      "faces": 282,
+      "components": 2,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0
+    },
+    {
+      "object": "organic_attachment_11",
+      "faces": 264,
+      "components": 1,
+      "boundary_edges": 0,
+      "non_manifold_edges": 0
+    }
+  ],
+  "errors": []
+}

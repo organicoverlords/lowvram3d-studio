@@ -33,6 +33,8 @@ HIGH_CONF = 0.45
 DONOR_NEIGHBOURS = 8
 DONOR_MIN_NORMAL_DOT = 0.25
 DONOR_MAX_RADIUS_FRACTION = 0.12
+# Position-weld tolerance for donor component scoping (UV seams duplicate vertices).
+WELD_TOLERANCE = 4e-4
 
 
 def main() -> None:
@@ -214,12 +216,19 @@ def main() -> None:
     scene_diag = float(np.linalg.norm(verts.max(axis=0) - verts.min(axis=0)))
     max_donor_radius = scene_diag * DONOR_MAX_RADIUS_FRACTION
 
-    # Connected components over triangles that share a vertex.
+    # Connected components over triangles that share a vertex -- computed on POSITION-WELDED
+    # indices, never on the raw indices. A UV unwrap duplicates vertices along every seam, so raw
+    # indices would split one continuous surface into per-chart islands; donor scoping would then
+    # collapse to "same UV chart" and most triangles would fall through to the global prior.
+    quantised = np.round(verts / WELD_TOLERANCE).astype(np.int64)
+    _, welded_index = np.unique(quantised, axis=0, return_inverse=True)
+    welded_tris = welded_index[tris]
+
     corner_rows = np.repeat(np.arange(total_tris), 3)
-    corner_cols = tris.reshape(-1)
+    corner_cols = welded_tris.reshape(-1)
     incidence = coo_matrix(
         (np.ones(corner_rows.size, np.int8), (corner_rows, corner_cols)),
-        shape=(total_tris, int(tris.max()) + 1),
+        shape=(total_tris, int(welded_tris.max()) + 1),
     ).tocsr()
     _, tri_component = connected_components(incidence @ incidence.T, directed=False)
 

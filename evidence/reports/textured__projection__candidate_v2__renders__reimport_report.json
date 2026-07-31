@@ -1,0 +1,30 @@
+{
+  "glb": "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\jobs\\highres-20260731\\textured\\projection\\candidate_v2\\textured_candidate.glb",
+  "checks": {
+    "parses": true,
+    "mesh_count": 14,
+    "face_count": 44779,
+    "face_count_matches_cleaned_mesh": true,
+    "material_count": 1,
+    "all_meshes_have_uv": true,
+    "image_count": 1,
+    "images": [
+      {
+        "name": "embedded_basecolor",
+        "packed": true,
+        "filepath_raw": "",
+        "has_data": false,
+        "size": [
+          1024,
+          1024
+        ]
+      }
+    ],
+    "texture_resolves_no_external_path": false,
+    "rendered_views": [
+      "front",
+      "side",
+      "back"
+    ]
+  }
+}

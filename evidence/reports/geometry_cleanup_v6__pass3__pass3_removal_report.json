@@ -1,0 +1,19 @@
+{
+  "removed_component_ids": [
+    14,
+    36,
+    43,
+    53
+  ],
+  "before": {
+    "faces": 41319,
+    "boundary": 54,
+    "nonmanifold": 1
+  },
+  "after": {
+    "faces": 40317,
+    "boundary": 54,
+    "nonmanifold": 1
+  },
+  "main_faces_unchanged": true
+}

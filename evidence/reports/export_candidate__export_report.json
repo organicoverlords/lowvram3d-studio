@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "backend": "raster_uv_atlas_projection_export",
+  "output": "C:/Users/Lauri/AppData/Local/LowVRAM3DStudio/jobs/highres-20260731/export_candidate/game_ready_unrigged_candidate.glb",
+  "texture": "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\jobs\\highres-20260731\\export_candidate\\basecolor_2048.png",
+  "output_stats": {
+    "objects": 1,
+    "vertices": 30580,
+    "faces": 41319,
+    "edges": 70854,
+    "uv_layers": 1,
+    "materials": 1,
+    "armatures": 0,
+    "actions": 0,
+    "bounds_min": [
+      -0.7889704704284668,
+      -0.7473747134208679,
+      -1.010337233543396
+    ],
+    "bounds_max": [
+      0.7177436947822571,
+      0.7588638067245483,
+      0.9092198014259338
+    ],
+    "finite_bounds": true,
+    "triangles": 41319,
+    "non_manifold_edges": 17751,
+    "texture_paths": [
+      "packed:basecolor_2048.png"
+    ],
+    "object_names": [
+      "geometry_0"
+    ]
+  }
+}

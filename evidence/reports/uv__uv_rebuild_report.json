@@ -1,0 +1,60 @@
+{
+  "resolution": 2048,
+  "padding": 8,
+  "presets": [
+    {
+      "preset": "A",
+      "max_cost": 2.0,
+      "max_iterations": 2,
+      "chart_count": 1272,
+      "atlas_utilization": 81.695,
+      "uv_island_occupancy_percent": 47.882,
+      "overlap_percent": 25.0257,
+      "invalid_uv_count": 0,
+      "stretch_p95": 1.1381,
+      "stretch_max": 5.494,
+      "screen_islands": 1272,
+      "islands_below_4px": 106,
+      "min_island_pixel_dimension": 3,
+      "unwrap_seconds": 5.42,
+      "vertices_out": 30912,
+      "faces_out": 41319
+    },
+    {
+      "preset": "B",
+      "max_cost": 4.0,
+      "max_iterations": 2,
+      "chart_count": 1161,
+      "atlas_utilization": 81.211,
+      "uv_island_occupancy_percent": 48.272,
+      "overlap_percent": 24.9951,
+      "invalid_uv_count": 0,
+      "stretch_p95": 1.1366,
+      "stretch_max": 5.7754,
+      "screen_islands": 1161,
+      "islands_below_4px": 90,
+      "min_island_pixel_dimension": 3,
+      "unwrap_seconds": 5.78,
+      "vertices_out": 30580,
+      "faces_out": 41319
+    },
+    {
+      "preset": "C",
+      "max_cost": 8.0,
+      "max_iterations": 2,
+      "chart_count": 1161,
+      "atlas_utilization": 81.211,
+      "uv_island_occupancy_percent": 48.272,
+      "overlap_percent": 24.9951,
+      "invalid_uv_count": 0,
+      "stretch_p95": 1.1366,
+      "stretch_max": 5.7754,
+      "screen_islands": 1161,
+      "islands_below_4px": 90,
+      "min_island_pixel_dimension": 3,
+      "unwrap_seconds": 5.32,
+      "vertices_out": 30580,
+      "faces_out": 41319
+    }
+  ]
+}

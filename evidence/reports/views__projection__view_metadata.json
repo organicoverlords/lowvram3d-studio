@@ -1,0 +1,18 @@
+{
+  "job_type": "single_image",
+  "views": [
+    {"view": "front", "source_type": "real",     "confidence": 1.0,
+     "note": "The user's photograph after background removal. Only high-confidence semantic source."},
+    {"view": "right", "source_type": "mirrored", "confidence": 0.0,
+     "note": "make_fallback_views: horizontally mirrored front. Barred from semantic projection."},
+    {"view": "back",  "source_type": "mirrored", "confidence": 0.0,
+     "note": "make_fallback_views: mirrored + darkened front. Projecting it puts a face on the back."},
+    {"view": "left",  "source_type": "mirrored", "confidence": 0.0,
+     "note": "make_fallback_views: mirrored front. Barred from semantic projection."}
+  ],
+  "policy": {
+    "semantic_projection": ["real", "generated"],
+    "low_frequency_fill_only": ["mirrored", "synthetic"],
+    "rule": "A front face must never be projected onto rear-facing polygons."
+  }
+}

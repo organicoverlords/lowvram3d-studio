@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "backend": "raster_uv_atlas_projection_cpu",
+  "atlas_resolution": 2048,
+  "semantic_views": [
+    "front"
+  ],
+  "barred_views": [
+    "right",
+    "back",
+    "left"
+  ],
+  "uv_island_occupancy_percent": 58.33,
+  "observed_semantic_coverage_percent": 23.43,
+  "synthesized_surface_coverage_percent": 76.57,
+  "final_filled_uv_percent": 100.0,
+  "high_confidence_percent": 6.02,
+  "unseen_triangles": 29726,
+  "observed_triangles": 10591,
+  "fill_tier_triangle_counts": {
+    "observed": 10591,
+    "constrained_donor": 17085,
+    "component_local_prior": 9786,
+    "global_prior_emergency": 2855
+  },
+  "donor_constraints": {
+    "neighbours": 8,
+    "min_normal_dot": 0.25,
+    "max_radius_fraction": 0.12,
+    "same_component_required": true
+  },
+  "elapsed_seconds": 22.2
+}

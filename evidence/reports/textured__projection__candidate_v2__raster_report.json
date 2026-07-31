@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "backend": "raster_uv_atlas_projection_cpu",
+  "atlas_resolution": 1024,
+  "semantic_views": [
+    "front"
+  ],
+  "barred_views": [
+    "right",
+    "back",
+    "left"
+  ],
+  "uv_island_occupancy_percent": 39.9,
+  "observed_semantic_coverage_percent": 12.96,
+  "synthesized_surface_coverage_percent": 87.04,
+  "final_filled_uv_percent": 100.0,
+  "high_confidence_percent": 3.28,
+  "elapsed_seconds": 11.6
+}

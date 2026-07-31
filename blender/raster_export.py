@@ -9,7 +9,15 @@ from pathlib import Path
 
 import bpy
 
-from common import argv_after_double_dash, reset_scene, import_mesh, export_glb, save_json, extended_mesh_stats
+from common import (
+    argv_after_double_dash,
+    export_glb,
+    extended_mesh_stats,
+    import_mesh,
+    reset_scene,
+    save_json,
+    shade_smooth,
+)
 
 
 def main() -> None:
@@ -51,6 +59,11 @@ def main() -> None:
         if not obj.data.uv_layers:
             raise RuntimeError(f"{obj.name} lost its UV layer before export")
 
+    # Marching-cubes output is flat-shaded, which reads as hard polygonal banding across the vest
+    # and hood once a texture is applied. Smooth shading is a normals-only change: it does not
+    # move a single vertex, so silhouette, face count and UVs are untouched.
+    smoothed = shade_smooth(objects)
+
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
     export_glb(args.output, selected_only=False)
 
@@ -60,6 +73,7 @@ def main() -> None:
             "backend": "raster_uv_atlas_projection_export",
             "output": str(args.output),
             "texture": str(texture_path),
+            "smooth_shaded_polygons": smoothed,
             "output_stats": extended_mesh_stats(objects),
         })
 
