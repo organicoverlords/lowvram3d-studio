@@ -1,0 +1,221 @@
+name: Shaman staff ring through-hole repair
+run-name: Shaman staff-hole repair ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shaman-staff-hole-repair
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 150
+
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 20
+
+      - name: Verify source and resolve tools
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ("${{ github.ref }}" -ne "refs/heads/infra/windows-self-hosted-runner-20260731") {
+            throw "Unexpected ref: ${{ github.ref }}"
+          }
+          $dirty = @(git status --porcelain)
+          if ($dirty.Count -ne 0) { throw "Checkout is dirty before execution: $($dirty -join '; ')" }
+          $blender = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
+          if (-not (Test-Path -LiteralPath $blender)) { throw "Blender 5.2 is missing" }
+          $pythonCandidates = @(
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $python = $null
+          foreach ($candidate in $pythonCandidates) {
+            & $candidate -c "import cv2,numpy; print('STAFF_REPAIR_ENV_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) { $python = $candidate; break }
+          }
+          if (-not $python) { throw "No Python environment with cv2 and numpy" }
+          $root = "C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\${{ github.run_id }}"
+          New-Item -ItemType Directory -Path $root -Force | Out-Null
+          "STAFF_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "STAFF_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "STAFF_ROOT=$root" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "HEAD=$(git rev-parse HEAD)"
+          Write-Host "BRANCH=${{ github.ref_name }}"
+          Write-Host "ROOT=$root"
+
+      - name: Locate repaired baseline and preserve its identity
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $searchRoot = "C:\AI\LowVRAM3D-benchmarks"
+          $baseline = Get-ChildItem -LiteralPath $searchRoot -Filter "shaman_v2_validation_stance_clean.glb" -File -Recurse -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+          if (-not $baseline) {
+            throw "shaman_v2_validation_stance_clean.glb was not found; refusing to repair a different model"
+          }
+          $hash = (Get-FileHash -LiteralPath $baseline.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "STAFF_INPUT=$($baseline.FullName)" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "STAFF_INPUT_HASH=$hash" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "INPUT=$($baseline.FullName)"
+          Write-Host "INPUT_SHA256=$hash"
+
+      - name: Compile repair script in Blender
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = (Resolve-Path "blender\repair_staff_ring_hole.py").Path
+          $expr = "compile(open(r'''$script''', encoding='utf-8').read(), r'''$script''', 'exec'); print('STAFF_REPAIR_COMPILE_OK')"
+          & $env:STAFF_BLENDER --background --factory-startup --python-expr $expr
+          if ($LASTEXITCODE -ne 0) { throw "Staff-hole repair script does not compile in Blender" }
+
+      - name: Restore real through-hole and validate it
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          $output = Join-Path $env:STAFF_ROOT "shaman_v2_staff_hole_repaired.glb"
+          $report = Join-Path $env:STAFF_ROOT "staff_hole_report.json"
+          $evidence = Join-Path $env:STAFF_ROOT "evidence"
+          & $env:STAFF_BLENDER --background --factory-startup `
+            --python "blender\repair_staff_ring_hole.py" -- `
+            --input $env:STAFF_INPUT `
+            --output $output `
+            --report $report `
+            --evidence-dir $evidence `
+            --resolution 1024
+          if ($LASTEXITCODE -ne 0) { throw "Staff-ring Boolean repair failed" }
+          if (-not (Test-Path -LiteralPath $output)) { throw "Repaired GLB was not created" }
+          if (-not (Test-Path -LiteralPath $report)) { throw "Repair report was not created" }
+          $result = Get-Content -LiteralPath $report -Raw | ConvertFrom-Json
+          if (-not $result.passed) { throw "Repair report did not pass" }
+          if (-not $result.validation.real_through_hole_proven) { throw "Through-hole was not proven" }
+          if ($result.validation.ray_blocked_after_cut) { throw "A direct ray still hits the staff centre" }
+          if ($result.validation.centre_foreground_ratio -gt 0.08) { throw "Staff centre is still visibly closed" }
+          if ($result.validation.annulus_foreground_ratio -lt 0.42) { throw "Boolean removed too much of the ring" }
+          "STAFF_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "STAFF_REPORT=$report" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "THROUGH_HOLE_PROVEN=true"
+          Write-Host "OUTPUT=$output"
+
+      - name: Verify input unchanged and fresh output import
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $hashAfter = (Get-FileHash -LiteralPath $env:STAFF_INPUT -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hashAfter -ne $env:STAFF_INPUT_HASH) { throw "Baseline input changed during repair" }
+          $validate = @'
+          import json, sys
+          from pathlib import Path
+          import bpy
+          path = sys.argv[sys.argv.index('--') + 1]
+          bpy.ops.wm.read_factory_settings(use_empty=True)
+          bpy.ops.import_scene.gltf(filepath=path)
+          objects = [o for o in bpy.context.scene.objects if o.type == 'MESH']
+          triangles = 0
+          for obj in objects:
+              obj.data.calc_loop_triangles()
+              triangles += len(obj.data.loop_triangles)
+          if not objects or triangles < 1_000_000:
+              raise RuntimeError(f'fresh import invalid: objects={len(objects)} triangles={triangles}')
+          print(json.dumps({'fresh_import': True, 'objects': len(objects), 'triangles': triangles}))
+          '@
+          $validator = Join-Path $env:STAFF_ROOT "fresh_validate.py"
+          [IO.File]::WriteAllText($validator, $validate, [Text.UTF8Encoding]::new($false))
+          & $env:STAFF_BLENDER --background --factory-startup --python $validator -- $env:STAFF_OUTPUT
+          if ($LASTEXITCODE -ne 0) { throw "Fresh-process repaired GLB import failed" }
+          Write-Host "INPUT_UNCHANGED=true"
+
+      - name: Render before and after geometry comparison
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & $env:STAFF_PYTHON "workers\clay_compare.py" `
+            --mesh "before_closed_staff=$env:STAFF_INPUT" `
+            --mesh "after_real_staff_hole=$env:STAFF_OUTPUT" `
+            --output-root (Join-Path $env:STAFF_ROOT "comparison_renders") `
+            --report (Join-Path $env:STAFF_ROOT "comparison_report.json") `
+            --contact-sheet (Join-Path $env:STAFF_ROOT "comparison_sheet.png") `
+            --blender $env:STAFF_BLENDER
+          if ($LASTEXITCODE -ne 0) { throw "Before/after clay comparison failed" }
+
+      - name: Build dedicated staff close-up sheet and receipt
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $before = Join-Path $env:STAFF_ROOT "evidence\before_staff_close.png"
+          $after = Join-Path $env:STAFF_ROOT "evidence\after_staff_close.png"
+          $sheet = Join-Path $env:STAFF_ROOT "staff_close_before_after.png"
+          $code = @'
+          import cv2, numpy as np, sys
+          before, after, output = sys.argv[1:4]
+          a = cv2.imread(before, cv2.IMREAD_COLOR)
+          b = cv2.imread(after, cv2.IMREAD_COLOR)
+          if a is None or b is None:
+              raise SystemExit('close-up evidence is missing')
+          height = max(a.shape[0], b.shape[0])
+          def fit(image):
+              scale = height / image.shape[0]
+              return cv2.resize(image, (round(image.shape[1] * scale), height), interpolation=cv2.INTER_AREA)
+          a, b = fit(a), fit(b)
+          cv2.putText(a, 'BEFORE: CLOSED RECESS', (24, 44), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255,255,255), 2, cv2.LINE_AA)
+          cv2.putText(b, 'AFTER: REAL THROUGH-HOLE', (24, 44), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255,255,255), 2, cv2.LINE_AA)
+          cv2.imwrite(output, np.hstack([a, b]))
+          '@
+          $builder = Join-Path $env:STAFF_ROOT "build_close_sheet.py"
+          [IO.File]::WriteAllText($builder, $code, [Text.UTF8Encoding]::new($false))
+          & $env:STAFF_PYTHON $builder $before $after $sheet
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $sheet)) { throw "Close-up sheet was not created" }
+          $report = Get-Content -LiteralPath $env:STAFF_REPORT -Raw | ConvertFrom-Json
+          [ordered]@{
+            passed = $true
+            workflow_run_id = "${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            branch = "${{ github.ref_name }}"
+            input = $env:STAFF_INPUT
+            input_sha256 = $env:STAFF_INPUT_HASH
+            input_unchanged = $true
+            output = $env:STAFF_OUTPUT
+            output_sha256 = $report.output_sha256
+            triangles_before = $report.triangles_before
+            triangles_after = $report.triangles_after
+            centre_foreground_ratio = $report.validation.centre_foreground_ratio
+            annulus_foreground_ratio = $report.validation.annulus_foreground_ratio
+            ray_blocked_after_cut = $report.validation.ray_blocked_after_cut
+            real_through_hole_proven = $report.validation.real_through_hole_proven
+            close_sheet = $sheet
+            comparison_sheet = (Join-Path $env:STAFF_ROOT "comparison_sheet.png")
+            completed_at = (Get-Date).ToUniversalTime().ToString('o')
+          } | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $env:STAFF_ROOT "final_receipt.json") -Encoding utf8
+          Write-Host "STAFF_HOLE_REPAIR_COMPLETE"
+          Write-Host "CLOSE_SHEET=$sheet"
+
+      - name: Upload staff-hole proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shaman-staff-hole-repair-${{ github.run_id }}
+          path: |
+            C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\${{ github.run_id }}\shaman_v2_staff_hole_repaired.glb
+            C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\${{ github.run_id }}\staff_hole_report.json
+            C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\${{ github.run_id }}\comparison_report.json
+            C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\${{ github.run_id }}\comparison_sheet.png
+            C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\${{ github.run_id }}\staff_close_before_after.png
+            C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\${{ github.run_id }}\final_receipt.json
+            C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\${{ github.run_id }}\evidence\*.png
+            C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\${{ github.run_id }}\comparison_renders\**\*.png
+          if-no-files-found: error
+          retention-days: 14
