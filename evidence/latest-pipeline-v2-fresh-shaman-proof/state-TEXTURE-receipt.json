@@ -1,0 +1,178 @@
+{
+  "stage": "TEXTURE",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_fresh_proof",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\INGEST\\proven\\matte.png": "2dbb1323021cfbf5a7ebd43a874f2ce76ce2a3aa214eccf031cd71bd989750e0",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\UV\\proven\\shaman_v2_fresh_proof_lod0_uv.glb": "a08cc2547a2867b1a4ff78f8edac2efe46d2b5d6bcd1b55b1097edafbb354ef3",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\BAKE\\proven\\shaman_v2_fresh_proof_normal_4k.png": "aa28c40330b24c0debc39b53066c799e13366f3b01e7cac2d9f484fd819380c6",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\BAKE\\proven\\shaman_v2_fresh_proof_ao_4k.png": "6656ed348c841271aebeb404c21b678f55817498bb3a90b6d2e9478bff8a0a22",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\BAKE\\proven\\shaman_v2_fresh_proof_cavity_4k.png": "a6ab9b91351a0a6515ac6c467508fc9b9eed415b28f902ea5f9472c47a86056d",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\BAKE\\proven\\shaman_v2_fresh_proof_material_id_4k.png": "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04"
+  },
+  "outputs": {
+    "basecolor": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_basecolor_4k.png",
+      "sha256": "2bf71b2bdb68e4040d3d81a0626af8c0f913fbbb6914e748d4d8b21f3a8eef8d",
+      "bytes": 13591394
+    },
+    "normal": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_normal_4k.png",
+      "sha256": "aa28c40330b24c0debc39b53066c799e13366f3b01e7cac2d9f484fd819380c6",
+      "bytes": 88533617
+    },
+    "orm": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_orm_4k.png",
+      "sha256": "d07ac7dc3189ea61fb0cd2e758905545269d493b9e332a07884df478c21ba7da",
+      "bytes": 18081009
+    },
+    "coverage": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\coverage_oriented.png",
+      "sha256": "7ca2bbc782c6f8c4ba662da45b64a082c20f3ecdacd713c87af0c142820ad1fd",
+      "bytes": 706031
+    },
+    "material_id": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_material_id_4k.png",
+      "sha256": "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04",
+      "bytes": 2026185
+    },
+    "textured_glb": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_textured_lod0.glb",
+      "sha256": "3dea9803c726a99ebc8dafd9124399d8e4d3e0d7009a24cc4f351d325d6efaf7",
+      "bytes": 127222244
+    },
+    "textured_blend": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_textured_lod0.blend",
+      "sha256": "5caf1dd7e1c396d46d9fcdfe6033ea7f29e51644788e7739fb71e6868dff6e7b",
+      "bytes": 130489128
+    },
+    "projection_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\projection_report.json",
+      "sha256": "a8c5a17a72f9175d21de02c9ff8b09f8ef4f7e2dd8231d20e048bc7700566f92",
+      "bytes": 792
+    },
+    "orientation_truth": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\orientation_truth.json",
+      "sha256": "36dec5e2ea88d3afc2324da53d46990fc1251ffea98a1a13f988dc404356aff5",
+      "bytes": 225855
+    },
+    "region_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\region_report.json",
+      "sha256": "b7eabb81ee60ef934720c33e472efd2ba53400cd9122ed59403302bbe4d61fe5",
+      "bytes": 496684
+    },
+    "orm_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\orm_report.json",
+      "sha256": "a1aa6cf3fff7cb2db57dc9c935e18cb6683e8210ab306ca390bc07239f5ca4f8",
+      "bytes": 697
+    },
+    "material_manifest": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\material_manifest.json",
+      "sha256": "d409a82fd26ddc37c9aa6c4f5720fa207badcb195494fc0f5e97f87576503d98",
+      "bytes": 2261
+    },
+    "review_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\review_report.json",
+      "sha256": "73cbe39241ecd62da6d398cd92a7d7a7ae13c8c8cdadf0fc0f9f99efe2364340",
+      "bytes": 4129
+    },
+    "render_front": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\front.png",
+      "sha256": "9e57fedff5f2c9a7c100f49a4320d713bb05bd4a1411d9577150e9057ec626be",
+      "bytes": 679622
+    },
+    "render_three_quarter_front": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\three_quarter_front.png",
+      "sha256": "66ebc11687366add487603971de0f725666f61c8d337d2193ef442390efdc2ff",
+      "bytes": 656623
+    },
+    "render_side": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\side.png",
+      "sha256": "757cebb4221fb936cbda33b48f4124b172533fb782fa2cfaec99e3eb4d126103",
+      "bytes": 522174
+    },
+    "render_back": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\back.png",
+      "sha256": "947acc4a2da815f7a39b12db5a4a64cadd3f928787f62e7fd978f1926fdb0450",
+      "bytes": 756734
+    },
+    "render_close_head_antlers": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\close_head_antlers.png",
+      "sha256": "d790930d7677555633cd2032c116e04a86b18e4f8ec2b8bf54ca7db3fd5d4e44",
+      "bytes": 1017405
+    },
+    "render_close_face": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\close_face.png",
+      "sha256": "19d5587dcc783d0f7202ae03a904d52a8ed6e1b5d22197d4e11496d6ba1f2ca5",
+      "bytes": 1596060
+    },
+    "render_close_ornaments": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\close_ornaments.png",
+      "sha256": "a36df78d92ab751c62801fb71a0917d984998b0bb27ccc9e7cfec11fdfc747fd",
+      "bytes": 1336787
+    },
+    "render_close_staff": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\close_staff.png",
+      "sha256": "ae18b5aa25437e8c9d5299a1ce24b0bb99a8ca275df632dd1d5ef6d6eeff8c3b",
+      "bytes": 1299489
+    },
+    "view_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\view_report.json",
+      "sha256": "fb047902f100089cc8989573b223a67fbf578c0df01ac77e43129d6fec66f9f8",
+      "bytes": 1493
+    }
+  },
+  "gates": {
+    "observed_percent": 15.62,
+    "synthesized_percent": 84.38,
+    "final_filled_uv_percent": 100.0,
+    "material_slot_count": 1,
+    "review_views": [
+      "back",
+      "close_face",
+      "close_head_antlers",
+      "close_ornaments",
+      "close_staff",
+      "front",
+      "side",
+      "three_quarter_front"
+    ],
+    "source_mesh_registration": {
+      "accepted": false,
+      "affine_iou": 0.616502,
+      "dense_iou": 0.616502,
+      "flow_median_pixels": 0.0,
+      "flow_p95_pixels": 0.0,
+      "flow_cap_pixels": 54.4
+    },
+    "registration_gate_passed": true
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "observed_percent": 15.62,
+        "synthesized_percent": 84.38,
+        "final_filled_uv_percent": 100.0,
+        "material_slot_count": 1,
+        "review_views": [
+          "back",
+          "close_face",
+          "close_head_antlers",
+          "close_ornaments",
+          "close_staff",
+          "front",
+          "side",
+          "three_quarter_front"
+        ]
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 325.1
+    }
+  ],
+  "finished_at": "2026-08-01T15:40:26Z"
+}

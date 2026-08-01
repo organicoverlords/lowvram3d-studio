@@ -1,0 +1,211 @@
+{
+  "stage": "LOD",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_fresh_proof",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\CLEAN\\proven\\shaman_v2_fresh_proof_stance_clean.glb": "2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80"
+  },
+  "outputs": {
+    "lod_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod_report.json",
+      "sha256": "8cfa34c9ccd81e8d468be510a16eabe99fa6fdc54bc3360252c97956701e9316",
+      "bytes": 4075
+    },
+    "lod0": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\shaman_v2_fresh_proof_lod0_microclean.glb",
+      "sha256": "93465df1c0213bd81be4cb9fa27fc9237a1cae181df9d5221ff3471585f3b7c6",
+      "bytes": 18422440
+    },
+    "lod1": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\shaman_v2_fresh_proof_lod1_microclean.glb",
+      "sha256": "23f61723a65893a2cf3f07c628b9193257531d4b201e5e53f545e46b972f3b47",
+      "bytes": 6700644
+    },
+    "lod2": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\shaman_v2_fresh_proof_lod2_microclean.glb",
+      "sha256": "2875bd284a9a287d374f0173375a8cd70335651436ff0c37638e796926d572df",
+      "bytes": 2930904
+    },
+    "lod3": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\shaman_v2_fresh_proof_lod3_microclean.glb",
+      "sha256": "6e09b973c1db61c61d23fc1a63acfa8c251613260e581e0439f70105e8898924",
+      "bytes": 1002440
+    },
+    "raw_lod0": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\shaman_v2_fresh_proof_lod0.glb",
+      "sha256": "96e6bdbb2e823a98d91be08c3fdbbc39eb9986193c72d7208d0a2c2d53f6d496",
+      "bytes": 18427648
+    },
+    "lod0_cleanup_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod0_microclean.json",
+      "sha256": "c521592dfd347e990538b0f5d9f428e2ee39da7b34af61c45bbc22f8cd43f6d6",
+      "bytes": 38320
+    },
+    "lod0_geometry_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod0_geometry.json",
+      "sha256": "09ea92c6c19f72c9d03750ac871b7348fcbf35a62730c7430bc6f0764de6dd56",
+      "bytes": 26149
+    },
+    "raw_lod1": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\shaman_v2_fresh_proof_lod1.glb",
+      "sha256": "92f213bf5cd61a9ade96c6436b8b541c75b8f859f7f92a4aca85e987bd2e4268",
+      "bytes": 6702624
+    },
+    "lod1_cleanup_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod1_microclean.json",
+      "sha256": "3a8ec3f3215687045bac92ebae22241ee936c00bf0b80a3aedf04d4f4585f261",
+      "bytes": 37991
+    },
+    "lod1_geometry_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod1_geometry.json",
+      "sha256": "34dd3b8a314d6341cbd32fad54905e1977a4109fc395e3f75ee3e4d7a52cbc83",
+      "bytes": 35959
+    },
+    "raw_lod2": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\shaman_v2_fresh_proof_lod2.glb",
+      "sha256": "573cb7d228f6f49aa392cc361196289911bb213c3c30f9ea78d0cbe9e1015384",
+      "bytes": 2931288
+    },
+    "lod2_cleanup_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod2_microclean.json",
+      "sha256": "49ebcfb60b9309eceb02d1c4bbb43c4741a38e60ad6cfc6e2ef4cd7cf0c541b1",
+      "bytes": 37981
+    },
+    "lod2_geometry_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod2_geometry.json",
+      "sha256": "d7014e4d4b98ea3c285f8dbe0675adb54ccc933cc3df2cdc968076261bf27f2a",
+      "bytes": 38789
+    },
+    "raw_lod3": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\shaman_v2_fresh_proof_lod3.glb",
+      "sha256": "fd835300f55298c79dc65cd0d034514bff9824c815a56ea9a0b23fcb2539493d",
+      "bytes": 931120
+    },
+    "lod3_cleanup_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod3_microclean.json",
+      "sha256": "544fb241d01631043e264911c1e4f802473eeafcd59a4777b4d54fd6498c1d84",
+      "bytes": 37295
+    },
+    "lod3_geometry_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod3_geometry.json",
+      "sha256": "db02d96b17f2bed9b237ea5e8826511ed03b9c2082081b02878f71db8d268125",
+      "bytes": 38023
+    }
+  },
+  "gates": {
+    "targets": [
+      220000,
+      80000,
+      35000,
+      12000
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "target": 220000,
+        "triangles": 219968,
+        "sha256": "96e6bdbb2e823a98d91be08c3fdbbc39eb9986193c72d7208d0a2c2d53f6d496"
+      },
+      {
+        "lod": 1,
+        "target": 80000,
+        "triangles": 79965,
+        "sha256": "92f213bf5cd61a9ade96c6436b8b541c75b8f859f7f92a4aca85e987bd2e4268"
+      },
+      {
+        "lod": 2,
+        "target": 35000,
+        "triangles": 34961,
+        "sha256": "573cb7d228f6f49aa392cc361196289911bb213c3c30f9ea78d0cbe9e1015384"
+      },
+      {
+        "lod": 3,
+        "target": 12000,
+        "triangles": 11950,
+        "sha256": "fd835300f55298c79dc65cd0d034514bff9824c815a56ea9a0b23fcb2539493d"
+      }
+    ],
+    "post_lod_cleanup_schema": 2,
+    "post_lod_cleanup": [
+      {
+        "lod": 0,
+        "triangles_removed": 62,
+        "components_removed": 10,
+        "triangles_removed_percent": 0.028186,
+        "remaining": 0,
+        "sha256": "93465df1c0213bd81be4cb9fa27fc9237a1cae181df9d5221ff3471585f3b7c6"
+      },
+      {
+        "lod": 1,
+        "triangles_removed": 23,
+        "components_removed": 7,
+        "triangles_removed_percent": 0.028763,
+        "remaining": 0,
+        "sha256": "23f61723a65893a2cf3f07c628b9193257531d4b201e5e53f545e46b972f3b47"
+      },
+      {
+        "lod": 2,
+        "triangles_removed": 4,
+        "components_removed": 4,
+        "triangles_removed_percent": 0.011441,
+        "remaining": 0,
+        "sha256": "2875bd284a9a287d374f0173375a8cd70335651436ff0c37638e796926d572df"
+      },
+      {
+        "lod": 3,
+        "triangles_removed": 4,
+        "components_removed": 4,
+        "triangles_removed_percent": 0.033473,
+        "remaining": 0,
+        "sha256": "6e09b973c1db61c61d23fc1a63acfa8c251613260e581e0439f70105e8898924"
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "targets": [
+          220000,
+          80000,
+          35000,
+          12000
+        ],
+        "lods": [
+          {
+            "lod": 0,
+            "target": 220000,
+            "triangles": 219968,
+            "sha256": "96e6bdbb2e823a98d91be08c3fdbbc39eb9986193c72d7208d0a2c2d53f6d496"
+          },
+          {
+            "lod": 1,
+            "target": 80000,
+            "triangles": 79965,
+            "sha256": "92f213bf5cd61a9ade96c6436b8b541c75b8f859f7f92a4aca85e987bd2e4268"
+          },
+          {
+            "lod": 2,
+            "target": 35000,
+            "triangles": 34961,
+            "sha256": "573cb7d228f6f49aa392cc361196289911bb213c3c30f9ea78d0cbe9e1015384"
+          },
+          {
+            "lod": 3,
+            "target": 12000,
+            "triangles": 11950,
+            "sha256": "fd835300f55298c79dc65cd0d034514bff9824c815a56ea9a0b23fcb2539493d"
+          }
+        ]
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 118.3
+    }
+  ],
+  "finished_at": "2026-08-01T15:25:11Z",
+  "repair_schema": 2
+}
