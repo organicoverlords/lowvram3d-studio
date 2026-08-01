@@ -1,0 +1,21 @@
+{
+  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\textured\\shaman_lod0_uv_clean.glb",
+  "triangles": 219770,
+  "components": 21,
+  "extent": {
+    "x": 1.650315523147583,
+    "y": 1.9585262537002563,
+    "z": 0.5919492244720459
+  },
+  "axis_ratio": 3.3086,
+  "longest_axis": "y",
+  "debris": {
+    "unsupported_components_remaining": 0,
+    "triangles_in_shards": 0,
+    "shards": []
+  },
+  "failure_codes": [],
+  "advisory_codes": [],
+  "messages": [],
+  "passed": true
+}

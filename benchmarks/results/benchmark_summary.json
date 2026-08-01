@@ -1,0 +1,171 @@
+{
+  "total_cases": 11,
+  "asserted": 8,
+  "passed": 8,
+  "failed": [],
+  "results": [
+    {
+      "case": "shaman_atlas_inverted_rows",
+      "kind": "evaluator",
+      "ok": true,
+      "expected_pass": false,
+      "actual_pass": false,
+      "expected_codes": [
+        "UV_ROW_ORIENTATION_MISMATCH"
+      ],
+      "actual_codes": [
+        "UV_ROW_ORIENTATION_MISMATCH"
+      ],
+      "stdout": [
+        "VISUAL_EVAL passed=False blocking=['UV_ROW_ORIENTATION_MISMATCH'] advisory=[]"
+      ]
+    },
+    {
+      "case": "shaman_flat_grey_priors",
+      "kind": "evaluator",
+      "ok": true,
+      "expected_pass": false,
+      "actual_pass": false,
+      "expected_codes": [
+        "FLAT_NEUTRAL_ATLAS_REGIONS"
+      ],
+      "actual_codes": [
+        "FLAT_NEUTRAL_ATLAS_REGIONS"
+      ],
+      "stdout": [
+        "VISUAL_EVAL passed=False blocking=['FLAT_NEUTRAL_ATLAS_REGIONS'] advisory=[]"
+      ]
+    },
+    {
+      "case": "shaman_swapped_camera_labels",
+      "kind": "evaluator",
+      "ok": true,
+      "expected_pass": false,
+      "actual_pass": false,
+      "expected_codes": [
+        "CAMERA_LABEL_MISMATCH"
+      ],
+      "actual_codes": [
+        "CAMERA_LABEL_MISMATCH"
+      ],
+      "stdout": [
+        "VISUAL_EVAL passed=False blocking=['CAMERA_LABEL_MISMATCH'] advisory=[]"
+      ]
+    },
+    {
+      "case": "shaman_material_id_per_triangle_noise",
+      "kind": "evaluator",
+      "ok": true,
+      "expected_pass": false,
+      "actual_pass": false,
+      "expected_codes": [
+        "MATERIAL_ID_NOISE"
+      ],
+      "actual_codes": [
+        "MATERIAL_ID_NOISE"
+      ],
+      "stdout": [
+        "VISUAL_EVAL passed=False blocking=['MATERIAL_ID_NOISE'] advisory=[]"
+      ]
+    },
+    {
+      "case": "shaman_uv_detector_timed_out",
+      "kind": "evaluator",
+      "ok": true,
+      "expected_pass": false,
+      "actual_pass": false,
+      "expected_codes": [
+        "UV_OVERLAP"
+      ],
+      "actual_codes": [
+        "UV_OVERLAP"
+      ],
+      "stdout": [
+        "VISUAL_EVAL passed=False blocking=['UV_OVERLAP'] advisory=[]"
+      ]
+    },
+    {
+      "case": "shaman_plastic_roughness",
+      "kind": "evaluator",
+      "ok": true,
+      "expected_pass": false,
+      "actual_pass": false,
+      "expected_codes": [
+        "PLASTIC_ROUGHNESS"
+      ],
+      "actual_codes": [
+        "PLASTIC_ROUGHNESS"
+      ],
+      "stdout": [
+        "VISUAL_EVAL passed=False blocking=['PLASTIC_ROUGHNESS'] advisory=[]"
+      ]
+    },
+    {
+      "case": "shaman_accepted_candidate",
+      "kind": "evaluator",
+      "ok": true,
+      "expected_pass": true,
+      "actual_pass": true,
+      "expected_codes": [],
+      "actual_codes": [],
+      "stdout": [
+        "VISUAL_EVAL passed=True blocking=[] advisory=[]"
+      ]
+    },
+    {
+      "case": "geometry_shaman_master",
+      "kind": "geometry",
+      "ok": null,
+      "expected_pass": true,
+      "actual_pass": true,
+      "actual_codes": [],
+      "axis_ratio": 3.328,
+      "components": 90,
+      "stdout": [
+        "GEOMETRY_QA passed=True axis_ratio=3.33 components=90 shards=2 codes=[] advisory=['FLOATING_DEBRIS']"
+      ],
+      "note": "recorded, not asserted: raw generator output"
+    },
+    {
+      "case": "geometry_turbo_bird_master",
+      "kind": "geometry",
+      "ok": null,
+      "expected_pass": true,
+      "actual_pass": true,
+      "actual_codes": [],
+      "axis_ratio": 1.0659,
+      "components": 111,
+      "stdout": [
+        "GEOMETRY_QA passed=True axis_ratio=1.07 components=111 shards=1 codes=[] advisory=['FLOATING_DEBRIS']"
+      ],
+      "note": "recorded, not asserted: raw generator output"
+    },
+    {
+      "case": "geometry_red_panda_master",
+      "kind": "geometry",
+      "ok": null,
+      "expected_pass": true,
+      "actual_pass": true,
+      "actual_codes": [],
+      "axis_ratio": 1.1482,
+      "components": 69,
+      "stdout": [
+        "GEOMETRY_QA passed=True axis_ratio=1.15 components=69 shards=9 codes=[] advisory=['FLOATING_DEBRIS']"
+      ],
+      "note": "recorded, not asserted: raw generator output"
+    },
+    {
+      "case": "geometry_shaman_lod0_cleaned",
+      "kind": "geometry",
+      "ok": true,
+      "expected_pass": true,
+      "actual_pass": true,
+      "actual_codes": [],
+      "axis_ratio": 3.3086,
+      "components": 21,
+      "stdout": [
+        "GEOMETRY_QA passed=True axis_ratio=3.31 components=21 shards=0 codes=[] advisory=[]"
+      ]
+    }
+  ]
+}

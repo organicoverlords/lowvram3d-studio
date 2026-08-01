@@ -1,0 +1,32 @@
+{
+  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\masters\\turbo_bird_master.glb",
+  "triangles": 1820142,
+  "components": 111,
+  "extent": {
+    "x": 1.8617743849754333,
+    "y": 1.9704493880271912,
+    "z": 1.9844987988471985
+  },
+  "axis_ratio": 1.0659,
+  "longest_axis": "z",
+  "debris": {
+    "unsupported_components_remaining": 1,
+    "triangles_in_shards": 12,
+    "shards": [
+      {
+        "component": 77,
+        "triangles": 12,
+        "height_mean": 0.9099,
+        "diagonal": 0.00216
+      }
+    ]
+  },
+  "failure_codes": [],
+  "advisory_codes": [
+    "FLOATING_DEBRIS"
+  ],
+  "messages": [
+    "1 unsupported detached components"
+  ],
+  "passed": true
+}

@@ -1,0 +1,80 @@
+{
+  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\masters\\red_panda_master.glb",
+  "triangles": 979620,
+  "components": 69,
+  "extent": {
+    "x": 1.7250251173973083,
+    "y": 1.9807003736495972,
+    "z": 1.7578991055488586
+  },
+  "axis_ratio": 1.1482,
+  "longest_axis": "y",
+  "debris": {
+    "unsupported_components_remaining": 9,
+    "triangles_in_shards": 80,
+    "shards": [
+      {
+        "component": 13,
+        "triangles": 8,
+        "height_mean": 0.8056,
+        "diagonal": 0.0038
+      },
+      {
+        "component": 35,
+        "triangles": 8,
+        "height_mean": 0.8532,
+        "diagonal": 0.00325
+      },
+      {
+        "component": 44,
+        "triangles": 8,
+        "height_mean": 0.7183,
+        "diagonal": 0.00464
+      },
+      {
+        "component": 50,
+        "triangles": 16,
+        "height_mean": 0.7738,
+        "diagonal": 0.01285
+      },
+      {
+        "component": 51,
+        "triangles": 8,
+        "height_mean": 0.7699,
+        "diagonal": 0.00553
+      },
+      {
+        "component": 52,
+        "triangles": 8,
+        "height_mean": 0.7698,
+        "diagonal": 0.00666
+      },
+      {
+        "component": 53,
+        "triangles": 8,
+        "height_mean": 0.766,
+        "diagonal": 0.00803
+      },
+      {
+        "component": 54,
+        "triangles": 8,
+        "height_mean": 0.7659,
+        "diagonal": 0.00907
+      },
+      {
+        "component": 55,
+        "triangles": 8,
+        "height_mean": 0.7619,
+        "diagonal": 0.00324
+      }
+    ]
+  },
+  "failure_codes": [],
+  "advisory_codes": [
+    "FLOATING_DEBRIS"
+  ],
+  "messages": [
+    "9 unsupported detached components"
+  ],
+  "passed": true
+}

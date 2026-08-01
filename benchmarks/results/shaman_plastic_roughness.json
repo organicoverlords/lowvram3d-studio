@@ -1,0 +1,47 @@
+{
+  "render_dir": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\reports\\texture_review",
+  "passed": false,
+  "blocking_codes": [
+    "PLASTIC_ROUGHNESS"
+  ],
+  "advisory_codes": [],
+  "findings": [
+    {
+      "code": "PLASTIC_ROUGHNESS",
+      "severity": "blocking",
+      "detail": "5th-percentile roughness 0.2196 produces broad specular sheen that washes out surface detail",
+      "measured": {
+        "roughness_mean": 0.2196,
+        "roughness_p05": 0.2196,
+        "roughness_std": 0.0,
+        "metallic_percent_above_0_5": 0.0
+      }
+    },
+    {
+      "code": "PLASTIC_ROUGHNESS",
+      "severity": "blocking",
+      "detail": "roughness standard deviation 0.0 is flat; no material variation is present",
+      "measured": {
+        "roughness_mean": 0.2196,
+        "roughness_p05": 0.2196,
+        "roughness_std": 0.0,
+        "metallic_percent_above_0_5": 0.0
+      }
+    }
+  ],
+  "measured": {
+    "orm": {
+      "roughness_mean": 0.2196,
+      "roughness_p05": 0.2196,
+      "roughness_std": 0.0,
+      "metallic_percent_above_0_5": 0.0
+    },
+    "rear_front_correlation": {
+      "mirrored": 0.2254,
+      "direct": 0.0742
+    },
+    "face": {
+      "edge_energy": 0.0987
+    }
+  }
+}

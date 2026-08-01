@@ -1,0 +1,38 @@
+{
+  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\geometry-latest\\shaman_geometry_master.glb",
+  "triangles": 1471424,
+  "components": 90,
+  "extent": {
+    "x": 1.6501639485359192,
+    "y": 1.9809314608573914,
+    "z": 0.5952337384223938
+  },
+  "axis_ratio": 3.328,
+  "longest_axis": "y",
+  "debris": {
+    "unsupported_components_remaining": 2,
+    "triangles_in_shards": 24,
+    "shards": [
+      {
+        "component": 67,
+        "triangles": 8,
+        "height_mean": 0.9004,
+        "diagonal": 0.00303
+      },
+      {
+        "component": 87,
+        "triangles": 16,
+        "height_mean": 0.9072,
+        "diagonal": 0.00593
+      }
+    ]
+  },
+  "failure_codes": [],
+  "advisory_codes": [
+    "FLOATING_DEBRIS"
+  ],
+  "messages": [
+    "2 unsupported detached components"
+  ],
+  "passed": true
+}

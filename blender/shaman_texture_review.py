@@ -27,6 +27,7 @@ VIEWS = [
     ("side", 90.0, 0.0, 1.0),
     ("back", 180.0, 0.0, 1.0),
     ("close_head_antlers", 12.0, 6.0, 0.34),
+    ("close_face", 0.0, 2.0, 0.17),
     ("close_ornaments", 28.0, 2.0, 0.40),
     ("close_staff", -38.0, -4.0, 0.42),
 ]
@@ -152,7 +153,9 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    focus_for = {"close_head_antlers": head, "close_ornaments": ornaments, "close_staff": staff}
+    face = Vector((centre.x, centre.y, minimum.z + (maximum.z - minimum.z) * 0.80))
+    focus_for = {"close_head_antlers": head, "close_face": face,
+                 "close_ornaments": ornaments, "close_staff": staff}
     results = {}
     for name, yaw, pitch, zoom in VIEWS:
         place_camera(camera, centre, radius, yaw, pitch, zoom, focus_for.get(name, centre))
