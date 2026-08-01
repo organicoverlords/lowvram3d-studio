@@ -72,12 +72,17 @@ The exact next action is a **Stage-4-only rerun** against the existing `final-pi
 
 See `evidence/SHAMAN_FINAL_PIPELINE_GEOMETRY_UV_20260801.md` for the measured handoff.
 
-## Staff ring through-hole: repaired and proven
+## Staff ring through-hole: first repair REJECTED, redo not yet promoted
 
 **Updated:** 2026-08-02
 
+> **Read this before the tables below.** The repair described in this section passed every
+> geometric gate and was then **rejected on artistic grounds**. It is kept only as evidence at
+> `shaman-staff-hole-repair\rejected-20260802-generic-donut\`. Do not promote, texture or use it
+> as a baseline. The superseding attempt is in *Staff ring redo* further down.
+
 Visual review established that the circular feature on the staff was a **closed recess**, not a
-through-hole. That is now fixed and proven, by a **localized** repair run on the workstation.
+through-hole. The first repair opened it, by a **localized** repair run on the workstation.
 
 The earlier approach was rejected. `nearest_object()` does not localize anything: the fused main
 surface carries about `98.97%` of faces, so cutting "one object" is still a Boolean against roughly
@@ -153,15 +158,85 @@ Evidence: `C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\local-20260802\`
 The head, mask, antlers, cords, pendants, robe, legs and other staff ornaments are unchanged, by
 coordinate proof and by full-character render.
 
+### Why it was rejected
+
+Technically open, artistically wrong. The opening was substantially larger than the original
+recessed centre, it removed the inner lip and layered carving, the silhouette read as a generic
+perfectly circular donut, the inner wall looked machine-cut, and at full-character scale it became
+a dominant black disc.
+
+The root cause was a fixed `0.43 x outer-radius` cylinder bored straight through the **thickest**
+part of the disc. Geometry metrics could not catch this: they proved openness, which was never in
+doubt, and said nothing about scale or shape. That gap is what the deterministic visual gate in
+`evidence/visual-qa/BENCHMARK.md` now closes.
+
+## Staff ring redo: passes openness and scale, blocked on topology
+
+The canonical source art was measured and the staff head already carries a real through-hole at
+roughly 37% of the outer disc diameter, which is where the 30-40% target came from. The rejected
+cut measured 43%.
+
+The disc centre is **biconcave**, not a flat-floored pocket: thickness falls from `0.1420` at the
+rim to a `0.0141` membrane at the centre, with the recess perimeter at `0.056788` world =
+**40.6%** of the `0.279961` disc diameter and a recess depth of `0.0642`.
+
+`blender/repair_staff_ring_hole.py` now cuts with an organic spindle cutter instead of a cylinder:
+bevelled mouths, a visible bore wall, slight angular asymmetry, and the measured recess perimeter
+as a hard ceiling on every radius it takes. The fraction describes the **mouth**, not the bore -
+clamping the bore itself leaves no room for the flare and collapses the cutter back into the
+straight cylinder that caused the rejection.
+
+### Candidates, 2026-08-02
+
+| candidate | mouth requested | mouth effective | bore fraction | 2D scale ratio | verdict |
+|---|---|---|---|---|---|
+| **small** | 0.376 | 0.376 | 0.3186 | **1.1037** | passes every 2D/3D gate |
+| nominal | 0.406 | clamped | - | 1.1548 | rejected: scale + boundary |
+| large | 0.436 | clamped | - | 1.1550 | rejected: scale + boundary |
+
+`nominal` and `large` both clamp to the recess perimeter, so **`large` is not actually larger**.
+The intended three-point spread is really two points; a genuinely larger candidate would have to
+breach the recess perimeter, which the constraint forbids.
+
+Selected `small`: bore radius `0.04460`, flare `0.05263`, wall thickness `0.11968`, asymmetry
+`0.06`, seed `7`. Triangles `1,086,965 -> 1,089,097`. Import `6.81s`, preflight `4.23s`, localized
+Boolean `6.61s`. Output SHA-256 `a6bc99d2fc63ac42541e92053278d4d72310f583b12bf2ee563c4f3957571ddf`.
+Fresh import `1,089,097` triangles over `1` object. Input SHA-256 unchanged before and after.
+
+### Not promoted
+
+Five of six required conditions hold: `REAL_THROUGH_HOLE_PROVEN`, `HYBRID_VISUAL_GATE_PASSED`,
+`OUTSIDE_ROI_UNCHANGED`, `INPUT_UNCHANGED`, `FRESH_IMPORT_VALIDATED`.
+
+**Manifold/topology validation does not.** Measured on a position-welded copy of the patch, loose
+parts stay at `2 -> 2` so there is no new disconnected debris, but non-manifold edges go
+`150 -> 218` against boundary `150 -> 186`, leaving **+32 genuinely non-manifold edges** created by
+the EXACT solver at the cut. A small spur is visible inside the bore in the oblique render.
+
+Because a candidate must pass every gate independently, `small` is **not promoted**. It sits at
+`shaman-staff-hole-repair\candidates-20260802\small\` and the canonical baseline is untouched.
+
+Next action: reduce the cutter's angular noise where it grazes the surface, then re-run `small`
+alone and re-measure the non-manifold count. Do not retune `DeltaThresholds` to make it pass.
+
+Raw topology counts are measured on a **position-welded throwaway copy**. On the raw triangle soup
+every edge is a boundary edge and every triangle is its own loose part, so unwelded counts cannot
+support a manifold claim at all.
+
 ## Semantic part separation
 
 Stage 2 remains incomplete. Loose-part splitting cannot isolate the staff because the main connected surface contains about `98.97%` of faces and spans the body, staff, antlers, cords and ornaments. Movable-part extraction requires semantic segmentation or authored cuts. It is not required before validating the current fused-character LOD and UV route.
 
 ## Remaining proof boundary
 
-- The repaired-baseline chain now continues from
-  `shaman-staff-hole-repair\local-20260802\shaman_v2_staff_hole_repaired.glb`, **not** from the
-  inferior `1.47M` comparison candidate.
+- **No staff-hole repair is promoted.** The canonical baseline remains
+  `pipeline-v2-validation\...\CLEAN\proven\shaman_v2_validation_stance_clean.glb`, SHA-256
+  `2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80`. The first repair was
+  rejected artistically; the redo is blocked on `+32` non-manifold edges.
+- Downstream work continues from the repaired baseline, **not** from the inferior `1.47M`
+  comparison candidate.
+- Tiny visual QA is `advisory_only` and `TINY_VISUAL_MODEL_DISCRIMINATION_NOT_PROVEN`; the working
+  gate is the deterministic one. See `evidence/visual-qa/BENCHMARK.md`.
 - UV, texture, rigging, animation and Unreal export have not started on the staff-hole-repaired
   baseline.
 - The repaired GLB is `116,900,380` bytes against a `91,237,596` byte input. The triangle count
