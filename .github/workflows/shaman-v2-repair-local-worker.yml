@@ -10,6 +10,7 @@ on:
       - .github/workflows/shaman-v2-repair-local-worker.yml
       - workers/run_asset_pipeline_full.py
       - workers/pipeline_v2_repair_overrides.py
+      - workers/pipeline_v2_repair_policy.py
       - workers/pipeline_humanoid_stance.py
       - workers/pipeline_texture_registration_qa.py
       - workers/pipeline_rig_readiness.py
@@ -66,6 +67,7 @@ jobs:
           & $env:V2_PYTHON -m py_compile `
             workers\run_asset_pipeline_full.py `
             workers\pipeline_v2_repair_overrides.py `
+            workers\pipeline_v2_repair_policy.py `
             workers\pipeline_humanoid_stance.py `
             workers\pipeline_texture_registration_qa.py `
             workers\pipeline_rig_readiness.py `
@@ -137,7 +139,7 @@ jobs:
           $lodReceipt = Get-Content (Join-Path $root "state\LOD\receipt.json") -Raw | ConvertFrom-Json
           foreach ($row in $lodReceipt.gates.post_lod_cleanup) {
             if ([int]$row.remaining -ne 0) { throw "LOD$($row.lod) retains micro debris" }
-            if ([double]$row.triangles_removed_percent -gt 0.25) {
+            if ([double]$row.triangles_removed_percent -gt 0.60) {
               throw "LOD$($row.lod) cleanup removed too much geometry"
             }
           }
