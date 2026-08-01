@@ -103,7 +103,28 @@ $CandidatePresent = Test-Path -LiteralPath $Candidate
 $Promoted = $false
 $Backup = $null
 
-if ($BlenderExit -eq 0 -and $GatePassed -and $CandidatePresent) {
+# Every one of these must fail the stage. A timed-out detector reports zeroes for overlap because
+# it never tested a pair, and those zeroes previously read as a clean result.
+$FailureReasons = @()
+if ($BlenderExit -ne 0) { $FailureReasons += "blender exit $BlenderExit" }
+if (-not $GatePassed) { $FailureReasons += "gate_passed=false" }
+if (-not $CandidatePresent) { $FailureReasons += "candidate GLB missing" }
+if ([bool]$Metrics.exact_overlap.timed_out) { $FailureReasons += "exact overlap timed out" }
+if (-not [bool]$Metrics.exact_overlap.success) { $FailureReasons += "exact overlap did not succeed" }
+if ([int]$Metrics.exact_overlap.tested_pair_count -le 0) {
+    $FailureReasons += "exact overlap tested 0 pairs (candidate_pair_count=$($Metrics.exact_overlap.candidate_pair_count))"
+}
+if ([int]$Metrics.degenerate_uv_triangles -ne 0) {
+    $FailureReasons += "$($Metrics.degenerate_uv_triangles) degenerate UV triangles"
+}
+if ([int]$Metrics.exact_overlap.out_of_bounds_triangle_count -ne 0) {
+    $FailureReasons += "$($Metrics.exact_overlap.out_of_bounds_triangle_count) out-of-bounds UV triangles"
+}
+if ([double]$Metrics.positive_overlap_total_texels_equivalent -gt $MaxOverlapTexels) {
+    $FailureReasons += "overlap $($Metrics.positive_overlap_total_texels_equivalent) texels exceeds $MaxOverlapTexels"
+}
+
+if ($FailureReasons.Count -eq 0) {
     if (Test-Path -LiteralPath $Canonical) {
         $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
         $Backup = Join-Path $GameDir "shaman_lod0_uv.pre-exact-$stamp.glb"
@@ -125,8 +146,14 @@ $ReceiptObject = [ordered]@{
     stage = "shaman_uv_exact_stage_only"
     started_at = $StartedAt.ToString("o")
     finished_at = (Get-Date).ToUniversalTime().ToString("o")
-    repo_head = (& git -C $RepoRoot rev-parse HEAD).Trim()
-    repo_branch = (& git -C $RepoRoot branch --show-current).Trim()
+    repo_head = "$(& git -C $RepoRoot rev-parse HEAD)".Trim()
+    # A detached worktree - which is exactly how this stage is meant to be run - makes
+    # `git branch --show-current` return nothing, and calling .Trim() on that null threw before the
+    # receipt was ever written, losing the evidence for every run.
+    repo_branch = $(
+        $current = "$(& git -C $RepoRoot branch --show-current)".Trim()
+        if ($current) { $current } else { "DETACHED" }
+    )
     input = $Input
     input_sha256 = $InputHashBefore
     input_bytes = $InputBytesBefore
@@ -147,6 +174,12 @@ $ReceiptObject = [ordered]@{
     exact_overlap_pairs = $Metrics.positive_overlap_pair_count
     exact_overlap_texels = $Metrics.positive_overlap_total_texels_equivalent
     degenerate_uv_triangles = $Metrics.degenerate_uv_triangles
+    exact_candidate_pairs = $Metrics.exact_overlap.candidate_pair_count
+    exact_tested_pairs = $Metrics.exact_overlap.tested_pair_count
+    exact_timed_out = $Metrics.exact_overlap.timed_out
+    exact_success = $Metrics.exact_overlap.success
+    out_of_bounds_triangles = $Metrics.exact_overlap.out_of_bounds_triangle_count
+    failure_reasons = @($FailureReasons)
     errors = @($Metrics.errors)
     warnings = @($Metrics.warnings)
 }
@@ -164,7 +197,12 @@ Write-Host "degenerate_uv_triangles=$($Metrics.degenerate_uv_triangles)"
 Write-Host "receipt=$Receipt"
 
 if (-not $Promoted) {
-    throw "UV stage did not pass and was not promoted. Geometry and previous canonical UV were preserved."
+    Write-Host "failure_reasons=$($FailureReasons -join '; ')" -ForegroundColor Yellow
+    Write-Error "UV stage did not pass and was not promoted. Geometry and previous canonical UV were preserved." -ErrorAction Continue
+    # exit, not throw: a throw leaves $LASTEXITCODE at whatever Blender set, so a caller checking
+    # `if ($LASTEXITCODE -ne 0)` sails past a failed stage.
+    exit 1
 }
 
 Write-Host "SHAMAN_UV_STAGE_PASSED" -ForegroundColor Green
+exit 0
