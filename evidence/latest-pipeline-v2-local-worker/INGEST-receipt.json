@@ -1,0 +1,39 @@
+{
+  "stage": "INGEST",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\Users\\Lauri\\Downloads\\ChatGPT Image 29.7.2026 klo 20.00.45.png": "4d23adc758c5b700dd29939e37c043ce61919792b566bdcf13f58b1409d6cf6f"
+  },
+  "outputs": {
+    "matte": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\INGEST\\proven\\matte.png",
+      "sha256": "2dbb1323021cfbf5a7ebd43a874f2ce76ce2a3aa214eccf031cd71bd989750e0",
+      "bytes": 1345565
+    }
+  },
+  "gates": {
+    "source_sha256": "4d23adc758c5b700dd29939e37c043ce61919792b566bdcf13f58b1409d6cf6f",
+    "matte_sha256": "2dbb1323021cfbf5a7ebd43a874f2ce76ce2a3aa214eccf031cd71bd989750e0",
+    "subject_components": 41,
+    "subject_pixel_fraction": 0.32956293657392927
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "source_sha256": "4d23adc758c5b700dd29939e37c043ce61919792b566bdcf13f58b1409d6cf6f",
+        "matte_sha256": "2dbb1323021cfbf5a7ebd43a874f2ce76ce2a3aa214eccf031cd71bd989750e0",
+        "subject_components": 41,
+        "subject_pixel_fraction": 0.32956293657392927
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 1.0
+    }
+  ],
+  "finished_at": "2026-08-01T13:03:37Z"
+}

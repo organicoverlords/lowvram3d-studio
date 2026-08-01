@@ -1,7 +1,7 @@
 ﻿{
-    "workflow_run_id":  "30700848176",
-    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30700848176",
-    "head_sha":  "2b3aa81ec5e3c7e4c88cfecd54bc95b86af3e6e0",
-    "pipeline_exit":  null,
-    "recorded_at":  "2026-08-01T13:00:49.7465222Z"
+    "workflow_run_id":  "30700916031",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30700916031",
+    "head_sha":  "3f7633d2ad57808fa22eaca9f2155ece6be077b6",
+    "pipeline_exit":  "1",
+    "recorded_at":  "2026-08-01T13:20:58.6902371Z"
 }

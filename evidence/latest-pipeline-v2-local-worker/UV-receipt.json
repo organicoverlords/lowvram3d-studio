@@ -1,0 +1,60 @@
+{
+  "stage": "UV",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod0.glb": "b0584ebf198f8a5353a19bb4c2c311c3b0b008df552ec0d200bdee2e2dd19ce9"
+  },
+  "outputs": {
+    "uv_mesh": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb",
+      "sha256": "c508e66e107e9bedcb7508eaea9a3080351fa7f5305b9b49129e2a2780b245ed",
+      "bytes": 7047904
+    },
+    "uv_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\uv_report.json",
+      "sha256": "126b42ff53f8c367ca5cf29c1f122e1fbf0b5d66e43351620a96c079622815ec",
+      "bytes": 1622
+    }
+  },
+  "gates": {
+    "gate_passed": true,
+    "chart_count": 2571,
+    "profile_chart_limit": 3000,
+    "atlas_utilization": 0.48117456694983163,
+    "stretch_p95": 1.0897453506814034,
+    "candidate_pair_count": 3307625,
+    "tested_pair_count": 1278365,
+    "timed_out": false,
+    "positive_overlap_pairs": 0,
+    "positive_overlap_texels": 0.0,
+    "degenerate_uv_triangles": 0,
+    "out_of_bounds_triangles": 0
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "gate_passed": true,
+        "chart_count": 2571,
+        "profile_chart_limit": 3000,
+        "atlas_utilization": 0.48117456694983163,
+        "stretch_p95": 1.0897453506814034,
+        "candidate_pair_count": 3307625,
+        "tested_pair_count": 1278365,
+        "timed_out": false,
+        "positive_overlap_pairs": 0,
+        "positive_overlap_texels": 0.0,
+        "degenerate_uv_triangles": 0,
+        "out_of_bounds_triangles": 0
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 390.0
+    }
+  ],
+  "finished_at": "2026-08-01T13:12:15Z"
+}

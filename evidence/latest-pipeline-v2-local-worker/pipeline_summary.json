@@ -1,0 +1,53 @@
+{
+  "asset_id": "shaman_v2_validation",
+  "profile": "humanoid_complex_accessories",
+  "stages": {
+    "INGEST": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "GENERATE": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "GEOMETRY_QA": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "CLEAN": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "LOD": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "UV": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "BAKE": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "TEXTURE": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "TEXTURE_QA": {
+      "status": "failed",
+      "failure_codes": [
+        "FLOATING_DEBRIS"
+      ],
+      "needs_human": true
+    }
+  }
+}

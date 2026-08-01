@@ -1,0 +1,53 @@
+{
+  "stage": "CLEAN",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\GENERATE\\proven\\master.glb": "ca4749bc47181e27e7652a95f1cde59a21870772730cf0845d6d6794564a0ffe"
+  },
+  "outputs": {
+    "clean": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\clean.glb",
+      "sha256": "c5b0191b41de08e70478d3f6da71f6ac40e31aaa127290690b78ff3d422c1c50",
+      "bytes": 91753176
+    },
+    "clean_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\clean_report.json",
+      "sha256": "8556f2114aba91149a10a3f1af44df4fc628ac1f750aa391fdbfae5f1c48e58d",
+      "bytes": 12302
+    },
+    "verify_geometry": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\verify_geometry.json",
+      "sha256": "cecae77def6859728087a35aa781405fc8e3fcffda62d28fab39f95d92566d15",
+      "bytes": 533
+    }
+  },
+  "gates": {
+    "triangles_before": 1093124,
+    "triangles_after": 1093108,
+    "triangles_removed_percent": 0.0015,
+    "uv_bit_identical": null,
+    "components_removed": 1,
+    "shards_remaining": 0
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "triangles_before": 1093124,
+        "triangles_after": 1093108,
+        "triangles_removed_percent": 0.0015,
+        "uv_bit_identical": null,
+        "components_removed": 1,
+        "shards_remaining": 0
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 8.1
+    }
+  ],
+  "finished_at": "2026-08-01T13:03:49Z"
+}
