@@ -1,15 +1,19 @@
-"""Fail closed when the source-to-mesh registration is too weak for projection.
+"""Fail closed when source-to-mesh registration is too weak for projection.
 
 Atlas orientation proves that texels sample the intended UV coordinates. It does not prove that the
 source illustration was warped onto the correct geometric regions. This gate reads the projection
 view builder's silhouette-registration evidence and rejects a texture before bake/export when the
-source-to-mesh warp is too weak or unstable.
+source-to-mesh warp is too weak or unstable. Pipeline repair policy version 2 pairs this gate with
+source-supported post-LOD debris classification, so small valid ornaments are not sacrificed merely
+to make a geometry metric pass.
 """
 from __future__ import annotations
 
 import argparse
 import json
 from pathlib import Path
+
+POLICY_VERSION = 2
 
 
 def main() -> None:
@@ -47,6 +51,7 @@ def main() -> None:
         failures.append(f"only {visible:.3f}% of triangles are directly visible")
 
     result = {
+        "policy_version": POLICY_VERSION,
         "registration_report": str(source),
         "passed": not failures,
         "failure_code": None if not failures else "TEXTURE_MISREGISTRATION",
@@ -69,8 +74,9 @@ def main() -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(
-        f"TEXTURE_REGISTRATION passed={result['passed']} final_iou={final_iou:.4f} "
-        f"dense={accepted} flow_cap_saturation={cap_saturation:.3f}",
+        f"TEXTURE_REGISTRATION policy={POLICY_VERSION} passed={result['passed']} "
+        f"final_iou={final_iou:.4f} dense={accepted} "
+        f"flow_cap_saturation={cap_saturation:.3f}",
         flush=True,
     )
     raise SystemExit(0 if result["passed"] else 2)
