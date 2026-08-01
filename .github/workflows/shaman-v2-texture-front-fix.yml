@@ -1,0 +1,246 @@
+name: Shaman V2 texture front fix
+run-name: Shaman texture front fix ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - infra/windows-self-hosted-runner-20260731
+    paths:
+      - .github/workflows/shaman-v2-texture-front-fix.yml
+      - workers/shaman_texture_views_oriented.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pipeline-v2-local-worker
+  cancel-in-progress: true
+
+jobs:
+  texture-front-fix:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 180
+    steps:
+      - name: Checkout trusted repair branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 20
+
+      - name: Resolve local environment
+        shell: powershell
+        run: |
+          if ("${{ github.ref }}" -ne "refs/heads/infra/windows-self-hosted-runner-20260731") {
+            throw "Unexpected ref"
+          }
+          $candidates = @(
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $selected = $null
+          foreach ($candidate in $candidates) {
+            & $candidate -c "import cv2,numpy,scipy,xatlas; print('FRONT_FIX_ENV_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) { $selected = $candidate; break }
+          }
+          if (-not $selected) { throw "No complete Python environment" }
+          $blender = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
+          if (-not (Test-Path -LiteralPath $blender)) { throw "Blender 5.2 is missing" }
+          "V2_PYTHON=$selected" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_OUTPUT_ROOT=C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_ASSET_ROOT=C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "LOWVRAM3D_FRONT_DIRECTION=+z" | Add-Content -LiteralPath $env:GITHUB_ENV
+          git rev-parse HEAD
+
+      - name: Compile and test orientation repair
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & $env:V2_PYTHON -m py_compile `
+            workers\shaman_texture_views.py `
+            workers\shaman_texture_views_oriented.py `
+            workers\pipeline_rig_readiness.py `
+            workers\run_asset_pipeline_full.py
+          if ($LASTEXITCODE -ne 0) { throw "Orientation repair does not compile" }
+          & $env:V2_PYTHON -m pytest tests -q
+          if ($LASTEXITCODE -ne 0) { throw "Unit tests failed" }
+
+      - name: Select oriented view builder and invalidate texture only
+        shell: powershell
+        run: |
+          $production = Join-Path $PWD "workers\pipeline_v2_production_stages.py"
+          $text = [IO.File]::ReadAllText($production)
+          $before = 'w("shaman_texture_views.py")'
+          $after = 'w("shaman_texture_views_oriented.py")'
+          if (-not $text.Contains($before)) { throw "Texture view call site was not found" }
+          $patched = $text.Replace($before, $after)
+          if ($patched -eq $text) { throw "Texture view call site was not replaced" }
+          [IO.File]::WriteAllText($production, $patched, [Text.UTF8Encoding]::new($false))
+
+          $root = $env:V2_ASSET_ROOT
+          foreach ($stage in @("TEXTURE", "TEXTURE_QA")) {
+            $path = Join-Path $root "state\$stage"
+            if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Recurse -Force }
+          }
+          $acceptance = Join-Path $root "texture_front_acceptance.json"
+          if (Test-Path -LiteralPath $acceptance) { Remove-Item -LiteralPath $acceptance -Force }
+          Write-Host "Invalidated TEXTURE and TEXTURE_QA only; UV and BAKE remain intact."
+
+      - name: Rebuild texture on confirmed plus-Z front
+        shell: powershell
+        run: |
+          $source = "C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png"
+          $master = "C:\AI\LowVRAM3D-benchmarks\outputs\antlered_bird_shaman_anchor\final-pipeline\high\shaman_high_clean.glb"
+          if (-not (Test-Path -LiteralPath $source)) { throw "Canonical source is missing" }
+          if (-not (Test-Path -LiteralPath $master)) { throw "Canonical high master is missing" }
+          $sourceHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+          $masterHash = (Get-FileHash -LiteralPath $master -Algorithm SHA256).Hash.ToLowerInvariant()
+          "SOURCE_HASH_BEFORE=$sourceHash" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "MASTER_HASH_BEFORE=$masterHash" | Add-Content -LiteralPath $env:GITHUB_ENV
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          $ErrorActionPreference = "Continue"
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-asset-pipeline.ps1 `
+            -Image $source `
+            -Profile humanoid_complex_accessories `
+            -AssetId shaman_v2_validation `
+            -OutputRoot $env:V2_OUTPUT_ROOT `
+            -ExistingMaster $master `
+            -FromStage TEXTURE `
+            -ToStage TEXTURE_QA `
+            -PythonPath $env:V2_PYTHON `
+            -BlenderPath $env:V2_BLENDER
+          $pipelineExit = $LASTEXITCODE
+          "PIPELINE_EXIT=$pipelineExit" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "PIPELINE_EXIT=$pipelineExit"
+          exit 0
+
+      - name: Verify corrected hemisphere and texture QA
+        shell: powershell
+        run: |
+          $root = $env:V2_ASSET_ROOT
+          if ([int]$env:PIPELINE_EXIT -ne 0) { throw "Texture pipeline returned $env:PIPELINE_EXIT" }
+          $summary = Get-Content (Join-Path $root "pipeline_summary.json") -Raw | ConvertFrom-Json
+          foreach ($stage in @("TEXTURE", "TEXTURE_QA")) {
+            if ($summary.stages.$stage.status -ne "passed") {
+              throw "$stage did not pass: $($summary.stages.$stage | ConvertTo-Json -Compress)"
+            }
+          }
+
+          $textureReceipt = Get-Content (Join-Path $root "state\TEXTURE\receipt.json") -Raw | ConvertFrom-Json
+          $qaReceipt = Get-Content (Join-Path $root "state\TEXTURE_QA\receipt.json") -Raw | ConvertFrom-Json
+          $viewReportPath = $textureReceipt.outputs.view_report.path
+          $view = Get-Content -LiteralPath $viewReportPath -Raw | ConvertFrom-Json
+          if ($view.front_direction -ne "+z") { throw "Projection still uses $($view.front_direction), expected +z" }
+          if ($view.front_direction_request -ne "+z") { throw "Front override was not recorded" }
+          if ($view.front_direction_selection_policy -ne "explicit_semantic_override") {
+            throw "Projection did not use the explicit semantic override"
+          }
+          if (-not $view.registration_gate_passed) {
+            throw "Correct-side texture registration failed: $($view.failure_codes -join ',')"
+          }
+          if ([double]$view.final_registration_iou -lt 0.58) {
+            throw "Correct-side registration IoU is too low"
+          }
+
+          $texturedGlb = $textureReceipt.outputs.textured_glb.path
+          if (-not (Test-Path -LiteralPath $texturedGlb)) { throw "Corrected textured GLB is missing" }
+
+          $rigReport = Join-Path $root "rig_readiness_probe.json"
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          $ErrorActionPreference = "Continue"
+          & $env:V2_PYTHON workers\pipeline_rig_readiness.py `
+            --mesh $texturedGlb `
+            --profile humanoid_complex_accessories `
+            --report $rigReport
+          $rigExit = $LASTEXITCODE
+          $rig = Get-Content -LiteralPath $rigReport -Raw | ConvertFrom-Json
+          if ($rig.failure_codes -contains "FEET_TOO_CLOSE_FOR_RIGGING") {
+            throw "Foot separation regressed during texture-only rebuild"
+          }
+
+          $source = "C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png"
+          $master = "C:\AI\LowVRAM3D-benchmarks\outputs\antlered_bird_shaman_anchor\final-pipeline\high\shaman_high_clean.glb"
+          $sourceAfter = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+          $masterAfter = (Get-FileHash -LiteralPath $master -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($sourceAfter -ne $env:SOURCE_HASH_BEFORE) { throw "Source image changed" }
+          if ($masterAfter -ne $env:MASTER_HASH_BEFORE) { throw "Canonical high master changed" }
+
+          [ordered]@{
+            passed = $true
+            workflow_run_id = "${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            correction = "source texture moved from ambiguous -z selection to user-confirmed +z front"
+            source_sha256 = $sourceAfter
+            canonical_high_sha256 = $masterAfter
+            texture_receipt = $textureReceipt
+            texture_qa_receipt = $qaReceipt
+            view_report = $view
+            rig_probe_exit = $rigExit
+            rig_readiness_probe = $rig
+            corrected_textured_glb = $texturedGlb
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 30 | Set-Content `
+              (Join-Path $root "texture_front_acceptance.json") -Encoding utf8
+
+      - name: Publish compact orientation evidence
+        if: always()
+        shell: powershell
+        run: |
+          $root = $env:V2_ASSET_ROOT
+          $evidence = Join-Path $PWD "evidence\latest-shaman-v2-front-fix"
+          if (Test-Path -LiteralPath $evidence) { Remove-Item $evidence -Recurse -Force }
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          foreach ($relative in @(
+            "pipeline_summary.json",
+            "texture_front_acceptance.json",
+            "rig_readiness_probe.json",
+            "state\TEXTURE\receipt.json",
+            "state\TEXTURE_QA\receipt.json"
+          )) {
+            $source = Join-Path $root $relative
+            if (Test-Path -LiteralPath $source) {
+              $name = ($relative -replace '[\\/]', '-')
+              Copy-Item -LiteralPath $source -Destination (Join-Path $evidence $name) -Force
+            }
+          }
+          [ordered]@{
+            workflow_run_id = "${{ github.run_id }}"
+            workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            pipeline_exit = $env:PIPELINE_EXIT
+            forced_front_direction = "+z"
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json | Set-Content (Join-Path $evidence "workflow_receipt.json") -Encoding utf8
+
+          git restore --worktree --staged workers/pipeline_v2_production_stages.py 2>$null
+          git restore --worktree --staged benchmarks/results 2>$null
+          git clean -fd -- workers/__pycache__ src/lowvram3d/__pycache__ tests/__pycache__ 2>$null
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- evidence/latest-shaman-v2-front-fix
+          if (@(git status --porcelain -- evidence/latest-shaman-v2-front-fix).Count -gt 0) {
+            git commit -m "evidence: record corrected shaman texture front ${{ github.run_id }}"
+            if ($LASTEXITCODE -ne 0) { throw "Could not commit orientation evidence" }
+            git pull --rebase origin infra/windows-self-hosted-runner-20260731
+            if ($LASTEXITCODE -ne 0) { throw "Could not rebase orientation evidence" }
+            git push origin HEAD:infra/windows-self-hosted-runner-20260731
+            if ($LASTEXITCODE -ne 0) { throw "Could not push orientation evidence" }
+          }
+
+      - name: Upload corrected GLB reports and renders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shaman-v2-correct-front-${{ github.run_id }}
+          path: |
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\texture_front_acceptance.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\rig_readiness_probe.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\TEXTURE\proven\*.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\TEXTURE\proven\*.glb
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\TEXTURE\proven\*.png
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\TEXTURE_QA\proven\*.json
+          if-no-files-found: error
+          retention-days: 14
