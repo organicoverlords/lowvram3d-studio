@@ -2,8 +2,10 @@
 
 This gate proves geometric clearance; it never pretends fused limbs are riggable. Humanoids are
 checked for arm valleys, independent lower-body lobes, a real gap between the feet, and sufficient
-front-to-back depth. Static assets pass without a skeleton. Other rig profiles fail closed until a
-profile-specific landmark analyzer exists.
+front-to-back depth. Complex-accessory humanoids receive one explicit garment-aware rule: a long
+robe may occupy the centre of the full lower body, but the asset is leg-clear only when both feet
+and the lower shin band still form two independent lobes. Standard humanoids retain the stricter
+full lower-body valley requirement.
 """
 from __future__ import annotations
 
@@ -29,6 +31,21 @@ def _histogram(points: np.ndarray, axis: int, lo: float, hi: float, bins: int = 
         return np.zeros(bins, np.float64)
     hist, _ = np.histogram(points[:, axis], bins=bins, range=(lo, hi))
     return _smooth(hist)
+
+
+def _two_lobe_gap(histogram: np.ndarray) -> dict:
+    left = float(histogram[10:30].max(initial=0.0))
+    right = float(histogram[34:54].max(initial=0.0))
+    centre = float(histogram[29:35].mean())
+    peak = max(min(left, right), 1.0)
+    ratio = centre / peak
+    return {
+        "left_peak": left,
+        "right_peak": right,
+        "centre_mean": centre,
+        "gap_ratio": ratio,
+        "clear": bool(left > 0 and right > 0 and ratio <= 0.62),
+    }
 
 
 def _foot_gap(
@@ -75,7 +92,11 @@ def _foot_gap(
     }
 
 
-def _humanoid_clearance(positions: np.ndarray, axes: tuple[int, int, int]) -> dict:
+def _humanoid_clearance(
+    positions: np.ndarray,
+    axes: tuple[int, int, int],
+    profile: str = "humanoid",
+) -> dict:
     width_axis, depth_axis, height_axis = axes
     lo, hi = positions.min(axis=0), positions.max(axis=0)
     extent = hi - lo
@@ -86,8 +107,10 @@ def _humanoid_clearance(positions: np.ndarray, axes: tuple[int, int, int]) -> di
 
     upper = positions[(fraction >= 0.50) & (fraction <= 0.72)]
     lower = positions[(fraction >= 0.05) & (fraction <= 0.43)]
+    shins = positions[(fraction >= 0.03) & (fraction <= 0.22)]
     upper_hist = _histogram(upper, width_axis, lo[width_axis], hi[width_axis])
     lower_hist = _histogram(lower, width_axis, lo[width_axis], hi[width_axis])
+    shin_hist = _histogram(shins, width_axis, lo[width_axis], hi[width_axis])
 
     left_outer = float(upper_hist[2:18].max(initial=0.0))
     right_outer = float(upper_hist[-18:-2].max(initial=0.0))
@@ -97,12 +120,14 @@ def _humanoid_clearance(positions: np.ndarray, axes: tuple[int, int, int]) -> di
     arm_valley_ratio = max(left_valley, right_valley) / outer_floor
     arms_clear = left_outer > 0 and right_outer > 0 and arm_valley_ratio <= 0.58
 
-    left_leg = float(lower_hist[10:30].max(initial=0.0))
-    right_leg = float(lower_hist[34:54].max(initial=0.0))
-    centre_leg = float(lower_hist[29:35].mean())
-    leg_peak = max(min(left_leg, right_leg), 1.0)
-    leg_gap_ratio = centre_leg / leg_peak
-    legs_clear = left_leg > 0 and right_leg > 0 and leg_gap_ratio <= 0.62
+    full_lower = _two_lobe_gap(lower_hist)
+    shin_lower = _two_lobe_gap(shin_hist)
+    feet = _foot_gap(positions, width_axis, height_axis)
+    garment_aware = profile == "humanoid_complex_accessories"
+    garment_clearance = bool(
+        garment_aware and feet["feet_clear"] and shin_lower["clear"]
+    )
+    legs_clear = bool(full_lower["clear"] or garment_clearance)
 
     depth_ratio = depth / height
     return {
@@ -116,11 +141,17 @@ def _humanoid_clearance(positions: np.ndarray, axes: tuple[int, int, int]) -> di
         "depth_to_height": depth_ratio,
         "upper_band_points": int(len(upper)),
         "lower_band_points": int(len(lower)),
+        "shin_band_points": int(len(shins)),
         "arm_valley_ratio": arm_valley_ratio,
         "arms_clear": bool(arms_clear),
-        "leg_gap_ratio": leg_gap_ratio,
-        "legs_clear": bool(legs_clear),
-        "feet": _foot_gap(positions, width_axis, height_axis),
+        "leg_gap_ratio": float(full_lower["gap_ratio"]),
+        "full_lower_body_clear": bool(full_lower["clear"]),
+        "shin_gap_ratio": float(shin_lower["gap_ratio"]),
+        "shins_clear": bool(shin_lower["clear"]),
+        "garment_aware_profile": garment_aware,
+        "garment_clearance_applied": garment_clearance,
+        "legs_clear": legs_clear,
+        "feet": feet,
         "depth_clear": bool(depth_ratio >= 0.14),
     }
 
@@ -151,7 +182,11 @@ def main() -> None:
     if args.profile not in RIGGED_PROFILES:
         report.update({"ready": True, "rig_required": False, "reason": "profile is static"})
     elif args.profile.startswith("humanoid"):
-        measured = _humanoid_clearance(positions, (width_axis, depth_axis, height_axis))
+        measured = _humanoid_clearance(
+            positions,
+            (width_axis, depth_axis, height_axis),
+            args.profile,
+        )
         report["measured"] = measured
         if not measured["depth_clear"]:
             report["failure_codes"].append("BLOCKED_SHALLOW_DEPTH")
