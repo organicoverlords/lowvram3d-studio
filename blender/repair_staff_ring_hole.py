@@ -544,6 +544,164 @@ def boundary_vertex_coords(obj) -> np.ndarray:
     return vertex_world(obj)[np.asarray(indices, dtype=np.int64)]
 
 
+def radial_surface_profile(target, x: float, z: float, outer: float, bins: int = 48):
+    """Front and back surface height of the staff disc as a function of radius."""
+    world = vertex_world(target)
+    radius = np.sqrt((world[:, 0] - x) ** 2 + (world[:, 2] - z) ** 2)
+    keep = radius < outer * 1.02
+    world, radius = world[keep], radius[keep]
+
+    edges = np.linspace(0.0, outer * 1.02, bins + 1)
+    centres, front, back = [], [], []
+    for index in range(bins):
+        band = (radius >= edges[index]) & (radius < edges[index + 1])
+        if band.sum() < 12:
+            continue
+        ys = world[band][:, 1]
+        centres.append(0.5 * (edges[index] + edges[index + 1]))
+        front.append(float(np.percentile(ys, 2)))
+        back.append(float(np.percentile(ys, 98)))
+    if len(centres) < 6:
+        raise RuntimeError("staff disc surface profile could not be measured")
+    return np.asarray(centres), np.asarray(front), np.asarray(back)
+
+
+def recess_metrics(centres, front, back, outer: float, tolerance: float = 0.004) -> dict:
+    """Locate the original recessed centre: its perimeter, depth and membrane thickness."""
+    rim = centres > outer * 0.62
+    rim_front = float(np.median(front[rim]))
+    rim_back = float(np.median(back[rim]))
+
+    perimeter = None
+    for index, centre in enumerate(centres):
+        if front[index] > rim_front + tolerance:
+            perimeter = float(centre)
+        elif perimeter is not None and centre > perimeter:
+            break
+    if perimeter is None:
+        raise RuntimeError("no recessed centre was detected on the staff disc")
+
+    inner = centres <= perimeter
+    thickness = back - front
+    return {
+        "recess_perimeter_world": perimeter,
+        "recess_perimeter_fraction_of_disc_diameter": (2.0 * perimeter) / (2.0 * outer),
+        "recess_depth_world": float(front[inner].max() - rim_front),
+        "membrane_thickness_world": float(thickness[inner].min()),
+        "rim_front_y": rim_front,
+        "rim_back_y": rim_back,
+    }
+
+
+def _smoothstep(t: np.ndarray | float):
+    t = np.clip(t, 0.0, 1.0)
+    return t * t * (3.0 - 2.0 * t)
+
+
+def build_organic_cutter(x: float, z: float, centres, front, back, metrics: dict,
+                         bore: float, bevel_scale: float, asymmetry: float,
+                         seed: int, rings: int = 40, spokes: int = 96):
+    """A spindle cutter: bevelled mouths, a visible bore wall, and slight organic asymmetry.
+
+    A straight primitive cylinder through the thickest part of the disc destroys the carving and
+    reads as machine-drilled. This tapers to points outside the material, flares where it meets
+    each face to leave a rounded lip, and holds a narrow waist through the membrane.
+    """
+    y_front = float(np.interp(bore, centres, front))
+    y_back = float(np.interp(bore, centres, back))
+    flare = bore * bevel_scale
+    band = min(0.35 * max(y_back - y_front, 1e-6), 0.02)
+    tip_front = metrics["rim_front_y"] - 0.02
+    tip_back = metrics["rim_back_y"] + 0.02
+
+    knots_y = np.array([
+        tip_front,
+        y_front - band,
+        y_front + band,
+        y_back - band,
+        y_back + band,
+        tip_back,
+    ])
+    knots_r = np.array([
+        bore * 0.15,
+        flare,
+        bore,
+        bore,
+        flare,
+        bore * 0.15,
+    ])
+    order = np.argsort(knots_y)
+    knots_y, knots_r = knots_y[order], knots_r[order]
+
+    rng = np.random.default_rng(seed)
+    harmonics = [
+        (1, asymmetry * 1.00, rng.uniform(0, 2 * math.pi)),
+        (2, asymmetry * 0.65, rng.uniform(0, 2 * math.pi)),
+        (3, asymmetry * 0.40, rng.uniform(0, 2 * math.pi)),
+        (5, asymmetry * 0.22, rng.uniform(0, 2 * math.pi)),
+    ]
+    axis_wobble = asymmetry * bore * 0.45
+
+    ys = np.linspace(knots_y[0], knots_y[-1], rings)
+    # Smooth the piecewise-linear knot profile so the mouths read as rounded, not chamfered.
+    base = np.interp(ys, knots_y, knots_r)
+    smoothed = base.copy()
+    for _ in range(3):
+        smoothed[1:-1] = 0.25 * smoothed[:-2] + 0.5 * smoothed[1:-1] + 0.25 * smoothed[2:]
+
+    bm = bmesh.new()
+    try:
+        loops = []
+        for index, y in enumerate(ys):
+            t = index / max(rings - 1, 1)
+            offset_x = axis_wobble * math.sin(2.4 * math.pi * t + 0.7)
+            offset_z = axis_wobble * math.cos(1.9 * math.pi * t + 1.9)
+            loop = []
+            for spoke in range(spokes):
+                angle = 2.0 * math.pi * spoke / spokes
+                modulation = 1.0
+                for order_n, amplitude, phase in harmonics:
+                    modulation += amplitude * math.sin(order_n * angle + phase + 0.6 * t)
+                radius = max(smoothed[index] * modulation, 1e-5)
+                loop.append(
+                    bm.verts.new((
+                        x + offset_x + radius * math.cos(angle),
+                        y,
+                        z + offset_z + radius * math.sin(angle),
+                    ))
+                )
+            loops.append(loop)
+        bm.verts.ensure_lookup_table()
+
+        for index in range(len(loops) - 1):
+            lower, upper = loops[index], loops[index + 1]
+            for spoke in range(spokes):
+                nxt = (spoke + 1) % spokes
+                bm.faces.new((lower[spoke], lower[nxt], upper[nxt], upper[spoke]))
+        bm.faces.new(list(reversed(loops[0])))
+        bm.faces.new(loops[-1])
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+
+        mesh = bpy.data.meshes.new("StaffRingOrganicCutter")
+        bm.to_mesh(mesh)
+    finally:
+        bm.free()
+
+    cutter = bpy.data.objects.new("StaffRingOrganicCutter", mesh)
+    bpy.context.collection.objects.link(cutter)
+    return cutter, {
+        "bore_radius_world": bore,
+        "flare_radius_world": flare,
+        "bevel_scale": bevel_scale,
+        "asymmetry": asymmetry,
+        "seed": seed,
+        "material_entry_y": y_front,
+        "material_exit_y": y_back,
+        "bore_wall_thickness_world": y_back - y_front,
+        "bevel_band_world": band,
+    }
+
+
 def add_cutter(x: float, y: float, z: float, radius: float, depth: float):
     bpy.ops.mesh.primitive_cylinder_add(
         vertices=96,
