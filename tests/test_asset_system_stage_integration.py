@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+import sys
 from types import SimpleNamespace
 
-from workers.pipeline_v2_asset_system_stages import (
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "workers"))
+
+from pipeline_v2_asset_system_stages import (  # noqa: E402
     ASSET_SYSTEM_STAGES,
     plan_variant,
     register_asset_system_stages,
@@ -98,7 +103,14 @@ def test_registration_adds_and_overrides_required_stages(tmp_path) -> None:
         "EXPORT": sentinel,
     }
     registered = register_asset_system_stages(pipeline, manifest, existing)
-    for name in ("MATERIALS", "TEXTURE_QA", "PARTS", "POSE_PREP", "RIG_READINESS", "RIG"):
+    for name in (
+        "MATERIALS",
+        "TEXTURE_QA",
+        "PARTS",
+        "POSE_PREP",
+        "RIG_READINESS",
+        "RIG",
+    ):
         assert name in registered
         assert callable(registered[name])
     assert registered["EXPORT"] is sentinel
