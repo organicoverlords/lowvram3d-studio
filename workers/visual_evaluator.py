@@ -44,15 +44,24 @@ CROSS_COMPONENT_PROJECTION = "CROSS_COMPONENT_PROJECTION"
 PLASTIC_ROUGHNESS = "PLASTIC_ROUGHNESS"
 UNFINISHED_SYNTHESIS = "UNFINISHED_SYNTHESIS"
 BACKGROUND_CONTAMINATION = "BACKGROUND_CONTAMINATION"
+SEMANTIC_TEXTURE_MAPPING_FAILED = "SEMANTIC_TEXTURE_MAPPING_FAILED"
 
 # Blocking codes stop a stage. Advisory codes are recorded for the human but do not fail the run,
 # because their detectors are weaker than the defect they describe.
 BLOCKING = {
     UV_ROW_ORIENTATION_MISMATCH, FLAT_NEUTRAL_ATLAS_REGIONS, MATERIAL_ID_NOISE,
-    CAMERA_LABEL_MISMATCH, REAR_MIRRORS_FRONT, PLASTIC_ROUGHNESS, BACKGROUND_CONTAMINATION,
+    REAR_MIRRORS_FRONT, PLASTIC_ROUGHNESS, BACKGROUND_CONTAMINATION,
     FLOATING_DEBRIS, BAD_ORIENTATION, UV_OVERLAP, UV_DEGENERATE, UNFINISHED_SYNTHESIS,
+    SEMANTIC_TEXTURE_MAPPING_FAILED,
 }
-ADVISORY = {MISSING_THIN_FEATURES, FACE_UNREADABLE, CROSS_COMPONENT_PROJECTION}
+# CAMERA_LABEL_MISMATCH is demoted deliberately, and this is a strengthening rather than a
+# relaxation. Its mirror-invariant colour correlation scored a render set whose labels were
+# genuinely inverted as front 0.167 against back 0.111 - it asserted the wrong answer with
+# confidence, so nothing may block on it. The condition it was meant to catch is now covered
+# exactly by SEMANTIC_TEXTURE_MAPPING_FAILED, which compares the recorded front direction of the
+# projection stage against the one the review cameras actually used instead of guessing from pixels.
+ADVISORY = {MISSING_THIN_FEATURES, FACE_UNREADABLE, CROSS_COMPONENT_PROJECTION,
+            CAMERA_LABEL_MISMATCH}
 
 
 def finding(code: str, detail: str, measured: dict) -> dict:
@@ -271,6 +280,41 @@ def check_views(render_dir: Path, source_mask, source_rgb, report) -> list[dict]
     return findings
 
 
+def check_front_direction(view_report_path, review_report_path, report) -> list[dict]:
+    """Assert the review cameras used the same front direction the projection stage chose.
+
+    Deterministic, and it is the check that was missing: the projection put the source imagery on
+    the +Z hemisphere while the renderer assumed a subject facing -Z, so the beak, the chest scarf
+    and the fringe were all rendered into a file called back.png. Everything downstream was correct;
+    only the labels lied, and a correctly textured model was reported as textured backwards.
+    """
+    if not (view_report_path and review_report_path):
+        return []
+    view_path, review_path = Path(view_report_path), Path(review_report_path)
+    if not (view_path.exists() and review_path.exists()):
+        # Fail closed: without both records the labels are unverifiable, and unverifiable labels are
+        # what produced the wrong human verdict in the first place.
+        report["front_direction"] = {"status": "missing_reports"}
+        return [finding(SEMANTIC_TEXTURE_MAPPING_FAILED,
+                        "front direction could not be verified; projection or review record missing",
+                        {"view_report": str(view_path), "review_report": str(review_path)})]
+
+    projected = json.loads(view_path.read_text(encoding="utf-8")).get("front_direction")
+    rendered = json.loads(review_path.read_text(encoding="utf-8")).get("front_direction_gltf")
+    report["front_direction"] = {"projection": projected, "review_cameras": rendered,
+                                 "agree": projected is not None and projected == rendered}
+    if projected is None or rendered is None:
+        return [finding(SEMANTIC_TEXTURE_MAPPING_FAILED,
+                        "front direction is not recorded by both the projection and the renderer",
+                        report["front_direction"])]
+    if projected != rendered:
+        return [finding(SEMANTIC_TEXTURE_MAPPING_FAILED,
+                        f"projection textured the {projected} hemisphere but the review cameras "
+                        f"treat {rendered} as the front; the renders are mislabelled",
+                        report["front_direction"])]
+    return []
+
+
 def check_synthesis(coverage_path, basecolor_path, report, min_contrast_ratio: float) -> list[dict]:
     if not (coverage_path and Path(coverage_path).exists() and Path(basecolor_path).exists()):
         return []
@@ -411,6 +455,10 @@ def main() -> None:
     parser.add_argument("--region-report", default="")
     parser.add_argument("--uv-report", default="")
     parser.add_argument("--geometry-report", default="")
+    parser.add_argument("--view-report", default="",
+                        help="projection stage report carrying the chosen front direction")
+    parser.add_argument("--review-report", default="",
+                        help="review renderer report carrying the front direction its cameras used")
     parser.add_argument("--material-id-components", type=int, default=None)
     parser.add_argument("--profile-json", default="")
     parser.add_argument("--background-rgb", default="")
@@ -439,6 +487,7 @@ def main() -> None:
     findings += check_material_id(args.material_id, args.material_id_components, measured)
     findings += check_orm(args.orm, measured)
     findings += check_views(render_dir, source_mask, source_rgb, measured)
+    findings += check_front_direction(args.view_report, args.review_report, measured)
     findings += check_geometry(args.geometry_report, profile, measured)
     findings += check_uv(args.uv_report, measured)
     findings += check_face(render_dir, args.source_face_contrast, measured, args.min_face_contrast_ratio)

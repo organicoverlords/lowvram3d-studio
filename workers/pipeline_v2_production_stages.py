@@ -213,12 +213,17 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             npz = stage / "projection.npz"
             view_report = stage / "view_report.json"
             code, out = pipeline.run([
-                pipeline.python, w("shaman_texture_views.py"),
+                pipeline.python, w("shaman_texture_views_oriented.py"),
                 "--mesh", mesh, "--source", matte, "--output-npz", npz,
                 "--views-dir", views, "--report", view_report,
             ])
             if code != 0 or not npz.exists():
                 return StageResult("failed", detail=f"view builder exit {code}: {out[-1000:]}")
+
+            # Everything downstream that has a notion of "front" reads it from here. The projection
+            # hemisphere and the review cameras disagreeing is not a cosmetic problem: it produced a
+            # correctly textured model whose renders showed the back under the name "front".
+            front_direction = json.loads(Path(view_report).read_text(encoding="utf-8"))["front_direction"]
 
             orientation_truth = stage / "orientation_truth.json"
             code, out = pipeline.run([
@@ -315,6 +320,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 pipeline, b("shaman_texture_review.py"), "--glb", glb,
                 "--output-dir", render_dir, "--report", review_report,
                 "--resolution", "1024", "--samples", "24",
+                "--front-direction", front_direction,
             )
             if code != 0:
                 return StageResult("failed", detail=f"review renderer exit {code}: {out[-1000:]}")
@@ -326,6 +332,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "projection_report": projection_report, "orientation_truth": orientation_truth,
                 "region_report": region_report, "orm_report": orm_report,
                 "material_manifest": material_manifest, "review_report": review_report,
+                "view_report": view_report,
             }
             review = _json(review_report)
             for name, entry in (review.get("views") or {}).items():
@@ -372,6 +379,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "--orm", orm, "--material-id", material_id, "--coverage", coverage,
                 "--orientation-truth", orientation_truth, "--region-report", region_report,
                 "--uv-report", uv_report, "--geometry-report", geometry_report,
+                "--view-report", _output(pipeline, "TEXTURE", "view_report"),
+                "--review-report", _output(pipeline, "TEXTURE", "review_report"),
                 "--material-id-components", str(bake_report.get("high_component_count", 0)),
             ]
             code, out = pipeline.run(command)

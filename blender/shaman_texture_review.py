@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 from pathlib import Path
 
 import bpy
@@ -57,15 +58,19 @@ def add_lights(radius: float) -> None:
         bpy.context.collection.objects.link(obj)
 
 
-def place_camera(camera, centre: Vector, radius: float, yaw: float, pitch: float, zoom: float, focus: Vector):
+def place_camera(camera, centre: Vector, radius: float, yaw: float, pitch: float, zoom: float,
+                 focus: Vector, front_sign: float):
     distance = radius * 3.2 * zoom
     yaw_r, pitch_r = math.radians(yaw), math.radians(pitch)
-    # The subject's front faces -Z in glTF, and Blender's importer maps glTF (x, y, z) to
-    # (x, -z, y) - so the front ends up facing +Y here. Placing yaw=0 at -Y renders the back and
-    # labels it "front", which is exactly the kind of mislabel that gets read as a texture fault.
+    # Blender's glTF importer maps glTF (x, y, z) to (x, -z, y), so a subject whose front faces
+    # glTF -Z ends up facing Blender +Y, and one facing glTF +Z faces Blender -Y. Which of the two
+    # applies is a property of the asset, not of this renderer: it must come from the same explicit
+    # front direction the projection stage used. Assuming -Z here is what put the beak, the scarf
+    # and the fringe in a file named "back.png" and the rear of the head in one named "front.png",
+    # and a correctly textured model was reported as having its texture on backwards.
     offset = Vector((
-        -math.sin(yaw_r) * math.cos(pitch_r),
-        math.cos(yaw_r) * math.cos(pitch_r),
+        -math.sin(yaw_r) * math.cos(pitch_r) * front_sign,
+        math.cos(yaw_r) * math.cos(pitch_r) * front_sign,
         math.sin(pitch_r),
     )) * distance
     camera.location = focus + offset
@@ -107,7 +112,20 @@ def main() -> None:
     parser.add_argument("--report", required=True)
     parser.add_argument("--resolution", type=int, default=1024)
     parser.add_argument("--samples", type=int, default=24)
+    parser.add_argument(
+        "--front-direction",
+        choices=("+z", "-z"),
+        default=os.environ.get("LOWVRAM3D_FRONT_DIRECTION", "").lower() or None,
+        help="glTF axis the subject's front faces; must match the projection stage",
+    )
     args = parser.parse_args(argv_after_double_dash())
+
+    if args.front_direction is None:
+        # Fail closed. Guessing produced renders labelled with the wrong side, and a mislabelled
+        # review set is worse than no review set: it sends a human looking for a texture fault that
+        # is not there while the real defect goes unexamined.
+        raise SystemExit("front direction is required (--front-direction or LOWVRAM3D_FRONT_DIRECTION)")
+    front_sign = -1.0 if args.front_direction == "+z" else 1.0
 
     reset_scene()
     objects = import_mesh(args.glb)
@@ -158,7 +176,7 @@ def main() -> None:
                  "close_ornaments": ornaments, "close_staff": staff}
     results = {}
     for name, yaw, pitch, zoom in VIEWS:
-        place_camera(camera, centre, radius, yaw, pitch, zoom, focus_for.get(name, centre))
+        place_camera(camera, centre, radius, yaw, pitch, zoom, focus_for.get(name, centre), front_sign)
         path = output_dir / f"{name}.png"
         scene.render.filepath = str(path)
         bpy.ops.render.render(write_still=True)
@@ -168,6 +186,8 @@ def main() -> None:
 
     report = {
         "glb": args.glb,
+        "front_direction_gltf": args.front_direction,
+        "front_camera_axis_blender": "-Y" if front_sign < 0 else "+Y",
         "material_slots": materials,
         "material_slot_count": len(materials),
         "texture_images": images,

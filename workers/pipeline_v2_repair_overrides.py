@@ -301,6 +301,8 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
                 "--region-report", region_report,
                 "--uv-report", uv_report,
                 "--geometry-report", lod0_geometry,
+                "--view-report", texture_outputs.get("view_report", {}).get("path", ""),
+                "--review-report", texture_outputs.get("review_report", {}).get("path", ""),
                 "--material-id-components", str(bake_report.get("high_component_count", 0)),
             ])
             registration_code, registration_output = pipeline.run([
