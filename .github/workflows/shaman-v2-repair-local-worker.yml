@@ -1,0 +1,247 @@
+name: Shaman V2 repair on local PC
+run-name: Shaman V2 repair ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - infra/windows-self-hosted-runner-20260731
+    paths:
+      - .github/workflows/shaman-v2-repair-local-worker.yml
+      - workers/run_asset_pipeline_full.py
+      - workers/pipeline_v2_repair_overrides.py
+      - workers/pipeline_humanoid_stance.py
+      - workers/pipeline_texture_registration_qa.py
+      - workers/pipeline_rig_readiness.py
+      - workers/shaman_texture_views.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pipeline-v2-local-worker
+  cancel-in-progress: true
+
+jobs:
+  repair-shaman:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 360
+    steps:
+      - name: Checkout trusted branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 20
+
+      - name: Verify ref and resolve environment
+        shell: powershell
+        run: |
+          if ("${{ github.ref }}" -ne "refs/heads/infra/windows-self-hosted-runner-20260731") {
+            throw "Unexpected ref"
+          }
+          $candidates = @(
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $selected = $null
+          foreach ($candidate in $candidates) {
+            & $candidate -c "import cv2,numpy,scipy,xatlas; print('REPAIR_ENV_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) { $selected = $candidate; break }
+          }
+          if (-not $selected) { throw "No Python environment has cv2, numpy, scipy and xatlas" }
+          $blender = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
+          if (-not (Test-Path -LiteralPath $blender)) { throw "Blender 5.2 is missing" }
+          "V2_PYTHON=$selected" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_OUTPUT_ROOT=C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_ASSET_ROOT=C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation" | Add-Content -LiteralPath $env:GITHUB_ENV
+          git rev-parse HEAD
+
+      - name: Compile repair layer
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & $env:V2_PYTHON -m py_compile `
+            workers\run_asset_pipeline_full.py `
+            workers\pipeline_v2_repair_overrides.py `
+            workers\pipeline_humanoid_stance.py `
+            workers\pipeline_texture_registration_qa.py `
+            workers\pipeline_rig_readiness.py `
+            workers\shaman_texture_views.py
+          if ($LASTEXITCODE -ne 0) { throw "Repair layer does not compile" }
+
+      - name: Run unit tests and benchmark pack
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & $env:V2_PYTHON -m pip install --disable-pip-version-check pytest
+          if ($LASTEXITCODE -ne 0) { throw "Could not ensure pytest" }
+          & $env:V2_PYTHON -m pytest tests -q
+          if ($LASTEXITCODE -ne 0) { throw "Unit tests failed" }
+          & $env:V2_PYTHON benchmarks\run_benchmarks.py
+          if ($LASTEXITCODE -ne 0) { throw "Benchmark pack failed" }
+
+      - name: Run repaired shaman through texture QA
+        shell: powershell
+        run: |
+          $source = "C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png"
+          $master = "C:\AI\LowVRAM3D-benchmarks\outputs\antlered_bird_shaman_anchor\final-pipeline\high\shaman_high_clean.glb"
+          if (-not (Test-Path -LiteralPath $source)) { throw "Canonical source is missing" }
+          if (-not (Test-Path -LiteralPath $master)) { throw "Canonical high clean master is missing" }
+          $sourceHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+          $masterHash = (Get-FileHash -LiteralPath $master -Algorithm SHA256).Hash.ToLowerInvariant()
+          "SOURCE_HASH_BEFORE=$sourceHash" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "MASTER_HASH_BEFORE=$masterHash" | Add-Content -LiteralPath $env:GITHUB_ENV
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          $ErrorActionPreference = "Continue"
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-asset-pipeline.ps1 `
+            -Image $source `
+            -Profile humanoid_complex_accessories `
+            -AssetId shaman_v2_validation `
+            -OutputRoot $env:V2_OUTPUT_ROOT `
+            -ExistingMaster $master `
+            -FromStage INGEST `
+            -ToStage TEXTURE_QA `
+            -PythonPath $env:V2_PYTHON `
+            -BlenderPath $env:V2_BLENDER
+          $pipelineExit = $LASTEXITCODE
+          "PIPELINE_EXIT=$pipelineExit" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "PIPELINE_EXIT=$pipelineExit"
+          exit 0
+
+      - name: Verify stance debris texture and immutable inputs
+        shell: powershell
+        run: |
+          $root = $env:V2_ASSET_ROOT
+          $summaryPath = Join-Path $root "pipeline_summary.json"
+          if (-not (Test-Path -LiteralPath $summaryPath)) { throw "No pipeline summary" }
+          $summary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
+          foreach ($stage in @("INGEST","GENERATE","GEOMETRY_QA","CLEAN","LOD","UV","BAKE","TEXTURE","TEXTURE_QA")) {
+            $property = $summary.stages.PSObject.Properties[$stage]
+            if (-not $property) { throw "Pipeline did not report $stage" }
+            if ($property.Value.status -ne "passed") {
+              throw "$stage failed: $($property.Value | ConvertTo-Json -Compress)"
+            }
+          }
+          if ([int]$env:PIPELINE_EXIT -ne 0) { throw "Pipeline process returned $env:PIPELINE_EXIT" }
+
+          $cleanReceipt = Get-Content (Join-Path $root "state\CLEAN\receipt.json") -Raw | ConvertFrom-Json
+          $stance = $cleanReceipt.gates.stance_repair
+          if (-not $stance.passed) { throw "Stance repair did not pass" }
+          if ([double]$stance.gap_after.centre_fraction -gt 0.08) {
+            throw "Feet remain too close: $($stance.gap_after.centre_fraction)"
+          }
+
+          $lodReceipt = Get-Content (Join-Path $root "state\LOD\receipt.json") -Raw | ConvertFrom-Json
+          foreach ($row in $lodReceipt.gates.post_lod_cleanup) {
+            if ([int]$row.remaining -ne 0) { throw "LOD$($row.lod) retains micro debris" }
+            if ([double]$row.triangles_removed_percent -gt 0.25) {
+              throw "LOD$($row.lod) cleanup removed too much geometry"
+            }
+          }
+
+          $textureReceipt = Get-Content (Join-Path $root "state\TEXTURE\receipt.json") -Raw | ConvertFrom-Json
+          $viewReportPath = $textureReceipt.outputs.view_report.path
+          $texturedGlb = $textureReceipt.outputs.textured_glb.path
+          if (-not (Test-Path -LiteralPath $viewReportPath)) { throw "No registration report" }
+          $viewReport = Get-Content -LiteralPath $viewReportPath -Raw | ConvertFrom-Json
+          if (-not $viewReport.registration_gate_passed) { throw "Texture registration gate failed" }
+          if ([double]$viewReport.final_registration_iou -lt 0.58) {
+            throw "Texture registration IoU is too low"
+          }
+
+          $rigReport = Join-Path $root "rig_readiness_probe.json"
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          $ErrorActionPreference = "Continue"
+          & $env:V2_PYTHON workers\pipeline_rig_readiness.py `
+            --mesh $texturedGlb `
+            --profile humanoid_complex_accessories `
+            --report $rigReport
+          $rig = Get-Content -LiteralPath $rigReport -Raw | ConvertFrom-Json
+          if ($rig.failure_codes -contains "FEET_TOO_CLOSE_FOR_RIGGING") {
+            throw "Explicit foot-gap gate still fails"
+          }
+
+          $source = "C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png"
+          $master = "C:\AI\LowVRAM3D-benchmarks\outputs\antlered_bird_shaman_anchor\final-pipeline\high\shaman_high_clean.glb"
+          $sourceAfter = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+          $masterAfter = (Get-FileHash -LiteralPath $master -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($sourceAfter -ne $env:SOURCE_HASH_BEFORE) { throw "Source image changed" }
+          if ($masterAfter -ne $env:MASTER_HASH_BEFORE) { throw "Canonical high master changed" }
+
+          [ordered]@{
+            passed = $true
+            workflow_run_id = "${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            source_sha256 = $sourceAfter
+            canonical_high_sha256 = $masterAfter
+            stance = $stance
+            post_lod_cleanup = $lodReceipt.gates.post_lod_cleanup
+            texture_registration = $viewReport
+            rig_readiness_probe = $rig
+            textured_glb = $texturedGlb
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $root "repair_acceptance.json") -Encoding utf8
+
+      - name: Publish compact repair evidence
+        if: always()
+        shell: powershell
+        run: |
+          $root = $env:V2_ASSET_ROOT
+          $evidence = Join-Path $PWD "evidence\latest-shaman-v2-repair"
+          if (Test-Path -LiteralPath $evidence) { Remove-Item $evidence -Recurse -Force }
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          foreach ($relative in @(
+            "asset_manifest.json",
+            "pipeline_summary.json",
+            "repair_acceptance.json",
+            "rig_readiness_probe.json",
+            "state\CLEAN\receipt.json",
+            "state\LOD\receipt.json",
+            "state\UV\receipt.json",
+            "state\BAKE\receipt.json",
+            "state\TEXTURE\receipt.json",
+            "state\TEXTURE_QA\receipt.json"
+          )) {
+            $source = Join-Path $root $relative
+            if (Test-Path -LiteralPath $source) {
+              $name = ($relative -replace '[\\/]', '-')
+              Copy-Item -LiteralPath $source -Destination (Join-Path $evidence $name) -Force
+            }
+          }
+          [ordered]@{
+            workflow_run_id = "${{ github.run_id }}"
+            workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            pipeline_exit = $env:PIPELINE_EXIT
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json | Set-Content (Join-Path $evidence "workflow_receipt.json") -Encoding utf8
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- evidence/latest-shaman-v2-repair
+          if (@(git status --porcelain -- evidence/latest-shaman-v2-repair).Count -gt 0) {
+            git commit -m "evidence: record shaman V2 repair ${{ github.run_id }}"
+            if ($LASTEXITCODE -ne 0) { throw "Could not commit repair evidence" }
+            git pull --rebase origin infra/windows-self-hosted-runner-20260731
+            if ($LASTEXITCODE -ne 0) { throw "Could not rebase repair evidence" }
+            git push origin HEAD:infra/windows-self-hosted-runner-20260731
+            if ($LASTEXITCODE -ne 0) { throw "Could not push repair evidence" }
+          }
+
+      - name: Upload repaired model reports and review renders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shaman-v2-repair-${{ github.run_id }}
+          path: |
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\repair_acceptance.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\pipeline_summary.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\**\*.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\TEXTURE\proven\*.glb
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\TEXTURE\proven\*.blend
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\TEXTURE\proven\*.png
+          if-no-files-found: warn
+          retention-days: 14
