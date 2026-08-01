@@ -72,12 +72,102 @@ The exact next action is a **Stage-4-only rerun** against the existing `final-pi
 
 See `evidence/SHAMAN_FINAL_PIPELINE_GEOMETRY_UV_20260801.md` for the measured handoff.
 
+## Staff ring through-hole: repaired and proven
+
+**Updated:** 2026-08-02
+
+Visual review established that the circular feature on the staff was a **closed recess**, not a
+through-hole. That is now fixed and proven, by a **localized** repair run on the workstation.
+
+The earlier approach was rejected. `nearest_object()` does not localize anything: the fused main
+surface carries about `98.97%` of faces, so cutting "one object" is still a Boolean against roughly
+`1.09M` triangles. The current route isolates the ring region first.
+
+Route, as executed:
+
+1. detect the ring from the front silhouette and size a patch box around it;
+2. select only faces intersecting that box, grown by `2` adjacency rings;
+3. `bpy.ops.mesh.separate` that patch out, preserving world coordinates and object transforms;
+4. apply the cylindrical EXACT Boolean **to the patch alone**;
+5. restore corner splits, because the EXACT solver welds its own output;
+6. join the patch back; no vertex welding is performed (see below);
+7. prove nothing outside the repair box moved.
+
+### Measured result
+
+| item | value |
+|---|---|
+| input (unchanged) | `pipeline-v2-validation\shaman_v2_validation\state\CLEAN\proven\shaman_v2_validation_stance_clean.glb` |
+| input SHA-256 | `2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80` |
+| output | `C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\local-20260802\shaman_v2_staff_hole_repaired.glb` |
+| output SHA-256 | `6b085579488fb9b3b91da592bd030a512f754a6c7c21691ab5715b69ce0f7a13` |
+| triangles | `1,086,965` -> `1,083,588` (delta `-3,377`) |
+| patch size | `29,608` faces = `2.724%` of `1,086,965` (limit `5%`) |
+| ring thickness / hole radius | `0.14198` / `0.06019` world units |
+| stage times | import `7.17s`, preflight detect `4.09s`, localized Boolean `6.73s` |
+
+### Validation gates, all passed
+
+| gate | threshold | measured |
+|---|---|---|
+| centre foreground ratio | `<= 0.08` | `0.0000` |
+| annulus foreground ratio | `>= 0.42` | `1.0000` |
+| axial open-ray fraction | `>= 0.95` | `1.0000` |
+| oblique open-ray fraction | `>= 0.80` | `1.0000` (all 8 azimuths) |
+| backlit centre ratio | `>= 0.60` | `1.0000` |
+| direct ray blocked | must be false | `false` |
+| geometry outside repair box | unchanged | `539,998` unique positions identical, no collapse |
+| fresh-process import | `> 1M` triangles | `1,083,588` over `1` object |
+
+### Two measurement traps that produced false failures
+
+Both were defects in the *test*, not the geometry, and both are recorded so they are not
+reintroduced:
+
+1. **Whole-model silhouette cannot gate an oblique view.** The shaman's body sits behind the
+   foreshortened ring, so the centre reads as filled even through an open hole. Openness is now
+   measured with rays that only count hits **inside the repair box**.
+2. **The ray bundle must start at the ring, not the model centre.** The ring sits at `y ~ -0.174`
+   while the model centre is `y ~ 0.0033`. A bundle launched from the model centre drifts about
+   `0.043` sideways before reaching the ring - most of the `0.0602` hole radius - and reports a
+   false blockage. The oblique tilt is also derived from measured geometry: a centre ray only
+   clears while `tan(theta) < hole_radius / thickness`, here `22.97deg`, so the probe uses `13.78deg`.
+
+### Why no vertex welding
+
+The source is a **triangle soup**: `3,258,048` vertices for `1,086,965` triangles, three per
+triangle, so patch and remainder share no vertex and there is no seam to stitch. An earlier weld
+pass collapsed `56,446` coincident vertices and would have destroyed corner splits, and with them
+UV and normal seams, across the patch. Welding now runs only when a source genuinely shares
+vertices (`corner_split_ratio < 0.99`).
+
+Evidence: `C:\AI\LowVRAM3D-benchmarks\shaman-staff-hole-repair\local-20260802\`
+- `staff_hole_before_after_sheet.png` - four-row before/after sheet
+- `evidence\{before,after}_staff_front.png` - front close-up
+- `evidence\{before,after}_staff_oblique.png` - oblique depth view; the before frame shows the
+  recess floor directly, the after frame shows the bore wall
+- `evidence\{before,after}_staff_backlit.png` - backlit silhouette
+- `evidence\{before,after}_full_character.png` - full-character comparison
+- `staff_hole_report.json`, `repair.log`
+
+The head, mask, antlers, cords, pendants, robe, legs and other staff ornaments are unchanged, by
+coordinate proof and by full-character render.
+
 ## Semantic part separation
 
 Stage 2 remains incomplete. Loose-part splitting cannot isolate the staff because the main connected surface contains about `98.97%` of faces and spans the body, staff, antlers, cords and ornaments. Movable-part extraction requires semantic segmentation or authored cuts. It is not required before validating the current fused-character LOD and UV route.
 
 ## Remaining proof boundary
 
+- The repaired-baseline chain now continues from
+  `shaman-staff-hole-repair\local-20260802\shaman_v2_staff_hole_repaired.glb`, **not** from the
+  inferior `1.47M` comparison candidate.
+- UV, texture, rigging, animation and Unreal export have not started on the staff-hole-repaired
+  baseline.
+- The repaired GLB is `116,900,380` bytes against a `91,237,596` byte input. The triangle count
+  fell, so this is an export-encoding difference, not added geometry. It has not been traced.
+- The staff-hole workflow is dispatch-only and has never completed in CI; the proven result is the
+  local run.
 - Exact UV overlap has not yet been rerun on the current LOD0.
 - Baking, texturing, A-pose, rigging, animation and Unreal export have not started for this high-detail chain.
 - The model is genuinely shallow in depth (`Y` extent about `0.595` versus `Z` extent about `1.981`), a single-view reconstruction limitation that texturing and rigging cannot repair.

@@ -1,14 +1,10 @@
 name: Shaman staff ring through-hole repair
 run-name: Shaman staff-hole repair ${{ github.run_id }}
 
+# Dispatch-only on purpose: the repair is validated locally on the workstation, and a push
+# trigger would start a long self-hosted job on every edit to the script.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - infra/windows-self-hosted-runner-20260731
-    paths:
-      - .github/workflows/shaman-staff-hole-repair.yml
-      - blender/repair_staff_ring_hole.py
 
 permissions:
   contents: read
@@ -87,7 +83,27 @@ jobs:
           & $env:STAFF_BLENDER --background --factory-startup --python-expr $expr
           if ($LASTEXITCODE -ne 0) { throw "Staff-hole repair script does not compile in Blender" }
 
-      - name: Restore real through-hole and validate it
+      - name: Preflight the staff ring and size the localized patch
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          $preflight = Join-Path $env:STAFF_ROOT "staff_hole_preflight.json"
+          & $env:STAFF_BLENDER --background --factory-startup `
+            --python "blender\repair_staff_ring_hole.py" -- `
+            --input $env:STAFF_INPUT `
+            --report $preflight `
+            --evidence-dir (Join-Path $env:STAFF_ROOT "evidence") `
+            --resolution 1024 `
+            --preflight-only
+          if ($LASTEXITCODE -ne 0) { throw "Staff-ring preflight failed" }
+          $probe = Get-Content -LiteralPath $preflight -Raw | ConvertFrom-Json
+          if (-not $probe.patch_within_limit) {
+            throw "Patch is $($probe.patch_faces) faces = $($probe.patch_face_fraction) of the mesh; refusing to fall back to a global Boolean"
+          }
+          Write-Host "PATCH_FACES=$($probe.patch_faces) FRACTION=$($probe.patch_face_fraction) TOTAL=$($probe.faces_total)"
+
+      - name: Restore real through-hole with a localized patch repair
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -101,8 +117,9 @@ jobs:
             --output $output `
             --report $report `
             --evidence-dir $evidence `
-            --resolution 1024
-          if ($LASTEXITCODE -ne 0) { throw "Staff-ring Boolean repair failed" }
+            --resolution 1024 `
+            --localized-repair
+          if ($LASTEXITCODE -ne 0) { throw "Localized staff-ring repair failed" }
           if (-not (Test-Path -LiteralPath $output)) { throw "Repaired GLB was not created" }
           if (-not (Test-Path -LiteralPath $report)) { throw "Repair report was not created" }
           $result = Get-Content -LiteralPath $report -Raw | ConvertFrom-Json
@@ -111,6 +128,10 @@ jobs:
           if ($result.validation.ray_blocked_after_cut) { throw "A direct ray still hits the staff centre" }
           if ($result.validation.centre_foreground_ratio -gt 0.08) { throw "Staff centre is still visibly closed" }
           if ($result.validation.annulus_foreground_ratio -lt 0.42) { throw "Boolean removed too much of the ring" }
+          if ($result.validation.axial_open_ray_fraction -lt 0.95) { throw "Axial rays do not pass through the ring" }
+          if ($result.validation.oblique_open_ray_fraction -lt 0.80) { throw "Tilted rays are blocked; this is a recess, not a through-hole" }
+          if ($result.validation.backlit_centre_ratio -lt 0.60) { throw "Backlit centre is not empty" }
+          if (-not $result.validation.outside_repair_box_unchanged) { throw "Geometry outside the repair box changed" }
           "STAFF_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
           "STAFF_REPORT=$report" | Add-Content -LiteralPath $env:GITHUB_ENV
           Write-Host "THROUGH_HOLE_PROVEN=true"
@@ -162,8 +183,8 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          $before = Join-Path $env:STAFF_ROOT "evidence\before_staff_close.png"
-          $after = Join-Path $env:STAFF_ROOT "evidence\after_staff_close.png"
+          $before = Join-Path $env:STAFF_ROOT "evidence\before_staff_front.png"
+          $after = Join-Path $env:STAFF_ROOT "evidence\after_staff_front.png"
           $sheet = Join-Path $env:STAFF_ROOT "staff_close_before_after.png"
           $code = @'
           import cv2, numpy as np, sys
@@ -198,10 +219,17 @@ jobs:
             output_sha256 = $report.output_sha256
             triangles_before = $report.triangles_before
             triangles_after = $report.triangles_after
+            patch_faces = $report.patch.faces
+            patch_face_fraction = $report.patch.face_fraction
             centre_foreground_ratio = $report.validation.centre_foreground_ratio
             annulus_foreground_ratio = $report.validation.annulus_foreground_ratio
+            axial_open_ray_fraction = $report.validation.axial_open_ray_fraction
+            oblique_open_ray_fraction = $report.validation.oblique_open_ray_fraction
+            backlit_centre_ratio = $report.validation.backlit_centre_ratio
+            outside_repair_box_unchanged = $report.validation.outside_repair_box_unchanged
             ray_blocked_after_cut = $report.validation.ray_blocked_after_cut
             real_through_hole_proven = $report.validation.real_through_hole_proven
+            stage_seconds = $report.stage_seconds
             close_sheet = $sheet
             comparison_sheet = (Join-Path $env:STAFF_ROOT "comparison_sheet.png")
             completed_at = (Get-Date).ToUniversalTime().ToString('o')
