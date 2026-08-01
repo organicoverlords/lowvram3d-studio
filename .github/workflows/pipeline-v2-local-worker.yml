@@ -92,9 +92,10 @@ jobs:
           from pipeline_v2_stages import register_stages
           from pipeline_v2_production_stages import register_production_stages
           root = Path(tempfile.mkdtemp())
+          source = Path.cwd() / 'README.md'
           manifest = {
               'asset_id': 'registry_probe',
-              'source': {'path': __file__, 'sha256': 'probe', 'bytes': 0},
+              'source': {'path': str(source), 'sha256': 'probe', 'bytes': source.stat().st_size},
               'profile': 'static_prop',
               'texture': {'resolution': 2048, 'uv_max_charts': 800},
               'geometry': {'lod_triangle_targets': [120000,45000,18000,6000]},
@@ -159,8 +160,6 @@ jobs:
               throw "Infrastructure stage $stage failed: $($summary.stages.$stage | ConvertTo-Json -Compress)"
             }
           }
-          # TEXTURE_QA may pass or correctly reject the asset. Both prove the stage executed; a
-          # rejection is expected until the face/grey-region defects are repaired automatically.
           if ($summary.stages.TEXTURE_QA.status -notin @("passed", "failed")) {
             throw "TEXTURE_QA returned an invalid status"
           }
