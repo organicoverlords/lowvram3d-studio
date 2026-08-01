@@ -1,7 +1,7 @@
 """Complete Pipeline V2 entrypoint.
 
-Keeps the proven core implementation intact, merges in production stage adapters, and treats a
-missing stage as a software defect instead of silently printing `not_implemented` and exiting zero.
+Keeps the proven core implementation intact, merges in production stage adapters and repair
+overrides, and treats a missing stage as a software defect instead of silently skipping it.
 """
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from pathlib import Path
 from run_asset_pipeline import Pipeline, STAGES, build_manifest
 from pipeline_v2_stages import register_stages as register_core_stages
 from pipeline_v2_production_stages import register_production_stages
+from pipeline_v2_repair_overrides import apply_repair_overrides
 
 
 def main() -> None:
@@ -37,7 +38,9 @@ def main() -> None:
         if not args.image:
             raise SystemExit("--image or --manifest is required")
         image = Path(args.image)
-        output_root = Path(args.output_root or (Path(__file__).resolve().parents[1] / "pipeline-v2-runs"))
+        output_root = Path(
+            args.output_root or (Path(__file__).resolve().parents[1] / "pipeline-v2-runs")
+        )
         manifest = build_manifest(image, args.profile, output_root, args.asset_id or None)
 
     root = Path(manifest["output_root"])
@@ -52,6 +55,7 @@ def main() -> None:
     pipeline = Pipeline(manifest, root, args.python, args.blender)
     stages = register_core_stages(pipeline, manifest, existing_master=args.existing_master)
     stages.update(register_production_stages(pipeline, manifest))
+    stages = apply_repair_overrides(pipeline, manifest, stages)
 
     start_name = args.from_stage.upper()
     stop_name = args.to_stage.upper()
@@ -84,8 +88,14 @@ def main() -> None:
             exit_code = 1
             break
 
-    payload = {"asset_id": manifest["asset_id"], "profile": manifest["profile"], "stages": summary}
-    (root / "pipeline_summary.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    payload = {
+        "asset_id": manifest["asset_id"],
+        "profile": manifest["profile"],
+        "stages": summary,
+    }
+    (root / "pipeline_summary.json").write_text(
+        json.dumps(payload, indent=2), encoding="utf-8"
+    )
     failed = [name for name, value in summary.items() if value["status"] != "passed"]
     print(
         f"PIPELINE_RESULT asset={manifest['asset_id']} "
