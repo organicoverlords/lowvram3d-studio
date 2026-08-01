@@ -13,7 +13,7 @@ from pathlib import Path
 from run_asset_pipeline import Pipeline, STAGES, build_manifest
 from pipeline_v2_stages import register_stages as register_core_stages
 from pipeline_v2_production_stages import register_production_stages
-from pipeline_v2_repair_overrides import apply_repair_overrides
+from pipeline_v2_repair_policy import apply_repair_overrides
 
 
 def main() -> None:
