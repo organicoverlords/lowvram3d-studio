@@ -17,7 +17,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from asset_profiles import foreground_mask
+from lowvram3d.asset_profiles import foreground_mask
 
 
 @dataclass(frozen=True)
@@ -84,16 +84,12 @@ def load_support_context(mesh_path: Path, positions: np.ndarray) -> SupportConte
     if image is None:
         return None
     mask = foreground_mask(image).astype(np.uint8)
-    # Ambiguous border texels must count as support. About 1% of the longer image side is enough to
-    # tolerate silhouette/decimation drift without allowing visibly detached outboard shards.
     radius = max(2, int(round(max(mask.shape) * 0.010)))
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (radius * 2 + 1, radius * 2 + 1))
     mask = cv2.dilate(mask, kernel) > 0
     source_bbox = _subject_bbox(mask)
 
     width_axis, height_axis = _geometry_axes(positions)
-    # Percentiles keep one bad floating point from determining the entire projection frame while
-    # retaining thin staff/antler extremities. Both axes are resolved independently.
     low = np.percentile(positions, 0.20, axis=0).astype(np.float64)
     high = np.percentile(positions, 99.80, axis=0).astype(np.float64)
     raw_low, raw_high = positions.min(axis=0), positions.max(axis=0)
@@ -152,7 +148,6 @@ def component_support(
     y = np.rint(y0 + (1.0 - v_up) * height).astype(np.int64)
     x_direct = np.rint(x0 + u * width).astype(np.int64)
     x_mirror = np.rint(x0 + (1.0 - u) * width).astype(np.int64)
-
     mask = context.source_mask
     valid_y = (y >= 0) & (y < mask.shape[0])
 
@@ -177,10 +172,7 @@ def component_support(
     }
 
 
-def component_position(
-    context: SupportContext,
-    vertices: np.ndarray,
-) -> dict:
+def component_position(context: SupportContext, vertices: np.ndarray) -> dict:
     height_span = max(
         float(context.geometry_high[context.height_axis] - context.geometry_low[context.height_axis]),
         1e-9,
