@@ -3,6 +3,12 @@ run-name: Shaman staff-hole repair ${{ github.run_id }}
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - infra/windows-self-hosted-runner-20260731
+    paths:
+      - .github/workflows/shaman-staff-hole-repair.yml
+      - blender/repair_staff_ring_hole.py
 
 permissions:
   contents: read
