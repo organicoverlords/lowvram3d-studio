@@ -1,6 +1,6 @@
 {
   "stage": "CLEAN",
-  "status": "failed",
+  "status": "passed",
   "profile": "humanoid_complex_accessories",
   "asset_id": "shaman_v2_validation",
   "input_hashes": {
@@ -8,9 +8,9 @@
   },
   "outputs": {
     "clean": {
-      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\clean.glb",
-      "sha256": "c5b0191b41de08e70478d3f6da71f6ac40e31aaa127290690b78ff3d422c1c50",
-      "bytes": 91753176
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\shaman_v2_validation_stance_clean.glb",
+      "sha256": "2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80",
+      "bytes": 91237596
     },
     "clean_report": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\clean_report.json",
@@ -21,6 +21,16 @@
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\verify_geometry.json",
       "sha256": "cecae77def6859728087a35aa781405fc8e3fcffda62d28fab39f95d92566d15",
       "bytes": 533
+    },
+    "pre_stance_clean": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\clean.glb",
+      "sha256": "c5b0191b41de08e70478d3f6da71f6ac40e31aaa127290690b78ff3d422c1c50",
+      "bytes": 91753176
+    },
+    "stance_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\stance_report.json",
+      "sha256": "fd8990ed4c381a786442d01844be110819e6661a1b4d207ef40af00ebe71b613",
+      "bytes": 1146
     }
   },
   "gates": {
@@ -31,7 +41,43 @@
     "components_removed": 1,
     "shards_remaining": 0,
     "stance_repair_schema": 2,
-    "stance_repair": {}
+    "stance_repair": {
+      "input": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\clean.glb",
+      "output": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\candidate\\shaman_v2_validation_stance_clean.glb",
+      "axes": {
+        "width": 0,
+        "depth": 2,
+        "height": 1
+      },
+      "triangles_before": 1093108,
+      "triangles_after": 1086965,
+      "triangles_removed": 6143,
+      "triangles_removed_percent": 0.561976,
+      "bridge_faces_removed": 6143,
+      "debris_faces_removed": 0,
+      "debris_components_removed": 0,
+      "removed_components": [],
+      "vertices_before": 3276459,
+      "vertices_after": 3258048,
+      "gap_before": {
+        "lower_vertices": 98942,
+        "centre_vertices": 19061,
+        "centre_fraction": 0.192648,
+        "lower_band": 0.08,
+        "centre_half_width_fraction": 0.06
+      },
+      "gap_after": {
+        "lower_vertices": 85714,
+        "centre_vertices": 0,
+        "centre_fraction": 0.0,
+        "lower_band": 0.08,
+        "centre_half_width_fraction": 0.06
+      },
+      "repair_applied": true,
+      "max_centre_fraction": 0.08,
+      "max_face_loss_percent": 0.75,
+      "passed": true
+    }
   },
   "attempts": [
     {
@@ -48,13 +94,9 @@
       },
       "failure_codes": [],
       "detail": "",
-      "seconds": 8.1
+      "seconds": 7.6
     }
   ],
-  "finished_at": "2026-08-01T13:03:49Z",
-  "failure_codes": [
-    "FEET_TOO_CLOSE_FOR_RIGGING"
-  ],
-  "needs_human": false,
-  "detail": "humanoid stance repair exit 1: Traceback (most recent call last):\n  File \"C:\\actions-runner-lowvram3d\\_work\\lowvram3d-studio\\lowvram3d-studio\\workers\\pipeline_humanoid_stance.py\", line 255, in <module>\n    main()\n  File \"C:\\actions-runner-lowvram3d\\_work\\lowvram3d-studio\\lowvram3d-studio\\workers\\pipeline_humanoid_stance.py\", line 196, in main\n    raise RuntimeError(\nRuntimeError: stance repair would remove 0.5620% of faces, above 0.25%\n"
+  "finished_at": "2026-08-01T14:10:40Z",
+  "repair_schema": 2
 }

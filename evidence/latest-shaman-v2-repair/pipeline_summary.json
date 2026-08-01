@@ -18,9 +18,14 @@
       "needs_human": false
     },
     "CLEAN": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "LOD": {
       "status": "failed",
       "failure_codes": [
-        "FEET_TOO_CLOSE_FOR_RIGGING"
+        "MICRO_FLOATING_DEBRIS"
       ],
       "needs_human": false
     }
