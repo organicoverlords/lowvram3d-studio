@@ -1,8 +1,9 @@
 """Generic geometry gate for Pipeline V2.
 
-Checks the three geometry defects that got through by hand during the shaman run: a mesh that is
-collapsed or lying down, unsupported detached shards, and thin source-supported features that
-decimation quietly deleted. Emits failure codes the repair policy is keyed on.
+Checks orientation/collapse and detached debris. Post-LOD verification uses the original source
+silhouette, because low-poly cords and pendants may legitimately collapse to one triangle. A tiny
+LOD component blocks only when it is also high/outboard and absent from the source in both mirrored
+and non-mirrored registration.
 """
 from __future__ import annotations
 
@@ -11,12 +12,14 @@ import json
 from pathlib import Path
 
 import numpy as np
-from scipy.sparse import coo_matrix
-from scipy.sparse.csgraph import connected_components
 
 from mesh_io import read_glb, triangle_components
+from source_support import component_position, component_support, load_support_context
 
 WELD = 4e-4
+SOURCE_SUPPORT_MIN = 0.18
+OUTBOARD_MIN = 0.14
+VERY_HIGH_MIN = 0.78
 
 
 def main() -> None:
@@ -27,73 +30,120 @@ def main() -> None:
     parser.add_argument("--debris-height-min", type=float, default=0.70)
     parser.add_argument("--max-shard-triangles", type=int, default=20)
     parser.add_argument("--max-shard-diagonal-fraction", type=float, default=0.062)
-    parser.add_argument("--debris-blocking", action="store_true",
-                        help="treat remaining detached shards as a failure (use after CLEAN)")
+    parser.add_argument(
+        "--debris-blocking",
+        action="store_true",
+        help="treat remaining detached shards as a failure",
+    )
     args = parser.parse_args()
 
-    positions, _, _, tris = read_glb(Path(args.mesh))
+    mesh_path = Path(args.mesh)
+    positions, _, _, tris = read_glb(mesh_path)
     positions = positions.astype(np.float64)
-
     low, high = positions.min(axis=0), positions.max(axis=0)
     extent = high - low
     ordered = np.sort(extent)
     axis_ratio = float(ordered[-1] / max(ordered[0], 1e-9))
     scene_diagonal = float(np.linalg.norm(extent))
-    span = max(float(extent[1]), 1e-9)
+    legacy_span = max(float(extent[1]), 1e-9)
 
-    component, welded = triangle_components(positions, tris, WELD)
-    sizes = np.bincount(component)
+    labels, _ = triangle_components(positions, tris, WELD)
+    sizes = np.bincount(labels)
     body = int(np.argmax(sizes))
-
     max_diagonal = scene_diagonal * args.max_shard_diagonal_fraction
-    shards = []
-    for index in range(len(sizes)):
+    context = load_support_context(mesh_path, positions)
+    shards: list[dict] = []
+    preserved_small: list[dict] = []
+
+    for index, size_value in enumerate(sizes):
         if index == body:
             continue
-        members = component == index
+        members = labels == index
         vertices = positions[np.unique(tris[members])]
-        height = float(((vertices[:, 1] - low[1]) / span).mean())
         diagonal = float(np.linalg.norm(vertices.max(axis=0) - vertices.min(axis=0)))
-        count = int(members.sum())
-        if count <= 1 or (height >= args.debris_height_min and count <= args.max_shard_triangles
-                          and diagonal <= max_diagonal):
-            shards.append({"component": index, "triangles": count,
-                           "height_mean": round(height, 4), "diagonal": round(diagonal, 5)})
+        count = int(size_value)
+        tiny = count <= args.max_shard_triangles and diagonal <= max_diagonal
+        record: dict = {
+            "component": index,
+            "triangles": count,
+            "diagonal": round(diagonal, 6),
+        }
 
-    failure_codes, advisory_codes, messages = [], [], []
+        if context is not None:
+            position = component_position(context, vertices)
+            support = component_support(context, positions, tris, members)
+            height = float(position["height_mean"])
+            lateral = float(position["lateral_mean"])
+            high_or_outboard = height >= args.debris_height_min and (
+                lateral >= OUTBOARD_MIN or height >= VERY_HIGH_MIN
+            )
+            unsupported = float(support["support"]) < SOURCE_SUPPORT_MIN
+            record.update({
+                "height_mean": round(height, 5),
+                "lateral_mean": round(lateral, 5),
+                "source_support": support,
+            })
+            is_shard = tiny and high_or_outboard and unsupported
+            if not is_shard and tiny:
+                record["preservation_reason"] = (
+                    "small LOD feature retained: source-supported or not high/outboard"
+                )
+                preserved_small.append(record)
+        else:
+            height = float(((vertices[:, 1] - low[1]) / legacy_span).mean())
+            record["height_mean"] = round(height, 5)
+            is_shard = count <= 1 or (
+                height >= args.debris_height_min
+                and count <= args.max_shard_triangles
+                and diagonal <= max_diagonal
+            )
+        if is_shard:
+            shards.append(record)
+
+    failure_codes: list[str] = []
+    advisory_codes: list[str] = []
+    messages: list[str] = []
     if axis_ratio > args.max_axis_ratio:
         failure_codes.append("BAD_ORIENTATION")
         messages.append(f"axis ratio {axis_ratio:.2f} exceeds {args.max_axis_ratio}")
     if shards:
-        message = f"{len(shards)} unsupported detached components"
-        messages.append(message)
-        # Raw generator output is expected to carry shards - removing them is CLEAN's job, and this
-        # gate runs before CLEAN. Blocking here would fail every asset on a defect the next stage
-        # exists to fix. CLEAN re-runs this check with --debris-blocking afterwards, where a
-        # remaining shard genuinely is a failure.
+        messages.append(f"{len(shards)} unsupported detached components")
         (failure_codes if args.debris_blocking else advisory_codes).append("FLOATING_DEBRIS")
 
     report = {
-        "mesh": args.mesh,
+        "mesh": str(mesh_path),
         "triangles": int(len(tris)),
         "components": int(len(sizes)),
         "extent": {"x": float(extent[0]), "y": float(extent[1]), "z": float(extent[2])},
         "axis_ratio": round(axis_ratio, 4),
         "longest_axis": "xyz"[int(np.argmax(extent))],
         "debris": {
+            "policy": "source_supported_post_lod" if context is not None else "legacy_pre_lod",
+            "source_aware": context is not None,
+            "source_path": None if context is None else str(context.source_path),
             "unsupported_components_remaining": len(shards),
-            "triangles_in_shards": int(sum(s["triangles"] for s in shards)),
+            "triangles_in_shards": int(sum(row["triangles"] for row in shards)),
             "shards": shards[:60],
+            "preserved_small_components": preserved_small[:100],
+            "preserved_small_component_count": len(preserved_small),
+            "source_support_min": SOURCE_SUPPORT_MIN,
+            "outboard_min": OUTBOARD_MIN,
+            "very_high_min": VERY_HIGH_MIN,
         },
         "failure_codes": failure_codes,
         "advisory_codes": advisory_codes,
         "messages": messages,
         "passed": not failure_codes,
     }
-    Path(args.report).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")
-    print(f"GEOMETRY_QA passed={report['passed']} axis_ratio={axis_ratio:.2f} "
-          f"components={len(sizes)} shards={len(shards)} codes={failure_codes} advisory={advisory_codes}", flush=True)
+    destination = Path(args.report)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(
+        f"GEOMETRY_QA passed={report['passed']} axis_ratio={axis_ratio:.2f} "
+        f"components={len(sizes)} shards={len(shards)} preserved_small={len(preserved_small)} "
+        f"policy={report['debris']['policy']} codes={failure_codes}",
+        flush=True,
+    )
     raise SystemExit(0 if report["passed"] else 2)
 
 
