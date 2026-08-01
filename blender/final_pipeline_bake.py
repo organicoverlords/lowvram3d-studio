@@ -115,6 +115,35 @@ def ensure_uv_layer(obj, path: str) -> str:
     return "restored_from_glb"
 
 
+def write_png16(path: Path, rgb: np.ndarray) -> None:
+    """Write a 16-bit RGB PNG straight from the float bake buffer.
+
+    Neither image.save() nor image.save_render(color_depth='16') produced a 16-bit file here, and
+    an 8-bit tangent normal map bands visibly on smooth surfaces. Encoding the buffer directly is
+    both shorter than fighting the exporter and independent of which save path Blender picks.
+    """
+    import struct
+    import zlib
+
+    height, width, _ = rgb.shape
+    data = np.clip(rgb, 0.0, 1.0) * 65535.0
+    rows = data.astype(">u2").tobytes()
+    stride = width * 6
+    raw = b"".join(b"\x00" + rows[y * stride : (y + 1) * stride] for y in range(height))
+
+    def chunk(tag: bytes, payload: bytes) -> bytes:
+        return (struct.pack(">I", len(payload)) + tag + payload
+                + struct.pack(">I", zlib.crc32(tag + payload) & 0xFFFFFFFF))
+
+    header = struct.pack(">IIBBBBB", width, height, 16, 2, 0, 0, 0)
+    path.write_bytes(
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", header)
+        + chunk(b"IDAT", zlib.compress(raw, 6))
+        + chunk(b"IEND", b"")
+    )
+
+
 def join_all(objects, name):
     bpy.ops.object.select_all(action="DESELECT")
     for obj in objects:
@@ -261,6 +290,7 @@ def main() -> None:
     parser.add_argument("--max-ray-distance", type=float, default=0.05)
     parser.add_argument("--suffix", default="4k")
     parser.add_argument("--max-components", type=int, default=500)
+    parser.add_argument("--only", default="", help="comma-separated map subset to rebake")
     args = parser.parse_args(argv_after_double_dash())
 
     output_dir = Path(args.output_dir)
@@ -296,6 +326,11 @@ def main() -> None:
         ("cavity", "EMIT", "pointiness", (0.0, 0.0, 0.0)),
         ("material_id", "EMIT", "component", (0.0, 0.0, 0.0)),
     ]
+    if args.only:
+        wanted = {n.strip() for n in args.only.split(",") if n.strip()}
+        maps = [m for m in maps if m[0] in wanted]
+        if not maps:
+            raise RuntimeError(f"--only {args.only} selected no maps")
     results = []
     for name, kind, source, background in maps:
         image = bpy.data.images.new(
@@ -313,7 +348,12 @@ def main() -> None:
         path = output_dir / f"shaman_{name}_{args.suffix}.png"
         image.filepath_raw = str(path)
         image.file_format = "PNG"
-        image.save()
+        if name == "normal":
+            pixels = np.array(image.pixels[:], dtype=np.float32).reshape(args.resolution, args.resolution, 4)
+            # Blender's buffer runs bottom-up; PNG rows run top-down.
+            write_png16(path, pixels[::-1, :, :3])
+        else:
+            image.save()
         stats = validate_image(image, name, background)
         stats["path"] = str(path)
         results.append(stats)
@@ -341,10 +381,10 @@ def main() -> None:
             f"material_id: high poly split into {component_count} components "
             f"(limit {args.max_components}); the map is per-triangle noise, not per-part"
         )
-    normal = next(e for e in results if e["name"] == "normal")
+    normal = next((e for e in results if e["name"] == "normal"), None)
     # A tangent-space normal map should sit around (0.5, 0.5, 1.0); a blue mean far below the red
     # and green means the projection collapsed.
-    if normal["mean_rgb"][2] < 0.3:
+    if normal is not None and normal["mean_rgb"][2] < 0.3:
         failures.append(f"normal: blue channel mean {normal['mean_rgb'][2]:.3f} suggests bad tangent basis")
 
     report = {
