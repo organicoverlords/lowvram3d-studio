@@ -1,249 +1,176 @@
 {
   "stage": "TEXTURE_QA",
-  "status": "failed",
+  "status": "passed",
   "profile": "humanoid_complex_accessories",
   "asset_id": "shaman_v2_validation",
   "input_hashes": {
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb": "6bff55b9940b0f28fa3f11fe8fadec4020469e47b664167b16b0fc48ac7fe757",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_basecolor_4k.png": "96be403b0ce9203e149da67bd496856c5f0b91faa983487854c0ef02713ed1c9",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_orm_4k.png": "674bb7b5140d1ca98d1c3654868cdffcb1c5cdc8c339c549241cd85d2abe716a",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_material_id_4k.png": "5562d8eacf2b08cce22346be63990684b22399b2b53e194668a3a84160ce1569",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\coverage_oriented.png": "653bc5f58d23e6b64f956d523e1b574ec16eea7d9ae3cb79ec9fa60b54c334ae"
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb": "3922c0d1f57376600aac08aa6660351e1e4f9f89e6a2d7a3ecec4136a85ce85b",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_basecolor_4k.png": "3c4ef31f959e8dff4c53546ad7e1bc48bf99205d5bf5d234a36ab36ebff5d754",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_orm_4k.png": "3adcab203cccfb3de0ecedbe863022123e1e8592daf25e36dc81c606a90caf4b",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_material_id_4k.png": "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\coverage_oriented.png": "690fd7a9eccd2885988ec7f5ab30baa8d65618aea9d7f0b43123754c86f547ac",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\view_report.json": "90194c11d7524e31ebadf529f526b9870bcb210de0c0b9bcfa4c01cdde936ce2",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod0_geometry.json": "4713eb17a8791bb66e525ae3967d72fb0d6acacd05775451220e9398d53b91cb"
+  },
+  "outputs": {
+    "visual_evaluation": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE_QA\\proven\\visual_evaluation.json",
+      "sha256": "3af7eb80b8d934e6fdbc12eb004df369a1fa9c907ce6080b50c7a72a20398570",
+      "bytes": 1422
+    },
+    "texture_registration": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE_QA\\proven\\texture_registration.json",
+      "sha256": "97f70250369fb6f6cc1716238b4f0a3af318e37e9ee7f41b8ba2a65293392f17",
+      "bytes": 578
+    }
   },
   "gates": {
     "atlas_orientation": {
-      "error_gltf_standard": 7.816,
-      "error_inverted": 68.308,
-      "samples": 3291
+      "error_gltf_standard": 7.8,
+      "error_inverted": 69.32,
+      "samples": 3298
     },
     "synthesis": {
-      "observed_contrast": 0.0578,
-      "synthesized_contrast": 0.06054,
-      "ratio": 1.0475,
-      "synthesized_percent": 86.44
+      "observed_contrast": 0.05581,
+      "synthesized_contrast": 0.05977,
+      "ratio": 1.071,
+      "synthesized_percent": 86.53
     },
     "flat_regions": {
-      "flat_islands": 79,
-      "flat_triangle_percent": 0.93
+      "flat_islands": 101,
+      "flat_triangle_percent": 1.663
     },
-    "material_id_components": 61,
-    "material_id_distinct_colours": 2158,
+    "material_id_components": 60,
+    "material_id_distinct_colours": 1911,
     "orm": {
-      "roughness_mean": 0.8118,
+      "roughness_mean": 0.8108,
       "roughness_p05": 0.7294,
-      "roughness_std": 0.0614,
-      "metallic_percent_above_0_5": 0.8523
+      "roughness_std": 0.061,
+      "metallic_percent_above_0_5": 0.9491
     },
     "view_labels": {
-      "front_source_resemblance": 0.2036,
-      "back_source_resemblance": 0.0876,
+      "front_source_resemblance": 0.1955,
+      "back_source_resemblance": 0.0905,
       "basis": "colour correlation, mirror-invariant"
     },
     "rear_front_correlation": {
-      "mirrored": 0.2216,
-      "direct": 0.0652
+      "mirrored": 0.2122,
+      "direct": 0.0891
     },
-    "axis_ratio": 3.328,
+    "axis_ratio": 3.297,
     "debris": {
       "triangles_removed": 0,
-      "components_remaining": 1
+      "components_remaining": 0
     },
     "uv": {
       "overlap_texels": 0.0,
       "degenerate": 0,
-      "tested_pairs": 1278365,
+      "tested_pairs": 1285395,
       "timed_out": false
     },
     "face": {
-      "edge_energy": 0.11946
-    }
+      "edge_energy": 0.11331
+    },
+    "texture_registration": {
+      "policy_version": 3,
+      "registration_report": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\view_report.json",
+      "passed": true,
+      "failure_code": null,
+      "affine_iou": 0.733823,
+      "dense_iou": 0.733823,
+      "dense_accepted": false,
+      "final_iou": 0.733823,
+      "flow_p95_pixels": 0.0,
+      "flow_cap_pixels": 54.4,
+      "flow_cap_saturation": 0.0,
+      "visible_percent": 17.838,
+      "limits": {
+        "min_final_iou": 0.58,
+        "max_flow_cap_saturation": 0.98,
+        "min_visible_percent": 5.0
+      },
+      "failures": []
+    },
+    "geometry_report_source": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod0_geometry.json"
   },
-  "failure_codes": [
-    "FLOATING_DEBRIS"
-  ],
   "attempts": [
     {
       "attempt": 0,
-      "status": "failed",
+      "status": "passed",
       "overrides": {},
       "gates": {
         "atlas_orientation": {
-          "error_gltf_standard": 7.816,
-          "error_inverted": 68.308,
-          "samples": 3291
+          "error_gltf_standard": 7.8,
+          "error_inverted": 69.32,
+          "samples": 3298
         },
         "synthesis": {
-          "observed_contrast": 0.0578,
-          "synthesized_contrast": 0.06054,
-          "ratio": 1.0475,
-          "synthesized_percent": 86.44
+          "observed_contrast": 0.05581,
+          "synthesized_contrast": 0.05977,
+          "ratio": 1.071,
+          "synthesized_percent": 86.53
         },
         "flat_regions": {
-          "flat_islands": 79,
-          "flat_triangle_percent": 0.93
+          "flat_islands": 101,
+          "flat_triangle_percent": 1.663
         },
-        "material_id_components": 61,
-        "material_id_distinct_colours": 2158,
+        "material_id_components": 60,
+        "material_id_distinct_colours": 1911,
         "orm": {
-          "roughness_mean": 0.8118,
+          "roughness_mean": 0.8108,
           "roughness_p05": 0.7294,
-          "roughness_std": 0.0614,
-          "metallic_percent_above_0_5": 0.8523
+          "roughness_std": 0.061,
+          "metallic_percent_above_0_5": 0.9491
         },
         "view_labels": {
-          "front_source_resemblance": 0.2036,
-          "back_source_resemblance": 0.0876,
+          "front_source_resemblance": 0.1955,
+          "back_source_resemblance": 0.0905,
           "basis": "colour correlation, mirror-invariant"
         },
         "rear_front_correlation": {
-          "mirrored": 0.2216,
-          "direct": 0.0652
+          "mirrored": 0.2122,
+          "direct": 0.0891
         },
-        "axis_ratio": 3.328,
+        "axis_ratio": 3.297,
         "debris": {
           "triangles_removed": 0,
-          "components_remaining": 1
+          "components_remaining": 0
         },
         "uv": {
           "overlap_texels": 0.0,
           "degenerate": 0,
-          "tested_pairs": 1278365,
+          "tested_pairs": 1285395,
           "timed_out": false
         },
         "face": {
-          "edge_energy": 0.11946
-        }
+          "edge_energy": 0.11331
+        },
+        "texture_registration": {
+          "policy_version": 3,
+          "registration_report": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\view_report.json",
+          "passed": true,
+          "failure_code": null,
+          "affine_iou": 0.733823,
+          "dense_iou": 0.733823,
+          "dense_accepted": false,
+          "final_iou": 0.733823,
+          "flow_p95_pixels": 0.0,
+          "flow_cap_pixels": 54.4,
+          "flow_cap_saturation": 0.0,
+          "visible_percent": 17.838,
+          "limits": {
+            "min_final_iou": 0.58,
+            "max_flow_cap_saturation": 0.98,
+            "min_visible_percent": 5.0
+          },
+          "failures": []
+        },
+        "geometry_report_source": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod0_geometry.json"
       },
-      "failure_codes": [
-        "FLOATING_DEBRIS"
-      ],
-      "detail": "advisory=[]",
-      "seconds": 3.2
-    },
-    {
-      "attempt": 1,
-      "status": "failed",
-      "overrides": {
-        "strip_debris": true,
-        "debris_height_min": 0.5
-      },
-      "gates": {
-        "atlas_orientation": {
-          "error_gltf_standard": 7.816,
-          "error_inverted": 68.308,
-          "samples": 3291
-        },
-        "synthesis": {
-          "observed_contrast": 0.0578,
-          "synthesized_contrast": 0.06054,
-          "ratio": 1.0475,
-          "synthesized_percent": 86.44
-        },
-        "flat_regions": {
-          "flat_islands": 79,
-          "flat_triangle_percent": 0.93
-        },
-        "material_id_components": 61,
-        "material_id_distinct_colours": 2158,
-        "orm": {
-          "roughness_mean": 0.8118,
-          "roughness_p05": 0.7294,
-          "roughness_std": 0.0614,
-          "metallic_percent_above_0_5": 0.8523
-        },
-        "view_labels": {
-          "front_source_resemblance": 0.2036,
-          "back_source_resemblance": 0.0876,
-          "basis": "colour correlation, mirror-invariant"
-        },
-        "rear_front_correlation": {
-          "mirrored": 0.2216,
-          "direct": 0.0652
-        },
-        "axis_ratio": 3.328,
-        "debris": {
-          "triangles_removed": 0,
-          "components_remaining": 1
-        },
-        "uv": {
-          "overlap_texels": 0.0,
-          "degenerate": 0,
-          "tested_pairs": 1278365,
-          "timed_out": false
-        },
-        "face": {
-          "edge_energy": 0.11946
-        }
-      },
-      "failure_codes": [
-        "FLOATING_DEBRIS"
-      ],
-      "detail": "advisory=[]",
-      "seconds": 3.2
-    },
-    {
-      "attempt": 2,
-      "status": "failed",
-      "overrides": {
-        "strip_debris": true,
-        "debris_height_min": 0.5
-      },
-      "gates": {
-        "atlas_orientation": {
-          "error_gltf_standard": 7.816,
-          "error_inverted": 68.308,
-          "samples": 3291
-        },
-        "synthesis": {
-          "observed_contrast": 0.0578,
-          "synthesized_contrast": 0.06054,
-          "ratio": 1.0475,
-          "synthesized_percent": 86.44
-        },
-        "flat_regions": {
-          "flat_islands": 79,
-          "flat_triangle_percent": 0.93
-        },
-        "material_id_components": 61,
-        "material_id_distinct_colours": 2158,
-        "orm": {
-          "roughness_mean": 0.8118,
-          "roughness_p05": 0.7294,
-          "roughness_std": 0.0614,
-          "metallic_percent_above_0_5": 0.8523
-        },
-        "view_labels": {
-          "front_source_resemblance": 0.2036,
-          "back_source_resemblance": 0.0876,
-          "basis": "colour correlation, mirror-invariant"
-        },
-        "rear_front_correlation": {
-          "mirrored": 0.2216,
-          "direct": 0.0652
-        },
-        "axis_ratio": 3.328,
-        "debris": {
-          "triangles_removed": 0,
-          "components_remaining": 1
-        },
-        "uv": {
-          "overlap_texels": 0.0,
-          "degenerate": 0,
-          "tested_pairs": 1278365,
-          "timed_out": false
-        },
-        "face": {
-          "edge_energy": 0.11946
-        }
-      },
-      "failure_codes": [
-        "FLOATING_DEBRIS"
-      ],
-      "detail": "advisory=[]",
-      "seconds": 3.2
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 4.0
     }
   ],
-  "needs_human": true,
-  "detail": "retry budget exhausted",
-  "finished_at": "2026-08-01T13:20:56Z"
+  "finished_at": "2026-08-01T14:46:38Z"
 }

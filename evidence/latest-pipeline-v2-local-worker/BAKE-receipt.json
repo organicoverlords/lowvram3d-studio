@@ -4,39 +4,39 @@
   "profile": "humanoid_complex_accessories",
   "asset_id": "shaman_v2_validation",
   "input_hashes": {
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\clean.glb": "c5b0191b41de08e70478d3f6da71f6ac40e31aaa127290690b78ff3d422c1c50",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb": "c508e66e107e9bedcb7508eaea9a3080351fa7f5305b9b49129e2a2780b245ed"
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\shaman_v2_validation_stance_clean.glb": "2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb": "a08cc2547a2867b1a4ff78f8edac2efe46d2b5d6bcd1b55b1097edafbb354ef3"
   },
   "outputs": {
     "bake_report": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\bake_report.json",
-      "sha256": "9fdcd784d8287b7ee1f7b3f2a9b52eae3ae68ce52e80f3079deed91e928c973d",
-      "bytes": 2506
+      "sha256": "b3ab854891cf49ba96e2776c420f8ce73f82fc40d8426b34e555372b60f24910",
+      "bytes": 2540
     },
     "normal": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_normal_4k.png",
-      "sha256": "f3daff9a1a42ba9f593c016382a911e93b14a4520622de0985a983f0c36bbded",
-      "bytes": 88792640
+      "sha256": "1df578e2465fe5b812917d4631c4e137b727a4601d18a012267f9eb9ca25cb59",
+      "bytes": 88533676
     },
     "ao": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_ao_4k.png",
-      "sha256": "a5ffa54974b8ee63486a3ddab534e683a072a02d7b12997bd13ea677fcfc6605",
-      "bytes": 12748418
+      "sha256": "6656ed348c841271aebeb404c21b678f55817498bb3a90b6d2e9478bff8a0a22",
+      "bytes": 12885835
     },
     "cavity": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_cavity_4k.png",
-      "sha256": "f7603f413d58c9cc34fff16119037f5981532e75b0fd407157296d96c18e1b19",
-      "bytes": 9106820
+      "sha256": "a6ab9b91351a0a6515ac6c467508fc9b9eed415b28f902ea5f9472c47a86056d",
+      "bytes": 9105085
     },
     "material_id": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_material_id_4k.png",
-      "sha256": "5562d8eacf2b08cce22346be63990684b22399b2b53e194668a3a84160ce1569",
-      "bytes": 2057941
+      "sha256": "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04",
+      "bytes": 2026185
     }
   },
   "gates": {
     "passed": true,
-    "high_component_count": 61,
+    "high_component_count": 60,
     "uv_layer_source": "imported",
     "maps": [
       {
@@ -44,16 +44,16 @@
         "finite": true,
         "nan_pixels": 0,
         "mean_rgb": [
-          0.4992416799068451,
-          0.49417755007743835,
-          0.8341963887214661
+          0.5004880428314209,
+          0.49676865339279175,
+          0.8347911834716797
         ],
         "max_rgb": [
-          1.000001072883606,
-          1.0000061988830566,
+          1.000008463859558,
+          1.0000001192092896,
           1.0000100135803223
         ],
-        "coverage_fraction": 0.8424009084701538,
+        "coverage_fraction": 0.8398192524909973,
         "all_black": false,
         "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\candidate\\maps\\shaman_normal_4k.png"
       },
@@ -62,16 +62,16 @@
         "finite": true,
         "nan_pixels": 0,
         "mean_rgb": [
-          0.4440661668777466,
-          0.4440661668777466,
-          0.4440661668777466
+          0.44300517439842224,
+          0.44300517439842224,
+          0.44300517439842224
         ],
         "max_rgb": [
           1.0,
           1.0,
           1.0
         ],
-        "coverage_fraction": 0.6638545393943787,
+        "coverage_fraction": 0.6679020524024963,
         "all_black": false,
         "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\candidate\\maps\\shaman_ao_4k.png"
       },
@@ -80,16 +80,16 @@
         "finite": true,
         "nan_pixels": 0,
         "mean_rgb": [
-          0.6662818789482117,
-          0.6662818789482117,
-          0.6662818789482117
+          0.6626126766204834,
+          0.6626126766204834,
+          0.6626126766204834
         ],
         "max_rgb": [
           1.0,
           1.0,
           1.0
         ],
-        "coverage_fraction": 0.845506489276886,
+        "coverage_fraction": 0.8420263528823853,
         "all_black": false,
         "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\candidate\\maps\\shaman_cavity_4k.png"
       },
@@ -98,16 +98,16 @@
         "finite": true,
         "nan_pixels": 0,
         "mean_rgb": [
-          0.8344785571098328,
-          0.3910854458808899,
-          0.3916495442390442
+          0.8318211436271667,
+          0.38827112317085266,
+          0.38871321082115173
         ],
         "max_rgb": [
           1.0,
           1.0,
           1.0
         ],
-        "coverage_fraction": 0.8470066785812378,
+        "coverage_fraction": 0.8434869647026062,
         "all_black": false,
         "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\candidate\\maps\\shaman_material_id_4k.png"
       }
@@ -121,7 +121,7 @@
       "overrides": {},
       "gates": {
         "passed": true,
-        "high_component_count": 61,
+        "high_component_count": 60,
         "uv_layer_source": "imported",
         "maps": [
           {
@@ -129,16 +129,16 @@
             "finite": true,
             "nan_pixels": 0,
             "mean_rgb": [
-              0.4992416799068451,
-              0.49417755007743835,
-              0.8341963887214661
+              0.5004880428314209,
+              0.49676865339279175,
+              0.8347911834716797
             ],
             "max_rgb": [
-              1.000001072883606,
-              1.0000061988830566,
+              1.000008463859558,
+              1.0000001192092896,
               1.0000100135803223
             ],
-            "coverage_fraction": 0.8424009084701538,
+            "coverage_fraction": 0.8398192524909973,
             "all_black": false,
             "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\candidate\\maps\\shaman_normal_4k.png"
           },
@@ -147,16 +147,16 @@
             "finite": true,
             "nan_pixels": 0,
             "mean_rgb": [
-              0.4440661668777466,
-              0.4440661668777466,
-              0.4440661668777466
+              0.44300517439842224,
+              0.44300517439842224,
+              0.44300517439842224
             ],
             "max_rgb": [
               1.0,
               1.0,
               1.0
             ],
-            "coverage_fraction": 0.6638545393943787,
+            "coverage_fraction": 0.6679020524024963,
             "all_black": false,
             "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\candidate\\maps\\shaman_ao_4k.png"
           },
@@ -165,16 +165,16 @@
             "finite": true,
             "nan_pixels": 0,
             "mean_rgb": [
-              0.6662818789482117,
-              0.6662818789482117,
-              0.6662818789482117
+              0.6626126766204834,
+              0.6626126766204834,
+              0.6626126766204834
             ],
             "max_rgb": [
               1.0,
               1.0,
               1.0
             ],
-            "coverage_fraction": 0.845506489276886,
+            "coverage_fraction": 0.8420263528823853,
             "all_black": false,
             "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\candidate\\maps\\shaman_cavity_4k.png"
           },
@@ -183,16 +183,16 @@
             "finite": true,
             "nan_pixels": 0,
             "mean_rgb": [
-              0.8344785571098328,
-              0.3910854458808899,
-              0.3916495442390442
+              0.8318211436271667,
+              0.38827112317085266,
+              0.38871321082115173
             ],
             "max_rgb": [
               1.0,
               1.0,
               1.0
             ],
-            "coverage_fraction": 0.8470066785812378,
+            "coverage_fraction": 0.8434869647026062,
             "all_black": false,
             "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\candidate\\maps\\shaman_material_id_4k.png"
           }
@@ -201,8 +201,8 @@
       },
       "failure_codes": [],
       "detail": "",
-      "seconds": 175.7
+      "seconds": 187.5
     }
   ],
-  "finished_at": "2026-08-01T13:15:11Z"
+  "finished_at": "2026-08-01T14:40:50Z"
 }

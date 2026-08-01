@@ -43,11 +43,9 @@
       "needs_human": false
     },
     "TEXTURE_QA": {
-      "status": "failed",
-      "failure_codes": [
-        "FLOATING_DEBRIS"
-      ],
-      "needs_human": true
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
     }
   }
 }

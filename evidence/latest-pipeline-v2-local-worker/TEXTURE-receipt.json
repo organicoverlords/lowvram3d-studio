@@ -5,122 +5,127 @@
   "asset_id": "shaman_v2_validation",
   "input_hashes": {
     "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\INGEST\\proven\\matte.png": "2dbb1323021cfbf5a7ebd43a874f2ce76ce2a3aa214eccf031cd71bd989750e0",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb": "c508e66e107e9bedcb7508eaea9a3080351fa7f5305b9b49129e2a2780b245ed",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_normal_4k.png": "f3daff9a1a42ba9f593c016382a911e93b14a4520622de0985a983f0c36bbded",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_ao_4k.png": "a5ffa54974b8ee63486a3ddab534e683a072a02d7b12997bd13ea677fcfc6605",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_cavity_4k.png": "f7603f413d58c9cc34fff16119037f5981532e75b0fd407157296d96c18e1b19",
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_material_id_4k.png": "5562d8eacf2b08cce22346be63990684b22399b2b53e194668a3a84160ce1569"
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb": "a08cc2547a2867b1a4ff78f8edac2efe46d2b5d6bcd1b55b1097edafbb354ef3",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_normal_4k.png": "1df578e2465fe5b812917d4631c4e137b727a4601d18a012267f9eb9ca25cb59",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_ao_4k.png": "6656ed348c841271aebeb404c21b678f55817498bb3a90b6d2e9478bff8a0a22",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_cavity_4k.png": "a6ab9b91351a0a6515ac6c467508fc9b9eed415b28f902ea5f9472c47a86056d",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_material_id_4k.png": "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04"
   },
   "outputs": {
     "basecolor": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_basecolor_4k.png",
-      "sha256": "96be403b0ce9203e149da67bd496856c5f0b91faa983487854c0ef02713ed1c9",
-      "bytes": 14249713
+      "sha256": "3c4ef31f959e8dff4c53546ad7e1bc48bf99205d5bf5d234a36ab36ebff5d754",
+      "bytes": 14232164
     },
     "normal": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_normal_4k.png",
-      "sha256": "f3daff9a1a42ba9f593c016382a911e93b14a4520622de0985a983f0c36bbded",
-      "bytes": 88792640
+      "sha256": "1df578e2465fe5b812917d4631c4e137b727a4601d18a012267f9eb9ca25cb59",
+      "bytes": 88533676
     },
     "orm": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_orm_4k.png",
-      "sha256": "674bb7b5140d1ca98d1c3654868cdffcb1c5cdc8c339c549241cd85d2abe716a",
-      "bytes": 18153921
+      "sha256": "3adcab203cccfb3de0ecedbe863022123e1e8592daf25e36dc81c606a90caf4b",
+      "bytes": 18200281
     },
     "coverage": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\coverage_oriented.png",
-      "sha256": "653bc5f58d23e6b64f956d523e1b574ec16eea7d9ae3cb79ec9fa60b54c334ae",
-      "bytes": 674076
+      "sha256": "690fd7a9eccd2885988ec7f5ab30baa8d65618aea9d7f0b43123754c86f547ac",
+      "bytes": 662420
     },
     "material_id": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_material_id_4k.png",
-      "sha256": "5562d8eacf2b08cce22346be63990684b22399b2b53e194668a3a84160ce1569",
-      "bytes": 2057941
+      "sha256": "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04",
+      "bytes": 2026185
     },
     "textured_glb": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb",
-      "sha256": "6bff55b9940b0f28fa3f11fe8fadec4020469e47b664167b16b0fc48ac7fe757",
-      "bytes": 128246108
+      "sha256": "3922c0d1f57376600aac08aa6660351e1e4f9f89e6a2d7a3ecec4136a85ce85b",
+      "bytes": 127982336
     },
     "textured_blend": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.blend",
-      "sha256": "ef56bd1d82ef239b3a03624527e9682ea784a0656e373a74fae523d4129b8288",
-      "bytes": 131498043
+      "sha256": "db8bb714e4c2133a93870bb89ede5a3d8beba2e4f25ce16d853471f5ac3c11a9",
+      "bytes": 131261672
     },
     "projection_report": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\projection_report.json",
-      "sha256": "e3751cc8306eaa2d773a9564b2b393f94be5582ca969d641f5839887a89b7af8",
+      "sha256": "a2cf27557431e0a00def16999ec8fb3ef5455dacd81a45a468a8561b48ef0b2f",
       "bytes": 793
     },
     "orientation_truth": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\orientation_truth.json",
-      "sha256": "99b23bbe6660f1ddf1e2f9f2c3d5fa58f01c94eb2926e8d844d0dd910f3662e2",
-      "bytes": 211186
+      "sha256": "d254b873fce52c0483919a2af8dc05916626fe50fe35ef57b543dd53058e48bc",
+      "bytes": 211299
     },
     "region_report": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\region_report.json",
-      "sha256": "dadd9e7685a1b76892c0dbaed714c55af62a4fd30373a0f695627713b5a4ab24",
-      "bytes": 506756
+      "sha256": "3228021a244211330e3917dad1e41566300ca8bfdbb75432c39d42bfc1a4ec08",
+      "bytes": 488574
     },
     "orm_report": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\orm_report.json",
-      "sha256": "5b2e69a43b49c3c42e6d3006b728183cc4164dec1958ad87d1c6f9b145a8bba0",
-      "bytes": 691
+      "sha256": "d39a0410d4be4108e4fbbd0d7295ec8ebb133790a820120066b94df49e189de2",
+      "bytes": 692
     },
     "material_manifest": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\material_manifest.json",
-      "sha256": "f2047a67202e841809a50681d43d83a764811d3348d838f33966a559172895f7",
-      "bytes": 2238
+      "sha256": "0f3f29ed590c33aacc5de17326e08665b059ba0ebbb50f132ba3855e5fa14eef",
+      "bytes": 2240
     },
     "review_report": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\review_report.json",
-      "sha256": "9b62610b3302c9939134c0c65a4369cd30cc938206f995311d9d1cf396aefd4a",
+      "sha256": "b93cb29ee0ec61eb034071b47dd02fcf1a6d972b9b50bade58014c2ed8f8be4f",
       "bytes": 4105
     },
     "render_front": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\front.png",
-      "sha256": "e14c32bc84de773a3e10fc5e9fc554ea631137a2df24d788f8c9bf05b064c8d3",
-      "bytes": 766194
+      "sha256": "bc5fd0ce5c9fd9660942ca82916403fde140680c829facb3bdbf2d7724879808",
+      "bytes": 765685
     },
     "render_three_quarter_front": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\three_quarter_front.png",
-      "sha256": "707890ff3176a9213196df9c2c1a2e58328d09a132f71d901e2a0e7244e83e03",
-      "bytes": 727612
+      "sha256": "75cfee292d0e4d2502d176f7a4e308925609c5708d8074c571ac19f38e502939",
+      "bytes": 724294
     },
     "render_side": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\side.png",
-      "sha256": "db6bce4ff7c53adf9e85613c0223d51878af82d0d81700b8b1ed5f1f9c64fc67",
-      "bytes": 529855
+      "sha256": "61bf42714f94455a2f744fd275408b91d142b10c924395306af2add2026584b2",
+      "bytes": 528671
     },
     "render_back": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\back.png",
-      "sha256": "506ba8431a547be435a543e934293f05a0c2ef605ef747d8aad9b7d0df0a6f8b",
-      "bytes": 692742
+      "sha256": "ed6f9d2a5533dbdaa397ac36121b7f303e059675e984414f65a675c4d52831d1",
+      "bytes": 687756
     },
     "render_close_head_antlers": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_head_antlers.png",
-      "sha256": "6af4a9b219d5ea43f959352cc7f0343c5dc35ca04643c507a6347a682c279009",
-      "bytes": 1123485
+      "sha256": "0bff3fbb49a550e65cc06c215f6cfb700d7aeb33c1ae2842c46e0819fdb1378e",
+      "bytes": 1121443
     },
     "render_close_face": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_face.png",
-      "sha256": "05a66a9551abffb7da4d53da854564abfce488d991db1f51341215904c8f0bb6",
-      "bytes": 1683215
+      "sha256": "869ef5ee2971a9b21e8d1059cae90c3ec4b90e1e91a9f4386596c069e428dd0f",
+      "bytes": 1688368
     },
     "render_close_ornaments": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_ornaments.png",
-      "sha256": "6d1db46b12034f0f4396c62ec163c1d76932d9528bf63bb12ee670c688cb1489",
-      "bytes": 1537499
+      "sha256": "3f743d84e513d5cfcaf8ea26da0f752e4cda29885e81c6772e472d4eced7478a",
+      "bytes": 1532432
     },
     "render_close_staff": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_staff.png",
-      "sha256": "bca00d76a070a57c3da69ff469cfcafd70225361cf8bbc3b721af87afd3bbf73",
-      "bytes": 1478766
+      "sha256": "89b4947d851a70ca59b2fdb9ff50ff28e74d1164cbcdff701ef30d209658f0c3",
+      "bytes": 1481189
+    },
+    "view_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\view_report.json",
+      "sha256": "90194c11d7524e31ebadf529f526b9870bcb210de0c0b9bcfa4c01cdde936ce2",
+      "bytes": 1200
     }
   },
   "gates": {
-    "observed_percent": 13.56,
-    "synthesized_percent": 86.44,
+    "observed_percent": 13.47,
+    "synthesized_percent": 86.53,
     "final_filled_uv_percent": 100.0,
     "material_slot_count": 1,
     "review_views": [
@@ -132,7 +137,16 @@
       "front",
       "side",
       "three_quarter_front"
-    ]
+    ],
+    "source_mesh_registration": {
+      "accepted": false,
+      "affine_iou": 0.733823,
+      "dense_iou": 0.733823,
+      "flow_median_pixels": 0.0,
+      "flow_p95_pixels": 0.0,
+      "flow_cap_pixels": 54.4
+    },
+    "registration_gate_passed": true
   },
   "attempts": [
     {
@@ -140,8 +154,8 @@
       "status": "passed",
       "overrides": {},
       "gates": {
-        "observed_percent": 13.56,
-        "synthesized_percent": 86.44,
+        "observed_percent": 13.47,
+        "synthesized_percent": 86.53,
         "final_filled_uv_percent": 100.0,
         "material_slot_count": 1,
         "review_views": [
@@ -157,8 +171,8 @@
       },
       "failure_codes": [],
       "detail": "",
-      "seconds": 333.8
+      "seconds": 342.9
     }
   ],
-  "finished_at": "2026-08-01T13:20:46Z"
+  "finished_at": "2026-08-01T14:46:34Z"
 }

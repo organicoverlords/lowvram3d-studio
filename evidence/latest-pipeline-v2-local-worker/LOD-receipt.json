@@ -4,33 +4,93 @@
   "profile": "humanoid_complex_accessories",
   "asset_id": "shaman_v2_validation",
   "input_hashes": {
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\clean.glb": "c5b0191b41de08e70478d3f6da71f6ac40e31aaa127290690b78ff3d422c1c50"
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\shaman_v2_validation_stance_clean.glb": "2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80"
   },
   "outputs": {
     "lod_report": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod_report.json",
-      "sha256": "bcfa0ab19e1204d178c20b89a76416405249b48a9a1248d5ab42b280f8eb1161",
-      "bytes": 4032
+      "sha256": "4eaa572ee228bad69d56b02464c01e87a4c22f3ec1df22d61abb75b35a878fbe",
+      "bytes": 4064
     },
     "lod0": {
-      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod0.glb",
-      "sha256": "b0584ebf198f8a5353a19bb4c2c311c3b0b008df552ec0d200bdee2e2dd19ce9",
-      "bytes": 18445932
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod0_microclean.glb",
+      "sha256": "93465df1c0213bd81be4cb9fa27fc9237a1cae181df9d5221ff3471585f3b7c6",
+      "bytes": 18422440
     },
     "lod1": {
-      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod1.glb",
-      "sha256": "dd2203b3cfd7cf716c20898fc3664101eb49b6f486223afe4face3a17fd36771",
-      "bytes": 6707492
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod1_microclean.glb",
+      "sha256": "23f61723a65893a2cf3f07c628b9193257531d4b201e5e53f545e46b972f3b47",
+      "bytes": 6700644
     },
     "lod2": {
-      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod2.glb",
-      "sha256": "36fac22afc93108b475ebba19a04d9ab2838a1a02f62d334454e7e0b61d8c436",
-      "bytes": 2933208
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod2_microclean.glb",
+      "sha256": "2875bd284a9a287d374f0173375a8cd70335651436ff0c37638e796926d572df",
+      "bytes": 2930904
     },
     "lod3": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod3_microclean.glb",
+      "sha256": "6e09b973c1db61c61d23fc1a63acfa8c251613260e581e0439f70105e8898924",
+      "bytes": 1002440
+    },
+    "raw_lod0": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod0.glb",
+      "sha256": "96e6bdbb2e823a98d91be08c3fdbbc39eb9986193c72d7208d0a2c2d53f6d496",
+      "bytes": 18427648
+    },
+    "lod0_cleanup_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod0_microclean.json",
+      "sha256": "2e5dabbf729fe446654422797f15f091558c9726e1b78d679e45f60c374ad756",
+      "bytes": 38198
+    },
+    "lod0_geometry_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod0_geometry.json",
+      "sha256": "4713eb17a8791bb66e525ae3967d72fb0d6acacd05775451220e9398d53b91cb",
+      "bytes": 26074
+    },
+    "raw_lod1": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod1.glb",
+      "sha256": "92f213bf5cd61a9ade96c6436b8b541c75b8f859f7f92a4aca85e987bd2e4268",
+      "bytes": 6702624
+    },
+    "lod1_cleanup_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod1_microclean.json",
+      "sha256": "d4e70fa161e172700080e42ba7580ec3f195f1c92a6dd322e4bd615c1113a666",
+      "bytes": 37869
+    },
+    "lod1_geometry_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod1_geometry.json",
+      "sha256": "6bf7ab2eb1ad3032ec795caef43b61ea006de923c22ad80734cfccf01ce2c2b2",
+      "bytes": 35856
+    },
+    "raw_lod2": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod2.glb",
+      "sha256": "573cb7d228f6f49aa392cc361196289911bb213c3c30f9ea78d0cbe9e1015384",
+      "bytes": 2931288
+    },
+    "lod2_cleanup_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod2_microclean.json",
+      "sha256": "0501dee326e2a03b6e514a6f2143bf4d63d548b9c3c78ba0496c09d26a7721af",
+      "bytes": 37859
+    },
+    "lod2_geometry_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod2_geometry.json",
+      "sha256": "8f29ab48c134b517d5e5bc942d4d8f0d2c0e8e8bb46b1b75b8fc291b78d918d1",
+      "bytes": 38678
+    },
+    "raw_lod3": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod3.glb",
-      "sha256": "a9edf94c986dceff2ea85b4deb82e05ca73c1dc14613f7814a4746eb3b94156f",
-      "bytes": 931128
+      "sha256": "fd835300f55298c79dc65cd0d034514bff9824c815a56ea9a0b23fcb2539493d",
+      "bytes": 931120
+    },
+    "lod3_cleanup_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod3_microclean.json",
+      "sha256": "88aed041904814d11f7672d12c8fe1f9f5d37ff2fac979a7dd4ba570203308f2",
+      "bytes": 37175
+    },
+    "lod3_geometry_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod3_geometry.json",
+      "sha256": "3692574f86bb4e77fcd9622d067c6e79d8ba4508d5f8a572e51e982f8f5ea595",
+      "bytes": 37914
     }
   },
   "gates": {
@@ -44,26 +104,61 @@
       {
         "lod": 0,
         "target": 220000,
-        "triangles": 219966,
-        "sha256": "b0584ebf198f8a5353a19bb4c2c311c3b0b008df552ec0d200bdee2e2dd19ce9"
+        "triangles": 219968,
+        "sha256": "96e6bdbb2e823a98d91be08c3fdbbc39eb9986193c72d7208d0a2c2d53f6d496"
       },
       {
         "lod": 1,
         "target": 80000,
-        "triangles": 79963,
-        "sha256": "dd2203b3cfd7cf716c20898fc3664101eb49b6f486223afe4face3a17fd36771"
+        "triangles": 79965,
+        "sha256": "92f213bf5cd61a9ade96c6436b8b541c75b8f859f7f92a4aca85e987bd2e4268"
       },
       {
         "lod": 2,
         "target": 35000,
-        "triangles": 34959,
-        "sha256": "36fac22afc93108b475ebba19a04d9ab2838a1a02f62d334454e7e0b61d8c436"
+        "triangles": 34961,
+        "sha256": "573cb7d228f6f49aa392cc361196289911bb213c3c30f9ea78d0cbe9e1015384"
       },
       {
         "lod": 3,
         "target": 12000,
-        "triangles": 11947,
-        "sha256": "a9edf94c986dceff2ea85b4deb82e05ca73c1dc14613f7814a4746eb3b94156f"
+        "triangles": 11950,
+        "sha256": "fd835300f55298c79dc65cd0d034514bff9824c815a56ea9a0b23fcb2539493d"
+      }
+    ],
+    "post_lod_cleanup_schema": 2,
+    "post_lod_cleanup": [
+      {
+        "lod": 0,
+        "triangles_removed": 62,
+        "components_removed": 10,
+        "triangles_removed_percent": 0.028186,
+        "remaining": 0,
+        "sha256": "93465df1c0213bd81be4cb9fa27fc9237a1cae181df9d5221ff3471585f3b7c6"
+      },
+      {
+        "lod": 1,
+        "triangles_removed": 23,
+        "components_removed": 7,
+        "triangles_removed_percent": 0.028763,
+        "remaining": 0,
+        "sha256": "23f61723a65893a2cf3f07c628b9193257531d4b201e5e53f545e46b972f3b47"
+      },
+      {
+        "lod": 2,
+        "triangles_removed": 4,
+        "components_removed": 4,
+        "triangles_removed_percent": 0.011441,
+        "remaining": 0,
+        "sha256": "2875bd284a9a287d374f0173375a8cd70335651436ff0c37638e796926d572df"
+      },
+      {
+        "lod": 3,
+        "triangles_removed": 4,
+        "components_removed": 4,
+        "triangles_removed_percent": 0.033473,
+        "remaining": 0,
+        "sha256": "6e09b973c1db61c61d23fc1a63acfa8c251613260e581e0439f70105e8898924"
       }
     ]
   },
@@ -83,33 +178,34 @@
           {
             "lod": 0,
             "target": 220000,
-            "triangles": 219966,
-            "sha256": "b0584ebf198f8a5353a19bb4c2c311c3b0b008df552ec0d200bdee2e2dd19ce9"
+            "triangles": 219968,
+            "sha256": "96e6bdbb2e823a98d91be08c3fdbbc39eb9986193c72d7208d0a2c2d53f6d496"
           },
           {
             "lod": 1,
             "target": 80000,
-            "triangles": 79963,
-            "sha256": "dd2203b3cfd7cf716c20898fc3664101eb49b6f486223afe4face3a17fd36771"
+            "triangles": 79965,
+            "sha256": "92f213bf5cd61a9ade96c6436b8b541c75b8f859f7f92a4aca85e987bd2e4268"
           },
           {
             "lod": 2,
             "target": 35000,
-            "triangles": 34959,
-            "sha256": "36fac22afc93108b475ebba19a04d9ab2838a1a02f62d334454e7e0b61d8c436"
+            "triangles": 34961,
+            "sha256": "573cb7d228f6f49aa392cc361196289911bb213c3c30f9ea78d0cbe9e1015384"
           },
           {
             "lod": 3,
             "target": 12000,
-            "triangles": 11947,
-            "sha256": "a9edf94c986dceff2ea85b4deb82e05ca73c1dc14613f7814a4746eb3b94156f"
+            "triangles": 11950,
+            "sha256": "fd835300f55298c79dc65cd0d034514bff9824c815a56ea9a0b23fcb2539493d"
           }
         ]
       },
       "failure_codes": [],
       "detail": "",
-      "seconds": 116.1
+      "seconds": 120.1
     }
   ],
-  "finished_at": "2026-08-01T13:05:45Z"
+  "finished_at": "2026-08-01T14:30:43Z",
+  "repair_schema": 2
 }

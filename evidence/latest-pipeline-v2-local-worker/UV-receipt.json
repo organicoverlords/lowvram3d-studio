@@ -4,28 +4,28 @@
   "profile": "humanoid_complex_accessories",
   "asset_id": "shaman_v2_validation",
   "input_hashes": {
-    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod0.glb": "b0584ebf198f8a5353a19bb4c2c311c3b0b008df552ec0d200bdee2e2dd19ce9"
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod0_microclean.glb": "93465df1c0213bd81be4cb9fa27fc9237a1cae181df9d5221ff3471585f3b7c6"
   },
   "outputs": {
     "uv_mesh": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb",
-      "sha256": "c508e66e107e9bedcb7508eaea9a3080351fa7f5305b9b49129e2a2780b245ed",
-      "bytes": 7047904
+      "sha256": "a08cc2547a2867b1a4ff78f8edac2efe46d2b5d6bcd1b55b1097edafbb354ef3",
+      "bytes": 7014896
     },
     "uv_report": {
       "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\uv_report.json",
-      "sha256": "126b42ff53f8c367ca5cf29c1f122e1fbf0b5d66e43351620a96c079622815ec",
-      "bytes": 1622
+      "sha256": "29f17f39a514d0955b8253cf8ed74de51ad658168778a63f5a697add22779fd2",
+      "bytes": 1630
     }
   },
   "gates": {
     "gate_passed": true,
-    "chart_count": 2571,
+    "chart_count": 2480,
     "profile_chart_limit": 3000,
-    "atlas_utilization": 0.48117456694983163,
-    "stretch_p95": 1.0897453506814034,
-    "candidate_pair_count": 3307625,
-    "tested_pair_count": 1278365,
+    "atlas_utilization": 0.48796797266221076,
+    "stretch_p95": 1.093167950379223,
+    "candidate_pair_count": 3329643,
+    "tested_pair_count": 1285395,
     "timed_out": false,
     "positive_overlap_pairs": 0,
     "positive_overlap_texels": 0.0,
@@ -39,12 +39,12 @@
       "overrides": {},
       "gates": {
         "gate_passed": true,
-        "chart_count": 2571,
+        "chart_count": 2480,
         "profile_chart_limit": 3000,
-        "atlas_utilization": 0.48117456694983163,
-        "stretch_p95": 1.0897453506814034,
-        "candidate_pair_count": 3307625,
-        "tested_pair_count": 1278365,
+        "atlas_utilization": 0.48796797266221076,
+        "stretch_p95": 1.093167950379223,
+        "candidate_pair_count": 3329643,
+        "tested_pair_count": 1285395,
         "timed_out": false,
         "positive_overlap_pairs": 0,
         "positive_overlap_texels": 0.0,
@@ -53,8 +53,8 @@
       },
       "failure_codes": [],
       "detail": "",
-      "seconds": 390.0
+      "seconds": 410.8
     }
   ],
-  "finished_at": "2026-08-01T13:12:15Z"
+  "finished_at": "2026-08-01T14:37:42Z"
 }
