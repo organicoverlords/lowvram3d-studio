@@ -3,9 +3,9 @@
 Atlas orientation proves that texels sample the intended UV coordinates. It does not prove that the
 source illustration was warped onto the correct geometric regions. This gate reads the projection
 view builder's silhouette-registration evidence and rejects a texture before bake/export when the
-source-to-mesh warp is too weak or unstable. Pipeline repair policy version 2 pairs this gate with
-source-supported post-LOD debris classification, so small valid ornaments are not sacrificed merely
-to make a geometry metric pass.
+source-to-mesh warp is too weak or unstable. Pipeline repair policy version 3 pairs this gate with
+package-correct source-supported post-LOD debris classification, so small valid ornaments are not
+sacrificed merely to make a geometry metric pass.
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ import argparse
 import json
 from pathlib import Path
 
-POLICY_VERSION = 2
+POLICY_VERSION = 3
 
 
 def main() -> None:
