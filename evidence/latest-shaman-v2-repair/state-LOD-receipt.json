@@ -1,0 +1,115 @@
+{
+  "stage": "LOD",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\clean.glb": "c5b0191b41de08e70478d3f6da71f6ac40e31aaa127290690b78ff3d422c1c50"
+  },
+  "outputs": {
+    "lod_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod_report.json",
+      "sha256": "bcfa0ab19e1204d178c20b89a76416405249b48a9a1248d5ab42b280f8eb1161",
+      "bytes": 4032
+    },
+    "lod0": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod0.glb",
+      "sha256": "b0584ebf198f8a5353a19bb4c2c311c3b0b008df552ec0d200bdee2e2dd19ce9",
+      "bytes": 18445932
+    },
+    "lod1": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod1.glb",
+      "sha256": "dd2203b3cfd7cf716c20898fc3664101eb49b6f486223afe4face3a17fd36771",
+      "bytes": 6707492
+    },
+    "lod2": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod2.glb",
+      "sha256": "36fac22afc93108b475ebba19a04d9ab2838a1a02f62d334454e7e0b61d8c436",
+      "bytes": 2933208
+    },
+    "lod3": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod3.glb",
+      "sha256": "a9edf94c986dceff2ea85b4deb82e05ca73c1dc14613f7814a4746eb3b94156f",
+      "bytes": 931128
+    }
+  },
+  "gates": {
+    "targets": [
+      220000,
+      80000,
+      35000,
+      12000
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "target": 220000,
+        "triangles": 219966,
+        "sha256": "b0584ebf198f8a5353a19bb4c2c311c3b0b008df552ec0d200bdee2e2dd19ce9"
+      },
+      {
+        "lod": 1,
+        "target": 80000,
+        "triangles": 79963,
+        "sha256": "dd2203b3cfd7cf716c20898fc3664101eb49b6f486223afe4face3a17fd36771"
+      },
+      {
+        "lod": 2,
+        "target": 35000,
+        "triangles": 34959,
+        "sha256": "36fac22afc93108b475ebba19a04d9ab2838a1a02f62d334454e7e0b61d8c436"
+      },
+      {
+        "lod": 3,
+        "target": 12000,
+        "triangles": 11947,
+        "sha256": "a9edf94c986dceff2ea85b4deb82e05ca73c1dc14613f7814a4746eb3b94156f"
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "targets": [
+          220000,
+          80000,
+          35000,
+          12000
+        ],
+        "lods": [
+          {
+            "lod": 0,
+            "target": 220000,
+            "triangles": 219966,
+            "sha256": "b0584ebf198f8a5353a19bb4c2c311c3b0b008df552ec0d200bdee2e2dd19ce9"
+          },
+          {
+            "lod": 1,
+            "target": 80000,
+            "triangles": 79963,
+            "sha256": "dd2203b3cfd7cf716c20898fc3664101eb49b6f486223afe4face3a17fd36771"
+          },
+          {
+            "lod": 2,
+            "target": 35000,
+            "triangles": 34959,
+            "sha256": "36fac22afc93108b475ebba19a04d9ab2838a1a02f62d334454e7e0b61d8c436"
+          },
+          {
+            "lod": 3,
+            "target": 12000,
+            "triangles": 11947,
+            "sha256": "a9edf94c986dceff2ea85b4deb82e05ca73c1dc14613f7814a4746eb3b94156f"
+          }
+        ]
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 116.1
+    }
+  ],
+  "finished_at": "2026-08-01T13:05:45Z"
+}

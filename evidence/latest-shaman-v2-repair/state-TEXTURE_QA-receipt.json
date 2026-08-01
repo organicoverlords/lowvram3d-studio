@@ -1,0 +1,249 @@
+{
+  "stage": "TEXTURE_QA",
+  "status": "failed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb": "6bff55b9940b0f28fa3f11fe8fadec4020469e47b664167b16b0fc48ac7fe757",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_basecolor_4k.png": "96be403b0ce9203e149da67bd496856c5f0b91faa983487854c0ef02713ed1c9",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_orm_4k.png": "674bb7b5140d1ca98d1c3654868cdffcb1c5cdc8c339c549241cd85d2abe716a",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_material_id_4k.png": "5562d8eacf2b08cce22346be63990684b22399b2b53e194668a3a84160ce1569",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\coverage_oriented.png": "653bc5f58d23e6b64f956d523e1b574ec16eea7d9ae3cb79ec9fa60b54c334ae"
+  },
+  "gates": {
+    "atlas_orientation": {
+      "error_gltf_standard": 7.816,
+      "error_inverted": 68.308,
+      "samples": 3291
+    },
+    "synthesis": {
+      "observed_contrast": 0.0578,
+      "synthesized_contrast": 0.06054,
+      "ratio": 1.0475,
+      "synthesized_percent": 86.44
+    },
+    "flat_regions": {
+      "flat_islands": 79,
+      "flat_triangle_percent": 0.93
+    },
+    "material_id_components": 61,
+    "material_id_distinct_colours": 2158,
+    "orm": {
+      "roughness_mean": 0.8118,
+      "roughness_p05": 0.7294,
+      "roughness_std": 0.0614,
+      "metallic_percent_above_0_5": 0.8523
+    },
+    "view_labels": {
+      "front_source_resemblance": 0.2036,
+      "back_source_resemblance": 0.0876,
+      "basis": "colour correlation, mirror-invariant"
+    },
+    "rear_front_correlation": {
+      "mirrored": 0.2216,
+      "direct": 0.0652
+    },
+    "axis_ratio": 3.328,
+    "debris": {
+      "triangles_removed": 0,
+      "components_remaining": 1
+    },
+    "uv": {
+      "overlap_texels": 0.0,
+      "degenerate": 0,
+      "tested_pairs": 1278365,
+      "timed_out": false
+    },
+    "face": {
+      "edge_energy": 0.11946
+    }
+  },
+  "failure_codes": [
+    "FLOATING_DEBRIS"
+  ],
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "failed",
+      "overrides": {},
+      "gates": {
+        "atlas_orientation": {
+          "error_gltf_standard": 7.816,
+          "error_inverted": 68.308,
+          "samples": 3291
+        },
+        "synthesis": {
+          "observed_contrast": 0.0578,
+          "synthesized_contrast": 0.06054,
+          "ratio": 1.0475,
+          "synthesized_percent": 86.44
+        },
+        "flat_regions": {
+          "flat_islands": 79,
+          "flat_triangle_percent": 0.93
+        },
+        "material_id_components": 61,
+        "material_id_distinct_colours": 2158,
+        "orm": {
+          "roughness_mean": 0.8118,
+          "roughness_p05": 0.7294,
+          "roughness_std": 0.0614,
+          "metallic_percent_above_0_5": 0.8523
+        },
+        "view_labels": {
+          "front_source_resemblance": 0.2036,
+          "back_source_resemblance": 0.0876,
+          "basis": "colour correlation, mirror-invariant"
+        },
+        "rear_front_correlation": {
+          "mirrored": 0.2216,
+          "direct": 0.0652
+        },
+        "axis_ratio": 3.328,
+        "debris": {
+          "triangles_removed": 0,
+          "components_remaining": 1
+        },
+        "uv": {
+          "overlap_texels": 0.0,
+          "degenerate": 0,
+          "tested_pairs": 1278365,
+          "timed_out": false
+        },
+        "face": {
+          "edge_energy": 0.11946
+        }
+      },
+      "failure_codes": [
+        "FLOATING_DEBRIS"
+      ],
+      "detail": "advisory=[]",
+      "seconds": 3.2
+    },
+    {
+      "attempt": 1,
+      "status": "failed",
+      "overrides": {
+        "strip_debris": true,
+        "debris_height_min": 0.5
+      },
+      "gates": {
+        "atlas_orientation": {
+          "error_gltf_standard": 7.816,
+          "error_inverted": 68.308,
+          "samples": 3291
+        },
+        "synthesis": {
+          "observed_contrast": 0.0578,
+          "synthesized_contrast": 0.06054,
+          "ratio": 1.0475,
+          "synthesized_percent": 86.44
+        },
+        "flat_regions": {
+          "flat_islands": 79,
+          "flat_triangle_percent": 0.93
+        },
+        "material_id_components": 61,
+        "material_id_distinct_colours": 2158,
+        "orm": {
+          "roughness_mean": 0.8118,
+          "roughness_p05": 0.7294,
+          "roughness_std": 0.0614,
+          "metallic_percent_above_0_5": 0.8523
+        },
+        "view_labels": {
+          "front_source_resemblance": 0.2036,
+          "back_source_resemblance": 0.0876,
+          "basis": "colour correlation, mirror-invariant"
+        },
+        "rear_front_correlation": {
+          "mirrored": 0.2216,
+          "direct": 0.0652
+        },
+        "axis_ratio": 3.328,
+        "debris": {
+          "triangles_removed": 0,
+          "components_remaining": 1
+        },
+        "uv": {
+          "overlap_texels": 0.0,
+          "degenerate": 0,
+          "tested_pairs": 1278365,
+          "timed_out": false
+        },
+        "face": {
+          "edge_energy": 0.11946
+        }
+      },
+      "failure_codes": [
+        "FLOATING_DEBRIS"
+      ],
+      "detail": "advisory=[]",
+      "seconds": 3.2
+    },
+    {
+      "attempt": 2,
+      "status": "failed",
+      "overrides": {
+        "strip_debris": true,
+        "debris_height_min": 0.5
+      },
+      "gates": {
+        "atlas_orientation": {
+          "error_gltf_standard": 7.816,
+          "error_inverted": 68.308,
+          "samples": 3291
+        },
+        "synthesis": {
+          "observed_contrast": 0.0578,
+          "synthesized_contrast": 0.06054,
+          "ratio": 1.0475,
+          "synthesized_percent": 86.44
+        },
+        "flat_regions": {
+          "flat_islands": 79,
+          "flat_triangle_percent": 0.93
+        },
+        "material_id_components": 61,
+        "material_id_distinct_colours": 2158,
+        "orm": {
+          "roughness_mean": 0.8118,
+          "roughness_p05": 0.7294,
+          "roughness_std": 0.0614,
+          "metallic_percent_above_0_5": 0.8523
+        },
+        "view_labels": {
+          "front_source_resemblance": 0.2036,
+          "back_source_resemblance": 0.0876,
+          "basis": "colour correlation, mirror-invariant"
+        },
+        "rear_front_correlation": {
+          "mirrored": 0.2216,
+          "direct": 0.0652
+        },
+        "axis_ratio": 3.328,
+        "debris": {
+          "triangles_removed": 0,
+          "components_remaining": 1
+        },
+        "uv": {
+          "overlap_texels": 0.0,
+          "degenerate": 0,
+          "tested_pairs": 1278365,
+          "timed_out": false
+        },
+        "face": {
+          "edge_energy": 0.11946
+        }
+      },
+      "failure_codes": [
+        "FLOATING_DEBRIS"
+      ],
+      "detail": "advisory=[]",
+      "seconds": 3.2
+    }
+  ],
+  "needs_human": true,
+  "detail": "retry budget exhausted",
+  "finished_at": "2026-08-01T13:20:56Z"
+}
