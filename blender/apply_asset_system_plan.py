@@ -11,8 +11,13 @@ import hashlib
 import json
 import math
 import shutil
+import sys
 from pathlib import Path
 from typing import Any
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
 
 import bpy
 from mathutils import Quaternion, Vector
@@ -183,7 +188,10 @@ def _rotate_region_to_a_pose(
     arm_points = [obj.data.vertices[index].co.copy() for index in arm_indices]
     pivot_index = min(arm_indices, key=lambda index: (obj.data.vertices[index].co - torso_center).length)
     pivot = obj.data.vertices[pivot_index].co.copy()
-    distances = sorted(((point - pivot).length, point) for point in arm_points)
+    distances = sorted(
+        (((point - pivot).length, point) for point in arm_points),
+        key=lambda item: item[0],
+    )
     distal_points = [point for _, point in distances[max(0, int(len(distances) * 0.80)):]]
     distal = sum(distal_points, Vector()) / max(len(distal_points), 1)
     current = distal - pivot
