@@ -609,7 +609,10 @@ def build_organic_cutter(x: float, z: float, centres, front, back, metrics: dict
     """
     y_front = float(np.interp(bore, centres, front))
     y_back = float(np.interp(bore, centres, back))
-    flare = bore * bevel_scale
+    # The bevelled mouth must not reach past the perimeter of the original recess, or it eats the
+    # raised inner lip and the layered carving that make the feature read as carved rather than
+    # drilled. The recess perimeter is a hard ceiling on every radius the cutter ever takes.
+    flare = min(bore * bevel_scale, metrics["recess_perimeter_world"] * 0.98)
     band = min(0.35 * max(y_back - y_front, 1e-6), 0.02)
     tip_front = metrics["rim_front_y"] - 0.02
     tip_back = metrics["rim_back_y"] + 0.02
@@ -727,6 +730,50 @@ def apply_boolean(target, cutter) -> None:
         modifier.use_hole_tolerant = True
     bpy.ops.object.modifier_apply(modifier=modifier.name)
     bpy.data.objects.remove(cutter, do_unlink=True)
+
+
+def patch_topology_stats(obj) -> dict:
+    """Non-manifold edges and loose parts of the patch.
+
+    Checking the patch rather than the whole shaman is both cheap and sufficient: nothing outside
+    the patch is touched, so new debris or new non-manifold edges can only appear here.
+    """
+    bm = bmesh.new()
+    try:
+        bm.from_mesh(obj.data)
+        # The source is a triangle soup, so on the raw mesh every edge is a boundary edge and
+        # every triangle is its own loose part. Those counts say nothing about topological
+        # health. Weld a throwaway copy by position first; the exported mesh is untouched.
+        bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-6)
+        bm.edges.ensure_lookup_table()
+        bm.verts.ensure_lookup_table()
+        non_manifold = sum(1 for edge in bm.edges if not edge.is_manifold)
+        boundary = sum(1 for edge in bm.edges if edge.is_boundary)
+
+        seen = set()
+        components = 0
+        for vert in bm.verts:
+            if vert.index in seen:
+                continue
+            components += 1
+            stack = [vert]
+            seen.add(vert.index)
+            while stack:
+                current = stack.pop()
+                for edge in current.link_edges:
+                    other = edge.other_vert(current)
+                    if other is not None and other.index not in seen:
+                        seen.add(other.index)
+                        stack.append(other)
+        return {
+            "vertices": len(bm.verts),
+            "faces": len(bm.faces),
+            "non_manifold_edges": non_manifold,
+            "boundary_edges": boundary,
+            "loose_parts": components,
+        }
+    finally:
+        bm.free()
 
 
 def restore_corner_split(obj) -> None:
@@ -887,9 +934,26 @@ def build_context(args):
     col, row = detection["centre_px"]
     x, z, world_per_pixel = pixel_to_world(col, row, centre, ortho, args.resolution)
     outer_world = detection["outer_radius_px"] * world_per_pixel
-    hole_world = detection["hole_radius_px"] * world_per_pixel
+    # Superseded below: the bore is sized from the measured recess, not from a fixed silhouette
+    # fraction. Kept only so the detection report still records what the silhouette suggested.
+    silhouette_hole_world = detection["hole_radius_px"] * world_per_pixel
 
     target, nearest_distance = nearest_object(objects, x, z)
+
+    # Measure the original recessed centre and size the bore from it. The old path used a fixed
+    # 0.43 x outer-radius cylinder, which is what produced the oversized machine-cut donut.
+    centres, front_profile, back_profile = radial_surface_profile(target, x, z, outer_world)
+    recess = recess_metrics(centres, front_profile, back_profile, outer_world)
+    disc_diameter = 2.0 * outer_world
+    # The fraction describes the bevelled MOUTH - the outermost radius the cut ever reaches -
+    # because that is what the measured recess perimeter bounds. The see-through bore is the
+    # mouth divided by the bevel, so the opening reads at the recess scale while the rim keeps a
+    # rounded lip. Clamping the bore itself would leave no room for the bevel and would collapse
+    # the cutter back into the straight cylinder that produced the rejected result.
+    max_cut_world = recess["recess_perimeter_world"] * 0.98
+    mouth_world = min(float(args.mouth_fraction) * disc_diameter * 0.5, max_cut_world)
+    hole_world = mouth_world / max(float(args.bevel_scale), 1.0)
+
     y_half = (maximum.y - minimum.y) * 0.5 + max(outer_world, 1e-4)
     y_centre = (maximum.y + minimum.y) * 0.5
 
@@ -903,6 +967,10 @@ def build_context(args):
             "centre_world_oriented": [x, y_centre, z],
             "outer_radius_world": outer_world,
             "hole_radius_world": hole_world,
+            "silhouette_hole_radius_world": silhouette_hole_world,
+            "bore_fraction_of_disc_diameter": (2.0 * hole_world) / disc_diameter,
+            "disc_diameter_world": disc_diameter,
+            "recess": recess,
             "world_per_pixel": world_per_pixel,
         }
     )
@@ -980,6 +1048,18 @@ def build_context(args):
         "patch_bbox_world_oriented": patch_bbox,
         "ring_thickness_world": ring_thickness,
         "ring_y_centre": ring_y_centre,
+        "centres": centres,
+        "front_profile": front_profile,
+        "back_profile": back_profile,
+        "recess": recess,
+        "disc_diameter": disc_diameter,
+        "bore_fraction": (2.0 * hole_world) / disc_diameter,
+        "mouth_requested_fraction": float(args.mouth_fraction),
+        "mouth_world": mouth_world,
+        "mouth_clamped_to_recess": float(args.mouth_fraction) * disc_diameter * 0.5 > max_cut_world,
+        "bevel_scale": float(args.bevel_scale),
+        "asymmetry": float(args.asymmetry),
+        "seed": int(args.seed),
         "corner_split": corner_split,
         "corner_split_ratio": corner_split_ratio,
         "before_mask_path": before_mask_path,
@@ -1076,7 +1156,11 @@ def run_localized_repair(args) -> dict:
         patch_boundary = boundary_vertex_coords(patch)
         patch_triangles = triangle_count([patch])
         cutter_depth = max((ctx["maximum"].y - ctx["minimum"].y) * 3.0, ctx["hole_world"] * 8.0)
-        cutter = add_cutter(ctx["x"], ctx["y_centre"], ctx["z"], ctx["hole_world"], cutter_depth)
+        patch_topology_before = patch_topology_stats(patch)
+        cutter, cutter_info = build_organic_cutter(
+            ctx["x"], ctx["z"], ctx["centres"], ctx["front_profile"], ctx["back_profile"],
+            ctx["recess"], ctx["hole_world"], ctx["bevel_scale"], ctx["asymmetry"], ctx["seed"],
+        )
         apply_boolean(patch, cutter)
         if ctx["corner_split"]:
             # Blender's EXACT solver welds its output. The source mesh is a triangle soup, so
@@ -1084,6 +1168,7 @@ def run_localized_repair(args) -> dict:
             # (and with them UV/normal seams) across the whole patch.
             restore_corner_split(patch)
         patch_triangles_after = triangle_count([patch])
+        patch_topology_after = patch_topology_stats(patch)
         weld = join_and_weld(target, patch, patch_boundary, ctx["corner_split"])
 
     objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
@@ -1254,6 +1339,25 @@ def run_localized_repair(args) -> dict:
             "margin_rings": args.margin_rings,
             "weld": weld,
             "weld_tolerance": WELD_TOLERANCE,
+            "topology_before": patch_topology_before,
+            "topology_after": patch_topology_after,
+            "loose_parts_delta": (
+                patch_topology_after["loose_parts"] - patch_topology_before["loose_parts"]
+            ),
+            "non_manifold_delta": (
+                patch_topology_after["non_manifold_edges"]
+                - patch_topology_before["non_manifold_edges"]
+            ),
+        },
+        "cutter": cutter_info,
+        "bore": {
+            "fraction_of_disc_diameter": ctx["bore_fraction"],
+            "mouth_requested_fraction": ctx["mouth_requested_fraction"],
+            "mouth_fraction_of_disc_diameter": (2.0 * ctx["mouth_world"]) / ctx["disc_diameter"],
+            "clamped_to_recess_perimeter": ctx["mouth_clamped_to_recess"],
+            "radius_world": ctx["hole_world"],
+            "disc_diameter_world": ctx["disc_diameter"],
+            "recess": ctx["recess"],
         },
         "repair_box": {
             "centre": list(ctx["repair_centre"]),
@@ -1308,6 +1412,12 @@ def main() -> None:
     parser.add_argument("--evidence-dir", required=True)
     parser.add_argument("--resolution", type=int, default=1024)
     parser.add_argument("--margin-rings", type=int, default=2)
+    # 0.406 = the measured perimeter of the original recessed centre, as a fraction of the outer
+    # staff-disc diameter. Candidates vary narrowly around this measurement, never arbitrarily.
+    parser.add_argument("--mouth-fraction", type=float, default=0.406)
+    parser.add_argument("--bevel-scale", type=float, default=1.18)
+    parser.add_argument("--asymmetry", type=float, default=0.06)
+    parser.add_argument("--seed", type=int, default=7)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--preflight-only", action="store_true")
     mode.add_argument("--localized-repair", action="store_true")

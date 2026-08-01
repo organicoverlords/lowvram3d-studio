@@ -226,7 +226,8 @@ def main() -> int:
     failures = 0
 
     for manifest_path in args.manifest:
-        manifest = json.loads(Path(manifest_path).read_text("utf-8"))
+        # utf-8-sig: PowerShell's Set-Content -Encoding utf8 writes a BOM.
+        manifest = json.loads(Path(manifest_path).read_text("utf-8-sig"))
         for key in ("source_crop", "before_crop", "candidate_crop"):
             if not Path(manifest[key]).exists():
                 print(json.dumps({
