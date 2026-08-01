@@ -1,7 +1,9 @@
 """Profile-aware rig-readiness analysis for Pipeline V2.
 
-This is deliberately conservative.  It proves enough geometric clearance for an automatic rig; it
-does not try to make fused limbs riggable.  Ambiguous silhouettes fail closed with measurements.
+This gate proves geometric clearance; it never pretends fused limbs are riggable. Humanoids are
+checked for arm valleys, independent lower-body lobes, a real gap between the feet, and sufficient
+front-to-back depth. Static assets pass without a skeleton. Other rig profiles fail closed until a
+profile-specific landmark analyzer exists.
 """
 from __future__ import annotations
 
@@ -29,6 +31,50 @@ def _histogram(points: np.ndarray, axis: int, lo: float, hi: float, bins: int = 
     return _smooth(hist)
 
 
+def _foot_gap(
+    positions: np.ndarray,
+    width_axis: int,
+    height_axis: int,
+    lower_fraction: float = 0.08,
+    centre_half_width_fraction: float = 0.06,
+) -> dict:
+    lo, hi = positions.min(axis=0), positions.max(axis=0)
+    extent = hi - lo
+    height = max(float(extent[height_axis]), 1e-9)
+    width = max(float(extent[width_axis]), 1e-9)
+    centre = float((lo[width_axis] + hi[width_axis]) * 0.5)
+    height_fraction = (positions[:, height_axis] - lo[height_axis]) / height
+    lower = positions[height_fraction <= lower_fraction]
+    if not len(lower):
+        return {
+            "lower_vertices": 0,
+            "centre_vertices": 0,
+            "centre_fraction": 1.0,
+            "left_vertices": 0,
+            "right_vertices": 0,
+            "feet_clear": False,
+        }
+    relative = (lower[:, width_axis] - centre) / width
+    centre_mask = np.abs(relative) <= centre_half_width_fraction
+    left = int((relative < -centre_half_width_fraction).sum())
+    right = int((relative > centre_half_width_fraction).sum())
+    centre_count = int(centre_mask.sum())
+    centre_fraction = centre_count / max(len(lower), 1)
+    minimum_lobe = max(int(len(lower) * 0.12), 8)
+    clear = centre_fraction <= 0.08 and left >= minimum_lobe and right >= minimum_lobe
+    return {
+        "lower_vertices": int(len(lower)),
+        "centre_vertices": centre_count,
+        "centre_fraction": float(centre_fraction),
+        "left_vertices": left,
+        "right_vertices": right,
+        "minimum_lobe_vertices": minimum_lobe,
+        "lower_band": lower_fraction,
+        "centre_half_width_fraction": centre_half_width_fraction,
+        "feet_clear": bool(clear),
+    }
+
+
 def _humanoid_clearance(positions: np.ndarray, axes: tuple[int, int, int]) -> dict:
     width_axis, depth_axis, height_axis = axes
     lo, hi = positions.min(axis=0), positions.max(axis=0)
@@ -43,10 +89,6 @@ def _humanoid_clearance(positions: np.ndarray, axes: tuple[int, int, int]) -> di
     upper_hist = _histogram(upper, width_axis, lo[width_axis], hi[width_axis])
     lower_hist = _histogram(lower, width_axis, lo[width_axis], hi[width_axis])
 
-    # The torso dominates the middle.  Independent arms produce valleys between that middle mass
-    # and the outer left/right lobes.  Requiring both valleys makes robes or one stray prop unable to
-    # manufacture a pass.
-    centre = len(upper_hist) // 2
     left_outer = float(upper_hist[2:18].max(initial=0.0))
     right_outer = float(upper_hist[-18:-2].max(initial=0.0))
     left_valley = float(upper_hist[18:29].min(initial=0.0))
@@ -55,8 +97,6 @@ def _humanoid_clearance(positions: np.ndarray, axes: tuple[int, int, int]) -> di
     arm_valley_ratio = max(left_valley, right_valley) / outer_floor
     arms_clear = left_outer > 0 and right_outer > 0 and arm_valley_ratio <= 0.58
 
-    # Two legs should create left/right lower-body lobes with a lower-density centre.  Long robes
-    # legitimately fail this automatic gate: a human must author the separation before skinning.
     left_leg = float(lower_hist[10:30].max(initial=0.0))
     right_leg = float(lower_hist[34:54].max(initial=0.0))
     centre_leg = float(lower_hist[29:35].mean())
@@ -80,6 +120,7 @@ def _humanoid_clearance(positions: np.ndarray, axes: tuple[int, int, int]) -> di
         "arms_clear": bool(arms_clear),
         "leg_gap_ratio": leg_gap_ratio,
         "legs_clear": bool(legs_clear),
+        "feet": _foot_gap(positions, width_axis, height_axis),
         "depth_clear": bool(depth_ratio >= 0.14),
     }
 
@@ -92,6 +133,7 @@ def main() -> None:
     args = parser.parse_args()
 
     positions, _, _, triangles = read_glb(Path(args.mesh))
+    positions = positions.astype(np.float64)
     extent = positions.max(axis=0) - positions.min(axis=0)
     height_axis = int(np.argmax(extent))
     remaining = [axis for axis in range(3) if axis != height_axis]
@@ -109,8 +151,7 @@ def main() -> None:
     if args.profile not in RIGGED_PROFILES:
         report.update({"ready": True, "rig_required": False, "reason": "profile is static"})
     elif args.profile.startswith("humanoid"):
-        measured = _humanoid_clearance(positions.astype(np.float64),
-                                       (width_axis, depth_axis, height_axis))
+        measured = _humanoid_clearance(positions, (width_axis, depth_axis, height_axis))
         report["measured"] = measured
         if not measured["depth_clear"]:
             report["failure_codes"].append("BLOCKED_SHALLOW_DEPTH")
@@ -118,11 +159,11 @@ def main() -> None:
             report["failure_codes"].append("BLOCKED_FUSED_ARMS")
         if not measured["legs_clear"]:
             report["failure_codes"].append("BLOCKED_FUSED_LEGS")
+        if not measured["feet"]["feet_clear"]:
+            report["failure_codes"].append("FEET_TOO_CLOSE_FOR_RIGGING")
         report["ready"] = not report["failure_codes"]
         report["rig_required"] = True
     else:
-        # Quadruped/flying rigs need profile-specific limb and wing landmarks.  Until those
-        # detectors exist, claiming readiness would be less safe than stopping explicitly.
         report.update({
             "ready": False,
             "rig_required": True,
@@ -131,8 +172,9 @@ def main() -> None:
             "extent": [float(v) for v in extent],
         })
 
-    Path(args.report).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")
+    destination = Path(args.report)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"RIG_READINESS ready={report['ready']} codes={report['failure_codes']}", flush=True)
     raise SystemExit(0 if report["ready"] else 2)
 
