@@ -6,7 +6,7 @@ param(
     [string]$AssetId = "",
     [string]$OutputRoot = "",
     [string]$FromStage = "INGEST",
-    [string]$ToStage = "TEXTURE_QA",
+    [string]$ToStage = "EXPORT",
     [string]$ExistingMaster = "",
     [string]$PythonPath = "C:\AI\HY3D2\python_standalone\python.exe",
     [string]$BlenderPath = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe",
@@ -18,7 +18,7 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$Runner = Join-Path $RepoRoot "workers\run_asset_pipeline.py"
+$Runner = Join-Path $RepoRoot "workers\run_asset_pipeline_full.py"
 
 if (-not (Test-Path -LiteralPath $Runner)) { throw "Pipeline runner is missing: $Runner" }
 if (-not $Image -and -not $Manifest) { throw "Provide -Image or -Manifest." }
@@ -52,8 +52,6 @@ $exit = $LASTEXITCODE
 
 if ($exit -ne 0) {
     Write-Host "ASSET_PIPELINE_FAILED (exit $exit)" -ForegroundColor Yellow
-    # exit, not throw: a throw leaves $LASTEXITCODE wherever the child left it, so a caller
-    # checking the exit code sails straight past a failed run.
     exit $exit
 }
 Write-Host "ASSET_PIPELINE_COMPLETED" -ForegroundColor Green
