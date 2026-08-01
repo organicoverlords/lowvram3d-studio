@@ -127,10 +127,24 @@ def join_all(objects, name):
     return joined
 
 
-def component_colours(obj) -> None:
-    """Colour each connected component distinctly, for the material-ID support map."""
+def component_colours(obj, weld_distance: float = 1e-5) -> int:
+    """Colour each connected component distinctly, for the material-ID support map.
+
+    The connectivity pass runs over vertices welded by position rather than the mesh as imported:
+    glTF emits one vertex per face corner wherever normals split, so raw edge connectivity sees
+    every triangle as its own component and the map degenerates into per-triangle noise. The weld
+    is only a lookup - the mesh itself is never modified, so the normal and AO bakes read exactly
+    the geometry and split normals they were given.
+    """
     mesh = obj.data
-    parent = list(range(len(mesh.vertices)))
+    count = len(mesh.vertices)
+    coordinates = np.empty(count * 3, np.float64)
+    mesh.vertices.foreach_get("co", coordinates)
+    quantised = np.round(coordinates.reshape(-1, 3) / weld_distance).astype(np.int64)
+    _, representative = np.unique(quantised, axis=0, return_inverse=True)
+    representative = representative.astype(np.int64)
+
+    parent = list(range(int(representative.max()) + 1))
 
     def find(x):
         while parent[x] != x:
@@ -138,23 +152,28 @@ def component_colours(obj) -> None:
             x = parent[x]
         return x
 
-    for edge in mesh.edges:
-        a, b = find(edge.vertices[0]), find(edge.vertices[1])
+    edges = np.empty(len(mesh.edges) * 2, np.int32)
+    mesh.edges.foreach_get("vertices", edges)
+    for first, second in representative[edges.reshape(-1, 2)]:
+        a, b = find(int(first)), find(int(second))
         if a != b:
             parent[a] = b
 
-    roots = {}
-    for index in range(len(mesh.vertices)):
-        roots.setdefault(find(index), len(roots))
-    total = max(len(roots), 1)
+    roots: dict[int, int] = {}
+    slots = np.empty(count, np.int64)
+    for index in range(count):
+        root = find(int(representative[index]))
+        slots[index] = roots.setdefault(root, len(roots))
 
     attribute = mesh.color_attributes.new(name="component_id", type="FLOAT_COLOR", domain="POINT")
-    for index in range(len(mesh.vertices)):
-        slot = roots[find(index)]
+    palette = np.empty((len(roots), 4), np.float32)
+    for slot in range(len(roots)):
         # Golden-ratio hue stepping keeps neighbouring component ids visually distinct.
         hue = (slot * 0.61803398875) % 1.0
-        r, g, b = colorsys.hsv_to_rgb(hue, 0.85, 1.0)
-        attribute.data[index].color = (r, g, b, 1.0)
+        palette[slot] = (*colorsys.hsv_to_rgb(hue, 0.85, 1.0), 1.0)
+    attribute.data.foreach_set("color", palette[slots].reshape(-1))
+    mesh.update()
+    return len(roots)
 
 
 def emission_material(name: str, source: str):
@@ -241,6 +260,7 @@ def main() -> None:
     parser.add_argument("--cage-extrusion", type=float, default=0.02)
     parser.add_argument("--max-ray-distance", type=float, default=0.05)
     parser.add_argument("--suffix", default="4k")
+    parser.add_argument("--max-components", type=int, default=500)
     args = parser.parse_args(argv_after_double_dash())
 
     output_dir = Path(args.output_dir)
@@ -267,7 +287,8 @@ def main() -> None:
     uv_source = ensure_uv_layer(low, args.low)
     print(f"UV_LAYER {uv_source} layers={len(low.data.uv_layers)}", flush=True)
 
-    component_colours(high)
+    component_count = component_colours(high)
+    print(f"HIGH_COMPONENTS {component_count}", flush=True)
 
     maps = [
         ("normal", "NORMAL", None, (0.5, 0.5, 1.0)),
@@ -312,6 +333,14 @@ def main() -> None:
             failures.append(
                 f"{entry['name']}: only {entry['coverage_fraction']*100:.2f}% of the atlas received pixels"
             )
+    # A material-ID map is only useful if it names parts. When connectivity collapses - the failure
+    # mode where a glTF import leaves every triangle detached - the count explodes and the map
+    # bakes as per-triangle noise, which still passes every coverage and finiteness check.
+    if component_count > args.max_components:
+        failures.append(
+            f"material_id: high poly split into {component_count} components "
+            f"(limit {args.max_components}); the map is per-triangle noise, not per-part"
+        )
     normal = next(e for e in results if e["name"] == "normal")
     # A tangent-space normal map should sit around (0.5, 0.5, 1.0); a blue mean far below the red
     # and green means the projection collapsed.
@@ -326,6 +355,7 @@ def main() -> None:
         "cage_extrusion": args.cage_extrusion,
         "max_ray_distance": args.max_ray_distance,
         "uv_layer_source": uv_source,
+        "high_component_count": component_count,
         "maps": results,
         "failures": failures,
         "passed": not failures,
