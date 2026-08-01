@@ -1,0 +1,480 @@
+﻿{
+    "passed":  true,
+    "workflow_run_id":  "30705453895",
+    "head_sha":  "b9f7e4e215a6a4a6e1a9892d6ceb7d57bb5d419e",
+    "correction":  "source texture moved from ambiguous -z selection to user-confirmed +z front",
+    "source_sha256":  "4d23adc758c5b700dd29939e37c043ce61919792b566bdcf13f58b1409d6cf6f",
+    "canonical_high_sha256":  "ca4749bc47181e27e7652a95f1cde59a21870772730cf0845d6d6794564a0ffe",
+    "texture_receipt":  {
+                            "stage":  "TEXTURE",
+                            "status":  "passed",
+                            "profile":  "humanoid_complex_accessories",
+                            "asset_id":  "shaman_v2_validation",
+                            "input_hashes":  {
+                                                 "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\INGEST\\proven\\matte.png":  "2dbb1323021cfbf5a7ebd43a874f2ce76ce2a3aa214eccf031cd71bd989750e0",
+                                                 "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb":  "a08cc2547a2867b1a4ff78f8edac2efe46d2b5d6bcd1b55b1097edafbb354ef3",
+                                                 "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_normal_4k.png":  "1df578e2465fe5b812917d4631c4e137b727a4601d18a012267f9eb9ca25cb59",
+                                                 "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_ao_4k.png":  "6656ed348c841271aebeb404c21b678f55817498bb3a90b6d2e9478bff8a0a22",
+                                                 "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_cavity_4k.png":  "a6ab9b91351a0a6515ac6c467508fc9b9eed415b28f902ea5f9472c47a86056d",
+                                                 "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_material_id_4k.png":  "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04"
+                                             },
+                            "outputs":  {
+                                            "basecolor":  {
+                                                              "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_basecolor_4k.png",
+                                                              "sha256":  "2bf71b2bdb68e4040d3d81a0626af8c0f913fbbb6914e748d4d8b21f3a8eef8d",
+                                                              "bytes":  13591394
+                                                          },
+                                            "normal":  {
+                                                           "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_normal_4k.png",
+                                                           "sha256":  "1df578e2465fe5b812917d4631c4e137b727a4601d18a012267f9eb9ca25cb59",
+                                                           "bytes":  88533676
+                                                       },
+                                            "orm":  {
+                                                        "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_orm_4k.png",
+                                                        "sha256":  "d07ac7dc3189ea61fb0cd2e758905545269d493b9e332a07884df478c21ba7da",
+                                                        "bytes":  18081009
+                                                    },
+                                            "coverage":  {
+                                                             "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\coverage_oriented.png",
+                                                             "sha256":  "7ca2bbc782c6f8c4ba662da45b64a082c20f3ecdacd713c87af0c142820ad1fd",
+                                                             "bytes":  706031
+                                                         },
+                                            "material_id":  {
+                                                                "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_material_id_4k.png",
+                                                                "sha256":  "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04",
+                                                                "bytes":  2026185
+                                                            },
+                                            "textured_glb":  {
+                                                                 "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb",
+                                                                 "sha256":  "9468db9a28171dea7dd49d9adb7f4af41114b23a00df89def3fd52a53d5f83e6",
+                                                                 "bytes":  127222296
+                                                             },
+                                            "textured_blend":  {
+                                                                   "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.blend",
+                                                                   "sha256":  "17b2263afaabc5d6aa8a5ed5c0b45ec507bc3c80b220cf6c4d07ff32ddd4146a",
+                                                                   "bytes":  130489144
+                                                               },
+                                            "projection_report":  {
+                                                                      "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\projection_report.json",
+                                                                      "sha256":  "f2bb8822ee39f49a9abe69f454de74200a2236087625e4b238ebba6b5473f8c8",
+                                                                      "bytes":  792
+                                                                  },
+                                            "orientation_truth":  {
+                                                                      "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\orientation_truth.json",
+                                                                      "sha256":  "36dec5e2ea88d3afc2324da53d46990fc1251ffea98a1a13f988dc404356aff5",
+                                                                      "bytes":  225855
+                                                                  },
+                                            "region_report":  {
+                                                                  "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\region_report.json",
+                                                                  "sha256":  "65f437ceed68ef939d3c168952625014970bd088355d408e38cc024c87bb968a",
+                                                                  "bytes":  496681
+                                                              },
+                                            "orm_report":  {
+                                                               "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\orm_report.json",
+                                                               "sha256":  "eb00ad1657ddb7966d534fd2adace91b8f8bec5114209d70b46d205ab3506e83",
+                                                               "bytes":  694
+                                                           },
+                                            "material_manifest":  {
+                                                                      "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\material_manifest.json",
+                                                                      "sha256":  "0f3f29ed590c33aacc5de17326e08665b059ba0ebbb50f132ba3855e5fa14eef",
+                                                                      "bytes":  2240
+                                                                  },
+                                            "review_report":  {
+                                                                  "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\review_report.json",
+                                                                  "sha256":  "2da40f2a2b7fabe4609d6b5a9abdf8c3e3543675316f30f6c5af14cae8e72090",
+                                                                  "bytes":  4107
+                                                              },
+                                            "render_front":  {
+                                                                 "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\front.png",
+                                                                 "sha256":  "6315817677f3f6642fc5c71b6641c9d7c72014011d4f671d4b79c017850dcef2",
+                                                                 "bytes":  679624
+                                                             },
+                                            "render_three_quarter_front":  {
+                                                                               "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\three_quarter_front.png",
+                                                                               "sha256":  "aaf080d15da96c49675a6eb14e29230070909896f8a7c304144d456799441d9c",
+                                                                               "bytes":  656621
+                                                                           },
+                                            "render_side":  {
+                                                                "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\side.png",
+                                                                "sha256":  "770dee48884b646a869df9c0aae971ac735d23c3caf32a7811166953dc7d9153",
+                                                                "bytes":  522169
+                                                            },
+                                            "render_back":  {
+                                                                "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\back.png",
+                                                                "sha256":  "4abe0198a4904e96f7d3d58d1ce172fcb5c74cfd824b6f377a0af293653d74eb",
+                                                                "bytes":  756739
+                                                            },
+                                            "render_close_head_antlers":  {
+                                                                              "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_head_antlers.png",
+                                                                              "sha256":  "d678560c1b25558fb166a5a8209d27dc1ec769e4575eb3d5603188e5747b1b6a",
+                                                                              "bytes":  1017398
+                                                                          },
+                                            "render_close_face":  {
+                                                                      "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_face.png",
+                                                                      "sha256":  "25ee84e53552536fab7ed33cd22693067515d7308d148cc7f244c36d7d1b176a",
+                                                                      "bytes":  1596069
+                                                                  },
+                                            "render_close_ornaments":  {
+                                                                           "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_ornaments.png",
+                                                                           "sha256":  "5f9d3a8906bedba5893cf5d208cdbf60999c99ccd5c250a56cd034e9553f8e25",
+                                                                           "bytes":  1336798
+                                                                       },
+                                            "render_close_staff":  {
+                                                                       "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_staff.png",
+                                                                       "sha256":  "0840374ec4857f75b59685651a5c935c1b3aa081f5883734ecb806ffd4051eb2",
+                                                                       "bytes":  1299499
+                                                                   },
+                                            "view_report":  {
+                                                                "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\view_report.json",
+                                                                "sha256":  "6a707102024ec94b8e5e779c146862041bac6a04f93f55cd02b1cdfe7157c80a",
+                                                                "bytes":  1488
+                                                            }
+                                        },
+                            "gates":  {
+                                          "observed_percent":  15.62,
+                                          "synthesized_percent":  84.38,
+                                          "final_filled_uv_percent":  100.0,
+                                          "material_slot_count":  1,
+                                          "review_views":  [
+                                                               "back",
+                                                               "close_face",
+                                                               "close_head_antlers",
+                                                               "close_ornaments",
+                                                               "close_staff",
+                                                               "front",
+                                                               "side",
+                                                               "three_quarter_front"
+                                                           ],
+                                          "source_mesh_registration":  {
+                                                                           "accepted":  false,
+                                                                           "affine_iou":  0.616502,
+                                                                           "dense_iou":  0.616502,
+                                                                           "flow_median_pixels":  0.0,
+                                                                           "flow_p95_pixels":  0.0,
+                                                                           "flow_cap_pixels":  54.4
+                                                                       },
+                                          "registration_gate_passed":  true
+                                      },
+                            "attempts":  [
+                                             {
+                                                 "attempt":  0,
+                                                 "status":  "passed",
+                                                 "overrides":  {
+
+                                                               },
+                                                 "gates":  {
+                                                               "observed_percent":  15.62,
+                                                               "synthesized_percent":  84.38,
+                                                               "final_filled_uv_percent":  100.0,
+                                                               "material_slot_count":  1,
+                                                               "review_views":  [
+                                                                                    "back",
+                                                                                    "close_face",
+                                                                                    "close_head_antlers",
+                                                                                    "close_ornaments",
+                                                                                    "close_staff",
+                                                                                    "front",
+                                                                                    "side",
+                                                                                    "three_quarter_front"
+                                                                                ]
+                                                           },
+                                                 "failure_codes":  [
+
+                                                                   ],
+                                                 "detail":  "",
+                                                 "seconds":  344.8
+                                             }
+                                         ],
+                            "finished_at":  "2026-08-01T15:20:00Z"
+                        },
+    "texture_qa_receipt":  {
+                               "stage":  "TEXTURE_QA",
+                               "status":  "passed",
+                               "profile":  "humanoid_complex_accessories",
+                               "asset_id":  "shaman_v2_validation",
+                               "input_hashes":  {
+                                                    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb":  "9468db9a28171dea7dd49d9adb7f4af41114b23a00df89def3fd52a53d5f83e6",
+                                                    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_basecolor_4k.png":  "2bf71b2bdb68e4040d3d81a0626af8c0f913fbbb6914e748d4d8b21f3a8eef8d",
+                                                    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_orm_4k.png":  "d07ac7dc3189ea61fb0cd2e758905545269d493b9e332a07884df478c21ba7da",
+                                                    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_material_id_4k.png":  "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04",
+                                                    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\coverage_oriented.png":  "7ca2bbc782c6f8c4ba662da45b64a082c20f3ecdacd713c87af0c142820ad1fd",
+                                                    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\view_report.json":  "6a707102024ec94b8e5e779c146862041bac6a04f93f55cd02b1cdfe7157c80a",
+                                                    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod0_geometry.json":  "4713eb17a8791bb66e525ae3967d72fb0d6acacd05775451220e9398d53b91cb"
+                                                },
+                               "outputs":  {
+                                               "visual_evaluation":  {
+                                                                         "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE_QA\\proven\\visual_evaluation.json",
+                                                                         "sha256":  "4146ae9321ab75678b7c0f4276c1e0d91253e98f189a95cca93b341bddcdafb0",
+                                                                         "bytes":  1425
+                                                                     },
+                                               "texture_registration":  {
+                                                                            "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE_QA\\proven\\texture_registration.json",
+                                                                            "sha256":  "bb7e3f8e42ad8868915822b125e484c8d379e5049320a646ec00022555bfd08c",
+                                                                            "bytes":  578
+                                                                        }
+                                           },
+                               "gates":  {
+                                             "atlas_orientation":  {
+                                                                       "error_gltf_standard":  6.682,
+                                                                       "error_inverted":  67.666,
+                                                                       "samples":  3557
+                                                                   },
+                                             "synthesis":  {
+                                                               "observed_contrast":  0.05104,
+                                                               "synthesized_contrast":  0.05848,
+                                                               "ratio":  1.1459,
+                                                               "synthesized_percent":  84.38
+                                                           },
+                                             "flat_regions":  {
+                                                                  "flat_islands":  101,
+                                                                  "flat_triangle_percent":  2.055
+                                                              },
+                                             "material_id_components":  60,
+                                             "material_id_distinct_colours":  1911,
+                                             "orm":  {
+                                                         "roughness_mean":  0.817,
+                                                         "roughness_p05":  0.7333,
+                                                         "roughness_std":  0.058,
+                                                         "metallic_percent_above_0_5":  0.4314
+                                                     },
+                                             "view_labels":  {
+                                                                 "front_source_resemblance":  0.1299,
+                                                                 "back_source_resemblance":  0.1123,
+                                                                 "basis":  "colour correlation, mirror-invariant"
+                                                             },
+                                             "rear_front_correlation":  {
+                                                                            "mirrored":  0.1971,
+                                                                            "direct":  0.1007
+                                                                        },
+                                             "axis_ratio":  3.297,
+                                             "debris":  {
+                                                            "triangles_removed":  0,
+                                                            "components_remaining":  0
+                                                        },
+                                             "uv":  {
+                                                        "overlap_texels":  0.0,
+                                                        "degenerate":  0,
+                                                        "tested_pairs":  1285395,
+                                                        "timed_out":  false
+                                                    },
+                                             "face":  {
+                                                          "edge_energy":  0.10343
+                                                      },
+                                             "texture_registration":  {
+                                                                          "policy_version":  3,
+                                                                          "registration_report":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\view_report.json",
+                                                                          "passed":  true,
+                                                                          "failure_code":  null,
+                                                                          "affine_iou":  0.616502,
+                                                                          "dense_iou":  0.616502,
+                                                                          "dense_accepted":  false,
+                                                                          "final_iou":  0.616502,
+                                                                          "flow_p95_pixels":  0.0,
+                                                                          "flow_cap_pixels":  54.4,
+                                                                          "flow_cap_saturation":  0.0,
+                                                                          "visible_percent":  21.272,
+                                                                          "limits":  {
+                                                                                         "min_final_iou":  0.58,
+                                                                                         "max_flow_cap_saturation":  0.98,
+                                                                                         "min_visible_percent":  5.0
+                                                                                     },
+                                                                          "failures":  [
+
+                                                                                       ]
+                                                                      },
+                                             "geometry_report_source":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod0_geometry.json"
+                                         },
+                               "attempts":  [
+                                                {
+                                                    "attempt":  0,
+                                                    "status":  "passed",
+                                                    "overrides":  {
+
+                                                                  },
+                                                    "gates":  {
+                                                                  "atlas_orientation":  {
+                                                                                            "error_gltf_standard":  6.682,
+                                                                                            "error_inverted":  67.666,
+                                                                                            "samples":  3557
+                                                                                        },
+                                                                  "synthesis":  {
+                                                                                    "observed_contrast":  0.05104,
+                                                                                    "synthesized_contrast":  0.05848,
+                                                                                    "ratio":  1.1459,
+                                                                                    "synthesized_percent":  84.38
+                                                                                },
+                                                                  "flat_regions":  {
+                                                                                       "flat_islands":  101,
+                                                                                       "flat_triangle_percent":  2.055
+                                                                                   },
+                                                                  "material_id_components":  60,
+                                                                  "material_id_distinct_colours":  1911,
+                                                                  "orm":  {
+                                                                              "roughness_mean":  0.817,
+                                                                              "roughness_p05":  0.7333,
+                                                                              "roughness_std":  0.058,
+                                                                              "metallic_percent_above_0_5":  0.4314
+                                                                          },
+                                                                  "view_labels":  {
+                                                                                      "front_source_resemblance":  0.1299,
+                                                                                      "back_source_resemblance":  0.1123,
+                                                                                      "basis":  "colour correlation, mirror-invariant"
+                                                                                  },
+                                                                  "rear_front_correlation":  {
+                                                                                                 "mirrored":  0.1971,
+                                                                                                 "direct":  0.1007
+                                                                                             },
+                                                                  "axis_ratio":  3.297,
+                                                                  "debris":  {
+                                                                                 "triangles_removed":  0,
+                                                                                 "components_remaining":  0
+                                                                             },
+                                                                  "uv":  {
+                                                                             "overlap_texels":  0.0,
+                                                                             "degenerate":  0,
+                                                                             "tested_pairs":  1285395,
+                                                                             "timed_out":  false
+                                                                         },
+                                                                  "face":  {
+                                                                               "edge_energy":  0.10343
+                                                                           },
+                                                                  "texture_registration":  {
+                                                                                               "policy_version":  3,
+                                                                                               "registration_report":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\view_report.json",
+                                                                                               "passed":  true,
+                                                                                               "failure_code":  null,
+                                                                                               "affine_iou":  0.616502,
+                                                                                               "dense_iou":  0.616502,
+                                                                                               "dense_accepted":  false,
+                                                                                               "final_iou":  0.616502,
+                                                                                               "flow_p95_pixels":  0.0,
+                                                                                               "flow_cap_pixels":  54.4,
+                                                                                               "flow_cap_saturation":  0.0,
+                                                                                               "visible_percent":  21.272,
+                                                                                               "limits":  {
+                                                                                                              "min_final_iou":  0.58,
+                                                                                                              "max_flow_cap_saturation":  0.98,
+                                                                                                              "min_visible_percent":  5.0
+                                                                                                          },
+                                                                                               "failures":  [
+
+                                                                                                            ]
+                                                                                           },
+                                                                  "geometry_report_source":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod0_geometry.json"
+                                                              },
+                                                    "failure_codes":  [
+
+                                                                      ],
+                                                    "detail":  "",
+                                                    "seconds":  3.7
+                                                }
+                                            ],
+                               "finished_at":  "2026-08-01T15:20:04Z"
+                           },
+    "view_report":  {
+                        "mesh":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb",
+                        "source":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\INGEST\\proven\\matte.png",
+                        "front_direction":  "+z",
+                        "front_direction_request":  "+z",
+                        "front_direction_auto_winner":  "-z",
+                        "front_direction_selection_policy":  "explicit_semantic_override",
+                        "front_direction_score_margin":  0.061101,
+                        "front_direction_ambiguous":  true,
+                        "auto_ambiguity_margin":  0.08,
+                        "silhouette_iou_bbox_fit":  {
+                                                        "+z":  0.528866,
+                                                        "-z":  0.589967
+                                                    },
+                        "silhouette_iou_refined_affine":  0.616349,
+                        "dense_registration":  {
+                                                   "accepted":  false,
+                                                   "affine_iou":  0.616502,
+                                                   "dense_iou":  0.616502,
+                                                   "flow_median_pixels":  0.0,
+                                                   "flow_p95_pixels":  0.0,
+                                                   "flow_cap_pixels":  54.4
+                                               },
+                        "final_registration_iou":  0.616502,
+                        "registration_gate_passed":  true,
+                        "failure_codes":  [
+
+                                          ],
+                        "ortho_scale":  1.9554998278617859,
+                        "centre_offset":  [
+                                              -0.012703657150268555,
+                                              -0.01708170771598816,
+                                              -0.004477769136428833
+                                          ],
+                        "triangles":  219811,
+                        "visible_triangles":  46758,
+                        "visible_percent":  21.272,
+                        "front_facing_triangles":  103565,
+                        "occluded_but_front_facing":  59882,
+                        "mesh_bbox_pixels":  [
+                                                 -94,
+                                                 -170,
+                                                 1490,
+                                                 1733
+                                             ],
+                        "source_bbox_pixels":  [
+                                                   35,
+                                                   2,
+                                                   1080,
+                                                   1332
+                                               ],
+                        "raster_size":  1536,
+                        "view_size":  2048
+                    },
+    "rig_probe_exit":  0,
+    "rig_readiness_probe":  {
+                                "mesh":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb",
+                                "profile":  "humanoid_complex_accessories",
+                                "vertices":  136771,
+                                "triangles":  219811,
+                                "failure_codes":  [
+
+                                                  ],
+                                "measured":  {
+                                                 "height_axis":  1,
+                                                 "width_axis":  0,
+                                                 "depth_axis":  2,
+                                                 "extent":  [
+                                                                1.6473346948623657,
+                                                                1.9554998278617859,
+                                                                0.5931211709976196
+                                                            ],
+                                                 "height":  1.9554998278617859,
+                                                 "width":  1.6473346948623657,
+                                                 "depth":  0.5931211709976196,
+                                                 "depth_to_height":  0.30330924224430117,
+                                                 "upper_band_points":  28573,
+                                                 "lower_band_points":  85951,
+                                                 "shin_band_points":  19518,
+                                                 "arm_valley_ratio":  0.0,
+                                                 "arms_clear":  true,
+                                                 "leg_gap_ratio":  0.9415823468465492,
+                                                 "full_lower_body_clear":  false,
+                                                 "shin_gap_ratio":  0.5905931993050385,
+                                                 "shins_clear":  true,
+                                                 "garment_aware_profile":  true,
+                                                 "garment_clearance_applied":  true,
+                                                 "legs_clear":  true,
+                                                 "feet":  {
+                                                              "lower_vertices":  491,
+                                                              "centre_vertices":  0,
+                                                              "centre_fraction":  0.0,
+                                                              "left_vertices":  182,
+                                                              "right_vertices":  309,
+                                                              "minimum_lobe_vertices":  58,
+                                                              "lower_band":  0.08,
+                                                              "centre_half_width_fraction":  0.06,
+                                                              "feet_clear":  true
+                                                          },
+                                                 "depth_clear":  true
+                                             },
+                                "ready":  true,
+                                "rig_required":  true
+                            },
+    "corrected_textured_glb":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb",
+    "recorded_at":  "2026-08-01T15:20:08.2044375Z"
+}
