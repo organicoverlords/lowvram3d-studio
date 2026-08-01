@@ -12,7 +12,7 @@ param(
     [string]$AssetId = "",
     [string]$OutputRoot = "",
     [string]$FromStage = "INGEST",
-    [string]$ToStage = "TEXTURE_QA",
+    [string]$ToStage = "EXPORT",
     [string]$ExistingMaster = ""
 )
 
