@@ -1,0 +1,217 @@
+name: Pipeline V2 software sprint on local PC
+run-name: Pipeline V2 validation ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - infra/windows-self-hosted-runner-20260731
+    paths:
+      - .github/workflows/pipeline-v2-local-worker.yml
+      - Run-AssetPipeline.ps1
+      - scripts/run-asset-pipeline.ps1
+      - workers/run_asset_pipeline.py
+      - workers/run_asset_pipeline_full.py
+      - workers/pipeline_v2_stages.py
+      - workers/pipeline_v2_production_stages.py
+      - workers/pipeline_rig_readiness.py
+      - workers/raster_project.py
+      - workers/mesh_io.py
+      - workers/uv_xatlas_repair.py
+      - workers/visual_evaluator.py
+      - blender/final_pipeline_lods.py
+      - blender/final_pipeline_bake.py
+      - blender/pipeline_auto_rig.py
+      - blender/pipeline_export_validate.py
+      - src/lowvram3d/asset_profiles.py
+      - benchmarks/**
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pipeline-v2-local-worker
+  cancel-in-progress: true
+
+jobs:
+  validate-v2:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact worker branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify trusted ref and clean checkout
+        shell: powershell
+        run: |
+          if ("${{ github.ref }}" -ne "refs/heads/infra/windows-self-hosted-runner-20260731") {
+            throw "Ref is not the dedicated trusted worker branch"
+          }
+          if (@(git status --short).Count -gt 0) { throw "Checkout is dirty before validation" }
+          git rev-parse HEAD
+
+      - name: Resolve a complete Python environment
+        shell: powershell
+        run: |
+          $candidates = @(
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $selected = $null
+          foreach ($candidate in $candidates) {
+            & $candidate -c "import cv2,numpy,scipy,xatlas; print('V2_ENV_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) { $selected = $candidate; break }
+          }
+          if (-not $selected) { throw "No Python environment has cv2, numpy, scipy and xatlas" }
+          "V2_PYTHON=$selected" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_OUTPUT_ROOT=C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "V2 Python: $selected"
+
+      - name: Compile and register every stage
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & $env:V2_PYTHON -m py_compile `
+            workers\run_asset_pipeline.py `
+            workers\run_asset_pipeline_full.py `
+            workers\pipeline_v2_stages.py `
+            workers\pipeline_v2_production_stages.py `
+            workers\pipeline_rig_readiness.py `
+            blender\pipeline_auto_rig.py `
+            blender\pipeline_export_validate.py
+          if ($LASTEXITCODE -ne 0) { throw "Python compile failed" }
+          & $env:V2_PYTHON -c @'
+          import tempfile
+          from pathlib import Path
+          from run_asset_pipeline import Pipeline, STAGES
+          from pipeline_v2_stages import register_stages
+          from pipeline_v2_production_stages import register_production_stages
+          root = Path(tempfile.mkdtemp())
+          manifest = {
+              'asset_id': 'registry_probe',
+              'source': {'path': __file__, 'sha256': 'probe', 'bytes': 0},
+              'profile': 'static_prop',
+              'texture': {'resolution': 2048, 'uv_max_charts': 800},
+              'geometry': {'lod_triangle_targets': [120000,45000,18000,6000]},
+              'rig': {'required': False, 'separate_props': False},
+              'output_root': str(root),
+          }
+          pipeline = Pipeline(manifest, root, 'python', 'blender', verbose=False)
+          stages = register_stages(pipeline, manifest)
+          stages.update(register_production_stages(pipeline, manifest))
+          missing = [stage for stage in STAGES if stage not in stages]
+          assert not missing, f'missing stages: {missing}'
+          print('ALL_STAGES_REGISTERED', ','.join(STAGES))
+          '@
+          if ($LASTEXITCODE -ne 0) { throw "Stage registry failed" }
+
+      - name: Run tests and benchmark pack
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & $env:V2_PYTHON -m pytest tests -q
+          if ($LASTEXITCODE -ne 0) { throw "Unit tests failed" }
+          & $env:V2_PYTHON benchmarks\run_benchmarks.py
+          if ($LASTEXITCODE -ne 0) { throw "Pipeline V2 benchmark pack failed" }
+
+      - name: Run real shaman geometry-to-texture continuation
+        id: realrun
+        shell: powershell
+        run: |
+          $source = "C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png"
+          $master = "C:\AI\LowVRAM3D-benchmarks\outputs\antlered_bird_shaman_anchor\final-pipeline\high\shaman_high_clean.glb"
+          if (-not (Test-Path -LiteralPath $source)) { throw "Canonical source image is missing" }
+          if (-not (Test-Path -LiteralPath $master)) { throw "Canonical clean high master is missing" }
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & .\scripts\run-asset-pipeline.ps1 `
+            -Image $source `
+            -Profile humanoid_complex_accessories `
+            -AssetId shaman_v2_validation `
+            -OutputRoot $env:V2_OUTPUT_ROOT `
+            -ExistingMaster $master `
+            -ToStage TEXTURE_QA `
+            -PythonPath $env:V2_PYTHON
+          $pipelineExit = $LASTEXITCODE
+          "PIPELINE_EXIT=$pipelineExit" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "Real pipeline exit: $pipelineExit"
+          exit 0
+
+      - name: Verify the real run exercised the formerly missing stages
+        shell: powershell
+        run: |
+          $root = Join-Path $env:V2_OUTPUT_ROOT "shaman_v2_validation"
+          $summaryPath = Join-Path $root "pipeline_summary.json"
+          if (-not (Test-Path -LiteralPath $summaryPath)) { throw "Real run wrote no pipeline summary" }
+          $summary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
+          $required = @("LOD", "UV", "BAKE", "TEXTURE", "TEXTURE_QA")
+          foreach ($stage in $required) {
+            $property = $summary.stages.PSObject.Properties[$stage]
+            if (-not $property) { throw "Real run never reached or reported $stage" }
+            if ($property.Value.status -eq "not_implemented") { throw "$stage is still not implemented" }
+          }
+          foreach ($stage in @("LOD", "UV", "BAKE", "TEXTURE")) {
+            if ($summary.stages.$stage.status -ne "passed") {
+              throw "Infrastructure stage $stage failed: $($summary.stages.$stage | ConvertTo-Json -Compress)"
+            }
+          }
+          # TEXTURE_QA may pass or correctly reject the asset. Both prove the stage executed; a
+          # rejection is expected until the face/grey-region defects are repaired automatically.
+          if ($summary.stages.TEXTURE_QA.status -notin @("passed", "failed")) {
+            throw "TEXTURE_QA returned an invalid status"
+          }
+          Write-Host ($summary | ConvertTo-Json -Depth 10)
+
+      - name: Publish compact receipts to the branch
+        if: always()
+        shell: powershell
+        run: |
+          $root = Join-Path $env:V2_OUTPUT_ROOT "shaman_v2_validation"
+          $evidence = Join-Path $PWD "evidence\latest-pipeline-v2-local-worker"
+          if (Test-Path -LiteralPath $evidence) { Remove-Item $evidence -Recurse -Force }
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          foreach ($name in @("asset_manifest.json", "pipeline_summary.json")) {
+            $path = Join-Path $root $name
+            if (Test-Path -LiteralPath $path) { Copy-Item $path $evidence -Force }
+          }
+          $state = Join-Path $root "state"
+          if (Test-Path -LiteralPath $state) {
+            Get-ChildItem $state -Filter receipt.json -File -Recurse | ForEach-Object {
+              $stage = Split-Path $_.DirectoryName -Leaf
+              Copy-Item $_.FullName (Join-Path $evidence "$stage-receipt.json") -Force
+            }
+          }
+          [ordered]@{
+            workflow_run_id = "${{ github.run_id }}"
+            workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            pipeline_exit = $env:PIPELINE_EXIT
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json | Set-Content (Join-Path $evidence "workflow_receipt.json") -Encoding utf8
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- evidence/latest-pipeline-v2-local-worker
+          if (@(git status --porcelain -- evidence/latest-pipeline-v2-local-worker).Count -gt 0) {
+            git commit -m "evidence: record Pipeline V2 local run ${{ github.run_id }}"
+            if ($LASTEXITCODE -ne 0) { throw "Could not commit V2 evidence" }
+            git push origin HEAD:infra/windows-self-hosted-runner-20260731
+            if ($LASTEXITCODE -ne 0) { throw "Could not push V2 evidence" }
+          }
+
+      - name: Upload complete V2 reports and review renders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-v2-validation-${{ github.run_id }}
+          path: |
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\asset_manifest.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\pipeline_summary.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\**\*.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-validation\shaman_v2_validation\state\TEXTURE\proven\*.png
+          if-no-files-found: warn
+          retention-days: 14
