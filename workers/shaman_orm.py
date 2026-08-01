@@ -20,13 +20,17 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-# Roughness centres per material class. Cloth is nearly matte; bone takes a light polish.
+# Roughness centres per material class. Everything here is weathered, buried outdoors or both, so
+# the whole range sits high. An earlier pass put bone at 0.62 on the theory that bone takes a
+# polish; rendered, that turned every pale surface into a broad specular sheen that swallowed the
+# grime and stain detail underneath, and a probe render with flat 0.94 roughness read markedly
+# better. Localised polish now comes from the cavity term below rather than from a low centre.
 CLASS_ROUGHNESS = {
-    "cloth": 0.88,
-    "bone": 0.62,
-    "wood": 0.78,
-    "metal": 0.42,
-    "organic": 0.74,
+    "cloth": 0.93,
+    "bone": 0.80,
+    "wood": 0.86,
+    "metal": 0.55,
+    "organic": 0.85,
 }
 CLASS_INDEX = {name: i for i, name in enumerate(CLASS_ROUGHNESS)}
 
@@ -84,17 +88,19 @@ def main() -> None:
         roughness[classes == CLASS_INDEX[name]] = centre
 
     # Recessed, grimy areas read damp and lose roughness; exposed ridges wear smooth a little.
-    roughness -= (1.0 - cavity) * 0.16
-    roughness -= (1.0 - ao) * 0.06
+    roughness -= (1.0 - cavity) * 0.08
+    roughness -= (1.0 - ao) * 0.04
     # Per-texel break-up so nothing reads as a flat plastic constant.
     grain = cv2.GaussianBlur(
         np.random.default_rng(12345).normal(0.0, 1.0, (size, size)).astype(np.float32), (0, 0), 2.0
     )
     grain /= max(float(np.abs(grain).max()), 1e-6)
     roughness += grain * 0.05
-    roughness = np.clip(roughness, 0.18, 0.98)
+    # Floor at 0.45: below that this asset develops mirror-like patches that no part of the source
+    # supports, and a low roughness floor is what made the first pass look like wet plastic.
+    roughness = np.clip(roughness, 0.45, 0.99)
 
-    metallic = np.where(classes == CLASS_INDEX["metal"], 0.85, 0.0).astype(np.float32)
+    metallic = np.where(classes == CLASS_INDEX["metal"], 0.60, 0.0).astype(np.float32)
     metallic = cv2.GaussianBlur(metallic, (0, 0), 1.2)
     metallic[metallic < 0.10] = 0.0
 
