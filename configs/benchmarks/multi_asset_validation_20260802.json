@@ -1,7 +1,7 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "name": "multi_asset_validation_20260802",
-  "description": "Automatic-profile and local-vs-online-reference validation across the shaman, Lucky Drown casino boat, steampunk snapping turtle, frog salvage diver, and giant tripod vending-machine walker.",
+  "description": "Automatic-profile and local-vs-online-reference validation across the shaman, Lucky Drown casino boat, steampunk snapping turtle, frog salvage diver, and a static barn-with-trees scene.",
   "manual_profile_selection_allowed": false,
   "gpu_heavy_jobs_parallelism": 1,
   "output_root_template": "C:\\AI\\LowVRAM3D-benchmarks\\multi-asset-validation\\run-{timestamp}",
@@ -38,7 +38,8 @@
         "hanging_accessories",
         "finger_geometry_uncertain"
       ],
-      "current_next_action": "one bounded V3 sleeve-core/drape repair and rerender"
+      "current_status": "BLOCKED_SHAMAN_SLEEVE_REQUIRES_MANUAL_RETOPOLOGY",
+      "current_next_action": "preserve as regression anchor; do not retry automatic sleeve separation or weighting; resume only with a dedicated manual-retopology lane"
     },
     {
       "id": "lucky_drown_casino_boat",
@@ -125,59 +126,46 @@
       "equipment_policy": "rigid equipment and sockets must be separated from soft-body weighting when topology permits"
     },
     {
-      "id": "giant_tripod_vending_machine_walker",
+      "id": "barn_with_trees_static_scene",
       "required": true,
-      "role": "articulated_hard_surface_benchmark",
+      "role": "static_environment_benchmark",
       "source_filename_candidates": [
-        "tripod vending machine",
-        "vending machine walker",
-        "three legged vending machine",
-        "giant vending machine mech"
+        "ChatGPT Image 2.8.2026 klo 14.41.01.png",
+        "ChatGPT Image 2.8.2026 klo 14.41.01(1).png",
+        "barn with trees",
+        "barn and trees"
       ],
       "visual_identity": [
-        "tall rectangular green vending-machine or kiosk body",
-        "exactly three long articulated mechanical legs",
-        "large industrial feet on sandy ground",
-        "central front vending or display facade",
-        "rusted pipes cables hoses signs and utility attachments",
-        "camera lamp sensor or floodlight cluster above the body",
-        "orange traffic cones visible in the source scene",
-        "post-apocalyptic weathered hard-surface styling"
+        "a static barn",
+        "trees surrounding or beside the barn",
+        "an outdoor scene",
+        "no walking elements",
+        "no mechanical legs",
+        "no vending machine",
+        "no vehicle"
       ],
       "expected_base_profiles": [
-        "articulated_prop",
-        "vehicle",
         "building",
+        "static_prop",
         "unknown"
       ],
       "expected_traits": [
-        "three_legged_mechanical",
-        "hard_surface",
-        "rigid_body_segments",
-        "mechanical_hinges",
-        "large_scale_structure",
-        "vending_machine_facade",
-        "camera_or_sensor_head",
-        "hanging_cables_or_hoses",
-        "thin_structures",
-        "attached_signage_and_props",
-        "asymmetric_surface_detail"
+        "barn",
+        "trees",
+        "static_environment",
+        "outdoor_scene",
+        "multiple_objects",
+        "natural_vegetation"
       ],
       "forbidden_routes": [
         "humanoid_rig",
         "humanoid_a_pose",
         "quadruped_creature_rig",
-        "whole_model_organic_skinning"
+        "vehicle_route",
+        "articulated_mechanical_route",
+        "animation_generation"
       ],
-      "optional_articulation": [
-        "three_independent_leg_chains",
-        "foot_controls",
-        "body_lift_and_weight_shift",
-        "camera_sensor_pan_tilt",
-        "door_or_panel_hinges",
-        "cable_secondary_motion"
-      ],
-      "benchmark_addendum": "docs/BENCHMARK_ADDENDUM_TRIPOD_VENDING_WALKER_20260802.md"
+      "benchmark_addendum": "docs/BENCHMARK_ADDENDUM_BARN_AND_TREES_20260802.md"
     }
   ],
   "required_discovery_outputs": [
