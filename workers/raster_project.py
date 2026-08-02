@@ -25,6 +25,11 @@ from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
 from scipy.spatial import cKDTree
 
+try:
+    from .texture_contract import assert_atlas_dimensions, validate_requested_atlas_size
+except ImportError:  # direct worker execution
+    from texture_contract import assert_atlas_dimensions, validate_requested_atlas_size
+
 FACING_POWER = 3.0
 FACING_MIN = 0.15
 ALPHA_MIN = 0.35
@@ -69,7 +74,7 @@ def main() -> None:
     args = parser.parse_args()
 
     npz, viewdir, meta_path, outdir = Path(args.npz), Path(args.views_dir), Path(args.view_metadata), Path(args.output_dir)
-    atlas_size = args.atlas_size
+    atlas_size = validate_requested_atlas_size(args.atlas_size)
     outdir.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
 
@@ -410,7 +415,12 @@ def main() -> None:
             mask[this_island] = True
 
     atlas = np.clip(colour, 0, 255).astype(np.uint8)
-    cv2.imwrite(str(outdir / "basecolor.png"), cv2.cvtColor(atlas, cv2.COLOR_RGB2BGR))
+    basecolor_path = outdir / "basecolor.png"
+    cv2.imwrite(str(basecolor_path), cv2.cvtColor(atlas, cv2.COLOR_RGB2BGR))
+    decoded = cv2.imread(str(basecolor_path), cv2.IMREAD_COLOR)
+    if decoded is None:
+        raise RuntimeError("ATLAS_RESOLUTION_CONTRACT_MISMATCH: basecolor write failed")
+    assert_atlas_dimensions(decoded.shape[:2][::-1], atlas_size, "raster_project output")
     observed_mask_path = outdir / "observed_triangles.npy"
     np.save(observed_mask_path, triangle_observed)
 
@@ -436,6 +446,11 @@ def main() -> None:
             "success": True,
             "backend": "raster_uv_atlas_projection_cpu",
             "atlas_resolution": atlas_size,
+            "atlas_resolution_contract": {
+                "requested": atlas_size,
+                "saved": [atlas_size, atlas_size],
+                "passed": True,
+            },
             "semantic_views": [n for _, n in usable],
             "barred_views": [n for n in view_names if n not in [x[1] for x in usable]],
             "uv_island_occupancy_percent": round(island_px / (atlas_size * atlas_size) * 100, 2),

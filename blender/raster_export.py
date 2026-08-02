@@ -28,6 +28,7 @@ def main() -> None:
     parser.add_argument("--output", required=True)
     parser.add_argument("--texture", required=True)
     parser.add_argument("--observed-triangles", default="")
+    parser.add_argument("--atlas-size", type=int, default=0)
     parser.add_argument("--report", default="")
     args = parser.parse_args(argv_after_double_dash())
 
@@ -49,6 +50,14 @@ def main() -> None:
     bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
     out_node = nt.nodes.new("ShaderNodeOutputMaterial")
     img = bpy.data.images.load(str(texture_path))
+    if args.atlas_size:
+        expected = int(args.atlas_size)
+        actual = (int(img.size[0]), int(img.size[1]))
+        if actual != (expected, expected):
+            raise RuntimeError(
+                "ATLAS_RESOLUTION_CONTRACT_MISMATCH: "
+                f"raster_export received {actual}, expected {(expected, expected)}"
+            )
     img.pack()
     img_node.image = img
     nt.links.new(uvmap.outputs["UV"], img_node.inputs["Vector"])
@@ -107,6 +116,12 @@ def main() -> None:
             "backend": "raster_uv_atlas_projection_export",
             "output": str(args.output),
             "texture": str(texture_path),
+            "atlas_resolution": [int(img.size[0]), int(img.size[1])],
+            "atlas_resolution_contract": {
+                "requested": int(args.atlas_size) if args.atlas_size else None,
+                "saved": [int(img.size[0]), int(img.size[1])],
+                "passed": not bool(args.atlas_size) or (int(img.size[0]) == int(args.atlas_size) and int(img.size[1]) == int(args.atlas_size)),
+            },
             "observed_triangles_mask": str(args.observed_triangles) if args.observed_triangles else None,
             "observed_material_polygons": observed_polygons,
             "neutral_synthesis_polygons": neutral_polygons,

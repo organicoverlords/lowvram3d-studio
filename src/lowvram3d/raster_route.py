@@ -71,9 +71,9 @@ def run_raster_texture_route(
     progress = candidate / "raster-progress.json"
     project_report = candidate / "raster_report.json"
     atlas = candidate / "basecolor.png"
-    # The production run has now validated 2048 end-to-end.  The previous hard 1024 cap silently
-    # discarded the profile's requested quality even when config.texture_size was 2048.
-    atlas_size = min(max(int(engine.config.texture_size), 512), 2048)
+    # One negotiated size must survive UV packing, raster projection, export, and validation.
+    # Clamping here used to hide a 1024 -> 512 downgrade in the packed GLB.
+    atlas_size = int(engine.config.texture_size)
     engine._command_stage(
         "raster_project_v2",
         [
@@ -87,7 +87,8 @@ def run_raster_texture_route(
             "--progress", str(progress),
             "--report", str(project_report),
         ],
-        {"basecolor": atlas, "report": project_report},
+        {"basecolor": atlas, "report": project_report,
+         "observed_triangles": candidate / "observed_triangles.npy"},
         receipt,
         job_dir,
     )
@@ -103,6 +104,8 @@ def run_raster_texture_route(
             "--atlas", atlas,
             "--output", candidate_glb,
             "--texture", candidate_texture,
+            "--atlas-size", str(atlas_size),
+            "--observed-triangles", str(candidate / "observed_triangles.npy"),
             "--report", export_report,
         ],
         {"mesh": candidate_glb, "basecolor": candidate_texture, "report": export_report},

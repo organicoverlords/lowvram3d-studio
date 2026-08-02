@@ -63,6 +63,7 @@ def main() -> None:
     parser.add_argument("--basecolor", required=True)
     parser.add_argument("--normal", required=True)
     parser.add_argument("--orm", required=True)
+    parser.add_argument("--atlas-size", type=int, default=0)
     parser.add_argument("--output-glb", required=True)
     parser.add_argument("--output-blend", required=True)
     parser.add_argument("--manifest", required=True)
@@ -77,6 +78,15 @@ def main() -> None:
         print(f"UV_LAYER {obj.name} {source}", flush=True)
 
     material, nodes = build_material(Path(args.basecolor), Path(args.normal), Path(args.orm))
+    if args.atlas_size:
+        base_image = nodes["basecolor"].image
+        actual = (int(base_image.size[0]), int(base_image.size[1]))
+        expected = (int(args.atlas_size), int(args.atlas_size))
+        if actual != expected:
+            raise RuntimeError(
+                "ATLAS_RESOLUTION_CONTRACT_MISMATCH: "
+                f"shaman_texture_export received {actual}, expected {expected}"
+            )
     for obj in objects:
         obj.data.materials.clear()
         obj.data.materials.append(material)
@@ -95,6 +105,12 @@ def main() -> None:
         "material_slot_count": len(slots),
         "material_slots": slots,
         "shader": "Principled BSDF",
+        "atlas_resolution": [int(nodes["basecolor"].image.size[0]), int(nodes["basecolor"].image.size[1])],
+        "atlas_resolution_contract": {
+            "requested": int(args.atlas_size) if args.atlas_size else None,
+            "saved": [int(nodes["basecolor"].image.size[0]), int(nodes["basecolor"].image.size[1])],
+            "passed": not bool(args.atlas_size) or tuple(nodes["basecolor"].image.size) == (int(args.atlas_size), int(args.atlas_size)),
+        },
         "textures": {
             "base_color": {"path": args.basecolor, "colorspace": "sRGB", "packed": True},
             "normal": {"path": args.normal, "colorspace": "Non-Color", "space": "TANGENT", "packed": True},

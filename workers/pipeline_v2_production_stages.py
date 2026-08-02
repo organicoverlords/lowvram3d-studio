@@ -239,6 +239,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 pipeline.python, w("raster_project.py"), "--npz", npz,
                 "--views-dir", views, "--view-metadata", views / "view_metadata.json",
                 "--output-dir", projection, "--atlas-size", str(resolution),
+                "--progress", projection / "raster-progress.json",
                 "--report", projection_report,
             ])
             if code != 0 or not (projection / "basecolor.png").exists():
@@ -308,6 +309,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             code, out = _blender(
                 pipeline, b("shaman_texture_export.py"), "--mesh", mesh,
                 "--basecolor", basecolor, "--normal", normal, "--orm", orm,
+                "--atlas-size", str(resolution),
                 "--output-glb", glb, "--output-blend", blend,
                 "--manifest", material_manifest,
             )

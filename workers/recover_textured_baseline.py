@@ -205,12 +205,14 @@ def main() -> None:
     ], env=blender_env, artifacts={"mesh": cleaned, "npz": npz, "report": cleanup_report}))
 
     project_report = work / "raster_report.json"
+    observed_triangles = work / "observed_triangles.npy"
     stages.append(run("raster_project", [
         sys.executable, REPO_ROOT / "workers" / "raster_project.py",
         "--npz", npz, "--views-dir", views, "--view-metadata", metadata,
         "--output-dir", work, "--atlas-size", str(args.atlas_size),
         "--progress", work / "raster-progress.json", "--report", project_report,
-    ], artifacts={"basecolor": work / "basecolor.png", "report": project_report}))
+    ], artifacts={"basecolor": work / "basecolor.png", "report": project_report,
+                  "observed_triangles": observed_triangles}))
 
     atlas = work / "basecolor.png"
     glb = outdir / f"{args.name}.glb"
@@ -220,7 +222,8 @@ def main() -> None:
         args.blender, "--background", "--python-use-system-env",
         "--python", REPO_ROOT / "blender" / "raster_export.py", "--",
         "--cleaned-mesh", cleaned, "--atlas", atlas,
-        "--output", glb, "--texture", texture, "--report", export_report,
+        "--output", glb, "--texture", texture, "--atlas-size", str(args.atlas_size),
+        "--observed-triangles", observed_triangles, "--report", export_report,
     ], env=blender_env, artifacts={"glb": glb, "texture": texture, "report": export_report}))
 
     summary = {
