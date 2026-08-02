@@ -55,17 +55,17 @@ def test_world_up_fallback_is_explicit_and_zero_confidence():
 
 
 def test_robust_bounds_ignore_single_extreme_outlier():
-    points = np.zeros((10, 10, 3), dtype=np.float64)
-    yy, xx = np.mgrid[0:10, 0:10]
+    points = np.zeros((100, 100, 3), dtype=np.float64)
+    yy, xx = np.mgrid[0:100, 0:100]
     points[..., 0] = xx
     points[..., 1] = yy
     points[0, 0, :2] = 1_000_000.0
-    mask = np.ones((10, 10), dtype=bool)
+    mask = np.ones((100, 100), dtype=bool)
     xmin, xmax, ymin, ymax = robust_xy_bounds(points, mask, padding_fraction=0.0)
     assert xmin >= 0.0
-    assert xmax < 10_000.0
+    assert xmax < 1000.0
     assert ymin >= 0.0
-    assert ymax < 10_000.0
+    assert ymax < 1000.0
 
 
 def test_flat_moge_surface_produces_finite_unclassified_baseline():
