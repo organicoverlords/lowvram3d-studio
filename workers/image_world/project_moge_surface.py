@@ -1,4 +1,4 @@
-"""Convert saved MoGe arrays into an unclassified top-down surface baseline."""
+"""Convert saved MoGe arrays into a top-down terrain diagnostic package."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ import traceback
 
 import numpy as np
 
+from lowvram3d.image_world.semantic_masks import SEMANTIC_CLASSES, SemanticMaskSet
 from lowvram3d.image_world.surface_projection import project_moge_surface
 
 
@@ -19,6 +20,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--geometry", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--semantic-arrays")
+    parser.add_argument("--semantic-probabilities")
     parser.add_argument("--grid-size", type=int, default=513)
     parser.add_argument("--minimum-surface-alignment", type=float, default=0.15)
     parser.add_argument("--smoothing-iterations", type=int, default=32)
@@ -39,10 +42,12 @@ def main() -> int:
         points = np.load(geometry / "points.npy", allow_pickle=False)
         normals = np.load(geometry / "normal.npy", allow_pickle=False)
         mask = np.load(geometry / "mask.npy", allow_pickle=False).astype(bool)
+        semantic = _load_semantic_masks(args, mask.shape)
         result = project_moge_surface(
             points,
             normals,
             mask,
+            semantic_masks=semantic,
             grid_size=args.grid_size,
             minimum_surface_alignment=args.minimum_surface_alignment,
             smoothing_iterations=args.smoothing_iterations,
@@ -75,14 +80,16 @@ def main() -> int:
         _write_gray(cv2, previews / "observed.png", result.observation.observed_mask.astype(np.uint8) * 255)
         _write_gray(cv2, previews / "generated.png", result.completed.generated_mask.astype(np.uint8) * 255)
         _write_gray(cv2, previews / "slope.png", _scalar_preview(result.slope, low=0.0, high=75.0))
-        log_flow = np.log1p(result.flow_accumulation)
-        _write_gray(cv2, previews / "flow-accumulation.png", _scalar_preview(log_flow))
+        _write_gray(cv2, previews / "flow-accumulation.png", _scalar_preview(np.log1p(result.flow_accumulation)))
         _write_gray(cv2, previews / "streams.png", result.stream_mask.astype(np.uint8) * 255)
 
         report = {
             "status": "PASS_BASELINE",
             "classification": result.classification,
-            "terrain_semantics_proven": False,
+            "semantic_mask_applied": result.semantic_mask_applied,
+            "semantic_terrain_fraction": result.semantic_terrain_fraction,
+            "terrain_semantics_proven": result.semantic_mask_applied,
+            "segmentation_model_quality_proven": False,
             "promotion_allowed": False,
             "frame": asdict(result.frame),
             "grid_size": args.grid_size,
@@ -97,9 +104,9 @@ def main() -> int:
             "smoothing_iterations": args.smoothing_iterations,
             "wall_time_seconds": time.perf_counter() - started,
             "warnings": [
-                "MoGe validity plus normal alignment is not a semantic terrain mask.",
-                "Roofs, water and other horizontal non-terrain surfaces may remain.",
-                "This artifact is a geometry diagnostic and cannot be promoted to Unreal Landscape.",
+                "Semantic contract success does not prove segmentation model accuracy.",
+                "Generated cells remain inferred rather than observed.",
+                "Promotion requires source-view review and downstream import validation.",
             ],
             "errors": [],
         }
@@ -120,16 +127,39 @@ def main() -> int:
         return 2
 
 
+def _load_semantic_masks(args: argparse.Namespace, expected_shape: tuple[int, int]) -> SemanticMaskSet | None:
+    if bool(args.semantic_arrays) != bool(args.semantic_probabilities):
+        raise ValueError("--semantic-arrays and --semantic-probabilities must be supplied together")
+    if not args.semantic_arrays:
+        return None
+
+    arrays_root = Path(args.semantic_arrays).resolve()
+    probabilities_root = Path(args.semantic_probabilities).resolve()
+    probabilities = {
+        name: np.load(probabilities_root / f"{name}.npy", allow_pickle=False).astype(np.float32)
+        for name in SEMANTIC_CLASSES
+    }
+    result = SemanticMaskSet(
+        probabilities=probabilities,
+        terrain_candidate=np.load(arrays_root / "terrain-candidate.npy", allow_pickle=False).astype(bool),
+        unresolved=np.load(arrays_root / "unresolved.npy", allow_pickle=False).astype(bool),
+        confidence=np.load(arrays_root / "semantic-confidence.npy", allow_pickle=False).astype(np.float32),
+        class_index=np.load(arrays_root / "semantic-class-index.npy", allow_pickle=False).astype(np.uint8),
+        terrain_threshold=0.60,
+        exclusion_threshold=0.35,
+        minimum_margin=0.15,
+    )
+    result.validate()
+    if result.terrain_candidate.shape != expected_shape:
+        raise ValueError("semantic package shape does not match MoGe geometry maps")
+    return result
+
+
 def _save(path: Path, value: np.ndarray, dtype) -> None:
     np.save(path, np.asarray(value, dtype=dtype), allow_pickle=False)
 
 
-def _scalar_preview(
-    values: np.ndarray,
-    *,
-    low: float | None = None,
-    high: float | None = None,
-) -> np.ndarray:
+def _scalar_preview(values: np.ndarray, *, low: float | None = None, high: float | None = None) -> np.ndarray:
     array = np.asarray(values, dtype=np.float64)
     finite = np.isfinite(array)
     if not finite.any():
