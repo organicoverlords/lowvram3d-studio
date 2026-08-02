@@ -1,8 +1,8 @@
 """Minimal, generic GLB read/write for the pipeline workers.
 
-Reads POSITION, TEXCOORD_0 and indices from the first primitive, and synthesises NORMAL when the
-file does not carry one - several generators emit position-and-index-only meshes, and assuming the
-attribute exists made the shared readers work on exactly one asset.
+Reads POSITION, TEXCOORD_0 and indices from every primitive in the first mesh, and synthesises
+NORMAL when the file does not carry one. Material-split GLBs are common after texture export;
+reading only primitive zero silently dropped the neutral/rear geometry from texture completion.
 
 Deliberately not trimesh: trimesh exposes ColorVisuals for a mesh with vertex colours and no
 material and silently drops TEXCOORD_0, which is how a UV-bearing atlas mesh came back with no UVs.
@@ -94,13 +94,33 @@ def read_glb(path: Path):
             raw = np.lib.stride_tricks.as_strided(raw, (count, item), (stride, 1)).copy()
         return raw.reshape(-1).view(COMPONENT_DTYPE[acc["componentType"]]).reshape(count, width)
 
-    primitive = meta["meshes"][0]["primitives"][0]
-    attributes = primitive["attributes"]
-    positions = accessor(attributes["POSITION"]).astype(np.float32)
-    tris = accessor(primitive["indices"]).reshape(-1, 3).astype(np.int64)
-    normals = (accessor(attributes["NORMAL"]).astype(np.float32)
-               if "NORMAL" in attributes else vertex_normals(positions, tris))
-    uv = accessor(attributes["TEXCOORD_0"]).astype(np.float32) if "TEXCOORD_0" in attributes else None
+    position_parts, normal_parts, uv_parts, index_parts = [], [], [], []
+    has_normals = True
+    has_uvs = True
+    vertex_offset = 0
+    for mesh in meta["meshes"]:
+        for primitive in mesh["primitives"]:
+            attributes = primitive["attributes"]
+            positions_part = accessor(attributes["POSITION"]).astype(np.float32)
+            position_parts.append(positions_part)
+            indices_part = accessor(primitive["indices"]).reshape(-1, 3).astype(np.int64)
+            index_parts.append(indices_part + vertex_offset)
+            if "NORMAL" in attributes:
+                normal_parts.append(accessor(attributes["NORMAL"]).astype(np.float32))
+            else:
+                has_normals = False
+            if "TEXCOORD_0" in attributes:
+                uv_parts.append(accessor(attributes["TEXCOORD_0"]).astype(np.float32))
+            else:
+                has_uvs = False
+            vertex_offset += len(positions_part)
+    if not position_parts:
+        raise RuntimeError("GLB contains no mesh primitives")
+    positions = np.concatenate(position_parts, axis=0)
+    tris = np.concatenate(index_parts, axis=0)
+    normals = (np.concatenate(normal_parts, axis=0)
+               if has_normals else vertex_normals(positions, tris))
+    uv = np.concatenate(uv_parts, axis=0) if has_uvs else None
     return positions, normals, uv, tris
 
 
