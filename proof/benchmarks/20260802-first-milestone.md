@@ -32,9 +32,9 @@ targeted cleanup of the proven detached rod/blob artifact. No new GPU generation
 - Texture evidence: `85.2%` observed semantic coverage, `14.8%` explicitly synthesized local fill for unseen/rear regions, `0` residual island holes; front render preserves face, fur/suit, rifle, and tail colours.
 - Generation policy: normalized conditioning; steps 1 failed with the allowed empty-reduction code; one steps 2 retry succeeded; octree 256, chunks 1500, seed 12345 unchanged.
 
-## frog_salvage_diver — PROVEN_WITH_LIMITATIONS
+## frog_salvage_diver — REJECTED
 
-The earlier frog textured artifact is not the accepted result. The bounded fresh run below uses
+Neither frog textured artifact is an accepted result. The bounded fresh run below uses
 the current Mini Turbo route, generic relative/source/screen component evidence, the repaired
 raster route, and a source-projection view built from the proven transparent matte rather than the
 raw white-background image.
@@ -53,7 +53,7 @@ raw white-background image.
 - Generation policy: normalized conditioning; steps 1 failed with `EXPECTED_REDUCTION_DIM_NON_ZERO`; exactly one steps 2 retry succeeded; octree 256, chunks 1500, seed 12345 unchanged; no fallback generator, rigging, or animation.
 - Geometry evidence: generic audit applied only confirmed debris removals (`5780` faces, `0.9159%`) and preserved unresolved components; topology remained `boundary_edges 28 -> 28`, `non_manifold_edges 39 -> 39`; `manual_review_required=true`.
 - Texture evidence: `76.85%` observed semantic coverage, `23.15%` constrained synthesized fill, `100%` final filled UVs, and `0` residual island holes; fresh Blender import/material/texture/render checks all passed.
-- Visual limitation: source identity is recognizable, but attached generated surface noise and several small floating dark components remain visible in three-quarter/side views. Therefore `DETACHED_ARTIFACT_CLEANUP=NOT_PROVEN_COMPLETE` and this is not a clean production-quality geometry result.
+- Visual rejection: attached generated surface noise and several small floating dark components remain visible in front, three-quarter, and side views. Therefore `BASIC_TEXTURED_BASELINE=REJECTED_VISUAL_ARTIFACTS`, `DETACHED_ARTIFACT_CLEANUP=NOT_PROVEN_COMPLETE`, and the passing structural/material gates do not approve this asset.
 
 The validation reports independently confirm non-empty geometry, UVs, material presence, packed
 readable non-constant base-colour textures linked to Principled Base Color, and rendered previews.
