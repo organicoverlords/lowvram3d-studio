@@ -7,6 +7,7 @@ static-baseline stage order, and adds a fresh-process export QA boundary.
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 from pipeline_v2_production_stages import register_production_stages
@@ -100,7 +101,12 @@ def _seed_existing_receipt(pipeline: Pipeline, stage: str, key: str,
     """Seed only a verified existing geometry boundary; no worker is rerun."""
     if not source.is_file() or source.stat().st_size == 0:
         raise ValueError(f"EXISTING_MASTER_INVALID: {source}")
-    outputs = pipeline.promote(stage, {key: source})
+    proven = pipeline.stage_dir(stage) / "proven"
+    destination = proven / f"{key}{source.suffix}"
+    if source.resolve() != destination.resolve():
+        shutil.copy2(source, destination)
+    outputs = {key: {"path": str(destination), "sha256": sha256(destination),
+                     "bytes": destination.stat().st_size}}
     pipeline.write_receipt(stage, {
         "stage": stage,
         "status": "passed",
