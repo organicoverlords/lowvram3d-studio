@@ -57,6 +57,9 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     profile = pipeline.profile
     asset_id = manifest["asset_id"]
     resolution = int(manifest["texture"]["resolution"])
+    uv_resolution = int((manifest.get("uv") or {}).get("resolution", 1024))
+    uv_padding = int((manifest.get("uv") or {}).get("padding", 4))
+    uv_timeout = float((manifest.get("uv") or {}).get("candidate_timeout_seconds", 600))
     suffix = "4k" if resolution >= 4096 else "2k"
 
     def w(name: str) -> Path:
@@ -73,21 +76,23 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             stage = pipeline.stage_dir("LOD") / "candidate"
             outdir = stage / "lods"
             report = stage / "lod_report.json"
-            targets = ",".join(str(v) for v in profile.lod_triangle_targets)
+            targets_list = [int(v) for v in (manifest.get("lod_policy") or profile.lod_triangle_targets)]
+            targets = ",".join(str(v) for v in targets_list)
             code, out = _blender(
                 pipeline, b("final_pipeline_lods.py"),
                 "--input", clean, "--output-dir", outdir, "--report", report,
                 "--targets", targets,
+                "--prefix", asset_id,
             )
             data = _json(report)
             if code != 0 or not data.get("lods"):
                 return StageResult("failed", detail=f"LOD worker exit {code}: {out[-1200:]}")
 
             outputs = {"lod_report": report}
-            gates = {"targets": list(profile.lod_triangle_targets), "lods": []}
+            gates = {"targets": targets_list, "lods": []}
             failures = []
-            for index, target in enumerate(profile.lod_triangle_targets):
-                source = outdir / f"shaman_lod{index}.glb"
+            for index, target in enumerate(targets_list):
+                source = outdir / f"{asset_id}_lod{index}.glb"
                 if not source.exists():
                     failures.append(f"LOD{index} missing")
                     continue
@@ -96,10 +101,20 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 outputs[f"lod{index}"] = destination
                 row = next((r for r in data["lods"] if int(r.get("lod", -1)) == index), {})
                 achieved = int(row.get("achieved_triangles", 0))
+                source_topology = row.get("source_welded_topology") or {}
+                candidate_topology = row.get("candidate_welded_topology") or {}
                 gates["lods"].append({"lod": index, "target": target, "triangles": achieved,
-                                      "sha256": sha256(destination)})
+                                      "sha256": sha256(destination),
+                                      "source_welded_topology": source_topology,
+                                      "candidate_welded_topology": candidate_topology})
                 if achieved <= 0 or achieved > max(target * 1.20, target + 5000):
                     failures.append(f"LOD{index} achieved {achieved}, target {target}")
+                for metric in ("boundary_edges", "non_manifold_edges"):
+                    if int(candidate_topology.get(metric, 0)) > int(source_topology.get(metric, 0)):
+                        failures.append(
+                            f"LOD{index} {metric} regressed "
+                            f"{source_topology.get(metric)}->{candidate_topology.get(metric)}"
+                        )
             if failures:
                 return StageResult("failed", gates=gates, detail="; ".join(failures))
             return StageResult("passed", outputs=outputs, gates=gates)
@@ -114,22 +129,25 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             stage = pipeline.stage_dir("UV") / "candidate"
             output = stage / f"{asset_id}_lod0_uv.glb"
             report = stage / "uv_report.json"
-            padding = 12 if overrides.get("route") == "xatlas" else 8
             code, out = pipeline.run([
-                pipeline.python, w("uv_xatlas_repair.py"),
+                pipeline.python, w("uv_xatlas_isolated.py"),
                 "--input", lod0, "--output", output, "--report", report,
-                "--resolution", str(resolution), "--padding", str(padding),
-                "--overlap-timeout", "1200", "--max-candidate-pairs", "10000000",
-                "--max-overlap-texels", "1.0",
+                "--resolution", str(uv_resolution), "--padding", str(uv_padding),
+                "--timeout", str(uv_timeout),
             ])
             data = _json(report)
-            exact = data.get("exact_overlap") or {}
+            selected = data.get("selected")
+            selected_row = next((row for row in data.get("presets", []) if row.get("preset") == selected), {})
+            child = _json(Path(selected_row["report"])) if selected_row.get("report") else {}
+            metrics = child.get("metrics") or {}
+            exact = child.get("exact_overlap") or {}
             gates = {
-                "gate_passed": bool(data.get("gate_passed")),
-                "chart_count": data.get("chart_count"),
+                "gate_passed": data.get("status") == "passed",
+                "selected_preset": selected,
+                "chart_count": metrics.get("chart_count"),
                 "profile_chart_limit": profile.uv_max_charts,
-                "atlas_utilization": data.get("atlas_utilization"),
-                "stretch_p95": data.get("stretch_p95"),
+                "atlas_utilization": metrics.get("atlas_utilization"),
+                "stretch_p95": metrics.get("stretch_p95"),
                 "candidate_pair_count": exact.get("candidate_pair_count"),
                 "tested_pair_count": exact.get("tested_pair_count"),
                 "timed_out": exact.get("timed_out"),
@@ -145,9 +163,9 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 codes.append("UV_DEGENERATE")
             if float(exact.get("positive_overlap_total_texels_equivalent") or 0.0) > 1.0:
                 codes.append("UV_OVERLAP")
-            if int(data.get("chart_count") or 0) > int(profile.uv_max_charts):
+            if int(metrics.get("chart_count") or 0) > int(profile.uv_max_charts):
                 codes.append("UV_CHART_BUDGET")
-            if code != 0 or not output.exists() or not data.get("gate_passed") or codes:
+            if code != 0 or not output.exists() or data.get("status") != "passed" or codes:
                 return StageResult("failed", gates=gates, failure_codes=sorted(set(codes)),
                                    detail=f"UV worker exit {code}: {out[-1000:]}")
             return StageResult("passed", outputs={"uv_mesh": output, "uv_report": report}, gates=gates)

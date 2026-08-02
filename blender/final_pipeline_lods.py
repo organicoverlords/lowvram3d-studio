@@ -13,13 +13,14 @@ the triangles and almost none of the silhouette, are weighted down.
 from __future__ import annotations
 
 import argparse
+import bmesh
 import json
 from pathlib import Path
 
 import bpy
 from mathutils import Vector
 
-from common import argv_after_double_dash, import_mesh, reset_scene, save_json
+from common import argv_after_double_dash, import_mesh, reset_scene, save_json, welded_topology_stats
 
 PROTECT_GROUP = "lod_protect"
 
@@ -97,6 +98,8 @@ def main() -> None:
     parser.add_argument("--targets", default="220000,90000,40000,15000")
     parser.add_argument("--bulk-weight", type=float, default=0.25)
     parser.add_argument("--merge-distance", type=float, default=1e-4)
+    parser.add_argument("--prefix", default="shaman",
+                        help="output filename prefix; does not affect geometry")
     args = parser.parse_args(argv_after_double_dash())
 
     targets = [int(v) for v in args.targets.split(",")]
@@ -116,27 +119,38 @@ def main() -> None:
                 obj.select_set(True)
             bpy.context.view_layer.objects.active = objects[0]
             bpy.ops.object.join()
-        obj = bpy.context.view_layer.objects.active or objects[0]
+            obj = next((candidate for candidate in bpy.context.scene.objects
+                        if candidate.type == "MESH" and candidate.data is not None), None)
+        else:
+            # The imported GLB may leave a non-mesh camera active; use the mesh list explicitly.
+            obj = objects[0]
+        if obj is None or obj.data is None:
+            raise RuntimeError("LOD_NO_MESH_DATA_AFTER_IMPORT")
 
         # glTF stores per-corner vertices, so a re-imported mesh has every triangle as its own
         # island. Collapsing that shreds the surface - it cannot merge across the seams - and
         # yields tens of thousands of components. Weld first so the decimator sees real topology.
-        bpy.ops.object.select_all(action="DESELECT")
-        obj.select_set(True)
-        bpy.context.view_layer.objects.active = obj
-        bpy.ops.object.mode_set(mode="EDIT")
-        bpy.ops.mesh.select_all(action="SELECT")
-        bpy.ops.mesh.remove_doubles(threshold=args.merge_distance)
-        bpy.ops.object.mode_set(mode="OBJECT")
+        # Background Blender may not expose an EDIT-mode context after glTF import.  Weld through
+        # bmesh instead so the decimator always receives shared topology without relying on UI
+        # context or silently skipping the operation.
+        mesh = obj.data
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=args.merge_distance)
+        bm.to_mesh(mesh)
+        bm.free()
+        mesh.update()
         welded_vertices = len(obj.data.vertices)
+        source_topology = welded_topology_stats([obj])
 
         protection = build_protection(obj, args.bulk_weight)
         decimation = decimate_to(obj, target, use_group=True)
 
-        path = output_dir / f"shaman_lod{index}.glb"
+        path = output_dir / f"{args.prefix}_lod{index}.glb"
         export(obj, str(path))
 
         achieved = len(obj.data.polygons)
+        candidate_topology = welded_topology_stats([obj])
         lo, hi = world_bounds_of(obj)
         results.append(
             {
@@ -151,6 +165,8 @@ def main() -> None:
                 "bounds_max": [hi.x, hi.y, hi.z],
                 "extent": [hi.x - lo.x, hi.y - lo.y, hi.z - lo.z],
                 "protection": protection,
+                "source_welded_topology": source_topology,
+                "candidate_welded_topology": candidate_topology,
                 **decimation,
             }
         )

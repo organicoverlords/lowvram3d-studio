@@ -4,6 +4,7 @@ import pytest
 
 from run_asset_pipeline import Pipeline, StageResult
 from unified_pipeline_v2 import CANONICAL_STAGES, normalize_manifest
+from uv_xatlas_isolated import PRESET_ORDER, choose_next
 
 
 def manifest(tmp_path):
@@ -62,3 +63,16 @@ def test_resume_skips_unchanged_stage_and_invalidates_changed_input(tmp_path):
     source.write_bytes(b"two")
     pipeline.execute("FIXTURE", [source], runner)
     assert len(calls) == 2
+
+
+def test_xatlas_policy_is_isolated_and_stops_at_first_valid_preset():
+    assert PRESET_ORDER == ("A", "B", "C")
+    assert choose_next([]) == "A"
+    assert choose_next(["A"]) == "B"
+    assert choose_next(["A", "B"]) == "C"
+    assert choose_next(["A", "B", "C"]) is None
+
+
+def test_normalized_manifest_defaults_to_bounded_uv_contract(tmp_path):
+    result = normalize_manifest(manifest(tmp_path))
+    assert result["uv"] == {"resolution": 1024, "padding": 4, "candidate_timeout_seconds": 600}

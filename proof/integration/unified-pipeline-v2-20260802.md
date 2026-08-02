@@ -33,6 +33,36 @@ adopted for export QA only.
 - Test C resume/hash invalidation is covered by
   `tests/test_unified_pipeline_v2.py`: unchanged input skips, changed input
   reruns only the dependent fixture stage.
+- CPU-only focused tests after the bounded LOD/xatlas hardening: `12 passed`.
+- `blender/final_pipeline_lods.py` now accepts an asset prefix, uses a direct
+  bmesh weld in background mode, records welded topology before/after
+  decimation, and the production adapter rejects boundary or non-manifold
+  regressions.
+- `workers/uv_xatlas_isolated.py` runs preset A/B/C in separate child
+  processes, with a 600-second default timeout, heartbeat reports, raw
+  candidate checkpoints, array hashes, and promotion only after exact UV
+  gates. The parent stops at the first valid preset.
+
+## First real preserved-panda LOD attempt
+
+Input was the immutable sanitized 5-step panda:
+
+`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\panda_4_5_degenerate_boundary\5step_sanitized.glb`
+
+The 220k candidate was written at:
+
+`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\texture_v2_unified\lod_candidate\tactical_red_panda_scout_lod0.glb`
+
+The independent fresh-import report and neutral four-view renders are in:
+
+`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\texture_v2_unified\lod_candidate\fresh_import_geometry_validation.json`
+
+The 220k candidate achieved 219,866 triangles and passed finite-bounds,
+round-trip, and four-view structural checks. It did not pass the topology gate:
+the source had 0 boundary edges and 18 non-manifold edges; the candidate had
+406 boundary edges and 6 non-manifold edges. A separate 250k candidate also
+failed the same gate with 397 boundary edges and 6 non-manifold edges. Neither
+candidate entered UV or texturing.
 
 Panda export-QA summary:
 
@@ -56,8 +86,12 @@ Shaman reuse receipt:
 - `PANDA_REAR_FACE_ABSENT=PROVEN` (existing fixed artifact and prior rear render)
 - `SHAMAN_EXISTING_GEOMETRY_REUSED=PROVEN`
 - `FRESH_IMPORT_EXPORT_QA=PROVEN`
-- `WHOLE_OLD_BRANCH_MERGE=REJECTED_NOT_PERFORMED`
-- `UV_ATLAS_V2=NOT_PROVEN` (the long-running 1024 xatlas attempt was explicitly cancelled)
+- `WHOLE_OLD_BRANCH_MERGE=REJECTED`
+- `LOD_220K_STRUCTURAL_IMPORT=PROVEN`
+- `LOD_TOPOLOGY_GATE=REJECTED`
+- `LOD_BASELINE=NOT_PROVEN`
+- `UV_ATLAS_V2=NOT_PROVEN` (blocked by the LOD topology gate; no real xatlas
+  process was started in this proof)
 - `FULL_AROUND_TEXTURE_BASELINE=NOT_PROVEN`
 
 No new dropped-image GPU run was started. The production branch remained

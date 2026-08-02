@@ -61,6 +61,11 @@ def normalize_manifest(manifest: dict, *, stage_from: str = "INGEST",
     result["lod_policy"] = result.get("lod_policy") or result.get("geometry", {}).get(
         "lod_triangle_targets", []
     )
+    result["uv"] = result.get("uv") or {
+        "resolution": 1024,
+        "padding": 4,
+        "candidate_timeout_seconds": 600,
+    }
     result["intent"] = {
         "static": True,
         "rigged": False,
