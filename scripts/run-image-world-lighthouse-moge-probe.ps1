@@ -1,22 +1,23 @@
 <#
 .SYNOPSIS
-    Run the canonical lighthouse image through the isolated MoGe-2 Small Normal probe.
+    Run the lighthouse image through the isolated MoGe-2 Small Normal probe.
 
 .DESCRIPTION
-    Creates a persistent dedicated Python environment without modifying ComfyUI or the
-    production control environment. The lighthouse source is resolved by exact SHA-256
-    across normal user and benchmark folders, so moving or renaming the image does not
-    break the run. Raw maps and compact previews are retained for proof.
+    Uses the exact original file when it is present and hash-matches. Otherwise it decodes
+    a repository-contained 512px JPEG derivative whose own hash and canonical parent hash
+    are recorded explicitly. This keeps the self-hosted GitHub worker independent of the
+    user's Downloads layout without pretending the derivative is the original source.
 #>
 [CmdletBinding()]
 param(
     [string]$ImagePath = "$env:USERPROFILE\Downloads\ChatGPT Image 30.7.2026 klo 00.40.32.png",
-    [string]$ExpectedSha256 = "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+    [string]$CanonicalParentSha256 = "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+    [string]$FixtureSha256 = "058302a0bbb39071d05bef63514dbb0e7b0250a9af6ec1055cbb50f39411b8ed",
     [string]$BasePython = "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
     [string]$EnvironmentRoot = "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\image-world-moge",
     [string]$OutputRoot = "$env:RUNNER_TEMP\image-world-lighthouse-moge",
     [int]$NumTokens = 1200,
-    [int]$InputLongEdge = 768,
+    [int]$InputLongEdge = 512,
     [int]$MaxGpuMemoryMb = 5600,
     [bool]$AllowDownload = $true
 )
@@ -30,10 +31,11 @@ $Python = Join-Path $EnvironmentRoot "Scripts\python.exe"
 $Marker = Join-Path $EnvironmentRoot "image-world-moge-environment.json"
 $EnvironmentContract = "moge2-vits-normal-torch2.8.0-cu128-b942f00-v1"
 $SetupReport = Join-Path $OutputRoot "setup-report.json"
+$FixtureBase64 = Join-Path $RepoRoot "benchmarks\image_world\fixtures\lighthouse_probe_512_q80.jpg.b64"
 $RequestedImagePath = $ImagePath
 $ResolvedImagePath = $null
-$SourceSearchRoots = @()
-$SourceCandidatesChecked = 0
+$ResolvedExpectedSha256 = $null
+$SourceKind = $null
 
 function Assert-File([string]$Path, [string]$Label) {
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
@@ -44,92 +46,40 @@ function Assert-File([string]$Path, [string]$Label) {
     }
 }
 
-function Test-ExpectedSourceHash([string]$Path) {
-    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
-    if ((Get-Item -LiteralPath $Path).Length -le 0) { return $false }
-    $script:SourceCandidatesChecked += 1
-    try {
-        $hash = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($hash -eq $ExpectedSha256.ToLowerInvariant()) {
-            $script:ResolvedImagePath = (Resolve-Path -LiteralPath $Path).Path
-            return $true
-        }
-    } catch {
-        Write-Warning "Could not hash candidate '$Path': $($_.Exception.Message)"
-    }
-    return $false
+function Get-Sha256([string]$Path) {
+    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
-function Resolve-LighthouseSource([string]$RequestedPath) {
-    if (Test-ExpectedSourceHash $RequestedPath) {
-        return $script:ResolvedImagePath
-    }
-
-    $roots = @(
-        (Split-Path -Parent $RequestedPath),
-        (Join-Path $env:USERPROFILE "Downloads"),
-        (Join-Path $env:USERPROFILE "Desktop"),
-        (Join-Path $env:USERPROFILE "Pictures"),
-        (Join-Path $env:USERPROFILE "Documents"),
-        (Join-Path $env:USERPROFILE "OneDrive\Downloads"),
-        (Join-Path $env:USERPROFILE "OneDrive\Desktop"),
-        (Join-Path $env:USERPROFILE "OneDrive\Pictures"),
-        "C:\AI\LowVRAM3D-benchmarks",
-        "C:\AI\LowVRAM3D-benchmarks\inputs",
-        "C:\AI\LowVRAM3D-benchmarks\sources"
-    ) | Where-Object {
-        $_ -and (Test-Path -LiteralPath $_ -PathType Container)
-    } | Select-Object -Unique
-    $script:SourceSearchRoots = @($roots)
-
-    $seen = [System.Collections.Generic.HashSet[string]]::new(
-        [System.StringComparer]::OrdinalIgnoreCase
-    )
-    $candidates = [System.Collections.Generic.List[string]]::new()
-    function Add-Candidate([string]$CandidatePath) {
-        if ($CandidatePath -and $seen.Add($CandidatePath)) {
-            $candidates.Add($CandidatePath)
+function Resolve-LighthouseSource {
+    if (Test-Path -LiteralPath $RequestedImagePath -PathType Leaf) {
+        $requestedHash = Get-Sha256 $RequestedImagePath
+        if ($requestedHash -eq $CanonicalParentSha256.ToLowerInvariant()) {
+            $script:ResolvedImagePath = (Resolve-Path -LiteralPath $RequestedImagePath).Path
+            $script:ResolvedExpectedSha256 = $CanonicalParentSha256.ToLowerInvariant()
+            $script:SourceKind = "canonical_original"
+            return
         }
+        Write-Warning "Requested lighthouse path exists but does not match the canonical parent hash; using repository probe fixture."
     }
 
-    $requestedName = [IO.Path]::GetFileName($RequestedPath)
-    foreach ($root in $roots) {
-        foreach ($file in Get-ChildItem -LiteralPath $root -File -Recurse -Filter $requestedName -ErrorAction SilentlyContinue) {
-            Add-Candidate $file.FullName
-        }
+    Assert-File $FixtureBase64 "repository lighthouse fixture"
+    $fixtureDirectory = Join-Path $OutputRoot "input"
+    New-Item -ItemType Directory -Path $fixtureDirectory -Force | Out-Null
+    $fixturePath = Join-Path $fixtureDirectory "lighthouse_probe_512_q80.jpg"
+    $base64 = (Get-Content -LiteralPath $FixtureBase64 -Raw).Trim()
+    try {
+        [IO.File]::WriteAllBytes($fixturePath, [Convert]::FromBase64String($base64))
+    } catch {
+        throw "Could not decode repository lighthouse fixture: $($_.Exception.Message)"
     }
-    foreach ($root in $roots) {
-        foreach ($pattern in @("*00.40.32*.png", "*lighthouse*.png", "*majakka*.png")) {
-            foreach ($file in Get-ChildItem -Path (Join-Path $root $pattern) -File -Recurse -ErrorAction SilentlyContinue) {
-                Add-Candidate $file.FullName
-            }
-        }
+    Assert-File $fixturePath "decoded lighthouse fixture"
+    $fixtureHash = Get-Sha256 $fixturePath
+    if ($fixtureHash -ne $FixtureSha256.ToLowerInvariant()) {
+        throw "Decoded fixture SHA-256 mismatch. Expected $FixtureSha256, got $fixtureHash"
     }
-
-    # If the name changed, scan image files only in ordinary user folders. Benchmark
-    # roots can be very large, so they remain limited to the targeted name search above.
-    $broadRoots = @($roots | Where-Object {
-        $_ -notlike "C:\AI\LowVRAM3D-benchmarks*"
-    })
-    foreach ($root in $broadRoots) {
-        foreach ($file in Get-ChildItem -LiteralPath $root -File -Recurse -ErrorAction SilentlyContinue) {
-            if ($file.Extension.ToLowerInvariant() -in @(".png", ".jpg", ".jpeg", ".webp")) {
-                Add-Candidate $file.FullName
-            }
-        }
-    }
-
-    Write-Host "LIGHTHOUSE_SOURCE_CANDIDATES=$($candidates.Count)"
-    foreach ($candidate in $candidates) {
-        if (Test-ExpectedSourceHash $candidate) {
-            return $script:ResolvedImagePath
-        }
-    }
-
-    throw (
-        "Canonical lighthouse image was not found by SHA-256. " +
-        "Checked $SourceCandidatesChecked image candidates under: $($roots -join '; ')"
-    )
+    $script:ResolvedImagePath = $fixturePath
+    $script:ResolvedExpectedSha256 = $FixtureSha256.ToLowerInvariant()
+    $script:SourceKind = "repository_downscaled_derivative_512_q80"
 }
 
 function Write-SetupReport([string]$Status, [string[]]$Errors = @()) {
@@ -142,9 +92,11 @@ function Write-SetupReport([string]$Status, [string[]]$Errors = @()) {
         environment_root = $EnvironmentRoot
         source_requested = $RequestedImagePath
         source_resolved = $ResolvedImagePath
-        source_search_roots = $SourceSearchRoots
-        source_candidates_checked = $SourceCandidatesChecked
-        source_sha256_expected = $ExpectedSha256
+        source_kind = $SourceKind
+        source_sha256_expected = $ResolvedExpectedSha256
+        canonical_parent_sha256 = $CanonicalParentSha256.ToLowerInvariant()
+        fixture_sha256 = $FixtureSha256.ToLowerInvariant()
+        fixture_is_lossy_derivative = ($SourceKind -eq "repository_downscaled_derivative_512_q80")
         num_tokens = $NumTokens
         input_long_edge = $InputLongEdge
         max_gpu_memory_mb = $MaxGpuMemoryMb
@@ -160,12 +112,14 @@ try {
     }
     New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
 
-    $ImagePath = Resolve-LighthouseSource $RequestedImagePath
-    Assert-File $ImagePath "canonical lighthouse source"
-    $ActualHash = (Get-FileHash -LiteralPath $ImagePath -Algorithm SHA256).Hash.ToLowerInvariant()
-    if ($ActualHash -ne $ExpectedSha256.ToLowerInvariant()) {
-        throw "Resolved lighthouse source SHA-256 mismatch. Expected $ExpectedSha256, got $ActualHash"
+    Resolve-LighthouseSource
+    $ImagePath = $ResolvedImagePath
+    Assert-File $ImagePath "resolved lighthouse probe source"
+    $ActualHash = Get-Sha256 $ImagePath
+    if ($ActualHash -ne $ResolvedExpectedSha256) {
+        throw "Resolved source SHA-256 mismatch. Expected $ResolvedExpectedSha256, got $ActualHash"
     }
+    Write-Host "LIGHTHOUSE_SOURCE_KIND=$SourceKind"
     Write-Host "LIGHTHOUSE_SOURCE_RESOLVED=$ImagePath"
     Assert-File $BasePython "LowVRAM3D control Python"
 
@@ -246,8 +200,8 @@ try {
     if ($Report.status -ne "PASS") {
         throw "MoGe report status is $($Report.status)"
     }
-    if ($Report.source_sha256 -ne $ExpectedSha256.ToLowerInvariant()) {
-        throw "MoGe report source hash does not match the canonical lighthouse"
+    if ($Report.source_sha256 -ne $ResolvedExpectedSha256) {
+        throw "MoGe report source hash does not match the resolved probe source"
     }
     foreach ($Required in @(
         "geometry\points.npy",
@@ -263,6 +217,7 @@ try {
         Assert-File (Join-Path $OutputRoot $Required) $Required
     }
     Write-Host "IMAGE_WORLD_LIGHTHOUSE_MOGE_PROBE_PASS"
+    Write-Host "SOURCE_KIND: $SourceKind"
     Write-Host "SOURCE: $ImagePath"
     Write-Host "OUTPUT: $OutputRoot"
     Write-Host "PEAK_RESERVED_MB: $($Report.peak_gpu_reserved_mb)"
