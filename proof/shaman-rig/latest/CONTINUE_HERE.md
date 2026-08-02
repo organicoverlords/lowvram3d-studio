@@ -107,7 +107,7 @@ region moves with the wrong bone" — after burning a full skinning pass on
 ## Textured review target (current)
 
 Authoritative animation source stays `C:\AI\LowVRAM3D-benchmarks\shaman-rig-animation\run-20260802-123123\motion\shaman_animated.blend`.
-Textured review target: `C:\AI\LowVRAM3D-benchmarks\shaman-rig-animation\run-20260802-123123	extured_rig\shaman_textured_rigged.blend`.
+Textured review target: `C:\AI\LowVRAM3D-benchmarks\shaman-rig-animation\run-20260802-123123\textured_rig\shaman_textured_rigged.blend`.
 Review bundle: `C:\AI\LowVRAM3D-benchmarks\shaman-rig-animation\run-20260802-123123\shaman_textured_motion_review.zip`.
 
 Rebuild the textured target with:
