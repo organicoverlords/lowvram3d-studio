@@ -16,7 +16,7 @@ def subject_image(*, mirrored=False, gray=False):
     image[18:82, 24:72, :3] = (110, 70, 30) if not gray else (120, 120, 120)
     image[26:38, 32:42, :3] = (230, 230, 230)
     image[26:38, 54:64, :3] = (20, 20, 20)
-    image[52:72, 42:58, :3] = (40, 120, 210)
+    image[52:72, 42:58, :3] = (120, 120, 120) if gray else (40, 120, 210)
     return image[:, ::-1].copy() if mirrored else image
 
 
