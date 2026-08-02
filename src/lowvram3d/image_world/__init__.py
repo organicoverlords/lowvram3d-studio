@@ -12,6 +12,7 @@ from .contracts import (
 )
 from .hydrology import d8_flow_direction, flow_accumulation, priority_flood_fill, stream_mask
 from .profiles import QUALITY_PROFILES, HardwareProfile, QualityProfile, gtx1660_super_6gb
+from .semantic_masks import SEMANTIC_CLASSES, SemanticMaskSet, build_semantic_mask_set, mask_report
 from .stage_graph import PipelinePlan, StageSpec, build_plan
 from .surface_projection import SurfaceProjectionResult, project_moge_surface, robust_xy_bounds
 from .terrain import (
@@ -42,11 +43,14 @@ __all__ = [
     "QUALITY_PROFILES",
     "QualityProfile",
     "RouteDecision",
+    "SEMANTIC_CLASSES",
+    "SemanticMaskSet",
     "SourceImageIdentity",
     "StageSpec",
     "SurfaceProjectionResult",
     "WorldFrameEstimate",
     "build_plan",
+    "build_semantic_mask_set",
     "camera_to_world_rotation",
     "classify_input",
     "complete_heightfield",
@@ -54,6 +58,7 @@ __all__ = [
     "estimate_world_up_from_normals",
     "flow_accumulation",
     "gtx1660_super_6gb",
+    "mask_report",
     "priority_flood_fill",
     "project_moge_surface",
     "rasterize_point_map",
