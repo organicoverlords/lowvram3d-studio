@@ -2,204 +2,269 @@
 
 Work only on branch `integration/unified-pipeline-v2-20260802`.
 
-Before editing, verify repository origin, branch, local HEAD, remote HEAD, and a clean worktree. Never work on `main`, merge, or force-push.
+Before editing, verify repository origin, branch, local HEAD, remote HEAD, and a clean worktree. Never work on `main`, merge, force-push, or overwrite preserved artifacts.
 
-## Immediate authoritative milestone
+## Immediate task: hybrid 6 GB GPU texture repair
 
-Stop using the panda as an open-ended research specimen.
+The current chart-separated panda proves the face-on-back defect can be removed, but its texture is still pale and fragmented. Stop CPU-only color boosting. Use the GTX 1660 SUPER for the image-generation work while retaining CPU geometry/UV/projection correctness.
 
-Deliver **finished, usable, static textured GLB models** from the six canonical benchmark images. Pipeline improvements are valuable only when they move an asset to an accepted deliverable.
+New shared workers on this branch:
 
-The milestone is six basic textured non-animated models:
+- `workers/comfyui_gpu_texture_job.py`
+- `workers/gpu_texture_repair_sequence.py`
+- `workers/surface_albedo_completion.py` — deterministic fallback only
+- `workers/material_aware_color_recovery.py` — deterministic fallback only
+- `tests/test_comfyui_gpu_texture_job.py`
+- `tests/test_gpu_texture_repair_sequence.py`
 
-1. tactical red panda scout
-2. antlered bird shaman
-3. frog salvage diver
-4. Lucky Drown casino boat
-5. wind-bent barn and trees
-6. mossy mountain titan
+The GPU workers do not mutate geometry, UVs, atlases, or GLBs. They generate candidate 2-D texture references only. The existing CPU face-ID/depth projector remains the only route allowed to write those references into the atlas.
 
-A basic usable model is not required to be production-retopologized, rigged, animated, perfectly reconstructed on unseen surfaces, or optimized into a complete LOD chain.
+### Immutable inputs
 
-## Definition of done for each asset
+Preserve all existing 4-step, 5-step, sanitized, projection-repaired, chart-separated, and rejected postprocess artifacts.
 
-An asset is accepted when all are true:
+Use the exact chart-separated panda from the latest bounded repair as the mesh/UV input. Verify its source and output hashes from the existing receipt rather than guessing a path.
 
-- recognizable as the source subject;
-- valid fresh-importable GLB;
-- visible base-colour texture embedded or resolvable after clean import;
-- front, three-quarter, side, and rear renders exist;
-- no face or other front-only semantic feature projected onto the rear;
-- no large black holes or transparent gaps inside the subject;
-- no catastrophic floating debris halo;
-- finite bounds and non-empty geometry;
-- source, geometry, texture, and GLB SHA-256 values recorded;
-- accepted artifact copied to a stable `deliverables/<asset_id>/` location;
-- receipt states `BASIC_TEXTURED_MODEL=PROVEN`.
+Do not run:
 
-Minor synthesized rear material, imperfect seams, dense geometry, fused static accessories, and limited unseen detail are acceptable when clearly reported.
+- Mini Turbo geometry generation;
+- LOD generation;
+- xatlas;
+- general UV unwrap;
+- orientation postprocessing;
+- global saturation recovery;
+- parallel GPU jobs.
 
-## Production policy: finish assets, do not loop forever
+### Research-backed execution model
 
-Every expensive stage has a hard budget and a fallback.
+The local 6 GB texture-projection workflow studied from PixelArtistry uses generated front/side/back views, an albedo-conditioning route, 1024 output for low-VRAM operation, and retexturing of existing GLBs. Its weak points are projection defects, top/bottom gaps, custom-rasterizer failures, OOMs, and front-looking rear generations. Therefore:
 
-### Geometry
+1. use its exported ComfyUI API workflow only as a **2-D reference generator**;
+2. do not use its rasterizer, UV, mesh, or export nodes;
+3. reject a generated rear before projection when it resembles the front;
+4. project accepted pixels through our proven depth/normal/face-ID route;
+5. keep accepted source texels immutable;
+6. fill remaining unseen triangles by bounded material-local surface propagation.
 
-1. Reuse an already accepted or best preserved geometry whenever available.
-2. All new Mini Turbo output must use the post-decoder duplicate-index sanitizer.
-3. Default generation is the fastest already-proven setting.
-4. One higher-step retry is allowed only when the first geometry is visibly unusable.
-5. No repeated step-count sweep.
-6. No manual component deletion when debris is fused into the subject.
+### ComfyUI compatibility and VRAM policy
 
-### LOD
+Use the existing installed ComfyUI environment. Do not install another Trellis stack or replace the current environment.
 
-LOD is optional for this milestone.
+Prefer an already installed AeroX/PixelArtistry-style texture-projection or equivalent geometry-conditioned image workflow. Export it with `File -> Export (API)` and create a small binding JSON for `workers/comfyui_gpu_texture_job.py`.
 
-Default manifest policy:
+Required binding keys:
 
-```yaml
-lod:
-  mode: preserve_source
+- `source`
+- `width`
+- `height`
+- `seed`
+
+Bind these when the workflow exposes them:
+
+- `depth`
+- `normal`
+- `mask`
+- `prompt`
+- `negative_prompt`
+- `view` or `view_name`
+- `resolution`
+- `output_prefix`
+
+The config also lists exactly one final output node under `output_nodes`; intermediate previews must not be mistaken for the accepted image.
+
+Launch ComfyUI with the already proven Turing-compatible path:
+
+```text
+DTYPE=FP16
+BF16=DISABLED
+FLASH_ATTENTION_2=DISABLED
+ATTENTION=PYTORCH_SDPA_OR_CURRENT_PROVEN_DEFAULT
+BATCH_SIZE=1
+PARALLEL_GPU_JOBS=1
 ```
 
-A rejected or skipped LOD must not block UV, texture, export, or delivery.
+Do not use a launcher that requires Ampere-only FlashAttention. Do not keep geometry-generation models loaded during texturing.
 
-### UV
+GPU job defaults:
 
-Use this order:
+```text
+initial_resolution=512
+fallback_resolution=384
+timeout_seconds=300
+minimum_free_mb=1200
+oom_retries=1
+unload_models_after_attempt=true
+```
 
-1. preserve and validate existing UVs;
-2. bounded Blender Smart UV with a 180-second timeout;
-3. bounded planar/triplanar-to-atlas fallback where appropriate for static buildings/props;
-4. xatlas only as an explicit later quality-mode opt-in.
+`workers/comfyui_gpu_texture_job.py` already:
 
-Do not run xatlas automatically. Do not block a usable baseline on atlas utilization targets.
+- acquires an exclusive GPU lock;
+- verifies ComfyUI and free VRAM;
+- uploads source/normal/depth/mask inputs;
+- queues one API workflow;
+- interrupts and removes it on timeout;
+- retries once at lower resolution only after an OOM;
+- calls `/free` to unload models;
+- preserves attempt receipts and hashes.
 
-### Texture
+### Required condition renders
 
-Use the known safe raster route that enforces depth visibility and front-facing normals.
+From the immutable chart-separated GLB, render matched square condition images for:
+
+1. front;
+2. left side;
+3. right side;
+4. true rear.
+
+For every view save:
+
+- normal;
+- depth;
+- alpha/silhouette mask;
+- camera transform and normalized direction;
+- visible triangle IDs.
+
+Front and rear camera directions must have dot product `<= -0.999`.
+
+Do not generate side/rear views from prompt alone. The workflow must receive geometry conditions where supported.
+
+### GPU sequence
+
+Create a repo-local manifest for `workers/gpu_texture_repair_sequence.py` with these serial jobs:
+
+1. `front_albedo`
+   - source: registered original panda image;
+   - mask: registered source alpha;
+   - purpose: remove baked lighting and recover true unlit color;
+   - do not change silhouette or identity.
+
+2. `left_reference`
+   - source/reference: accepted front albedo;
+   - left normal/depth/mask;
+   - explicit prompt for the tactical red panda scout from the left side.
+
+3. `right_reference`
+   - source/reference: accepted front albedo;
+   - right normal/depth/mask;
+   - explicit right-side prompt.
+
+4. `rear_reference`
+   - source/reference: accepted front albedo;
+   - true rear normal/depth/mask;
+   - explicit true-back prompt: backpack, rear ghillie suit, rear tail; no face, eyes, muzzle, front chest, or mirrored front view.
+
+Every job runs separately. Models must be unloaded between jobs.
+
+### Pre-projection image QA
+
+`workers/gpu_texture_repair_sequence.py` must pass each required output before any atlas write:
+
+- non-empty foreground;
+- output saturation above the configured floor;
+- silhouette-mask IoU at least `0.55`;
+- one and only one final output image;
+- true rear direct and mirrored correlation with the front both below `0.82`.
+
+A rejected rear is not projected and is not repaired by color grading. Preserve it as diagnostic evidence and stop the sequence.
+
+### CPU projection and ownership
+
+After all GPU references pass:
+
+1. generate/verify depth visibility and face-ID buffers for each accepted view;
+2. project a sample only when all are true:
+   - depth-visible triangle;
+   - front-facing normal;
+   - valid foreground pixel;
+   - rendered face-ID match;
+   - confidence at or above threshold;
+3. record per-triangle winning view, confidence, visibility, face-ID status, and fallback mode;
+4. reject any rear-dominant triangle receiving front facial provenance;
+5. never mirror, wrap, or copy front facial content to an unseen triangle;
+6. preserve observed source texels exactly after projection.
+
+The existing targeted chart separation remains authoritative. Do not change UV ownership unless a new exact conflict is proven.
+
+### Remaining unseen areas
+
+Use `workers/surface_albedo_completion.py` or the material-aware recovery worker only after strict multiview projection.
 
 Rules:
 
-- real source pixels may project only to triangles visible from that source camera;
-- mirrored fallback views may never contribute semantic pixels;
-- unobserved surfaces receive material-aware neutral/local synthesis, never copied facial content;
-- observed front pixels remain protected;
-- 1024 base colour is the baseline target; 2048 is optional when already cheap and proven;
-- optional diffusion or multiview completion may improve an accepted baseline but must never block it.
+- operate on unobserved triangles only;
+- use welded surface adjacency/geodesic propagation;
+- prune propagation across sharp normal/geometry boundaries;
+- keep fur, clothing, rifle, backpack, and tail color families separate where evidence permits;
+- never allow face-region donors to fill rear-head triangles;
+- do not apply global HSV recovery.
 
-The earlier projection-gate-fixed panda output with a neutral rear is preferable to a richer output that puts a face on the back.
+### Final QA and promotion
 
-### QA and retries
+Fresh-import the new GLB in Blender and render:
 
-For each asset:
+- front;
+- three-quarter;
+- side;
+- true rear;
+- rear provenance overlay.
 
-- maximum two texture attempts;
-- maximum one UV fallback;
-- no unchanged retry after timeout or rejection;
-- visual renders outrank proxy metrics;
-- an optional quality-stage failure cannot invalidate a previously accepted basic model.
-
-## First task: finish and package the panda
-
-Do not regenerate panda geometry, rerun LOD, or run xatlas.
-
-1. Locate the exact earlier projection-gate-fixed sanitized 5-step panda artifact whose matched renders proved the rear face absent. Resolve it from existing reports/hashes; do not guess a path.
-2. Fresh-import that GLB in clean Blender.
-3. Render front, three-quarter, side, and true rear views.
-4. Confirm no facial projection on the back and no large black holes.
-5. If it passes, promote it immediately as the panda basic deliverable, even if its side/rear material is comparatively neutral.
-6. Package:
-   - textured GLB;
-   - base colour;
-   - four-view contact sheet;
-   - compact JSON receipt;
-   - source and artifact hashes.
-7. Do not replace it with the rejected Texture Completion V2 artifact.
-
-Only if the known-safe panda artifact cannot be located or fails fresh import may one bounded retexture be run using the same known-safe projection route. No experimental completion route is allowed in that fallback.
-
-## Then finish the remaining five assets in this order
-
-### 2. Antlered bird shaman
-
-- reuse the canonical clean geometry;
-- do not retry sleeve separation, garment extraction, rigging, or manual retopology;
-- bypass LOD when it blocks delivery;
-- apply the safe texture route and package the static textured baseline.
-
-### 3. Wind-bent barn and trees
-
-- reuse the best verified one-step geometry;
-- do not rerun the long barn generator;
-- preserve the static rural barn/tree identity;
-- use bounded UV and safe texture/export stages.
-
-### 4. Lucky Drown casino boat
-
-- run one bounded sanitized geometry generation when no accepted geometry exists;
-- prioritize readable side silhouette, decks, paddlewheel, stairs, rails, and `LUCKY DROWN` identity;
-- accept static fused geometry when recognizable and structurally valid.
-
-### 5. Mossy mountain titan
-
-- run one bounded sanitized geometry generation when needed;
-- prioritize quadruped silhouette, mountain back, root/rock body, and rib opening;
-- accept synthesized unseen materials when no front semantic leakage exists.
-
-### 6. Frog salvage diver
-
-- preserve rejected v7/v8 as diagnostics;
-- run at most one higher-step sanitized geometry candidate;
-- require recognizable frog, suit/tank, lantern, bag, arms, and feet with materially reduced halo;
-- if Mini Turbo still produces fused debris, use one already-available alternative geometry route or produce the best honest static baseline; do not perform another deletion-repair loop.
-
-## Shared pipeline changes allowed
-
-Implement only changes that directly support repeated delivery:
-
-- optional LOD bypass;
-- existing-UV reuse;
-- bounded Smart UV fallback;
-- safe projection route selection;
-- candidate-to-deliverable promotion;
-- compact delivery receipt;
-- per-stage timeout and fallback recording;
-- batch summary for six assets.
-
-Do not build another experimental framework, global semantic segmentation system, large-model installer, or benchmark-only subsystem before the first accepted deliverable is packaged.
-
-## Required progress reporting
-
-Maintain one compact table:
-
-| Asset | Geometry | UV | Texture | Fresh import | Visual QA | Deliverable |
-|---|---|---|---|---|---|---|
-
-Use only `PROVEN`, `REJECTED`, `NOT_PROVEN`, or `BLOCKED`.
-
-After each accepted asset, commit and push the receipt and lightweight proof. Continue automatically to the next asset. Stop only for:
-
-- `USER_REVIEW_REQUIRED` after a contact sheet is ready;
-- a real missing input;
-- a destructive choice between two accepted artifacts;
-- hardware/environment blocker with no bounded fallback.
-
-## First completion receipt required
-
-The next report must be either:
+Promote only when all are true:
 
 ```text
+GEOMETRY_REUSED=PROVEN
+UV_CHART_SEPARATION_PRESERVED=PROVEN
+GPU_REFERENCE_GENERATION=PROVEN
+GPU_JOBS_SERIAL=PROVEN
+PROJECTION_GATING=PROVEN
+TRIANGLE_PROVENANCE=PROVEN
+REAR_FACE_PROJECTION=PROVEN_ABSENT
+TEXTURE_COLOR_QA=PROVEN
+FRESH_IMPORT=PROVEN
 PANDA_BASIC_TEXTURED_MODEL=PROVEN
 ```
 
-with a stable deliverable path and four-view contact sheet, or:
+Visual requirements:
+
+- no face on the back;
+- substantially less gray/pale than the current chart-separated candidate;
+- recognizable red-panda face, ghillie/tactical clothing, rifle, backpack, and tail;
+- no large black holes or transparent gaps;
+- rear may remain less detailed than front but must have plausible material color.
+
+Maximum budget:
+
+- one complete four-job GPU sequence;
+- one lower-resolution retry per job only on OOM;
+- no seed sweep;
+- no unchanged retry;
+- no full geometry/UV rerun.
+
+Stop with `USER_REVIEW_REQUIRED` once the new contact sheet is ready. Do not continue to unrelated refinements before visual review.
+
+## Repository validation before local GPU run
+
+Run first:
 
 ```text
-PANDA_BASIC_TEXTURED_MODEL=BLOCKED
+python -m compileall -q workers tests
+python -m pytest -q \
+  tests/test_comfyui_gpu_texture_job.py \
+  tests/test_gpu_texture_repair_sequence.py \
+  tests/test_projection_repair.py
 ```
 
-with one exact blocker after exhausting only the bounded safe fallback.
+Create the exported API workflow and binding config only after these focused tests pass. Commit shared code/config/tests before the expensive run. Preserve generated images and GLBs outside Git; commit only compact receipts, hashes, configuration, and contact-sheet proof.
+
+## Six-model milestone remains authoritative
+
+After the panda is accepted, continue with usable static textured models in this order:
+
+1. antlered bird shaman — reuse canonical clean geometry; no sleeve/rig loop;
+2. wind-bent barn and trees — reuse best verified geometry; no long regeneration;
+3. Lucky Drown casino boat — one bounded sanitized generation if needed;
+4. mossy mountain titan — one bounded sanitized generation if needed;
+5. frog salvage diver — one higher-step sanitized candidate at most; no destructive deletion loop.
+
+For every asset, reuse existing geometry and UVs first, keep LOD optional, keep xatlas opt-in only, cap texture attempts at two, and package the first visually usable fresh-importable GLB.
 
 Commit and push validated integration-branch changes. Verify local equals remote and leave the worktree clean. Do not merge branches yet.
