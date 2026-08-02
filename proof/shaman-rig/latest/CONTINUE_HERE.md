@@ -57,21 +57,41 @@ Contact sheet (needs an env with PIL — `envs\control` works, `asset-systems-te
 "C:\Users\Lauri\AppData\Local\LowVRAM3DStudio\envs\control\Scripts\python.exe" workers/shaman_contact_sheet.py --image A.png --label a --output sheet.png
 ```
 
+## Milestone 1 result
+
+- `RIG_BASE` **PROVEN** — `run-20260802-123123\rig-base\shaman_rig_base.blend`
+- `STAFF_POLICY` **PROVEN** — fused staff cylinder, 9,845 verts
+- `PARTS` **NOT PROVEN** — positional bands only, anatomy not established
+
+## Fourth hard-won fact
+
+**GLB is export-only.** Exporting the welded rig base and reimporting it
+re-splits every vertex per corner (537,041 → ~3.2M) and silently undoes the
+weld. Carry the mesh between rig stages as `.blend`.
+
 ## Next action
 
-Milestone 1 — build the welded rig base and the deterministic semantic-region
-worker, then the fused staff policy.
+**Anatomical segmentation of a robed figure**, because SKIN is blocked on it.
 
-Order that respects the findings above:
+The blocker is real, not a tuning problem: the character wears a full cape and
+skirt, so the legs and lower torso are not visible to any purely geometric band
+or density heuristic. `shaman_semantic_regions.json` reports
+`safe_for_skinning: ["staff"]` and nothing else.
 
-1. `RIG_BASE` — weld at 1e-4, gate: face count within tolerance, one dominant
-   component preserved, no volume change beyond 0.5%, bounds unchanged.
-2. `PARTS` — density-core segmentation for torso/pelvis/head/neck/arms/hands/
-   legs/feet plus staff, antlers, ornaments, cloth. Fail closed on weak
-   evidence; regions must carry confidence and mesh state.
-3. `STAFF_POLICY` — `fused_staff_control` only. No cutter, no hole, no separate
-   mesh. `separate_staff_candidate` stays an optional experiment that can never
-   block or auto-promote.
+Options, in order of expected reliability:
+
+1. **Interior-cavity analysis** — the skirt is a shell; ray-cast or voxelise to
+   find the enclosed leg volumes rather than segmenting the outer surface.
+2. **Symmetry-plane + medial-axis extraction** on the welded base to recover a
+   skeleton from volume rather than from Z bands.
+3. **User-supplied landmarks** — a handful of clicked positions (pelvis, knees,
+   shoulders, elbows, wrists) would make the rig deterministic immediately, and
+   is the cheapest path to a first animated proof.
+
+Do **not** proceed to RIG/SKIN using the current band regions. They would bind
+skirt cloth to `thigh_l`/`thigh_r` and fail the SKIN_QA gate "no major body
+region moves with the wrong bone" — after burning a full skinning pass on
+537,041 vertices.
 
 ## Do not
 

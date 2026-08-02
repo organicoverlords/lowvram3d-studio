@@ -1,7 +1,7 @@
 {
   "branch": "magicmusic/parts-pose-materials-20260802",
-  "milestone": 0,
-  "milestone_name": "AUDIT_AND_TRUTH_PACKET",
+  "milestone": 1,
+  "milestone_name": "RIG_BASE_AND_SEMANTIC_REGIONS",
   "canonical_source": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\shaman_v2_validation_stance_clean.glb",
   "canonical_sha256": "2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80",
   "canonical_source_modified": false,
@@ -34,23 +34,23 @@
     },
     {
       "system": "RIG_BASE_TOPOLOGY",
-      "status": "NOT PROVEN",
-      "proof": "weld analysis only",
-      "next_action": "build and gate welded rig base",
+      "status": "PROVEN",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig-base\\rig_base_report.json",
+      "next_action": "none",
       "blocker": "none"
     },
     {
       "system": "PARTS",
       "status": "NOT PROVEN",
-      "proof": "",
-      "next_action": "deterministic semantic region worker",
-      "blocker": "none"
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_region_contact_sheet.png",
+      "next_action": "anatomical segmentation of a robed figure",
+      "blocker": "legs hidden inside skirt; bands are not anatomy"
     },
     {
       "system": "STAFF_POLICY",
-      "status": "NOT PROVEN",
-      "proof": "staff candidate detected",
-      "next_action": "implement fused_staff_control",
+      "status": "PROVEN",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_semantic_regions.json (staff cylinder, 9845 verts)",
+      "next_action": "bind staff vertex group to a staff control bone",
       "blocker": "none"
     },
     {
@@ -183,6 +183,33 @@
   "artifacts": {
     "source_audit": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\source-audit.json",
     "source_contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\shaman_source_contact_sheet.png",
-    "source_preview_dir": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\source-preview"
-  }
+    "source_preview_dir": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\source-preview",
+    "rig_base_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig-base\\shaman_rig_base.blend",
+    "rig_base_glb": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig-base\\shaman_rig_base.glb",
+    "parts_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_parts.blend",
+    "semantic_regions": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_semantic_regions.json",
+    "region_contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_region_contact_sheet.png"
+  },
+  "rig_base": {
+    "lost_faces": 12882,
+    "collapsible_faces": 12992,
+    "allowed_face_loss": 13251,
+    "face_loss_ratio": 0.011851347559489037,
+    "volume_delta_ratio": 3.188887325613797e-07,
+    "volume_delta_limit": 0.005,
+    "bounds_delta": 0.0,
+    "bounds_delta_limit": 0.0001,
+    "dominant_component_ratio": 0.989475663869239,
+    "dominant_component_limit": 0.95,
+    "vertices_shared": true,
+    "vertex_reduction_ratio": 0.8351647980631347
+  },
+  "parts_status": "POSITIONAL_BANDS_ONLY_ANATOMY_NOT_PROVEN",
+  "parts_blocking_codes": [
+    "PARTS_ANATOMY_NOT_PROVEN_ROBED_FIGURE"
+  ],
+  "parts_safe_for_skinning": [
+    "staff"
+  ],
+  "carrier_format_rule": "Rig stages must carry the welded mesh as .blend. Exporting to GLB and reimporting re-splits vertices per corner and silently undoes the weld (537041 -> ~3.2M). GLB is export-only."
 }

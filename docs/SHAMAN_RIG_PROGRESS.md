@@ -31,9 +31,9 @@ Status vocabulary: `PROVEN`, `REJECTED`, `NOT PROVEN`, `BLOCKED`.
 | SOURCE_IDENTITY | PROVEN | `proof/shaman-rig/latest/source-audit.json`, SHA256 match | none | none |
 | SOURCE_AUDIT | PROVEN | `source-audit.json`, `shaman_source_contact_sheet.png` | none | none |
 | SOURCE_PREVIEW | PROVEN | 5 workbench renders + contact sheet | none | none |
-| RIG_BASE_TOPOLOGY | NOT PROVEN | weld analysis in audit (537041 verts, 1 dominant component) | build and gate the welded rig base | none |
-| PARTS (semantic regions) | NOT PROVEN | — | deterministic region worker | none |
-| STAFF_POLICY | NOT PROVEN | staff candidate detected at x ≈ -0.42 | fused_staff_control implementation | none |
+| RIG_BASE_TOPOLOGY | PROVEN | `rig_base_report.json` — 537,041 verts, lost faces 12,882 vs 12,992 collapsible slivers, volume delta 3.2e-7 | none | none |
+| PARTS (semantic regions) | NOT PROVEN | `shaman_region_contact_sheet.png` — horizontal slabs, not anatomy | anatomical segmentation of a robed figure | legs hidden inside skirt |
+| STAFF_POLICY | PROVEN | staff cylinder isolated, 9,845 verts, z-coverage 0.873 | bind staff group to staff control bone | none |
 | POSE_PREP (A-pose) | NOT PROVEN | — | Blender-side A-pose proof with gates | none |
 | RIG_READINESS | NOT PROVEN | audit verdict `humanoid_enough=true` | re-derive on rig base | none |
 | RIG (skeleton + controls) | NOT PROVEN | — | build modular game skeleton | none |
@@ -133,8 +133,61 @@ Advisory: `ARMS_DOWN_AT_SIDES_ELEVATES_ARM_TORSO_WEIGHT_BLEED_RISK` — arms
 resting against the cape mean automatic weights are likely to bleed between arm
 and torso, which SKIN_QA must catch rather than assume away.
 
+## Milestone 1 findings
+
+### Rig base — PROVEN
+
+Welding the corner-split source at 1e-4 gives 537,041 vertices and 1,074,083
+faces. The face-loss gate is evidence-based rather than an arbitrary ratio: a
+distance weld can only delete a face that has an edge shorter than the weld
+distance, and that population was measured at **12,992 collapsible faces**
+against **12,882 actually lost**. Volume delta 3.2e-7, bounds delta 0.0,
+dominant component 98.95%.
+
+### GLB is export-only — carrier rule
+
+Exporting the welded rig base to GLB and reimporting it **re-splits every vertex
+per corner**, silently restoring ~3.2M vertices and destroying the weld. This
+was caught because region vertex counts summed to ~3.2M against a 537,041 total.
+
+**Rig stages must carry the mesh as `.blend`.** GLB is an export format only.
+
+### Staff — PROVEN
+
+The staff is isolated as a fitted cylinder: 9,845 vertices, z-coverage 0.873,
+radius 0.055, axis slope (-0.038, +0.033) matching the pole's visible lean.
+
+Two earlier methods failed and were discarded, not tuned around:
+
+- an XY occupancy grid missed it entirely — the pole is tilted, so over ~1.9 m
+  it walks across grid cells and no cell shows tall coverage;
+- taking min/max across all tall off-centre X bins produced a band spanning
+  −0.459 to +0.486, i.e. the whole body, which fitted the axis through the
+  torso. Contiguous runs are now clustered and exactly one narrow run is used.
+
+Mode is `fused_staff_control`. No boolean cutter, no hole, no separate mesh.
+`separate_staff_candidate` was not run and cannot auto-promote.
+
+### Semantic regions — NOT PROVEN
+
+The region colour render is the deciding evidence: the segmentation is a stack
+of **horizontal slabs on a robed figure**. The legs sit inside a skirt, so the
+band labelled `thigh_l` is mostly cape cloth. Claiming it as a thigh would be
+exactly the invented-confidence failure this work is meant to avoid.
+
+The manifest therefore reports `status = POSITIONAL_BANDS_ONLY_ANATOMY_NOT_PROVEN`
+with blocking code `PARTS_ANATOMY_NOT_PROVEN_ROBED_FIGURE`, every body band
+downgraded to confidence 0.20–0.45, `mesh_state = ambiguous`, and
+`safety_classification = positional_band_not_proven_anatomy`.
+`safe_for_skinning` lists **only** `staff`.
+
+Consequence: SKIN cannot yet satisfy "no major body region moves with the wrong
+bone", because the region→bone mapping is not established for the body. The
+staff lane is unblocked.
+
 ## Milestone log
 
 | Milestone | Commit | Result |
 | --- | --- | --- |
-| 0 — audit and truth packet | (this commit) | PROVEN |
+| 0 — audit and truth packet | `cd2473c` | PROVEN |
+| 1 — rig base, staff policy, regions | (this commit) | rig base PROVEN, staff PROVEN, parts NOT PROVEN |
