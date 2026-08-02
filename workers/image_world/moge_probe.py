@@ -85,9 +85,8 @@ def main() -> int:
                 torch.cuda.empty_cache()
                 torch.cuda.reset_peak_memory_stats(device)
 
-            image = cv2.imread(str(source), cv2.IMREAD_UNCHANGED)
-            if image is None:
-                raise RuntimeError(f"OpenCV could not decode {source}")
+            image, decoder = load_image_bgr(source, cv2)
+            versions["image_decoder"] = decoder
             image = prepare_rgb(image, settings.input_long_edge, cv2)
             tensor = torch.from_numpy(image).permute(2, 0, 1).contiguous().to(
                 device=device,
@@ -149,6 +148,39 @@ def main() -> int:
         )
         report_path.write_text(report.to_json(), encoding="utf-8")
         return 2
+
+
+def load_image_bgr(source: Path, cv2_module) -> tuple[np.ndarray, str]:
+    """Decode an image with OpenCV, then a tolerant Pillow fallback.
+
+    The benchmark fixture was transmitted through a text-safe path and contains
+    recoverable JPEG damage.  OpenCV 5 rejects it outright, while Pillow can
+    often recover the complete raster when truncated-image loading is enabled.
+    The fallback is explicit in the proof receipt through ``image_decoder``.
+    """
+
+    image = cv2_module.imread(str(source), cv2_module.IMREAD_UNCHANGED)
+    if image is not None:
+        return image, "opencv"
+
+    from PIL import Image, ImageFile
+
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    try:
+        with Image.open(source) as pil_image:
+            pil_image.load()
+            if "A" in pil_image.getbands():
+                rgba = np.asarray(pil_image.convert("RGBA"), dtype=np.uint8)
+                bgra = rgba[:, :, [2, 1, 0, 3]]
+                return np.ascontiguousarray(bgra), "pillow_truncated_rgba"
+            rgb = np.asarray(pil_image.convert("RGB"), dtype=np.uint8)
+            bgr = rgb[:, :, ::-1]
+            return np.ascontiguousarray(bgr), "pillow_truncated_rgb"
+    except Exception as exc:
+        raise RuntimeError(
+            f"OpenCV and tolerant Pillow could not decode {source}: "
+            f"{type(exc).__name__}: {exc}"
+        ) from exc
 
 
 def prepare_rgb(image: np.ndarray, long_edge: int, cv2_module) -> np.ndarray:
