@@ -1,41 +1,64 @@
-# Tactical red panda sanitized 4/5-step textured comparison
+# Tactical red panda sanitized 4/5-step projection-gate comparison
 
-This was a CPU-only comparison. No GPU generation ran, and the original
-`raw_4step_retry2.glb` and `raw_5step.glb` files were never passed through the production Blender
-path.
+This comparison was CPU/Blender-only. No Mini Turbo generation ran, and the
+original `raw_4step_retry2.glb` and `raw_5step.glb` files were not modified or
+passed through the production Blender path.
 
-The complete external report is:
+The preserved sanitized inputs were re-textured in separate runs using the
+same cleaned geometry, UVs, atlas resolution, source image, and export
+settings. The external report is:
 
-`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\panda_texture_comparison\panda_4_5_comparison_report.json`
+`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\panda_texture_comparison\panda_4_5_projection_fixed_comparison_report.json`
 
-The labelled contact sheet is:
+The visual proof contact sheet is:
 
-`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\panda_texture_comparison\panda_4_5_v7_contact_sheet.png`
+`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\panda_texture_comparison\panda_4_5_v7_projection_fixed_contact_sheet.png`
 
-## Inputs and outputs
+## Shared projection correction
 
-| Candidate | Sanitized input SHA-256 | Textured output SHA-256 | Fresh-import polygons | Texture coverage |
-|---|---|---|---:|---:|
-| 5-step | `1170cff8c1e29b6ab210cac1f8100ca160575e692063c7de0f478db0d7597ff2` | `3ce51b096e28ad3527421703d6f0cb953ef86ed8cc7a5e66aacd96ba7bd30f57` | 644,412 | 83.6% observed / 16.4% synthesized |
-| 4-step | `2ac94a09384679dca5720a6b87cecf236643cd9f9bebf69ef57c4b39e735514a` | `737595b202d9cfada0a6aa57b35fab3b199a90c95bea31c236292eb98ce2dbd4` | 639,000 | 84.4% observed / 15.6% synthesized |
+The four-view bundle contains `front`, `right`, `back`, and `left`, but its
+metadata marks only `front` as a real semantic source. The other three views
+are mirrored fallback views with zero semantic confidence. They remain
+available for fill policy bookkeeping but are barred from source-pixel
+projection; otherwise a mirrored face can be copied onto the rear.
 
-Both candidates passed fresh import, UV presence, material binding, packed readable base-colour,
-finite/non-black/non-constant texture, and matched front/three-quarter/side/rear rendering.
+The projector now requires both the depth/occlusion visibility mask and a
+finite front-facing normal (`normal dot view > 0.15`) before sampling or
+blending a source pixel. It also records a per-polygon observation mask that
+is independent of overlapping planar UV pixels. Blender assigns every
+unobserved polygon to `RasterNeutralSynthesis`, so unseen rear geometry cannot
+sample or wrap front-face pixels from the shared atlas.
 
-## Visual decision
+## Fixed candidates
 
-The rear render exposes the same failure in both new candidates and in the repaired v7 reference:
-the source-facing red-panda face is visibly projected onto the rear surface. The clay geometry does
-not have a rear face, so this is a texture/UV projection failure rather than a new geometry defect.
+| Candidate | Sanitized input SHA-256 | Fixed textured GLB SHA-256 | Polygons | Observed polygons | Neutral polygons | Fresh import | Rear face |
+|---|---|---|---:|---:|---:|---|---|
+| 5-step | `1170cff8c1e29b6ab210cac1f8100ca160575e692063c7de0f478db0d7597ff2` | `296e274db799efb86a0e6c1984ce9fca46f32ece6ab28b061eda00658ac94e0e` | 644,412 | 92,388 | 552,024 | PROVEN | PROVEN_ABSENT |
+| 4-step | `2ac94a09384679dca5720a6b87cecf236643cd9f9bebf69ef57c4b39e735514a` | `78d2fecf8f6243ac34e98ed2854720021f33b6d1ba5e2cb03043d531cf9a81d1` | 639,000 | 92,970 | 546,030 | PROVEN | PROVEN_ABSENT |
 
-- `PANDA_5STEP_FRONT_IDENTITY=PROVEN`
-- `PANDA_4STEP_FRONT_IDENTITY=PROVEN`
-- `PANDA_5STEP_REAR_FACE_PROJECTION=REJECTED`
-- `PANDA_4STEP_REAR_FACE_PROJECTION=REJECTED`
-- `PANDA_5STEP_VS_V7=NOT_PROVEN_BETTER`
-- `PANDA_4STEP_VS_V7=NOT_PROVEN_BETTER`
-- `PANDA_COMPARISON_WINNER=NOT_PROVEN`
-- `REPAIRED_V7_RETAINED=PROVEN_REFERENCE_ONLY`
+Both fixed outputs have packed 512x512 base-colour textures, valid UVs, two
+materials, no armature/actions, readable front face/gear/tail colour, and
+fresh front, three-quarter, side, and rear renders. The rear renders show
+neutral dark synthesis and no face. Rear regions are intentionally not claimed
+as source-observed.
 
-Neither candidate replaces repaired v7. The post-decoder sanitizer remains mandatory for future
-Mini Turbo generation. This comparison does not change the general step-count policy.
+## Historical invalid outputs
+
+The previous textured GLBs remain preserved as rejected evidence:
+
+- `panda_texture_comparison_5step\tactical_red_panda_scout_5step_textured.glb` — `REJECTED_REAR_FACE_PROJECTION`
+- `panda_texture_comparison_4step\tactical_red_panda_scout_4step_textured.glb` — `REJECTED_REAR_FACE_PROJECTION`
+
+## Classifications
+
+- `PANDA_5STEP_PROJECTION_GATE=PROVEN`
+- `PANDA_4STEP_PROJECTION_GATE=PROVEN`
+- `PANDA_5STEP_REAR_FACE_PROJECTION=PROVEN_ABSENT`
+- `PANDA_4STEP_REAR_FACE_PROJECTION=PROVEN_ABSENT`
+- `PANDA_5STEP_FIXED_TEXTURED_BASELINE=PROVEN_WITH_NEUTRAL_UNSEEN_REAR`
+- `PANDA_4STEP_FIXED_TEXTURED_BASELINE=PROVEN_WITH_NEUTRAL_UNSEEN_REAR`
+- `PANDA_FIXED_VISUAL_WINNER=NOT_PROVEN`
+- `REPAIRED_V7=NOT_REPLACED`
+
+The repaired v7 comparison remains reference-only; this task did not alter it
+or regenerate geometry.

@@ -8,6 +8,7 @@ import argparse
 from pathlib import Path
 
 import bpy
+import numpy as np
 
 from common import (
     argv_after_double_dash,
@@ -26,6 +27,7 @@ def main() -> None:
     parser.add_argument("--atlas", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--texture", required=True)
+    parser.add_argument("--observed-triangles", default="")
     parser.add_argument("--report", default="")
     args = parser.parse_args(argv_after_double_dash())
 
@@ -51,13 +53,45 @@ def main() -> None:
     img_node.image = img
     nt.links.new(uvmap.outputs["UV"], img_node.inputs["Vector"])
     nt.links.new(img_node.outputs["Color"], bsdf.inputs["Base Color"])
+
+    observed_mask = None
+    if args.observed_triangles:
+        observed_mask = np.asarray(np.load(args.observed_triangles), dtype=bool)
+        polygon_count = sum(len(obj.data.polygons) for obj in objects)
+        if observed_mask.ndim != 1 or len(observed_mask) != polygon_count:
+            raise RuntimeError(
+                "Observed triangle mask must be a 1-D array matching imported polygon order: "
+                f"mask={observed_mask.shape}, polygons={polygon_count}"
+            )
+
+    neutral = None
+    if observed_mask is not None:
+        neutral = bpy.data.materials.new("RasterNeutralSynthesis")
+        neutral.use_nodes = True
+        neutral_bsdf = neutral.node_tree.nodes.get("Principled BSDF")
+        neutral_bsdf.inputs["Base Color"].default_value = (0.20, 0.22, 0.18, 1.0)
+        neutral_bsdf.inputs["Roughness"].default_value = 0.85
     nt.links.new(bsdf.outputs["BSDF"], out_node.inputs["Surface"])
 
+    observed_index = 0
+    observed_polygons = 0
+    neutral_polygons = 0
     for obj in objects:
         obj.data.materials.clear()
         obj.data.materials.append(mat)
+        if neutral is not None:
+            obj.data.materials.append(neutral)
         if not obj.data.uv_layers:
             raise RuntimeError(f"{obj.name} lost its UV layer before export")
+        if observed_mask is not None:
+            for poly in obj.data.polygons:
+                is_observed = bool(observed_mask[observed_index])
+                poly.material_index = 0 if is_observed else 1
+                observed_index += 1
+                if is_observed:
+                    observed_polygons += 1
+                else:
+                    neutral_polygons += 1
 
     # Marching-cubes output is flat-shaded, which reads as hard polygonal banding across the vest
     # and hood once a texture is applied. Smooth shading is a normals-only change: it does not
@@ -73,6 +107,10 @@ def main() -> None:
             "backend": "raster_uv_atlas_projection_export",
             "output": str(args.output),
             "texture": str(texture_path),
+            "observed_triangles_mask": str(args.observed_triangles) if args.observed_triangles else None,
+            "observed_material_polygons": observed_polygons,
+            "neutral_synthesis_polygons": neutral_polygons,
+            "neutral_material": "RasterNeutralSynthesis" if neutral is not None else None,
             "smooth_shaded_polygons": smoothed,
             "output_stats": extended_mesh_stats(objects),
         })

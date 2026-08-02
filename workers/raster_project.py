@@ -9,8 +9,8 @@ Key correctness rule, learned the hard way: only views whose view_metadata.json 
 source_type in {"real", "generated"} may contribute real projected pixels. Mirrored/synthetic
 fallback views (produced by make_fallback_views.py when only one photo exists) are barred from
 semantic projection -- projecting a mirrored front view onto rear-facing polygons puts a
-duplicated face on the back of the mesh. Barred views still describe the low-frequency material
-colour and get folded in only through the diffusion fill below, never as a winning projection.
+duplicated face on the back of the mesh. Unobserved polygons receive explicit neutral synthesis at
+export, never a winning projection from a mirrored or wrapped front view.
 """
 from __future__ import annotations
 
@@ -35,6 +35,26 @@ DONOR_MIN_NORMAL_DOT = 0.25
 DONOR_MAX_RADIUS_FRACTION = 0.12
 # Position-weld tolerance for donor component scoping (UV seams duplicate vertices).
 WELD_TOLERANCE = 4e-4
+
+
+def projection_triangle_gate(visibility: np.ndarray, facing: np.ndarray,
+                             threshold: float = FACING_MIN) -> np.ndarray:
+    """Return triangles eligible for source projection in one camera view.
+
+    ``visibility`` is the precomputed depth/occlusion result for the view.  A
+    triangle must pass both that result and the normal-facing test before any
+    source pixel can be sampled or blended into the atlas.  Invalid values are
+    rejected explicitly so a malformed visibility/normal array cannot turn
+    into a permissive CUDA/NumPy truth test later in the route.
+    """
+    visibility = np.asarray(visibility, dtype=bool)
+    facing = np.asarray(facing, dtype=np.float32)
+    if visibility.ndim != 1 or facing.ndim != 1 or visibility.shape != facing.shape:
+        raise ValueError(
+            f"visibility/facing must be matching 1-D arrays, got "
+            f"{visibility.shape} and {facing.shape}"
+        )
+    return visibility & np.isfinite(facing) & (facing > float(threshold))
 
 
 def main() -> None:
@@ -72,6 +92,13 @@ def main() -> None:
     best_conf = np.zeros((atlas_size, atlas_size), np.float32)
     best_rgb = np.zeros((atlas_size, atlas_size, 3), np.float32)
     best_view = np.full((atlas_size, atlas_size), -1, np.int16)
+    # This is deliberately independent of UV-atlas occupancy.  A planar UV
+    # layout can overlap front and rear polygons, so atlas pixels alone cannot
+    # tell us which mesh polygon actually received a gated observation.
+    triangle_observed = np.zeros(total_tris, dtype=bool)
+    triangle_observed_sum = np.zeros((total_tris, 3), np.float64)
+    triangle_observed_count = np.zeros(total_tris, dtype=np.int64)
+    gate_counts = {}
 
     uv_px = uvs.copy()
     uv_px[..., 0] *= (atlas_size - 1)
@@ -110,13 +137,19 @@ def main() -> None:
         vdir = cam / (np.linalg.norm(cam) + 1e-9)
         vis = d[f"vis_{vname}"]
         facing = normals @ vdir
+        projection_gate = projection_triangle_gate(vis, facing)
+        gate_counts[vname] = {
+            "depth_visible_triangles": int(np.count_nonzero(vis)),
+            "normal_facing_triangles": int(np.count_nonzero(facing > FACING_MIN)),
+            "eligible_triangles": int(np.count_nonzero(projection_gate)),
+        }
         axis = int(np.argmax(np.abs(vdir)))
         ua, va = (0, 2) if axis == 1 else ((1, 2) if axis == 0 else (0, 1))
         flip_u = -1.0 if vdir[axis] > 0 else 1.0
 
         processed = 0
         for t in range(total_tris):
-            if not vis[t] or facing[t] <= FACING_MIN:
+            if not projection_gate[t]:
                 continue
             p = verts[tris[t]]
             a = uv_px[t]
@@ -150,12 +183,15 @@ def main() -> None:
             conf = np.where(inframe & (alpha > ALPHA_MIN), conf, 0.0).astype(np.float32)
             if not (conf > 0).any():
                 continue
+            triangle_observed[t] = True
             win = conf > best_conf[ys2, xs2]
             if win.any():
                 yi, xi = ys2[win], xs2[win]
                 best_conf[yi, xi] = conf[win]
                 best_rgb[yi, xi] = srgb[sy[win], sx[win]]
                 best_view[yi, xi] = vi
+                triangle_observed_sum[t] += srgb[sy[win], sx[win]].astype(np.float64).sum(axis=0)
+                triangle_observed_count[t] += int(np.count_nonzero(win))
             processed += 1
 
         write_progress(slot + 1, processed)
@@ -195,16 +231,13 @@ def main() -> None:
         if ins.any():
             tri_id[ys[ins], xs[ins]] = t
 
-    observed_sum = np.zeros((total_tris, 3), np.float64)
-    observed_count = np.zeros(total_tris, np.int64)
-    sampled = (tri_id >= 0) & real_mask
-    if sampled.any():
-        np.add.at(observed_sum, tri_id[sampled], best_rgb[sampled].astype(np.float64))
-        np.add.at(observed_count, tri_id[sampled], 1)
-    has_observation = observed_count > 0
+    # Use only colours won by the gated source projection for donor statistics.
+    # Reconstructing observations from ``tri_id`` would reintroduce the planar
+    # UV overlap bug by assigning front atlas pixels to rear polygons.
+    has_observation = triangle_observed & (triangle_observed_count > 0)
     tri_colour = np.zeros((total_tris, 3), np.float32)
     tri_colour[has_observation] = (
-        observed_sum[has_observation] / observed_count[has_observation, None]
+        triangle_observed_sum[has_observation] / triangle_observed_count[has_observation, None]
     ).astype(np.float32)
 
     # Donor selection is deliberately constrained. Unrestricted nearest-triangle transfer would
@@ -378,6 +411,8 @@ def main() -> None:
 
     atlas = np.clip(colour, 0, 255).astype(np.uint8)
     cv2.imwrite(str(outdir / "basecolor.png"), cv2.cvtColor(atlas, cv2.COLOR_RGB2BGR))
+    observed_mask_path = outdir / "observed_triangles.npy"
+    np.save(observed_mask_path, triangle_observed)
 
     dbg = np.zeros((atlas_size, atlas_size, 3), np.uint8)
     dbg[island] = (60, 60, 60)
@@ -409,7 +444,17 @@ def main() -> None:
             "final_filled_uv_percent": 100.0,
             "high_confidence_percent": round(float((best_conf > HIGH_CONF).sum() / island_px * 100), 2),
             "unseen_triangles": unseen_triangles,
-            "observed_triangles": int(has_observation.sum()),
+            "observed_triangles": int(triangle_observed.sum()),
+            "observed_triangle_percent": round(float(triangle_observed.mean() * 100.0), 2),
+            "unobserved_triangles": int((~triangle_observed).sum()),
+            "observed_triangle_mask": str(observed_mask_path),
+            "visibility_gate": {
+                "depth_visibility_mask_required": True,
+                "normal_facing_threshold": FACING_MIN,
+                "invalid_normals_rejected": True,
+                "per_view_counts": gate_counts,
+            },
+            "unseen_fill_policy": "neutral_material_for_unobserved_triangles",
             "fill_tier_triangle_counts": {
                 "observed": int((fill_tier == 0).sum()),
                 "constrained_donor": int((fill_tier == 1).sum()),
