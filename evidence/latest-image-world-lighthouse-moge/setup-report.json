@@ -1,0 +1,18 @@
+﻿{
+    "status":  "FAILED",
+    "environment_contract":  "moge2-vits-normal-torch2.8.0-cu128-b942f00-v1",
+    "base_python":  "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\control\\Scripts\\python.exe",
+    "environment_python":  "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\image-world-moge\\Scripts\\python.exe",
+    "environment_root":  "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\image-world-moge",
+    "source":  "C:\\Users\\Lauri\\Downloads\\ChatGPT Image 30.7.2026 klo 00.40.32.png",
+    "source_sha256_expected":  "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+    "num_tokens":  1200,
+    "input_long_edge":  768,
+    "max_gpu_memory_mb":  5600,
+    "allow_download":  true,
+    "errors":  [
+                   "RuntimeException: Missing canonical lighthouse source: C:\\Users\\Lauri\\Downloads\\ChatGPT Image 30.7.2026 klo 00.40.32.png",
+                   "at Assert-File, C:\\actions-runner-lowvram3d\\_work\\lowvram3d-studio\\lowvram3d-studio\\scripts\\run-image-world-lighthouse-moge-probe.ps1: line 35\r\nat \u003cScriptBlock\u003e, C:\\actions-runner-lowvram3d\\_work\\lowvram3d-studio\\lowvram3d-studio\\scripts\\run-image-world-lighthouse-moge-probe.ps1: line 62\r\nat \u003cScriptBlock\u003e, C:\\actions-runner-lowvram3d\\_work\\_temp\\9a569ec6-3a26-449d-b313-21c6c9246211.ps1: line 3\r\nat \u003cScriptBlock\u003e, \u003cNo file\u003e: line 1"
+               ],
+    "recorded_at":  "2026-08-02T15:57:46.4458869Z"
+}
