@@ -267,6 +267,7 @@ def main() -> None:
         decision = decide_component(metrics, args.cleanup_mode)
         if not decision.removable:
             keep_keys.add(key)
+        component_low, component_high = world_bounds(component["world_vertices"])
         decisions.append(
             {
                 "object": component["object"].name,
@@ -277,6 +278,8 @@ def main() -> None:
                 "extent_fraction": round(metrics.extent_fraction, 6),
                 "contact_ratio": round(metrics.contact_ratio, 6),
                 "nearest_distance_fraction": round(metrics.nearest_distance_fraction, 6),
+                "bounds_min": [round(float(value), 6) for value in component_low],
+                "bounds_max": [round(float(value), 6) for value in component_high],
                 "action": decision.action,
                 "reason": decision.reason,
             }

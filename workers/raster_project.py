@@ -345,6 +345,38 @@ def main() -> None:
             repaired = cv2.inpaint(masked_atlas, local_holes, 3, cv2.INPAINT_TELEA)
             atlas[this_island] = repaired[this_island]
 
+    # Inpainting is intentionally conservative around one-pixel UV cracks and can leave isolated
+    # zero-valued texels inside an otherwise painted island.  Close only those residual holes by
+    # copying the nearest already-painted texel within the same island.  This cannot transport
+    # colour across charts, and it never invents a source pixel: a chart with no painted texel is
+    # filled from the already-computed local/global material prior.
+    residual_holes = island & (~mask)
+    residual_island_holes = int(np.count_nonzero(residual_holes))
+    if residual_holes.any():
+        for label in range(1, n_islands):
+            this_island = island_labels == label
+            holes = residual_holes & this_island
+            if not holes.any():
+                continue
+            known = mask & this_island
+            if known.any():
+                distance_input = np.where(known, 0, 255).astype(np.uint8)
+                _, labels = cv2.distanceTransformWithLabels(
+                    distance_input, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL
+                )
+                source_coords = np.argwhere(known)
+                hole_coords = np.argwhere(holes)
+                source_labels = labels[holes].astype(np.int64) - 1
+                valid = (source_labels >= 0) & (source_labels < len(source_coords))
+                if valid.any():
+                    src = source_coords[source_labels[valid]]
+                    dst = hole_coords[valid]
+                    colour[dst[:, 0], dst[:, 1]] = colour[src[:, 0], src[:, 1]]
+            else:
+                colour[this_island] = global_prior
+            mask[this_island] = True
+
+    atlas = np.clip(colour, 0, 255).astype(np.uint8)
     cv2.imwrite(str(outdir / "basecolor.png"), cv2.cvtColor(atlas, cv2.COLOR_RGB2BGR))
 
     dbg = np.zeros((atlas_size, atlas_size, 3), np.uint8)
@@ -365,7 +397,6 @@ def main() -> None:
 
     if args.report:
         island_px = int(island.sum())
-        inpainted_holes = island & (cov < 130)
         report = {
             "success": True,
             "backend": "raster_uv_atlas_projection_cpu",
@@ -391,6 +422,9 @@ def main() -> None:
                 "max_radius_fraction": DONOR_MAX_RADIUS_FRACTION,
                 "same_component_required": True,
             },
+            "residual_island_holes": residual_island_holes,
+            "residual_island_holes_remaining": int(np.count_nonzero(island & (~mask))),
+            "residual_hole_fill": "nearest_painted_texel_same_island_or_material_prior",
             "elapsed_seconds": round(time.time() - t0, 1),
         }
         Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")

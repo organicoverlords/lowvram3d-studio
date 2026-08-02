@@ -48,6 +48,24 @@ def test_strict_protects_major_separate_part():
     assert decision.removable is False
 
 
+def test_strict_removes_stretched_sparse_detached_artifact():
+    decision = decide_component(
+        metrics(face_count=8, area_fraction=0.0009, extent_fraction=0.53),
+        "single_subject_strict",
+    )
+    assert decision.action == "REMOVE_SPARSE_DETACHED_ARTIFACT"
+    assert decision.removable is True
+
+
+def test_strict_removes_long_rod_artifact_but_keeps_major_part():
+    decision = decide_component(
+        metrics(face_count=2194, face_fraction=0.003215, area_fraction=0.006544, extent_fraction=0.561),
+        "single_subject_strict",
+    )
+    assert decision.action == "REMOVE_STRETCHED_DETACHED_ARTIFACT"
+    assert decision.removable is True
+
+
 def test_topology_gate_rejects_boundary_explosion():
     passed, errors = topology_gate(
         faces_before=45000,
