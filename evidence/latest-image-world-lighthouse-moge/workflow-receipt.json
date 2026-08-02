@@ -1,12 +1,12 @@
 ﻿{
-    "workflow_run_id":  "30755495355",
-    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30755495355",
+    "workflow_run_id":  "30756641980",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30756641980",
     "workflow":  "Image World lighthouse MoGe probe",
     "branch":  "feature/image-world-lighthouse-probe-20260802",
-    "head_sha":  "0e751f892b6a96ab50b7ad8209726ef4d54e9e15",
+    "head_sha":  "081ae48d6703bd4815c7db2ac024134a74bd6b88",
     "probe_status":  "MISSING",
     "peak_gpu_reserved_mb":  null,
     "compact_evidence_only":  true,
     "raw_geometry_in_artifact":  false,
-    "recorded_at":  "2026-08-02T15:57:48.4094885Z"
+    "recorded_at":  "2026-08-02T16:27:32.4576630Z"
 }
