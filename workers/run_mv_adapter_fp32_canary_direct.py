@@ -122,6 +122,7 @@ def main() -> None:
             "seed": args.seed,
             "scheduler": "ddpm",
             "pipeline_dtype": "float16",
+            "non_vae_module_dtype": "float16",
             "vae_dtype": "float32",
             "vae_encode_input_dtype": "float32",
             "vae_decode_input_dtype": "float32",
@@ -209,6 +210,26 @@ def main() -> None:
         pipe.init_custom_adapter(num_views=len(AZIMUTHS))
         pipe.load_custom_adapter(str(adapter_file.parent), weight_name=adapter_file.name)
 
+        # The custom adapter creates new modules after from_pretrained, so cast
+        # the complete non-VAE pipeline to the intended FP16 inference dtype
+        # before restoring the VAE to its explicit FP32 numerical boundary.
+        pipe.to(dtype=torch.float16)
+        if hasattr(pipe, "cond_encoder"):
+            pipe.cond_encoder.to(dtype=torch.float16)
+
+        unet_dtype = next(pipe.unet.parameters()).dtype
+        cond_encoder_dtype = next(pipe.cond_encoder.parameters()).dtype
+        if unet_dtype != torch.float16:
+            raise RuntimeError(f"UNet dtype is not FP16: {unet_dtype}")
+        if cond_encoder_dtype != torch.float16:
+            raise RuntimeError(
+                f"condition encoder dtype is not FP16: {cond_encoder_dtype}"
+            )
+
+        report["module_dtypes_before_offload"] = {
+            "unet": str(unet_dtype),
+            "condition_encoder": str(cond_encoder_dtype),
+        }
         report["vae_dtype_boundaries"] = install_fp32_vae_boundaries(pipe, torch)
         if hasattr(pipe.vae, "config"):
             try:
@@ -231,6 +252,8 @@ def main() -> None:
         report["settings"]["resolved_offload_mode"] = offload_mode
 
         print(f"OFFLOAD_MODE={offload_mode}", flush=True)
+        print(f"UNET_DTYPE={unet_dtype}", flush=True)
+        print(f"CONDITION_ENCODER_DTYPE={cond_encoder_dtype}", flush=True)
         print(f"VAE_DTYPE={pipe.vae.dtype}", flush=True)
         print("VAE_ENCODE_INPUT_DTYPE=torch.float32", flush=True)
         print("VAE_DECODE_INPUT_DTYPE=torch.float32", flush=True)
