@@ -1,0 +1,30 @@
+{
+  "classification": "BLOCKED",
+  "blocker": "BLOCKED_FUSED_SLEEVE_TOPOLOGY_REQUIRES_GARMENT_SEPARATION",
+  "attempt": "one bounded V3 sleeve core/drape repair",
+  "artifact_root": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\v3_attempt_20260802-20260802-114642",
+  "artifacts": {
+    "blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\v3_attempt_20260802-20260802-114642\\shaman_rigged_v3.blend",
+    "rig_report": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\v3_attempt_20260802-20260802-114642\\shaman_rig_report_v3.json",
+    "skin_report": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\v3_attempt_20260802-20260802-114642\\shaman_skin_report_v3.json",
+    "triangle_report": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\v3_attempt_20260802-20260802-114642\\triangle_deformation_report_v3.json",
+    "diagnostic_renders": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\v3_attempt_20260802-20260802-114642\\diagnostics"
+  },
+  "proven": {
+    "blender_rig_build": true,
+    "skin_qa": true,
+    "unweighted_vertices": 0,
+    "nearest_bone_fallback_vertices": 0,
+    "torso_cape_staff_arm_bleed": 0,
+    "wrist_drape_displaced": 0,
+    "elbow_drape_displaced": 0,
+    "sleeve_chain_vertices": 10408
+  },
+  "rejected": {
+    "rigid_drape_panel": true,
+    "sleeve_bone_max_edge_stretch": 475.5484945595681,
+    "sleeve_bone_flipped_normals": 1296,
+    "sleeve_bone_extreme_shear_triangles": 2925
+  },
+  "next_action": "garment separation or topology repair required; do not repeat radius tuning"
+}

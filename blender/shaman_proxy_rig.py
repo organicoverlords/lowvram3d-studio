@@ -29,7 +29,7 @@ from mathutils import Vector
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from common import argv_after_double_dash  # noqa: E402
-from shaman_weight_diagnostics import semantic_masks  # noqa: E402
+from shaman_semantic_v3 import semantic_masks_v3  # noqa: E402
 
 MAX_INFLUENCES = 4
 CLOTH_CHAINS = (("f", 0.0, -1.0), ("b", 0.0, 1.0), ("l", -1.0, 0.0), ("r", 1.0, 0.0))
@@ -131,6 +131,23 @@ def build_skeleton(landmarks: dict, staff: dict):
             add(name, top, bottom, parent)
             parent = name
 
+    # Free-side sleeve cloth chain. The drape is three times the volume of the
+    # anatomical arm, so it needs its own bones; binding it to the arm chain is
+    # what produced the rigid triangular wing.
+    upper_r = joints["upperarm_r"]
+    lower_r = joints["lowerarm_r"]
+    hand_r = joints["hand_r"]
+    add("sleeve_r_anchor", upper_r, lower_r, "upperarm_r")
+    drop = max((lower_r[2] - hand_r[2]) * 0.65, body * 0.05)
+    previous = "sleeve_r_anchor"
+    origin = np.array([lower_r[0], lower_r[1], lower_r[2]])
+    for index in range(1, 4):
+        top = origin + np.array([0.0, 0.0, -drop * (index - 1)])
+        bottom = origin + np.array([0.0, 0.0, -drop * index])
+        name = f"sleeve_r_drape_{index:02d}"
+        add(name, top, bottom, previous)
+        previous = name
+
     # Staff deform bone follows the proven staff axis.
     if staff.get("detected"):
         fit_x = staff["axis_x_slope_intercept"]
@@ -228,8 +245,11 @@ def compute_weights(points: np.ndarray, spec, landmarks: dict, staff_mask: np.nd
     sleeve_any = np.zeros(count, dtype=bool)
     arm_share = np.zeros(count, dtype=np.float64)
     for side in ("l", "r"):
+        chain_available = f"sleeve_{side}_anchor" in bones
         allowed = (
-            (masks[f"sleeve_{side}"] | masks[f"hand_{side}_region"]) & free
+            (masks[f"arm_core_{side}"] | masks[f"hand_core_{side}"])
+            if chain_available
+            else (masks[f"sleeve_{side}"] | masks[f"hand_{side}_region"])
         )
         if not allowed.any():
             continue
@@ -251,20 +271,54 @@ def compute_weights(points: np.ndarray, spec, landmarks: dict, staff_mask: np.nd
             arm_share[mask] += influence[mask]
     arm_share = np.clip(arm_share, 0.0, 1.0)
 
+    # The garment is a separate semantic carrier. The hand must not drive the
+    # broad hanging panel; anchor and drape vertices receive only the small
+    # sleeve chain, with distance-weighted overlap between adjacent links.
+    sleeve_garment = np.zeros(count, dtype=bool)
+    for side in ("l", "r"):
+        anchor_mask = masks[f"sleeve_anchor_{side}"] & free
+        drape_mask = masks[f"sleeve_drape_{side}"] & free
+        chain_available = f"sleeve_{side}_anchor" in bones
+        if not chain_available:
+            continue
+        sleeve_garment |= anchor_mask | drape_mask
+        anchor_name = f"sleeve_{side}_anchor"
+        if anchor_name in bones:
+            head, tail = bones[anchor_name]
+            influence = np.clip(1.0 - segment_distance(points, head, tail) / max(float(masks["sleeve_radius"]), 1e-6), 0.0, 1.0) ** 2
+            accumulate(anchor_name, anchor_mask, np.maximum(influence, anchor_mask.astype(np.float64) * 0.25))
+        drape_bones = [f"sleeve_{side}_drape_{index:02d}" for index in range(1, 4) if f"sleeve_{side}_drape_{index:02d}" in bones]
+        drape_distances = np.stack([
+            segment_distance(points, bones[name][0], bones[name][1]) for name in drape_bones
+        ], axis=1)
+        nearest = np.argmin(drape_distances, axis=1)
+        for index in range(1, 4):
+            name = f"sleeve_{side}_drape_{index:02d}"
+            if name not in bones:
+                continue
+            head, tail = bones[name]
+            influence = np.clip(1.0 - segment_distance(points, head, tail) / max(float(masks["sleeve_radius"]) * 1.5, 1e-6), 0.0, 1.0) ** 2
+            band = drape_mask & (np.array(drape_bones)[nearest] == name)
+            accumulate(name, band, np.maximum(influence, band.astype(np.float64) * 0.25))
+
+    # Do not let height-only robe rules reintroduce body weights into the
+    # garment carrier after the arm split.
+    body_free = free & ~sleeve_garment
+
     # Body bones still reach sleeve vertices, scaled down by the arm's share.
     # Excluding them entirely was the normalisation trap described above.
     body_share = 1.0 - arm_share
 
     # 3. Head and neck.
-    head_mask = free & (z > neck_z)
+    head_mask = body_free & (z > neck_z)
     accumulate("head", head_mask, body_share)
-    neck_mask = free & (z <= neck_z) & (z > neck_z - body * 0.05)
+    neck_mask = body_free & (z <= neck_z) & (z > neck_z - body * 0.05)
     blend = np.clip((z - (neck_z - body * 0.05)) / max(body * 0.05, 1e-6), 0.0, 1.0)
     accumulate("neck", neck_mask, blend * body_share)
     accumulate("chest", neck_mask, (1.0 - blend) * body_share)
 
     # 4. Upper robe: pelvis -> spine_01 -> spine_02 -> chest by height.
-    upper = free & ~head_mask & ~neck_mask & (z >= hip_z)
+    upper = body_free & ~head_mask & ~neck_mask & (z >= hip_z)
     stops = [
         ("pelvis", hip_z),
         ("spine_01", landmarks["waist_z"]),
@@ -282,7 +336,7 @@ def compute_weights(points: np.ndarray, spec, landmarks: dict, staff_mask: np.nd
         accumulate(upper_name, band, t * body_share)
 
     # 5. Lower robe: pelvis support near the waist, cloth chains toward the hem.
-    lower = free & (z < hip_z)
+    lower = body_free & (z < hip_z)
     if lower.any():
         span = max(hip_z - hem_z, 1e-6)
         descent = np.clip((hip_z - z) / span, 0.0, 1.0)
@@ -405,7 +459,7 @@ def main() -> None:
 
     armature, spec, socket_records = build_skeleton(landmarks, staff)
 
-    masks = semantic_masks(points, landmarks, staff_mask)
+    masks = semantic_masks_v3(points, landmarks, staff_mask)
     weights = compute_weights(points, spec, landmarks, staff_mask, masks)
     fallback_count, fallback_bones = nearest_bone_fallback(points, spec, weights, count)
     names, matrix, totals, unweighted = normalise(weights, count)
