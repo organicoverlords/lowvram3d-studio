@@ -8,31 +8,24 @@ Before editing, verify repository origin, branch, local HEAD, remote HEAD, and a
 
 Read and execute first:
 
-`docs/MINITURBO_PRODUCTION_QUALITY_FIX_20260802.md`
+`docs/MINITURBO_3STEP_PANDA_FROG_EXPERIMENT_20260802.md`
 
-This supersedes every older instruction that allows Mini Turbo `steps=1` or `steps=2` output to become a textured or canonical baseline.
+The user requested a controlled three-step comparison for:
 
-The pipeline-level fault is now identified:
+1. `tactical_red_panda_scout`
+2. `frog_salvage_diver`
 
-- one-step and two-step runs were diagnostic shortcuts;
-- they were incorrectly promoted into production geometry;
-- the frog's debris halo is fused into the under-denoised main surface;
-- detached-component cleanup cannot safely repair that geometry.
+Change only Mini Turbo inference steps from `2` to `3`. Keep the exact same source, conditioning image, model, guidance, octree, chunks, seed, dtype, cleanup, texture, export, and render settings.
 
-## Required implementation
+Run panda and frog only, one GPU-heavy process at a time.
 
-1. Add explicit `smoke` versus `baseline` run intent.
-2. Make smoke output non-promotable and block it from UV/texture/final stages.
-3. Make Mini Turbo baseline intent use 5 inference steps, guidance 5.0, octree 256, and chunks 1500 on this machine.
-4. Add the shared pre-texture geometry quality gate defined in the authoritative document.
-5. Calibrate the gate so panda repaired v7 passes while frog v7 and v8 fail.
-6. Do not texture geometry that fails the gate.
-7. After CPU tests, run one new five-step frog candidate; permit one alternate fixed seed only if the first candidate fails.
-8. Texture and fresh-import only a passing candidate.
+Do not run five steps.
+Do not run the barn, titan, boat, or shaman.
+Do not perform manual fixes.
+Do not overwrite repaired panda v7 or preserved frog v7/v8.
 
-Do not perform another frog-specific deletion repair.
-Do not rerun the barn.
-Do not change panda repaired v7.
-Do not add another generator or framework.
+For both assets, produce raw geometry, fresh-import metrics, matched clay renders, and side-by-side two-step versus three-step comparisons. Proceed to texture only when the three-step raw geometry is valid enough for a meaningful textured comparison.
 
-The user-defined milestone remains one basic textured, non-animated, fresh-importable model for each of the six benchmark pictures.
+The panda three-step candidate becomes canonical only if it is at least as safe as repaired v7 and visibly better on geometry. The frog three-step candidate must materially reduce the debris halo and fragmented side/rear geometry while retaining its equipment.
+
+Commit and push both experiment results, verify local equals remote and clean worktree, then stop for user review before changing the general production policy.
