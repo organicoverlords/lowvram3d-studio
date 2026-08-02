@@ -9,6 +9,11 @@ on:
         required: false
         default: false
         type: boolean
+  push:
+    branches:
+      - feature/image-world-lighthouse-probe-20260802
+    paths:
+      - .github/image-world-one-gpu-test.txt
 
 permissions:
   contents: write
@@ -19,7 +24,7 @@ concurrency:
 
 env:
   LIGHTHOUSE_FIXTURE_SHA256: "4847ca1ceaba7da83bccd698cbbad56b99d6288530c9e5eab957339caf0302cb"
-  FORCE_WHEN_GPU_BUSY: ${{ inputs.force_when_gpu_busy || false }}
+  FORCE_WHEN_GPU_BUSY: ${{ github.event_name == 'workflow_dispatch' && inputs.force_when_gpu_busy || false }}
 
 jobs:
   lighthouse-moge:
@@ -89,7 +94,7 @@ jobs:
           $env:PYTHONPATH = "$PWD\src;$PWD"
           & $python -m py_compile workers\image_world\moge_probe.py workers\image_world\render_moge_previews.py src\lowvram3d\image_world\moge_probe.py src\lowvram3d\image_world\moge_preview.py
           if ($LASTEXITCODE -ne 0) { throw "Probe compilation failed" }
-          & $python -m pytest tests\test_image_world_moge_probe.py tests\test_image_world_moge_preview.py -q
+          & $python -m pytest tests\test_image_world_moge_probe.py tests\test_image_world_moge_preview.py tests\test_image_world_image_decode.py -q
           if ($LASTEXITCODE -ne 0) { throw "Focused probe tests failed" }
 
       - name: Run lighthouse hardware probe
