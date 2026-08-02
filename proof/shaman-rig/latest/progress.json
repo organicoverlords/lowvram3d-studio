@@ -1,0 +1,188 @@
+{
+  "branch": "magicmusic/parts-pose-materials-20260802",
+  "milestone": 0,
+  "milestone_name": "AUDIT_AND_TRUTH_PACKET",
+  "canonical_source": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\shaman_v2_validation_stance_clean.glb",
+  "canonical_sha256": "2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80",
+  "canonical_source_modified": false,
+  "run_root": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123",
+  "rejected_evidence_preserved": [
+    "...\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb",
+    "previous staff-hole cutter result"
+  ],
+  "systems": [
+    {
+      "system": "SOURCE_IDENTITY",
+      "status": "PROVEN",
+      "proof": "sha256 match against required canonical hash",
+      "next_action": "none",
+      "blocker": "none"
+    },
+    {
+      "system": "SOURCE_AUDIT",
+      "status": "PROVEN",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\source-audit.json",
+      "next_action": "none",
+      "blocker": "none"
+    },
+    {
+      "system": "SOURCE_PREVIEW",
+      "status": "PROVEN",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\shaman_source_contact_sheet.png",
+      "next_action": "none",
+      "blocker": "none"
+    },
+    {
+      "system": "RIG_BASE_TOPOLOGY",
+      "status": "NOT PROVEN",
+      "proof": "weld analysis only",
+      "next_action": "build and gate welded rig base",
+      "blocker": "none"
+    },
+    {
+      "system": "PARTS",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "deterministic semantic region worker",
+      "blocker": "none"
+    },
+    {
+      "system": "STAFF_POLICY",
+      "status": "NOT PROVEN",
+      "proof": "staff candidate detected",
+      "next_action": "implement fused_staff_control",
+      "blocker": "none"
+    },
+    {
+      "system": "POSE_PREP",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "blender A-pose proof with gates",
+      "blocker": "none"
+    },
+    {
+      "system": "RIG_READINESS",
+      "status": "NOT PROVEN",
+      "proof": "audit verdict humanoid_enough=true",
+      "next_action": "re-derive on rig base",
+      "blocker": "none"
+    },
+    {
+      "system": "RIG",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "build modular game skeleton",
+      "blocker": "none"
+    },
+    {
+      "system": "FINGER_TIER",
+      "status": "NOT PROVEN",
+      "proof": "audit recommends TIER 1 capped at TIER 1",
+      "next_action": "re-derive from segmented hands",
+      "blocker": "none"
+    },
+    {
+      "system": "SKIN",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "automatic weights",
+      "blocker": "none"
+    },
+    {
+      "system": "SKIN_QA",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "deformation validation poses",
+      "blocker": "none"
+    },
+    {
+      "system": "MOTION",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "4 clips",
+      "blocker": "none"
+    },
+    {
+      "system": "MOTION_QA",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "loop and drift validation",
+      "blocker": "none"
+    },
+    {
+      "system": "EFFECTS",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "socket manifest and preview collection",
+      "blocker": "none"
+    },
+    {
+      "system": "EXPORT",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "glb fbx blend export",
+      "blocker": "none"
+    },
+    {
+      "system": "EXPORT_QA",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "clean process fresh import",
+      "blocker": "none"
+    },
+    {
+      "system": "TEXTURE",
+      "status": "REJECTED",
+      "proof": "rejected visual baseline preserved",
+      "next_action": "keep out of production manifest",
+      "blocker": "texture cuda lane"
+    },
+    {
+      "system": "TEXTURE_CUDA_LANE",
+      "status": "BLOCKED",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\mv-adapter-cond-fp32-canary\\cond-fp32-20260802-121425",
+      "next_action": "instrumented cuda checkpoint diagnostic",
+      "blocker": "CUDA illegal memory access mid-denoise"
+    }
+  ],
+  "counts": {
+    "objects": 1,
+    "mesh_objects": 1,
+    "armature_objects": 0,
+    "vertices": 3258048,
+    "polygons": 1086965,
+    "triangles": 1086965,
+    "materials": 0,
+    "actions": 0,
+    "armature_datablocks": 0,
+    "vertex_groups": 0,
+    "shape_key_meshes": 0
+  },
+  "welded_topology": {
+    "weld_distance": 0.0001,
+    "welded_vertices": 537041,
+    "welded_edges": 1611294,
+    "welded_faces": 1074083,
+    "connected_components": 60,
+    "largest_component_vertices": 531389,
+    "largest_component_ratio": 0.989475663869239,
+    "components_over_1000_vertices": 1,
+    "boundary_edges": 348,
+    "non_manifold_edges": 13,
+    "is_closed": false
+  },
+  "verdict": {
+    "humanoid_enough_for_automatic_rigging": true,
+    "blocking_reasons": [],
+    "advisory_codes": [
+      "ARMS_DOWN_AT_SIDES_ELEVATES_ARM_TORSO_WEIGHT_BLEED_RISK"
+    ],
+    "posture": "arms_down_at_sides"
+  },
+  "finger_tier_recommendation": 1,
+  "artifacts": {
+    "source_audit": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\source-audit.json",
+    "source_contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\shaman_source_contact_sheet.png",
+    "source_preview_dir": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\source-preview"
+  }
+}
