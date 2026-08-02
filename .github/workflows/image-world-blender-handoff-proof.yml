@@ -60,7 +60,8 @@ jobs:
           $env:PYTHONPATH = "$PWD\src;$PWD"
           & $python -m py_compile `
             src\lowvram3d\image_world\blender_mesh.py `
-            workers\image_world\build_synthetic_surface_fixture.py
+            workers\image_world\build_synthetic_surface_fixture.py `
+            blender\image_world\run_lighthouse_surface_scene.py
           if ($LASTEXITCODE -ne 0) { throw "Python compilation failed" }
           & $python -m pytest `
             tests\test_image_world_blender_mesh.py `
@@ -93,7 +94,7 @@ jobs:
           $root = Join-Path $env:RUNNER_TEMP "image-world-blender-proof"
           $env:PYTHONPATH = "$PWD\src;$PWD"
           & $blender --background --python-use-system-env `
-            --python blender\image_world\build_lighthouse_surface_scene.py -- `
+            --python blender\image_world\run_lighthouse_surface_scene.py -- `
             --projection (Join-Path $root "projection") `
             --blend-output (Join-Path $root "lighthouse-surface-proof.blend") `
             --report-output (Join-Path $root "blender-scene-report.json") `
