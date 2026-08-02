@@ -1,7 +1,7 @@
 """Minimal SD2.1 image-to-multiview camera runtime.
 
 This module reproduces only the camera/control-image and source-image preparation
-used by MV-Adapter's official ``inference_i2mv_sd.py``.  It deliberately avoids
+used by MV-Adapter's official ``inference_i2mv_sd.py``. It deliberately avoids
 ``mvadapter.utils`` because that package eagerly imports optional texturing
 stacks (nvdiffrast and Triton) that are not used by image-to-multiview inference.
 """
@@ -111,6 +111,147 @@ def prepare_reference_image(path: Path, height: int, width: int) -> Image.Image:
     return image.convert("RGB")
 
 
+def _expected_reference_processor_names(pipe: Any) -> tuple[str, ...]:
+    names = {
+        str(getattr(processor, "name"))
+        for processor in pipe.unet.attn_processors.values()
+        if bool(getattr(processor, "use_ref", False))
+        and getattr(processor, "name", None) is not None
+    }
+    if not names:
+        raise RuntimeError("MV-Adapter has no reference-enabled attention processors")
+    return tuple(sorted(names))
+
+
+def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
+    """Preserve the proven reference cache until the first denoising UNet call.
+
+    On the installed MV-Adapter/Diffusers combination the reference UNet pass
+    populates all custom-attention cache entries, but the pipeline later supplies
+    an empty ``ref_hidden_states`` dictionary to denoising. This relay stores only
+    the reference-enabled entries immediately after the reference pass and
+    reconstructs the exact batch expansion intended by the upstream pipeline.
+
+    It never fabricates features: missing expected entries fail closed. A
+    non-empty upstream cache is validated and passed through unchanged.
+    """
+
+    existing = getattr(pipe, "_lowvram3d_reference_cache_relay_state", None)
+    if isinstance(existing, dict):
+        return existing
+
+    import torch
+
+    expected_names = _expected_reference_processor_names(pipe)
+    original_forward = pipe.unet.forward
+    raw_cache: dict[str, Any] = {}
+    state: dict[str, Any] = {
+        "installed": True,
+        "expected_reference_count": len(expected_names),
+        "expected_reference_names": list(expected_names),
+        "reference_cache_observed": False,
+        "reference_cache_count": 0,
+        "reference_cache_missing": [],
+        "denoise_cache_count_before": None,
+        "denoise_cache_count_after": None,
+        "relay_injected": False,
+        "relay_mode": "pending",
+        "num_views": None,
+        "classifier_free_guidance": None,
+        "expanded_batch_sizes": {},
+    }
+
+    def relay_forward(*args, **kwargs):
+        cross_kwargs = kwargs.get("cross_attention_kwargs")
+        if not isinstance(cross_kwargs, dict):
+            return original_forward(*args, **kwargs)
+
+        cache_target = cross_kwargs.get("cache_hidden_states")
+        if isinstance(cache_target, dict):
+            result = original_forward(*args, **kwargs)
+            missing = [name for name in expected_names if name not in cache_target]
+            state["reference_cache_observed"] = True
+            state["reference_cache_count"] = len(cache_target)
+            state["reference_cache_missing"] = missing
+            if missing:
+                raise RuntimeError(
+                    "reference UNet cache is missing required MV entries: "
+                    + ", ".join(missing[:4])
+                )
+            raw_cache.clear()
+            raw_cache.update({name: cache_target[name] for name in expected_names})
+            state["relay_mode"] = "reference_cache_captured"
+            print(
+                f"REFERENCE_CACHE_RELAY_CAPTURED={len(raw_cache)}",
+                flush=True,
+            )
+            return result
+
+        if "ref_hidden_states" in cross_kwargs:
+            supplied = cross_kwargs.get("ref_hidden_states")
+            if not isinstance(supplied, dict):
+                raise RuntimeError("denoising ref_hidden_states is not a dictionary")
+
+            state["denoise_cache_count_before"] = len(supplied)
+            if supplied:
+                missing = [name for name in expected_names if name not in supplied]
+                if missing:
+                    raise RuntimeError(
+                        "upstream denoising cache is incomplete: "
+                        + ", ".join(missing[:4])
+                    )
+                state["denoise_cache_count_after"] = len(supplied)
+                state["relay_mode"] = "upstream_cache_passthrough"
+                return original_forward(*args, **kwargs)
+
+            if not raw_cache:
+                raise RuntimeError(
+                    "denoising reference cache is empty and no captured cache is available"
+                )
+
+            num_views = int(cross_kwargs.get("num_views", len(AZIMUTHS)))
+            if num_views != len(AZIMUTHS):
+                raise RuntimeError(
+                    f"unexpected MV view count for cache relay: {num_views}"
+                )
+
+            do_cfg = bool(pipe.do_classifier_free_guidance)
+            expanded: dict[str, Any] = {}
+            batch_sizes: dict[str, int] = {}
+            for name in expected_names:
+                value = raw_cache[name]
+                if not isinstance(value, torch.Tensor):
+                    raise RuntimeError(f"reference cache entry is not a tensor: {name}")
+                if value.shape[0] != 1:
+                    raise RuntimeError(
+                        f"unexpected reference cache batch for {name}: {value.shape[0]}"
+                    )
+                value = value.repeat_interleave(num_views, dim=0)
+                if do_cfg:
+                    value = torch.cat([torch.zeros_like(value), value], dim=0)
+                expanded[name] = value
+                batch_sizes[name] = int(value.shape[0])
+
+            cross_kwargs["ref_hidden_states"] = expanded
+            raw_cache.clear()
+            state["relay_injected"] = True
+            state["relay_mode"] = "captured_cache_injected"
+            state["num_views"] = num_views
+            state["classifier_free_guidance"] = do_cfg
+            state["denoise_cache_count_after"] = len(expanded)
+            state["expanded_batch_sizes"] = batch_sizes
+            print(
+                f"REFERENCE_CACHE_RELAY_INJECTED={len(expanded)}",
+                flush=True,
+            )
+
+        return original_forward(*args, **kwargs)
+
+    pipe.unet.forward = relay_forward
+    pipe._lowvram3d_reference_cache_relay_state = state
+    return state
+
+
 def run_i2mv_pipeline(
     pipe: Any,
     *,
@@ -124,6 +265,12 @@ def run_i2mv_pipeline(
     device: str = "cuda",
 ):
     import torch
+
+    relay_state = install_reference_cache_relay(pipe)
+    print(
+        f"REFERENCE_CACHE_RELAY_EXPECTED={relay_state['expected_reference_count']}",
+        flush=True,
+    )
 
     control_images = build_orthographic_control_images(len(AZIMUTHS), width, device)
     reference = prepare_reference_image(source_image, height, width)
