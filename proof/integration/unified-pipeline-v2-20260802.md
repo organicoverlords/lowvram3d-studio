@@ -76,6 +76,44 @@ Shaman reuse receipt:
 
 `C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\shaman\diagnostics\unified_pipeline_v2_integration\shaman_reuse\shaman_existing_reuse\state\GENERATE\receipt.json`
 
+## Preserve-source LOD and existing-UV continuation
+
+The current manifest uses `lod.mode=preserve_source`. The LOD receipt records
+`LOD_STAGE=BYPASSED_SOURCE_GEOMETRY`, `LOD_REQUIRED=false`, and source hash
+`1170cff8c1e29b6ab210cac1f8100ca160575e692063c7de0f478db0d7597ff2`.
+The rejected 220k and 250k LOD candidates remain diagnostics only.
+
+The exact projection-fixed 5-step UV source was copied immutably to:
+
+`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\texture_completion_v2\uv_source\tactical_red_panda_scout_5step_uv_source_immutable.glb`
+
+Its verified SHA-256 is
+`296e274db799efb86a0e6c1984ce9fca46f32ece6ab28b061eda00658ac94e0e`.
+The existing-UV validation report proves a fresh Blender import, finite and
+in-bounds UVs, material resolution, and packed texture resolution. A byte/face
+identity claim against the separate sanitized raw source is not made: the
+historical textured artifact has 644,412 imported triangles while the raw
+sanitized source parses to 693,576 triangles.
+
+## Texture-completion evidence
+
+The preserved original proof root is:
+
+`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\texture_completion_v2\unified_pipeline`
+
+The TEXTURE receipt is proven after the all-primitive diagnostic-reader fix.
+The native 1024x1024 base-colour atlas, material manifest, textured GLB, and
+Blender review renders are in `state\TEXTURE\proven`. The review set contains
+front, three-quarter, side, rear, and close-up renders. The projection report
+records 91.52% observed and 8.48% synthesized UV coverage. The rear render is
+retained as direct visual evidence; it shows the existing artifact’s visible
+black/debris defects, so those are not hidden by the structural receipt.
+
+TEXTURE_QA was run against the preserved artifact and rejected with
+`FLOATING_DEBRIS` and `UV_OVERLAP`. Its proposed repair included xatlas; that
+repair was not authorized and was not run. EXPORT_QA for this new completion
+artifact therefore remains unproven.
+
 ## Classifications
 
 - `UNIFIED_STAGE_INTERFACE=PROVEN`
@@ -86,13 +124,23 @@ Shaman reuse receipt:
 - `PANDA_REAR_FACE_ABSENT=PROVEN` (existing fixed artifact and prior rear render)
 - `SHAMAN_EXISTING_GEOMETRY_REUSED=PROVEN`
 - `FRESH_IMPORT_EXPORT_QA=PROVEN`
+- `LOD_STAGE=BYPASSED_SOURCE_GEOMETRY`
+- `LOD_REQUIRED=false`
+- `PANDA_EXISTING_UV_REUSE=PROVEN`
+- `PANDA_NEW_UV_UNWRAP=NOT_REQUIRED`
+- `XATLAS_DEFAULT_ROUTE=REJECTED_FOR_RUNTIME`
+- `PANDA_GEOMETRY_IDENTITY=NOT_PROVEN`
+- `GRAPH_MATERIAL_PROPAGATION=NOT_PROVEN`
+- `TEXTURE_COMPLETION_STAGE=PROVEN_WITH_LIMITATIONS`
+- `TEXTURE_QA=REJECTED_FLOATING_DEBRIS_AND_UV_OVERLAP`
+- `EXPORT_QA_TEXTURE_COMPLETION=NOT_PROVEN`
 - `WHOLE_OLD_BRANCH_MERGE=REJECTED`
 - `LOD_220K_STRUCTURAL_IMPORT=PROVEN`
 - `LOD_TOPOLOGY_GATE=REJECTED`
 - `LOD_BASELINE=NOT_PROVEN`
 - `UV_ATLAS_V2=NOT_PROVEN` (blocked by the LOD topology gate; no real xatlas
   process was started in this proof)
-- `FULL_AROUND_TEXTURE_BASELINE=NOT_PROVEN`
+- `FULL_AROUND_TEXTURE_BASELINE=REJECTED_TEXTURE_QA`
 
 No new dropped-image GPU run was started. The production branch remained
 untouched; this worktree is the only location containing the integration

@@ -383,11 +383,13 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                                    detail=f"ORM exit {code}: {out[-800:]}")
 
             region_report = stage / "region_report.json"
-            pipeline.run([
+            code, out = pipeline.run([
                 pipeline.python, w("pipeline_region_diagnostic.py"), "--mesh", mesh,
                 "--npz", npz, "--basecolor", basecolor, "--coverage", coverage_oriented,
                 "--class-map", class_map, "--report", region_report, "--region", "all",
             ])
+            if code != 0 or not region_report.exists():
+                return StageResult("failed", detail=f"region diagnostic exit {code}: {out[-1000:]}")
 
             glb = stage / f"{asset_id}_textured_lod0.glb"
             blend = stage / f"{asset_id}_textured_lod0.blend"
@@ -408,7 +410,11 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 pipeline, b("shaman_texture_review.py"), "--glb", glb,
                 "--output-dir", render_dir, "--report", review_report,
                 "--resolution", "1024", "--samples", "24",
-                "--front-direction", front_direction,
+                # argparse treats a value beginning with '-' as another option
+                # when it is passed as a separate argv item.  Use the equals
+                # form so the valid -z direction survives the subprocess
+                # boundary as a value.
+                f"--front-direction={front_direction}",
             )
             if code != 0:
                 return StageResult("failed", detail=f"review renderer exit {code}: {out[-1000:]}")

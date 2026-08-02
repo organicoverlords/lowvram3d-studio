@@ -21,6 +21,7 @@ import cv2
 import numpy as np
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
+from mesh_io import read_glb as read_mesh_glb
 
 WELD = 4e-4
 FACING_MIN = 0.15
@@ -31,33 +32,10 @@ CLASS_NAMES = ("cloth", "bone", "wood", "metal", "organic")
 
 
 def read_glb(path: Path):
-    data = path.read_bytes()
-    offset, meta, binary = 12, None, None
-    while offset < len(data):
-        length, kind = struct.unpack_from("<II", data, offset)
-        payload = data[offset + 8 : offset + 8 + length]
-        if kind == 0x4E4F534A:
-            meta = json.loads(payload)
-        elif kind == 0x004E4942:
-            binary = payload
-        offset += 8 + length
-
-    def accessor(index):
-        acc = meta["accessors"][index]
-        view = meta["bufferViews"][acc["bufferView"]]
-        count, width = acc["count"], TYPE_COUNT[acc["type"]]
-        item = COMPONENT_SIZE[acc["componentType"]] * width
-        stride = view.get("byteStride") or item
-        start = view.get("byteOffset", 0) + acc.get("byteOffset", 0)
-        raw = np.frombuffer(binary, np.uint8, count=stride * (count - 1) + item, offset=start)
-        if stride != item:
-            raw = np.lib.stride_tricks.as_strided(raw, (count, item), (stride, 1)).copy()
-        return raw.reshape(-1).view(COMPONENT_DTYPE[acc["componentType"]]).reshape(count, width)
-
-    primitive = meta["meshes"][0]["primitives"][0]
-    return (accessor(primitive["attributes"]["POSITION"]).astype(np.float64),
-            accessor(primitive["attributes"]["TEXCOORD_0"]).astype(np.float64),
-            accessor(primitive["indices"]).reshape(-1, 3).astype(np.int64))
+    positions, _normals, uv, tris = read_mesh_glb(path)
+    if uv is None:
+        raise RuntimeError(f"GLB has no TEXCOORD_0: {path}")
+    return positions.astype(np.float64), uv.astype(np.float64), tris.astype(np.int64)
 
 
 def label_by_sharing(tris: np.ndarray, vertex_labels: np.ndarray) -> np.ndarray:
