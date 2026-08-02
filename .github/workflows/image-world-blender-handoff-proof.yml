@@ -21,6 +21,9 @@ concurrency:
   group: image-world-blender-handoff-proof
   cancel-in-progress: true
 
+env:
+  IMAGE_WORLD_LOCAL_WORKER_TRIGGER: "2026-08-02T19:08:00+03:00"
+
 jobs:
   blender-proof:
     if: github.repository_owner == 'organicoverlords'
@@ -48,6 +51,7 @@ jobs:
           if ($head -ne "${{ github.sha }}") {
             throw "HEAD $head does not equal workflow SHA ${{ github.sha }}"
           }
+          Write-Host "TRIGGER=$env:IMAGE_WORLD_LOCAL_WORKER_TRIGGER"
           git remote -v
 
       - name: Run pure mesh tests
