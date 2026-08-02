@@ -1,7 +1,7 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "name": "multi_asset_validation_20260802",
-  "description": "Automatic-profile and local-vs-online-reference validation across the shaman, Lucky Drown casino boat, steampunk snapping turtle, and frog salvage diver.",
+  "description": "Automatic-profile and local-vs-online-reference validation across the shaman, Lucky Drown casino boat, steampunk snapping turtle, frog salvage diver, and giant tripod vending-machine walker.",
   "manual_profile_selection_allowed": false,
   "gpu_heavy_jobs_parallelism": 1,
   "output_root_template": "C:\\AI\\LowVRAM3D-benchmarks\\multi-asset-validation\\run-{timestamp}",
@@ -123,6 +123,61 @@
         "attached_equipment"
       ],
       "equipment_policy": "rigid equipment and sockets must be separated from soft-body weighting when topology permits"
+    },
+    {
+      "id": "giant_tripod_vending_machine_walker",
+      "required": true,
+      "role": "articulated_hard_surface_benchmark",
+      "source_filename_candidates": [
+        "tripod vending machine",
+        "vending machine walker",
+        "three legged vending machine",
+        "giant vending machine mech"
+      ],
+      "visual_identity": [
+        "tall rectangular green vending-machine or kiosk body",
+        "exactly three long articulated mechanical legs",
+        "large industrial feet on sandy ground",
+        "central front vending or display facade",
+        "rusted pipes cables hoses signs and utility attachments",
+        "camera lamp sensor or floodlight cluster above the body",
+        "orange traffic cones visible in the source scene",
+        "post-apocalyptic weathered hard-surface styling"
+      ],
+      "expected_base_profiles": [
+        "articulated_prop",
+        "vehicle",
+        "building",
+        "unknown"
+      ],
+      "expected_traits": [
+        "three_legged_mechanical",
+        "hard_surface",
+        "rigid_body_segments",
+        "mechanical_hinges",
+        "large_scale_structure",
+        "vending_machine_facade",
+        "camera_or_sensor_head",
+        "hanging_cables_or_hoses",
+        "thin_structures",
+        "attached_signage_and_props",
+        "asymmetric_surface_detail"
+      ],
+      "forbidden_routes": [
+        "humanoid_rig",
+        "humanoid_a_pose",
+        "quadruped_creature_rig",
+        "whole_model_organic_skinning"
+      ],
+      "optional_articulation": [
+        "three_independent_leg_chains",
+        "foot_controls",
+        "body_lift_and_weight_shift",
+        "camera_sensor_pan_tilt",
+        "door_or_panel_hinges",
+        "cable_secondary_motion"
+      ],
+      "benchmark_addendum": "docs/BENCHMARK_ADDENDUM_TRIPOD_VENDING_WALKER_20260802.md"
     }
   ],
   "required_discovery_outputs": [
