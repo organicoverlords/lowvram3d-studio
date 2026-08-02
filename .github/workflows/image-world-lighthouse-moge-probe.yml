@@ -9,6 +9,7 @@ on:
     paths:
       - .github/workflows/image-world-lighthouse-moge-probe.yml
       - scripts/run-image-world-lighthouse-moge-probe.ps1
+      - benchmarks/image_world/fixtures/lighthouse_probe_512_q80.jpg.b64
       - workers/image_world/moge_probe.py
       - workers/image_world/render_moge_previews.py
       - src/lowvram3d/image_world/moge_probe.py
@@ -24,7 +25,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_WORLD_LOCAL_WORKER_TRIGGER: "2026-08-02T19:09:00+03:00"
+  IMAGE_WORLD_LOCAL_WORKER_TRIGGER: "2026-08-02T19:29:00+03:00"
 
 jobs:
   lighthouse-moge:
@@ -81,17 +82,17 @@ jobs:
             -q
           if ($LASTEXITCODE -ne 0) { throw "Focused image-world probe tests failed" }
 
-      - name: Run canonical lighthouse hardware probe
+      - name: Run repository lighthouse hardware probe
         shell: powershell
         run: |
           $output = Join-Path $env:RUNNER_TEMP "image-world-lighthouse-moge"
           & .\scripts\run-image-world-lighthouse-moge-probe.ps1 `
             -OutputRoot $output `
             -NumTokens 1200 `
-            -InputLongEdge 768 `
+            -InputLongEdge 512 `
             -MaxGpuMemoryMb 5600
           if ($LASTEXITCODE -ne 0) {
-            throw "Canonical lighthouse MoGe probe failed with exit code $LASTEXITCODE"
+            throw "Lighthouse MoGe probe failed with exit code $LASTEXITCODE"
           }
 
       - name: Publish compact probe evidence
