@@ -26,7 +26,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_WORLD_LOCAL_WORKER_TRIGGER: "2026-08-02T19:35:00+03:00"
+  IMAGE_WORLD_LOCAL_WORKER_TRIGGER: "2026-08-02T19:42:00+03:00"
+  LIGHTHOUSE_FIXTURE_SHA256: "4847ca1ceaba7da83bccd698cbbad56b99d6288530c9e5eab957339caf0302cb"
 
 jobs:
   lighthouse-moge:
@@ -41,26 +42,37 @@ jobs:
           clean: true
           fetch-depth: 1
 
-      - name: Verify trusted ref and clean checkout
+      - name: Verify repository and fixture identity
         shell: powershell
         run: |
-          $expected = "refs/heads/feature/image-world-lighthouse-probe-20260802"
-          if ("${{ github.ref }}" -ne $expected) {
-            throw "Unexpected ref. Expected $expected, got ${{ github.ref }}"
+          $expectedRef = "refs/heads/feature/image-world-lighthouse-probe-20260802"
+          if ("${{ github.ref }}" -ne $expectedRef) {
+            throw "Unexpected ref. Expected $expectedRef, got ${{ github.ref }}"
           }
-          $dirty = @(git status --short)
-          if ($dirty.Count -gt 0) {
-            throw "Runner checkout is dirty before execution: $($dirty -join '; ')"
+          if (@(git status --short).Count -gt 0) {
+            throw "Runner checkout is dirty before execution"
           }
           $head = (git rev-parse HEAD).Trim()
           if ($head -ne "${{ github.sha }}") {
             throw "Checked-out HEAD $head does not equal workflow SHA ${{ github.sha }}"
           }
-          Write-Host "TRIGGER=$env:IMAGE_WORLD_LOCAL_WORKER_TRIGGER"
+          $remote = (git remote get-url origin).Trim()
+          if ($remote -notmatch "organicoverlords/lowvram3d-studio") {
+            throw "Unexpected origin remote: $remote"
+          }
+          $fixture = Join-Path $PWD "benchmarks\image_world\fixtures\lighthouse_probe_512_q80.jpg"
+          if (-not (Test-Path -LiteralPath $fixture -PathType Leaf)) {
+            throw "Lighthouse fixture is missing: $fixture"
+          }
+          $actual = (Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $env:LIGHTHOUSE_FIXTURE_SHA256) {
+            throw "Lighthouse fixture hash mismatch. Expected $env:LIGHTHOUSE_FIXTURE_SHA256, got $actual"
+          }
           Write-Host "REPO=$PWD"
           Write-Host "BRANCH=${{ github.ref_name }}"
           Write-Host "HEAD=$head"
-          git remote -v
+          Write-Host "REMOTE=$remote"
+          Write-Host "FIXTURE_SHA256=$actual"
 
       - name: Compile probe and run focused tests
         shell: powershell
@@ -76,30 +88,21 @@ jobs:
             src\lowvram3d\image_world\moge_probe.py `
             src\lowvram3d\image_world\moge_preview.py
           if ($LASTEXITCODE -ne 0) { throw "Image-world probe compilation failed" }
-
           & $python -m pytest `
             tests\test_image_world_moge_probe.py `
             tests\test_image_world_moge_preview.py `
             -q
           if ($LASTEXITCODE -ne 0) { throw "Focused image-world probe tests failed" }
 
-      - name: Run repository lighthouse hardware probe
+      - name: Run lighthouse hardware probe
         shell: powershell
         run: |
-          $binaryFixture = Join-Path $PWD "benchmarks\image_world\fixtures\lighthouse_probe_512_q80.jpg"
-          $base64Fixture = Join-Path $PWD "benchmarks\image_world\fixtures\lighthouse_probe_512_q80.jpg.b64"
-          if (-not (Test-Path -LiteralPath $binaryFixture -PathType Leaf)) {
-            throw "Binary lighthouse fixture is missing: $binaryFixture"
-          }
-          $binaryHash = (Get-FileHash -LiteralPath $binaryFixture -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($binaryHash -ne "058302a0bbb39071d05bef63514dbb0e7b0250a9af6ec1055cbb50f39411b8ed") {
-            throw "Binary lighthouse fixture hash mismatch: $binaryHash"
-          }
-          $encoded = [Convert]::ToBase64String([IO.File]::ReadAllBytes($binaryFixture))
-          [IO.File]::WriteAllText($base64Fixture, $encoded, [Text.Encoding]::ASCII)
-
+          $fixture = Join-Path $PWD "benchmarks\image_world\fixtures\lighthouse_probe_512_q80.jpg"
           $output = Join-Path $env:RUNNER_TEMP "image-world-lighthouse-moge"
           & .\scripts\run-image-world-lighthouse-moge-probe.ps1 `
+            -ImagePath $fixture `
+            -CanonicalParentSha256 $env:LIGHTHOUSE_FIXTURE_SHA256 `
+            -FixtureSha256 $env:LIGHTHOUSE_FIXTURE_SHA256 `
             -OutputRoot $output `
             -NumTokens 1200 `
             -InputLongEdge 512 `
@@ -118,25 +121,16 @@ jobs:
             Remove-Item -LiteralPath $evidence -Recurse -Force
           }
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-
           foreach ($name in @("setup-report.json", "moge-probe-report.json")) {
             $path = Join-Path $source $name
             if (Test-Path -LiteralPath $path -PathType Leaf) {
               Copy-Item -LiteralPath $path -Destination (Join-Path $evidence $name) -Force
             }
           }
-
           $previewSource = Join-Path $source "previews"
-          $previewEvidence = Join-Path $evidence "previews"
           if (Test-Path -LiteralPath $previewSource -PathType Container) {
-            New-Item -ItemType Directory -Path $previewEvidence -Force | Out-Null
-            Get-ChildItem -LiteralPath $previewSource -File | Where-Object {
-              $_.Extension -in @(".png", ".json")
-            } | ForEach-Object {
-              Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $previewEvidence $_.Name) -Force
-            }
+            Copy-Item -LiteralPath $previewSource -Destination (Join-Path $evidence "previews") -Recurse -Force
           }
-
           $probeStatus = "MISSING"
           $peakReservedMb = $null
           $probeReport = Join-Path $source "moge-probe-report.json"
@@ -149,26 +143,21 @@ jobs:
               $probeStatus = "INVALID_REPORT"
             }
           }
-
           [ordered]@{
             workflow_run_id = "${{ github.run_id }}"
             workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            workflow = "${{ github.workflow }}"
             branch = "${{ github.ref_name }}"
             head_sha = "${{ github.sha }}"
             probe_status = $probeStatus
             peak_gpu_reserved_mb = $peakReservedMb
-            compact_evidence_only = $true
+            fixture_sha256 = $env:LIGHTHOUSE_FIXTURE_SHA256
             raw_geometry_in_artifact = (Test-Path -LiteralPath (Join-Path $source "geometry\points.npy"))
             recorded_at = (Get-Date).ToUniversalTime().ToString("o")
           } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence "workflow-receipt.json") -Encoding utf8
-
-          git checkout -- benchmarks/image_world/fixtures/lighthouse_probe_512_q80.jpg.b64
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- evidence/latest-image-world-lighthouse-moge
-          $changes = @(git status --porcelain -- evidence/latest-image-world-lighthouse-moge)
-          if ($changes.Count -gt 0) {
+          if (@(git status --porcelain -- evidence/latest-image-world-lighthouse-moge).Count -gt 0) {
             git commit -m "evidence: record lighthouse MoGe probe ${{ github.run_id }}"
             if ($LASTEXITCODE -ne 0) { throw "Could not commit lighthouse probe evidence" }
             git push origin HEAD:feature/image-world-lighthouse-probe-20260802
