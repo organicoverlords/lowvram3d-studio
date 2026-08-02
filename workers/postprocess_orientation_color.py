@@ -190,7 +190,7 @@ def main() -> int:
     view_script = repo_root / "blender" / "postprocess_orientation_color_views.py"
     run_blender(Path(args.blender), view_script,
                 ["--mode", "render_yaws", "--glb", args.glb, "--output-dir", str(before_dir),
-                 "--front-direction", args.front_direction, "--resolution", str(args.resolution),
+                 f"--front-direction={args.front_direction}", "--resolution", str(args.resolution),
                  "--samples", str(args.samples)], repo_root)
     add_required_view_aliases(before_dir)
     scores = {}
@@ -213,7 +213,7 @@ def main() -> int:
 
     run_blender(Path(args.blender), view_script,
                 ["--mode", "render_yaws", "--glb", str(working_glb), "--output-dir", str(after_dir),
-                 "--front-direction", args.front_direction, "--resolution", str(args.resolution),
+                 f"--front-direction={args.front_direction}", "--resolution", str(args.resolution),
                  "--samples", str(args.samples)], repo_root)
     add_required_view_aliases(after_dir)
     front = cv2.imread(str(after_dir / "yaw_0.png"), cv2.IMREAD_UNCHANGED)
@@ -231,8 +231,8 @@ def main() -> int:
                      "--basecolor", str(recovered_path), "--output-glb", str(corrected_glb)], repo_root)
         working_glb = corrected_glb
         run_blender(Path(args.blender), view_script,
-                    ["--mode", "render_yaws", "--glb", str(working_glb), "--output-dir", str(after_dir),
-                     "--front-direction", args.front_direction, "--resolution", str(args.resolution),
+                     ["--mode", "render_yaws", "--glb", str(working_glb), "--output-dir", str(after_dir),
+                     f"--front-direction={args.front_direction}", "--resolution", str(args.resolution),
                      "--samples", str(args.samples)], repo_root)
         add_required_view_aliases(after_dir)
     else:
