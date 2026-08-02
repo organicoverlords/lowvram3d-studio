@@ -6,55 +6,33 @@ Before editing, verify repository origin, branch, local HEAD, remote HEAD, and a
 
 ## Immediate authoritative task
 
-The six benchmark pictures are now staged locally at:
+Read and execute first:
 
-`C:\Users\Lauri\Downloads\benchmarkpics`
+`docs/MINITURBO_PRODUCTION_QUALITY_FIX_20260802.md`
 
-Read and execute this file first:
+This supersedes every older instruction that allows Mini Turbo `steps=1` or `steps=2` output to become a textured or canonical baseline.
 
-`docs/CODEX_SIX_BENCHMARKS_EXECUTION_20260802.md`
+The pipeline-level fault is now identified:
 
-It supersedes older discovery and execution-order instructions for the next milestone.
+- one-step and two-step runs were diagnostic shortcuts;
+- they were incorrectly promoted into production geometry;
+- the frog's debris halo is fused into the under-denoised main surface;
+- detached-component cleanup cannot safely repair that geometry.
 
-## User-defined milestone
+## Required implementation
 
-Produce one **basic textured, non-animated, fresh-importable model for each of the six pictures** before doing any rigging, animation, advanced retopology, LOD refinement, material refinement, telemetry work, engine design, whole-library pairing, or unrelated refactoring.
+1. Add explicit `smoke` versus `baseline` run intent.
+2. Make smoke output non-promotable and block it from UV/texture/final stages.
+3. Make Mini Turbo baseline intent use 5 inference steps, guidance 5.0, octree 256, and chunks 1500 on this machine.
+4. Add the shared pre-texture geometry quality gate defined in the authoritative document.
+5. Calibrate the gate so panda repaired v7 passes while frog v7 and v8 fail.
+6. Do not texture geometry that fails the gate.
+7. After CPU tests, run one new five-step frog candidate; permit one alternate fixed seed only if the first candidate fails.
+8. Texture and fresh-import only a passing candidate.
 
-A geometry-only GLB does not count.
+Do not perform another frog-specific deletion repair.
+Do not rerun the barn.
+Do not change panda repaired v7.
+Do not add another generator or framework.
 
-Stable identities:
-
-1. `frog_salvage_diver`
-2. `tactical_red_panda_scout`
-3. `lucky_drown_casino_boat`
-4. `antlered_bird_shaman_anchor`
-5. `wind_bent_barn_and_trees`
-6. `mossy_mountain_titan`
-
-Map by visual content, not filenames.
-
-## Mandatory production order
-
-1. Preserve all six exact source bytes in one GitHub source-pack folder with hashes and manifest.
-2. `tactical_red_panda_scout` basic textured baseline.
-3. `frog_salvage_diver` basic textured baseline.
-4. `mossy_mountain_titan` basic textured baseline.
-5. `lucky_drown_casino_boat` basic textured baseline.
-6. `antlered_bird_shaman_anchor` basic textured baseline using existing geometry; no sleeve or rig retry.
-7. `wind_bent_barn_and_trees` basic textured baseline using the best existing proven one-step geometry; no long barn regeneration.
-
-Run one GPU-heavy process at a time.
-
-## Required result for each asset
-
-- real non-empty textured GLB;
-- texture visibly bound to imported material;
-- clean Blender fresh import;
-- source-match and multi-angle renders;
-- contact sheet;
-- geometry/texture/import report;
-- no armature or animation requirement.
-
-Use only `PROVEN`, `REJECTED`, `NOT_PROVEN`, or `BLOCKED` with exact reasons.
-
-Continue automatically from one asset to the next. A blocker on one asset must not stop unrelated assets unless it proves a shared failure affecting every route.
+The user-defined milestone remains one basic textured, non-animated, fresh-importable model for each of the six benchmark pictures.
