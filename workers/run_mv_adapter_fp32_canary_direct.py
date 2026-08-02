@@ -87,13 +87,14 @@ def count_custom_mv_attention_processors(pipe: Any) -> int:
 
 
 def install_low_vram_offload(pipe: Any, torch_module: Any) -> dict[str, Any]:
-    """Use sequential offload and explicitly hook the dynamic condition encoder.
+    """Offload the whole UNet per forward and hook the dynamic condition encoder.
 
     ``cond_encoder`` is created after ``from_pretrained`` and is not a registered
-    DiffusionPipeline component. Standard model CPU offload therefore left its
-    weights on CPU while the control tensor was on CUDA. Sequential offload is
-    used for registered pipeline modules and Accelerate's per-forward CPU
-    offload hook is installed explicitly for the custom condition encoder.
+    DiffusionPipeline component. Standard model CPU offload therefore omits it.
+    The prior sequential-offload experiment also changed MV-Adapter reference
+    cache behaviour and produced missing-reference KeyErrors. Keep the complete
+    UNet, including its custom attention processors, together during each UNet
+    call, while offloading the condition encoder independently per forward.
     """
 
     from accelerate import cpu_offload
@@ -102,7 +103,7 @@ def install_low_vram_offload(pipe: Any, torch_module: Any) -> dict[str, Any]:
     if custom_before <= 0:
         raise RuntimeError("MV-Adapter custom attention processors are missing")
 
-    pipe.enable_sequential_cpu_offload(gpu_id=0)
+    pipe.enable_model_cpu_offload(gpu_id=0)
 
     execution_device = torch_module.device("cuda:0")
     pipe.cond_encoder = cpu_offload(
@@ -118,17 +119,22 @@ def install_low_vram_offload(pipe: Any, torch_module: Any) -> dict[str, Any]:
             f"before={custom_before} after={custom_after}"
         )
 
-    hook = getattr(pipe.cond_encoder, "_hf_hook", None)
-    if hook is None:
+    cond_hook = getattr(pipe.cond_encoder, "_hf_hook", None)
+    unet_hook = getattr(pipe.unet, "_hf_hook", None)
+    if cond_hook is None:
         raise RuntimeError("condition encoder CPU-offload hook was not installed")
+    if unet_hook is None:
+        raise RuntimeError("UNet model CPU-offload hook was not installed")
 
     return {
-        "mode": "sequential_cpu_offload_plus_condition_encoder_cpu_offload",
-        "condition_encoder_hook": type(hook).__name__,
+        "mode": "model_cpu_offload_plus_condition_encoder_cpu_offload",
+        "condition_encoder_hook": type(cond_hook).__name__,
+        "unet_hook": type(unet_hook).__name__,
         "execution_device": str(execution_device),
         "custom_mv_attention_processors_before": custom_before,
         "custom_mv_attention_processors_after": custom_after,
         "attention_slicing_enabled": False,
+        "sequential_cpu_offload_enabled": False,
     }
 
 
@@ -285,9 +291,11 @@ def main() -> None:
         report["settings"]["resolved_offload_mode"] = report["offload"]["mode"]
 
         print(f"OFFLOAD_MODE={report['offload']['mode']}", flush=True)
+        print(f"UNET_HOOK={report['offload']['unet_hook']}", flush=True)
         print(f"CONDITION_ENCODER_HOOK={report['offload']['condition_encoder_hook']}", flush=True)
         print(f"CUSTOM_MV_ATTENTION_PROCESSORS={custom_attention_count}", flush=True)
         print("ATTENTION_SLICING_ENABLED=false", flush=True)
+        print("SEQUENTIAL_CPU_OFFLOAD_ENABLED=false", flush=True)
         print(f"UNET_DTYPE={unet_dtype}", flush=True)
         print(f"CONDITION_ENCODER_DTYPE={cond_encoder_dtype}", flush=True)
         print(f"VAE_DTYPE={pipe.vae.dtype}", flush=True)
