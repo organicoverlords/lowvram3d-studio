@@ -132,6 +132,12 @@ def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
     the reference-enabled entries immediately after the reference pass and
     reconstructs the exact batch expansion intended by the upstream pipeline.
 
+    Accelerate's model CPU-offload wrapper sits around ``UNet.forward`` and can
+    pass a copied cross-attention dictionary to the wrapped forward. Therefore
+    the relay must be installed as ``_old_forward`` inside that wrapper, not
+    outside it. This keeps capture and injection on the exact dictionaries seen
+    by the attention processors.
+
     It never fabricates features: missing expected entries fail closed. A
     non-empty upstream cache is validated and passed through unchanged.
     """
@@ -143,10 +149,22 @@ def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
     import torch
 
     expected_names = _expected_reference_processor_names(pipe)
-    original_forward = pipe.unet.forward
+    accelerate_hook = getattr(pipe.unet, "_hf_hook", None)
+    accelerate_old_forward = getattr(pipe.unet, "_old_forward", None)
+    if accelerate_hook is not None and callable(accelerate_old_forward):
+        original_forward = accelerate_old_forward
+        placement = "inside_accelerate_hook"
+    else:
+        original_forward = pipe.unet.forward
+        placement = "direct_forward"
+
     raw_cache: dict[str, Any] = {}
     state: dict[str, Any] = {
         "installed": True,
+        "placement": placement,
+        "accelerate_hook": (
+            type(accelerate_hook).__name__ if accelerate_hook is not None else None
+        ),
         "expected_reference_count": len(expected_names),
         "expected_reference_names": list(expected_names),
         "reference_cache_observed": False,
@@ -247,7 +265,11 @@ def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
 
         return original_forward(*args, **kwargs)
 
-    pipe.unet.forward = relay_forward
+    if placement == "inside_accelerate_hook":
+        pipe.unet._old_forward = relay_forward
+    else:
+        pipe.unet.forward = relay_forward
+
     pipe._lowvram3d_reference_cache_relay_state = state
     return state
 
@@ -269,6 +291,10 @@ def run_i2mv_pipeline(
     relay_state = install_reference_cache_relay(pipe)
     print(
         f"REFERENCE_CACHE_RELAY_EXPECTED={relay_state['expected_reference_count']}",
+        flush=True,
+    )
+    print(
+        f"REFERENCE_CACHE_RELAY_PLACEMENT={relay_state['placement']}",
         flush=True,
     )
 
