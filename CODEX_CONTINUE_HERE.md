@@ -4,47 +4,57 @@ Work only on branch `magicmusic/parts-pose-materials-20260802`.
 
 Before editing, verify repository origin, branch, local HEAD, remote HEAD, and a clean worktree. Never work on `main`, merge, or force-push.
 
-## Current authoritative state
+## Immediate authoritative task
 
-The Shaman automatic sleeve lane has reached its final bounded result:
+The six benchmark pictures are now staged locally at:
 
-`BLOCKED_SHAMAN_SLEEVE_REQUIRES_MANUAL_RETOPOLOGY`
+`C:\Users\Lauri\Downloads\benchmarkpics`
 
-Commit containing the garment-separation proof:
+Read and execute this file first:
 
-`a5bf67f463557eea259c50fb1c8fe3bf1b25e25b`
+`docs/CODEX_SIX_BENCHMARKS_EXECUTION_20260802.md`
 
-Do not run another automatic sleeve extraction, mask-radius adjustment, or weighting retry. Preserve the Shaman as a mandatory regression anchor and resume that sleeve only in a separately approved manual-retopology lane.
+It supersedes older discovery and execution-order instructions for the next milestone.
 
-The user's broader models folder may still be moving. Do not inventory or reorganize the whole library. Use only bounded read-only discovery for the required benchmark inputs, copy selected inputs into a content-hashed immutable staging directory, and work from those staged copies.
+## User-defined milestone
 
-Read these files in order:
+Produce one **basic textured, non-animated, fresh-importable model for each of the six pictures** before doing any rigging, animation, advanced retopology, LOD refinement, material refinement, telemetry work, engine design, whole-library pairing, or unrelated refactoring.
 
-1. `docs/PIPELINE_EXECUTION_NOW_20260802.md`
-2. `configs/benchmarks/multi_asset_validation_20260802.json`
-3. `docs/BENCHMARK_ADDENDUM_BARN_AND_TREES_20260802.md`
-4. `docs/CODEX_MULTI_ASSET_CONTINUATION_20260802.md`
-5. `proof/shaman-rig/latest/progress.json`
+A geometry-only GLB does not count.
 
-## Required benchmark matrix
+Stable identities:
 
-1. Shaman regression anchor — sleeve blocked pending manual retopology.
-2. Lucky Drown casino boat — vehicle/building route.
-3. Steampunk snapping turtle — quadruped creature route.
-4. Frog salvage diver — equipped nonhuman humanoid route.
-5. Barn with trees — static building/environment route; nothing is walking or mechanical.
+1. `frog_salvage_diver`
+2. `tactical_red_panda_scout`
+3. `lucky_drown_casino_boat`
+4. `antlered_bird_shaman_anchor`
+5. `wind_bent_barn_and_trees`
+6. `mossy_mountain_titan`
 
-## Immediate execution order
+Map by visual content, not filenames.
 
-1. Verify and preserve the Shaman blocker proof.
-2. Implement or finish automatic profile discovery.
-3. Perform bounded discovery and immutable staging for the casino boat, barn with trees, turtle, and frog diver.
-4. Run the casino-boat smoke test.
-5. Run the barn-and-trees static-scene smoke test with no rig or animation.
-6. Run the turtle smoke test.
-7. Run the frog-diver smoke test.
-8. After shared pipeline changes, rerun only the proven Shaman regression gates; do not retry its blocked sleeve.
+## Mandatory production order
+
+1. Preserve all six exact source bytes in one GitHub source-pack folder with hashes and manifest.
+2. `tactical_red_panda_scout` basic textured baseline.
+3. `frog_salvage_diver` basic textured baseline.
+4. `mossy_mountain_titan` basic textured baseline.
+5. `lucky_drown_casino_boat` basic textured baseline.
+6. `antlered_bird_shaman_anchor` basic textured baseline using existing geometry; no sleeve or rig retry.
+7. `wind_bent_barn_and_trees` basic textured baseline using the best existing proven one-step geometry; no long barn regeneration.
 
 Run one GPU-heavy process at a time.
 
-Do not claim a stage complete from code/tests alone. Execute Blender workers and produce visible artifacts. Classify every claim as `PROVEN`, `REJECTED`, `NOT_PROVEN`, or `BLOCKED`.
+## Required result for each asset
+
+- real non-empty textured GLB;
+- texture visibly bound to imported material;
+- clean Blender fresh import;
+- source-match and multi-angle renders;
+- contact sheet;
+- geometry/texture/import report;
+- no armature or animation requirement.
+
+Use only `PROVEN`, `REJECTED`, `NOT_PROVEN`, or `BLOCKED` with exact reasons.
+
+Continue automatically from one asset to the next. A blocker on one asset must not stop unrelated assets unless it proves a shared failure affecting every route.
