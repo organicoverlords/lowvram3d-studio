@@ -1,204 +1,202 @@
-# Benchmark addendum — giant tripod vending-machine walker
+# Benchmark addendum — walking industrial building
 
-## Required benchmark asset
+## Correction
 
-Add the user-provided concept shown in chat as a fifth mandatory benchmark.
+The previous interpretation as a vending machine was wrong and is rejected.
+
+The user-provided image shows a large, weathered, multi-storey industrial building or inhabited structure elevated on long mechanical walking supports in a sandy wasteland. It has external balconies and walkways, windows and doors, pipes and utility hardware, roof-mounted lights/sensors/equipment, signs and attached clutter. The image is a single perspective view, so the exact number and full arrangement of legs/supports is not proven from the source alone.
 
 Canonical working name:
 
-`giant_tripod_vending_machine_walker`
-
-Human-readable description:
-
-A building-scale, weathered green vending-machine or kiosk body mounted on three long industrial walking legs. The body has a vending/display facade, rust and grime, attached signs and equipment, hanging cables/hoses, and a camera/floodlight/sensor cluster on top. The scene is a sandy or post-industrial wasteland with traffic cones, but the environment is not part of the target asset.
+`walking_industrial_building`
 
 ## Visual identity used for discovery
 
-The local source image may be unnamed. Search and pair by these combined visual traits rather than filename:
+The local source image may be unnamed. Match by the combined visual evidence:
 
-- tall rectangular green vending-machine/kiosk body;
-- three long articulated mechanical legs in a tripod arrangement;
-- wide industrial feet touching sandy ground;
-- prominent central front vending/display area;
-- rusted pipes, cables, hoses, signs, panels, and utility attachments;
-- camera, lamp, sensor, or floodlight cluster above the body;
-- weathered post-apocalyptic industrial styling;
-- orange traffic cones near the feet in the source scene;
-- no organic body, no humanoid torso, and no wheels.
+- tall, weathered, green multi-storey industrial building or inhabited structure;
+- external balconies, railings, stairs/walkways, windows, doors, and signs;
+- long articulated mechanical supports or walking legs beneath the structure;
+- large industrial feet contacting sandy ground;
+- pipes, tanks, cables, lights, cameras/sensors, and rooftop utility equipment;
+- post-industrial or post-apocalyptic desert setting;
+- orange traffic cones and ground clutter are scene context, not part of the target asset unless physically attached;
+- no humanoid body and no ordinary wheeled chassis.
 
-Do not confuse it with:
+Do not assume:
 
-- an ordinary vending machine;
-- a four-legged mech;
-- a humanoid robot;
-- a crane;
-- a building with static supports;
-- the Lucky Drown casino boat.
+- that it is a vending machine;
+- an exact leg count from this one view;
+- that every visible background object belongs to the structure;
+- that unseen rear architecture or interiors are proven;
+- that the supports are static rather than articulated, or articulated rather than static, until topology and geometry provide evidence.
 
 ## Automatic profile expectations
 
 Expected ranked base profiles:
 
-1. `articulated_prop`
-2. `vehicle`
-3. `building`
+1. `building`
+2. `articulated_prop`
+3. `vehicle`
 4. `unknown` as fail-safe
 
 Expected composable traits:
 
-- `three_legged_mechanical`
+- `walking_or_stilted_structure`
+- `large_scale_structure`
+- `multi_storey`
 - `hard_surface`
 - `rigid_body_segments`
-- `mechanical_hinges`
-- `large_scale_structure`
-- `vending_machine_facade`
-- `camera_or_sensor_head`
-- `hanging_cables_or_hoses`
-- `thin_structures`
-- `attached_signage_and_props`
+- `mechanical_supports`
+- `external_balconies_and_walkways`
+- `railings_and_thin_structures`
+- `doors_and_windows`
+- `roof_utility_equipment`
+- `pipes_cables_and_signage`
 - `asymmetric_surface_detail`
 
 Forbidden routes:
 
 - humanoid rig;
 - humanoid A-pose;
-- quadruped creature rig;
-- organic heat-diffusion skinning across the whole model;
-- cloth classification for rigid metal plates;
-- treating the three legs as one deforming soft mesh when separable rigid segments exist.
+- quadruped creature rig by assumption;
+- organic heat-diffusion skinning across the whole structure;
+- cloth classification for rigid architectural plates;
+- inventing a leg count or hinge layout not supported by geometry.
 
-The expected profile is a validation expectation, not a manually supplied runtime answer. Normal execution must infer and explain the route automatically.
+The expected profile is a validation expectation, not a manually supplied runtime answer. Normal execution must infer the route and report confidence, alternatives, and contradictions.
 
 ## Why it belongs in the benchmark matrix
 
-This case exercises a pipeline path not covered by the other assets:
+This asset tests a large architectural/mechanical hybrid that differs from the other cases:
 
 - Shaman: fused robed humanoid character.
 - Frog diver: equipped nonhuman humanoid.
 - Turtle: organic/mechanical quadruped.
-- Casino boat: large mostly rigid vehicle/building hybrid.
-- Tripod vending walker: articulated hard-surface, three-legged mechanical structure.
+- Casino boat: large rigid vehicle/building hybrid.
+- Walking industrial building: inhabited multi-storey architecture carried by mechanical supports.
 
-It tests whether the pipeline can detect nonstandard limb count, preserve rigid parts, infer hinge candidates, avoid soft-body weighting, and create usable mechanical controls.
+It tests whether the pipeline preserves architectural detail, recognizes thin railings and balconies, separates rigid structural regions, avoids character skinning, and only adds articulation when the model topology supports it.
 
 ## Minimum pipeline proof
 
 ### Ingest and source cleanup
 
-- isolate the walker from the sandy environment;
-- exclude traffic cones, distant structures, dust, ground shadow, and background debris unless physically attached;
-- preserve the full silhouette of all three legs, feet, top sensor cluster, cables, signs, and protrusions;
-- record any occluded leg or rear-body ambiguity rather than hallucinating it as proven.
+- isolate the complete elevated building and its mechanical supports from the desert background;
+- exclude traffic cones, sand, distant buildings, dust, ground shadows, and loose debris unless physically attached;
+- preserve balconies, railings, stairs, windows, doors, signs, pipes, roof equipment, supports, and feet;
+- record occluded rear structure and support ambiguity rather than hallucinating it as proven.
 
 ### Geometry and component audit
 
 Identify and report candidates for:
 
-- main vending/kiosk body;
-- top camera/light/sensor assembly;
-- each of three leg roots;
-- upper and lower segments of each leg where visible;
-- hinge or pivot regions;
-- each foot;
-- doors, panels, vending slots, signs, pipes, cables, and hoses;
-- rigid attached props versus unsupported background objects.
+- main structural body;
+- individual floors or major architectural masses;
+- balconies, walkways, railings, ladders/stairs;
+- doors and windows;
+- roof lights, cameras/sensors, antennas, tanks, and pipes;
+- every visible support or leg root;
+- visible support segments and possible pivots;
+- every visible foot/contact pad;
+- hanging cables, signs, and attached props;
+- scene objects that must be rejected as background contamination.
 
 Required metrics:
 
 - object and connected-component counts;
 - vertices and triangles;
 - thin-feature survival;
-- symmetry/asymmetry evidence;
-- leg count confidence;
-- body-to-leg attachment confidence;
-- non-manifold and boundary counts;
-- component rigidity candidates;
-- likely hinge axes and uncertainty.
+- support/leg count confidence with `observed`, `occluded`, and `unknown` categories;
+- body-to-support attachment confidence;
+- boundary and non-manifold counts;
+- rigid-component candidates;
+- possible hinge axes and uncertainty;
+- architectural opening preservation;
+- background contamination.
 
 ### Mechanical preparation
 
-Prefer rigid-part parenting and hinge bones/controls over organic skinning.
+Treat the building body as rigid architecture unless geometry proves movable sections.
+
+Prefer rigid-part parenting and hinge controls over organic skinning.
 
 When topology supports it, create:
 
 - one root/body control;
-- one chain per leg with explicit segment controls;
-- foot controls;
-- top sensor/camera pan and tilt controls;
-- optional door/panel hinge controls;
-- sockets for lights, effects, cables, and interaction points.
+- one chain per proven mechanical support;
+- foot/contact-pad controls;
+- optional pan/tilt controls for roof-mounted lights or sensors;
+- optional door, hatch, or panel hinges;
+- sockets for lights, effects, interaction points, and cables.
 
-Do not claim a joint proven when topology is fused and the pivot cannot be established. Use `NOT_PROVEN_FUSED_MECHANICAL_JOINT` or a similarly precise classification.
+Do not claim articulation for fused or visually ambiguous supports. Use a precise `NOT_PROVEN_FUSED_MECHANICAL_JOINT` or `NOT_PROVEN_SUPPORT_LAYOUT_OCCLUDED` classification.
 
 ### Motion proof
 
-Before any walk cycle, run isolated tests:
+Only after support count and joints are proven, run isolated tests:
 
-- each leg root independently;
-- each visible knee/hinge independently;
-- each foot independently;
-- body lift/lower while all feet remain planted where possible;
-- sensor-head pan/tilt;
-- door/panel hinge if detected.
+- each proven support independently;
+- each proven hinge independently;
+- each foot/contact pad independently;
+- body lift/lower while planted contacts remain stable where feasible;
+- roof light/sensor pan/tilt;
+- doors/hatches if actual separable topology exists.
 
 Required gates:
 
-- rigid panels retain shape;
-- neighboring legs do not move;
-- body does not shear;
+- architectural walls and floors retain rigid shape;
+- balconies, railings, signs, and roof equipment remain attached;
+- neighboring supports do not move unexpectedly;
 - no plate bending from organic weights;
-- no detached cables or signs unless classified for secondary motion;
-- planted-foot drift measured;
-- hinge rotation does not stretch rigid geometry beyond tolerance;
+- planted-contact drift is measured;
+- hinges do not stretch rigid geometry beyond tolerance;
 - transforms remain finite;
-- export/fresh-import preserves controls and actions where the target format supports them.
+- export and fresh import preserve objects, materials, controls, and actions where supported.
 
-Only after isolated gates pass may it attempt:
-
-- weight-shift tripod stance;
-- one controlled step;
-- short three-leg gait loop.
+Do not attempt a walking cycle unless the support layout and articulation are actually proven.
 
 ### Texture and material proof
 
 Preserve distinct material roles when observable:
 
-- painted green metal;
+- weathered green painted metal;
 - rust and exposed metal;
-- glass/display/vending window;
-- emissive lamps or screens;
-- rubber or dark mechanical joints;
+- glass windows and lamps;
+- dark mechanical joints/supports;
 - signs and decals;
-- cables and hoses.
+- pipes, cables, railings, and utility equipment;
+- interior darkness or emissive windows where present.
 
-Do not bake the sandy background into the model texture and call it coverage.
+Do not bake sand, sky, cones, distant structures, or ground shadows into the asset texture and call it valid coverage.
 
 ## Comparison against online reference
 
 When the user's online-generated model is discovered, compare:
 
-- correct three-leg count;
-- silhouette and proportions;
-- front vending-machine readability;
-- sensor/light cluster preservation;
-- leg segmentation and hinge readiness;
-- foot shape and contact area;
-- thin cable, sign, pipe, and railing survival;
-- rigid-part topology quality;
+- overall multi-storey silhouette and proportions;
+- number and arrangement of supports, with uncertainty for occluded source regions;
+- balconies, railings, windows, doors, signs, pipes, and roof equipment;
+- thin-feature survival;
+- rigid architectural topology;
+- support segmentation and articulation readiness;
 - background contamination;
-- texture/material separation;
-- export and articulation readiness;
+- material and texture separation;
+- front, side, rear, and top plausibility;
+- export and fresh-import survival;
 - runtime, VRAM, RAM, and file size.
 
-Do not reduce this to a single score.
+Do not reduce this to one aggregate score.
 
 ## Required classification fields
 
 - `SOURCE_MATCH`
 - `PROFILE_DISCOVERY`
-- `LEG_COUNT`
+- `STRUCTURE_CLASSIFICATION`
+- `SUPPORT_COUNT_CONFIDENCE`
 - `MECHANICAL_COMPONENTS`
 - `HINGE_READINESS`
+- `ARCHITECTURAL_DETAIL_PRESERVATION`
 - `RIGID_PART_PRESERVATION`
 - `BACKGROUND_CONTAMINATION`
 - `TEXTURE_QUALITY`
@@ -206,4 +204,4 @@ Do not reduce this to a single score.
 - `EXPORT_QA`
 - `ONLINE_REFERENCE_COMPARISON`
 
-Use only `PROVEN`, `REJECTED`, `NOT_PROVEN`, or `BLOCKED`, with a precise reason code.
+Use only `PROVEN`, `REJECTED`, `NOT_PROVEN`, or `BLOCKED`, with precise reason codes.
