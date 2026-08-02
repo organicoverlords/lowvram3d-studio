@@ -20,7 +20,7 @@ class FakeUnet:
             "required.processor": FakeProcessor("required.processor", use_ref=True),
             "cache-only.processor": FakeProcessor("cache-only.processor", use_ref=False),
         }
-        self.seen_denoise_cache = None
+        self.seen_denoise_caches = []
 
     def forward(self, *args, **kwargs):
         cross = kwargs.get("cross_attention_kwargs") or {}
@@ -29,7 +29,7 @@ class FakeUnet:
             target["required.processor"] = torch.ones((1, 4, 8))
             target["cache-only.processor"] = torch.ones((1, 4, 8))
         elif "ref_hidden_states" in cross:
-            self.seen_denoise_cache = cross["ref_hidden_states"]
+            self.seen_denoise_caches.append(cross["ref_hidden_states"])
         return (torch.zeros((1, 4, 8)),)
 
 
@@ -70,7 +70,7 @@ class FakePipe:
         return self._guidance_scale > 1.0
 
 
-def run_reference_and_denoise(pipe: FakePipe):
+def run_reference_and_denoise(pipe: FakePipe, *, denoise_calls: int = 1):
     raw_cache = {}
     pipe.unet.forward(
         cross_attention_kwargs={
@@ -80,47 +80,56 @@ def run_reference_and_denoise(pipe: FakePipe):
         }
     )
 
-    denoise_kwargs = {
-        "num_views": 6,
-        "ref_hidden_states": {},
-    }
-    pipe.unet.forward(cross_attention_kwargs=denoise_kwargs)
+    denoise_kwargs = []
+    for _ in range(denoise_calls):
+        kwargs = {
+            "num_views": 6,
+            "ref_hidden_states": {},
+        }
+        pipe.unet.forward(cross_attention_kwargs=kwargs)
+        denoise_kwargs.append(kwargs)
     return raw_cache, denoise_kwargs
 
 
 def test_reference_cache_relay_rebuilds_only_required_entries() -> None:
     pipe = FakePipe()
     state = install_reference_cache_relay(pipe)
-    raw_cache, denoise_kwargs = run_reference_and_denoise(pipe)
+    raw_cache, denoise_calls = run_reference_and_denoise(pipe)
+    denoise_kwargs = denoise_calls[0]
 
     assert set(raw_cache) == {"required.processor", "cache-only.processor"}
     assert set(denoise_kwargs["ref_hidden_states"]) == {"required.processor"}
     assert denoise_kwargs["ref_hidden_states"]["required.processor"].shape[0] == 12
-    assert pipe.unet.seen_denoise_cache is denoise_kwargs["ref_hidden_states"]
+    assert pipe.unet.seen_denoise_caches[0] is denoise_kwargs["ref_hidden_states"]
     assert state["placement"] == "direct_forward"
     assert state["relay_injected"] is True
+    assert state["relay_injection_count"] == 1
     assert state["reference_cache_count"] == 2
     assert state["denoise_cache_count_before"] == 0
     assert state["denoise_cache_count_after"] == 1
 
 
-def test_reference_cache_relay_runs_inside_accelerate_copying_wrapper() -> None:
+def test_reference_cache_relay_runs_inside_accelerate_copying_wrapper_each_step() -> None:
     pipe = FakePipe(offloaded=True)
     state = install_reference_cache_relay(pipe)
-    raw_cache, denoise_kwargs = run_reference_and_denoise(pipe)
+    raw_cache, denoise_calls = run_reference_and_denoise(pipe, denoise_calls=2)
 
     # The simulated outer wrapper deliberately hides nested-dict mutations from
     # the caller, reproducing the installed Accelerate/Diffusers behaviour.
     assert raw_cache == {}
-    assert denoise_kwargs["ref_hidden_states"] == {}
+    assert denoise_calls[0]["ref_hidden_states"] == {}
+    assert denoise_calls[1]["ref_hidden_states"] == {}
 
-    # The relay is inside the wrapper and the real UNet still receives the
-    # complete expanded cache.
+    # The relay is inside the wrapper and the real UNet receives the complete
+    # expanded cache on every denoising call.
     assert state["placement"] == "inside_accelerate_hook"
     assert state["reference_cache_count"] == 2
     assert state["relay_injected"] is True
-    assert set(pipe.unet.seen_denoise_cache) == {"required.processor"}
-    assert pipe.unet.seen_denoise_cache["required.processor"].shape[0] == 12
+    assert state["relay_injection_count"] == 2
+    assert len(pipe.unet.seen_denoise_caches) == 2
+    for received in pipe.unet.seen_denoise_caches:
+        assert set(received) == {"required.processor"}
+        assert received["required.processor"].shape[0] == 12
 
 
 def test_reference_cache_relay_fails_closed_when_required_key_missing() -> None:
