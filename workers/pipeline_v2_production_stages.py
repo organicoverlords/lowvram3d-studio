@@ -74,6 +74,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
         clean = _output(pipeline, "CLEAN", "clean")
 
         if lod_mode == "preserve_source":
+            pipeline.stage_dir("LOD")
             current_hashes = hash_inputs([clean])
             previous = pipeline.read_receipt("LOD")
             if (previous and previous.get("status") == "passed"
