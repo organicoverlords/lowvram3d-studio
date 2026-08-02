@@ -2,12 +2,34 @@ import numpy as np
 import pytest
 
 from lowvram3d.image_world.contracts import ContractError
+from lowvram3d.image_world.semantic_masks import build_semantic_mask_set
 from lowvram3d.image_world.surface_projection import project_moge_surface, robust_xy_bounds
 from lowvram3d.image_world.world_frame import (
     camera_to_world_rotation,
     estimate_world_up_from_normals,
     transform_camera_vectors,
 )
+
+
+def _flat_observation(height=24, width=32):
+    image_y, image_x = np.mgrid[0:height, 0:width]
+    points = np.zeros((height, width, 3), dtype=np.float64)
+    points[..., 0] = (image_x - width / 2) * 0.1
+    points[..., 1] = 0.0
+    points[..., 2] = 2.0 + image_y * 0.1
+    normals = np.zeros_like(points)
+    normals[..., 1] = -1.0
+    valid = np.ones((height, width), dtype=bool)
+    return points, normals, valid
+
+
+def _terrain_probabilities(shape):
+    probabilities = {
+        name: np.full(shape, 0.02, dtype=np.float32)
+        for name in ("terrain", "water", "sky", "vegetation", "structure", "residual")
+    }
+    probabilities["terrain"][:] = 0.90
+    return probabilities
 
 
 def test_opencv_image_up_rotation_is_right_handed_and_z_up():
@@ -24,8 +46,6 @@ def test_world_up_estimator_recovers_spatially_broad_consensus():
     true_up /= np.linalg.norm(true_up)
     normals = np.zeros((height, width, 3), dtype=np.float64)
     normals[:] = true_up + rng.normal(0.0, 0.015, normals.shape)
-
-    # Add strong but spatially narrow wall noise that must not win.
     normals[20:58, 4:14] = np.array([1.0, -0.05, 0.0])
     valid = np.ones((height, width), dtype=bool)
     estimate = estimate_world_up_from_normals(normals, valid)
@@ -69,16 +89,7 @@ def test_robust_bounds_ignore_single_extreme_outlier():
 
 
 def test_flat_moge_surface_produces_finite_unclassified_baseline():
-    height, width = 24, 32
-    image_y, image_x = np.mgrid[0:height, 0:width]
-    points = np.zeros((height, width, 3), dtype=np.float64)
-    points[..., 0] = (image_x - width / 2) * 0.1
-    points[..., 1] = 0.0
-    points[..., 2] = 2.0 + image_y * 0.1
-    normals = np.zeros_like(points)
-    normals[..., 1] = -1.0
-    valid = np.ones((height, width), dtype=bool)
-
+    points, normals, valid = _flat_observation()
     result = project_moge_surface(
         points,
         normals,
@@ -88,6 +99,7 @@ def test_flat_moge_surface_produces_finite_unclassified_baseline():
         stream_minimum_cells=4,
     )
     assert result.classification == "UNCLASSIFIED_SURFACE_BASELINE_NOT_TERRAIN_PROOF"
+    assert result.semantic_mask_applied is False
     assert result.frame.fallback_used is False
     assert np.isfinite(result.completed.height).all()
     assert np.isfinite(result.flow_accumulation).all()
@@ -96,6 +108,46 @@ def test_flat_moge_surface_produces_finite_unclassified_baseline():
         result.completed.height[result.observation.observed_mask],
         result.observation.height[result.observation.observed_mask],
     )
+
+
+def test_semantic_gate_excludes_structure_pixels_before_rasterization():
+    points, normals, valid = _flat_observation()
+    probabilities = _terrain_probabilities(valid.shape)
+    probabilities["terrain"][:, :8] = 0.05
+    probabilities["structure"][:, :8] = 0.95
+    semantic = build_semantic_mask_set(probabilities, valid_mask=valid)
+
+    result = project_moge_surface(
+        points,
+        normals,
+        valid,
+        semantic_masks=semantic,
+        grid_size=17,
+        smoothing_iterations=2,
+        stream_minimum_cells=4,
+    )
+    assert result.semantic_mask_applied is True
+    assert result.classification == "SEMANTICALLY_FILTERED_TERRAIN_BASELINE_NOT_SOURCE_QUALITY_PROOF"
+    assert not result.candidate_mask[:, :8].any()
+    assert result.candidate_mask[:, 8:].all()
+    assert result.semantic_terrain_fraction == pytest.approx(0.75)
+
+
+def test_semantic_gate_fails_closed_when_no_terrain_remains():
+    points, normals, valid = _flat_observation()
+    probabilities = _terrain_probabilities(valid.shape)
+    probabilities["terrain"][:] = 0.01
+    probabilities["water"][:] = 0.99
+    semantic = build_semantic_mask_set(probabilities, valid_mask=valid)
+    with pytest.raises(ContractError, match="no terrain surface candidates"):
+        project_moge_surface(points, normals, valid, semantic_masks=semantic, grid_size=17)
+
+
+def test_semantic_gate_rejects_shape_mismatch():
+    points, normals, valid = _flat_observation()
+    semantic = build_semantic_mask_set(_terrain_probabilities((8, 8)))
+    with pytest.raises(ContractError, match="semantic mask shape"):
+        project_moge_surface(points, normals, valid, semantic_masks=semantic, grid_size=17)
 
 
 def test_surface_projection_rejects_shape_mismatch():
