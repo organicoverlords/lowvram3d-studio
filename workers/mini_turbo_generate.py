@@ -122,6 +122,15 @@ def _mesh_summary(mesh):
     }
 
 
+def _classify_generation_failure(exc: Exception) -> str | None:
+    text = str(exc).lower()
+    if "empty active point" in text:
+        return "EMPTY_ACTIVE_POINT_SET"
+    if "expected reduction dim 0 to have non-zero size" in text:
+        return "EXPECTED_REDUCTION_DIM_NON_ZERO"
+    return None
+
+
 def _trace(
     trace_path,
     operation,
@@ -426,6 +435,9 @@ def main() -> int:
 
         payload["error"] = str(exc)
         payload["traceback"] = traceback.format_exc()
+        failure_code = _classify_generation_failure(exc)
+        if failure_code:
+            payload["failure_code"] = failure_code
         payload["last_successful_operation"] = "see generation_trace.jsonl"
         _write_json_artifact(result_path, payload)
         _safe_console_write(sys.stderr, f"MINI_TURBO_FAILED error={exc}")

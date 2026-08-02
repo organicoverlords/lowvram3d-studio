@@ -86,6 +86,14 @@ REPAIR_POLICY: dict[str, dict] = {
         "stage": "TEXTURE", "overrides": {"alpha_min": 0.6},
         "rationale": "matting leaked; require a stronger alpha before a texel may be projected",
     },
+    "EMPTY_ACTIVE_POINT_SET": {
+        "stage": "GENERATE", "overrides": {"steps": 2},
+        "rationale": "one bounded step-count retry for an empty decoder surface",
+    },
+    "EXPECTED_REDUCTION_DIM_NON_ZERO": {
+        "stage": "GENERATE", "overrides": {"steps": 2},
+        "rationale": "one bounded step-count retry for an empty decoder surface",
+    },
     "BAD_ORIENTATION": {
         "stage": "CLEAN", "overrides": {"reorient_upright": True},
         "rationale": "mesh is lying down or collapsed; re-run the upright reorientation",
@@ -233,6 +241,8 @@ class Pipeline:
                 return receipt
 
             repairs = [REPAIR_POLICY[c] for c in result.failure_codes if c in REPAIR_POLICY]
+            if stage == "GENERATE" and attempt >= 1:
+                repairs = []
             if attempt >= MAX_RETRIES or not repairs:
                 receipt = {
                     "stage": stage, "status": "failed",

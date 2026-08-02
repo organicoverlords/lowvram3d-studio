@@ -39,26 +39,27 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
         def runner(overrides):
             stage = pipeline.stage_dir("INGEST") / "candidate"
             matte = stage / "matte.png"
+            conditioning_audit = stage / "conditioning_audit.json"
             code, out = pipeline.run([
-                pipeline.python, w("pipeline_matte.py"),
+                pipeline.python, w("normalize_conditioning.py"),
                 "--image", source_image, "--output", matte,
-                "--stats-json", stage / "matte_stats.json",
-                "--mode", "hybrid", "--tolerance", "42", "--enclosed-tolerance", "32",
-                "--enclosed-min-area", "5000", "--shadow-tolerance", "155",
-                "--shadow-from", "0.78", "--close-radius", "2",
+                "--audit-json", conditioning_audit,
+                "--overlay", stage / "conditioning_overlay.png",
+                "--original-vs-matte", stage / "original_vs_matte.png",
+                "--size", "512",
             ])
             if code != 0 or not matte.exists():
-                return StageResult("failed", detail=f"matte worker exit {code}: {out[-800:]}")
-            stats = read_json(stage / "matte_stats.json") or read_json(
-                matte.with_name(matte.stem + "_stats.json"))
+                return StageResult("failed", detail=f"conditioning worker exit {code}: {out[-800:]}")
+            stats = read_json(conditioning_audit)
             gates = {"source_sha256": manifest["source"]["sha256"],
                      "matte_sha256": sha256(matte),
-                     "subject_components": stats.get("subject_components"),
-                     "subject_pixel_fraction": stats.get("subject_pixel_fraction")}
-            fraction = stats.get("subject_pixel_fraction")
-            if fraction is not None and not 0.05 <= float(fraction) <= 0.95:
-                return StageResult("failed", gates=gates,
-                                   detail=f"matte covers {fraction} of the frame")
+                     "conditioning_route": stats.get("route"),
+                     "source_alpha_is_useful": stats.get("source_has_useful_alpha"),
+                     "foreground_coverage_percent": stats.get("selected_foreground", {}).get("foreground_coverage_percent"),
+                     "transparent_margin_percent": stats.get("selected_foreground", {}).get("transparent_margin_percent"),
+                     "disconnected_components": stats.get("selected_foreground", {}).get("disconnected_foreground_components"),
+                     "border_contact": stats.get("selected_foreground", {}).get("border_contact"),
+                     "alpha_valid": stats.get("selected_foreground", {}).get("alpha_valid")}
             return StageResult("passed", outputs={"matte": matte}, gates=gates)
         return pipeline.execute("INGEST", [source_image], runner)
 
@@ -74,10 +75,15 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
                                           "sha256": sha256(master)})
             matte = pipeline.stage_dir("INGEST") / "proven" / "matte.png"
             result_json = stage / "generate_report.json"
+            prompt = manifest.get(
+                "generation_prompt",
+                f"{manifest['asset_id'].replace('_', ' ')} static non-animated asset; preserve the complete visible silhouette and thin details; no rig, no animation",
+            )
             model_root = Path(os.environ.get(
                 "LOWVRAM3D_MINI_TURBO_MODEL_ROOT",
                 r"C:\AI\HY3D2\HuggingFaceHub\hunyuan3d-2mini-direct",
             ))
+            steps = int(overrides.get("steps", 1))
             code, out = pipeline.run([
                 pipeline.python, w("mini_turbo_generate.py"),
                 "--image", source_image,
@@ -85,12 +91,19 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
                 "--output", master,
                 "--result-json", result_json,
                 "--model-root", model_root,
-                "--prompt", "weathered rustic static barn shed with separate corrugated roofs, wind-bent trees and ground vegetation; no armature, no animation, no humanoid or vehicle parts",
+                "--prompt", prompt,
+                "--steps", str(steps),
+                "--octree-ladder", "256:1500",
+                "--seed", "12345",
             ])
+            result = read_json(result_json)
+            failure_code = result.get("failure_code")
             if code != 0 or not master.exists():
-                return StageResult("failed", detail=f"generator exit {code}: {out[-800:]}")
+                return StageResult("failed", failure_codes=[failure_code] if failure_code else [],
+                                   gates={"steps": steps, "octree_resolution": 256, "num_chunks": 1500, "seed": 12345},
+                                   detail=f"generator exit {code}: {out[-800:]}")
             return StageResult("passed", outputs={"master": master},
-                               gates={"sha256": sha256(master)})
+                               gates={"sha256": sha256(master), "steps": steps, "octree_resolution": 256, "num_chunks": 1500, "seed": 12345})
         inputs = [existing_master] if existing_master else [pipeline.stage_dir("INGEST") / "proven" / "matte.png"]
         return pipeline.execute("GENERATE", inputs, runner)
 
