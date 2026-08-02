@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "profile_id": "static_scene_barn_trees_v1",
+  "profile_owner": "high_reasoning_architecture",
+  "executor_role": "bounded_execution_only",
+  "source_class": "single_image_static_scene",
+  "required_subjects": [
+    "barn_structure",
+    "tree_trunks_and_major_branches",
+    "tree_foliage_mass"
+  ],
+  "optional_context": [
+    "terrain_context",
+    "grass_context",
+    "fence_post_context"
+  ],
+  "excluded_background": [
+    "sky",
+    "distant_landscape"
+  ],
+  "forbidden_routes": [
+    "humanoid_rig",
+    "creature_rig",
+    "vehicle_route",
+    "animation_generation",
+    "single_monolithic_scene_mesh",
+    "full_scene_organic_skinning"
+  ],
+  "stage_order": [
+    "SOURCE_AUDIT",
+    "SEMANTIC_LAYERING",
+    "OCCLUSION_GRAPH",
+    "COMPONENT_RECONSTRUCTION",
+    "COMPONENT_QA",
+    "MATERIAL_RECONSTRUCTION",
+    "LOD_AND_COLLISION",
+    "STATIC_SCENE_ASSEMBLY",
+    "EXPORT_QA"
+  ],
+  "semantic_classes": [
+    "barn_structure",
+    "tree_trunks_and_major_branches",
+    "tree_foliage_mass",
+    "terrain_context",
+    "grass_context",
+    "fence_post_context",
+    "sky_and_distant_background",
+    "unknown_or_ambiguous"
+  ],
+  "deliverables": {
+    "hero_pack": {
+      "required": true,
+      "objects": [
+        "Barn_Main",
+        "Tree_*",
+        "Foliage_*"
+      ],
+      "must_exclude": [
+        "sky",
+        "distant_landscape",
+        "unpromoted_fence_posts"
+      ],
+      "armature_allowed": false,
+      "animation_allowed": false
+    },
+    "scene_pack": {
+      "required": false,
+      "includes_hero_pack": true,
+      "optional_objects": [
+        "Terrain",
+        "Grass_*",
+        "FencePost_*"
+      ],
+      "must_remain_separate_from_hero": true
+    }
+  },
+  "component_policies": {
+    "barn": {
+      "route": "building_planar_structure",
+      "preserve": [
+        "wall_planes",
+        "roof_planes_and_breaks",
+        "visible_openings",
+        "silhouette_significant_damage",
+        "visible_lean_and_collapse"
+      ],
+      "forbid": [
+        "fabricated_interior",
+        "perfect_symmetry_over_visible_damage",
+        "texture_cracks_as_dense_geometry",
+        "tree_or_grass_contamination"
+      ],
+      "closure_policy": "component_aware",
+      "boundary_edges_policy": "allowed_only_for_named_open_or_damaged_regions"
+    },
+    "trees": {
+      "route": "vegetation_trunk_branch_foliage",
+      "preserve": [
+        "trunks",
+        "major_branches",
+        "wind_swept_silhouette",
+        "material_silhouette_gaps"
+      ],
+      "foliage_representation": [
+        "cluster",
+        "alpha_card",
+        "bounded_low_poly_canopy"
+      ],
+      "forbid": [
+        "single_solid_foliage_blob",
+        "barn_geometry_contamination",
+        "individual_leaf_film_density"
+      ],
+      "boundary_edges_policy": "open_foliage_cards_allowed"
+    },
+    "context": {
+      "route": "optional_static_context",
+      "terrain_depth": "shallow_patch",
+      "grass_representation": [
+        "cards",
+        "instances"
+      ],
+      "forbid": [
+        "deep_image_extrusion_slab",
+        "sky_geometry",
+        "distant_landscape_geometry",
+        "merge_into_hero_objects"
+      ]
+    }
+  },
+  "material_classes": [
+    "weathered_timber",
+    "rusted_corrugated_roof_metal",
+    "dark_interior_or_opening",
+    "bark_wood",
+    "foliage_alpha",
+    "terrain_optional",
+    "grass_optional"
+  ],
+  "texture_provenance_classes": [
+    "OBSERVED",
+    "SYNTHESIZED_LOCAL",
+    "SYNTHESIZED_MATERIAL_PRIOR",
+    "UNRESOLVED"
+  ],
+  "texture_constraints": [
+    "barn_pixels_must_not_donate_to_trees",
+    "foliage_pixels_must_not_donate_to_timber_or_roof",
+    "front_observation_must_not_be_mirrored_and_labeled_observed",
+    "sky_and_grass_must_not_be_baked_into_hero_materials",
+    "source_shadow_must_not_be_the_only_albedo_detail"
+  ],
+  "lod_policy": {
+    "barn_lod0_soft_triangle_envelope": [
+      40000,
+      100000
+    ],
+    "tree_trunks_branches_lod0_soft_triangle_envelope": [
+      30000,
+      100000
+    ],
+    "foliage_budget_basis": [
+      "cluster_count",
+      "card_count",
+      "overdraw",
+      "silhouette"
+    ],
+    "lod1_fraction_of_lod0": [
+      0.5,
+      0.65
+    ],
+    "lod2_fraction_of_lod0": [
+      0.2,
+      0.35
+    ],
+    "numeric_envelopes_are_hard_gates": false
+  },
+  "collision_policy": {
+    "barn": "simple_convex_or_box_decomposition",
+    "trees": "trunk_and_major_branch_only",
+    "foliage": "none_by_default",
+    "terrain": "optional_simple_collision",
+    "full_high_poly_collision_forbidden": true
+  },
+  "required_visual_proof": [
+    "source_matching_camera",
+    "front",
+    "rear",
+    "left",
+    "right",
+    "top_threequarter",
+    "barn_detail",
+    "tree_silhouette_detail",
+    "semantic_layers_overlay",
+    "component_id_overlay",
+    "texture_provenance_overlay",
+    "lod_comparison"
+  ],
+  "required_metrics": [
+    "objects",
+    "meshes",
+    "vertices",
+    "triangles",
+    "connected_components",
+    "component_interpreted_boundary_edges",
+    "component_interpreted_non_manifold_edges",
+    "dimensions",
+    "orientation",
+    "material_slots",
+    "texture_bindings",
+    "uv_utilization",
+    "true_uv_overlap",
+    "uv_out_of_bounds_area",
+    "source_view_silhouette_similarity",
+    "observed_texture_coverage",
+    "synthesized_texture_coverage",
+    "thin_branch_survival",
+    "barn_opening_preservation",
+    "barn_tree_cross_contamination",
+    "export_import_parity",
+    "runtime",
+    "peak_vram",
+    "peak_ram",
+    "file_size"
+  ],
+  "promotion_gates": {
+    "hero_pack": [
+      "barn_and_tree_components_independently_identifiable",
+      "source_view_resemblance_acceptable",
+      "side_and_rear_structurally_plausible_with_uncertainty_recorded",
+      "no_sky_or_ground_smear_on_hero_objects",
+      "barn_and_tree_materials_separated",
+      "no_armature",
+      "no_animation",
+      "fresh_import_passes",
+      "reports_and_contact_sheets_exist"
+    ],
+    "scene_pack": [
+      "hero_pack_proven",
+      "context_components_pass_independent_gates"
+    ]
+  },
+  "failure_codes": [
+    "BLOCKED_SEMANTIC_LAYERING_UNUSABLE",
+    "REJECTED_BARN_BLOB_GEOMETRY",
+    "REJECTED_ROOF_WALL_FUSION",
+    "REJECTED_OPENINGS_FILLED",
+    "REJECTED_VISIBLE_DAMAGE_ERASED",
+    "NOT_PROVEN_UNSEEN_REAR_STRUCTURE",
+    "REJECTED_TREE_SOLID_BLOB",
+    "REJECTED_TRUNK_CANOPY_FUSION",
+    "REJECTED_WIND_SILHOUETTE_LOST",
+    "REJECTED_BRANCH_STRUCTURE_ERASED",
+    "NOT_PROVEN_HIDDEN_BRANCH_LAYOUT",
+    "REJECTED_HERO_CONTEXT_FUSION",
+    "REJECTED_BACKGROUND_TEXTURE_CONTAMINATION",
+    "REJECTED_EXPORT_STRUCTURE_PARITY"
+  ],
+  "executor_limits": {
+    "preserve_active_baseline_run": true,
+    "do_not_modify_pipeline_mid_run": true,
+    "maximum_corrections_per_milestone": 1,
+    "new_architecture_stop_code": "WAIT_FOR_SOL_ARCHITECTURE"
+  }
+}
