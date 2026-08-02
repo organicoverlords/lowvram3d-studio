@@ -32,18 +32,28 @@ targeted cleanup of the proven detached rod/blob artifact. No new GPU generation
 - Texture evidence: `85.2%` observed semantic coverage, `14.8%` explicitly synthesized local fill for unseen/rear regions, `0` residual island holes; front render preserves face, fur/suit, rifle, and tail colours.
 - Generation policy: normalized conditioning; steps 1 failed with the allowed empty-reduction code; one steps 2 retry succeeded; octree 256, chunks 1500, seed 12345 unchanged.
 
-## frog_salvage_diver — PROVEN
+## frog_salvage_diver — PROVEN_WITH_LIMITATIONS
+
+The earlier frog textured artifact is not the accepted result. The bounded fresh run below uses
+the current Mini Turbo route, generic relative/source/screen component evidence, the repaired
+raster route, and a source-projection view built from the proven transparent matte rather than the
+raw white-background image.
 
 - Source: `C:\Users\Lauri\Desktop\lowvram3d-magicmusic-asset-systems\benchmarks\source-images\20260802-six-variation-pack\01_frog_salvage_diver.png`
-- Conditioning audit: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\logs\normalized_conditioning_audit.json`
-- Generation report: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\state\GENERATE\candidate\generate_report.json`
-- Geometry GLB: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\state\GENERATE\candidate\master.glb`
-- Textured GLB: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\textured\frog_salvage_diver_textured.glb`
-- Base colour: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\textured\frog_salvage_diver_textured_basecolor.png`
-- Fresh import/material proof: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\logs\textured_baseline_validation.json`
-- Visible renders/contact sheet: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\renders\textured_material\preview_front.png`, `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\renders\textured_material\preview_three_quarter.png`, `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\renders\textured_material\preview_side.png`, `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802\frog_salvage_diver\renders\frog_salvage_diver_contact_sheet.png`
-- SHA-256: GLB `9B196974D8DC8D70698896CA94E6F077B962EF568FD1A180F1A6A8EC42869B57`; base colour `2DA39AE17017B70B9A1893254A634F10FB782CB3AD9B971F4104DE1984132F7A`
-- Generation policy: normalized conditioning; steps 1 failed with the allowed empty-reduction code; one steps 2 retry succeeded; octree 256, chunks 1500, seed 12345 unchanged.
+- Conditioning audit/matte: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\state\INGEST\proven\matte.png`
+- Generation report: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\state\GENERATE\candidate\generate_report.json`
+- Raw geometry: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\state\GENERATE\proven\master.glb`
+- Generic component audit: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\geometry\component_audit_creature_partial_confirmed.json`
+- UV candidate: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\uv\planar_uv_candidate.glb`
+- Textured GLB: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\textured_repaired_v7_matte\frog_salvage_diver_repaired_v7_matte.glb`
+- Base colour: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\textured_repaired_v7_matte\frog_salvage_diver_repaired_v7_matte_basecolor.png`
+- Fresh import/material proof: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\textured_repaired_v7_matte\fresh_import_validation.json`
+- Visible renders/contact sheet: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\renders\textured_repaired_v7_matte\preview_front.png`, `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\renders\textured_repaired_v7_matte\preview_three_quarter.png`, `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\renders\textured_repaired_v7_matte\preview_side.png`, `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\renders\frog_salvage_diver_repaired_v7_matte_contact_sheet.png`
+- SHA-256: GLB `28AB44CDC1CF112EEAA66A86DFE4E8AC262F2F1C2018790AA28AD2DCBBB38F71`; base colour `A2CF3C2DF70CA2C13DDCE120B8151D1A57AFA7CE3A55FA202CBE002E47D4964C`
+- Generation policy: normalized conditioning; steps 1 failed with `EXPECTED_REDUCTION_DIM_NON_ZERO`; exactly one steps 2 retry succeeded; octree 256, chunks 1500, seed 12345 unchanged; no fallback generator, rigging, or animation.
+- Geometry evidence: generic audit applied only confirmed debris removals (`5780` faces, `0.9159%`) and preserved unresolved components; topology remained `boundary_edges 28 -> 28`, `non_manifold_edges 39 -> 39`; `manual_review_required=true`.
+- Texture evidence: `76.85%` observed semantic coverage, `23.15%` constrained synthesized fill, `100%` final filled UVs, and `0` residual island holes; fresh Blender import/material/texture/render checks all passed.
+- Visual limitation: source identity is recognizable, but attached generated surface noise and several small floating dark components remain visible in three-quarter/side views. Therefore `DETACHED_ARTIFACT_CLEANUP=NOT_PROVEN_COMPLETE` and this is not a clean production-quality geometry result.
 
 The validation reports independently confirm non-empty geometry, UVs, material presence, packed
 readable non-constant base-colour textures linked to Principled Base Color, and rendered previews.
