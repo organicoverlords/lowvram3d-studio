@@ -1,0 +1,11 @@
+﻿{
+    "workflow_run_id":  "30761201226",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30761201226",
+    "branch":  "feature/image-world-lighthouse-probe-20260802",
+    "head_sha":  "1f3a57b1361803b01887720d32a0456ca071192f",
+    "probe_status":  "GPU_BUSY",
+    "peak_gpu_reserved_mb":  null,
+    "fixture_sha256":  "4847ca1ceaba7da83bccd698cbbad56b99d6288530c9e5eab957339caf0302cb",
+    "raw_geometry_in_artifact":  false,
+    "recorded_at":  "2026-08-02T18:29:08.6069151Z"
+}

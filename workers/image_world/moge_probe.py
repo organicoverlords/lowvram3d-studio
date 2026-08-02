@@ -19,6 +19,7 @@ import traceback
 
 import numpy as np
 
+from lowvram3d.image_world.image_decode import decode_image_bgr
 from lowvram3d.image_world.moge_probe import (
     MogeProbeReport,
     MogeProbeSettings,
@@ -85,10 +86,10 @@ def main() -> int:
                 torch.cuda.empty_cache()
                 torch.cuda.reset_peak_memory_stats(device)
 
-            image = cv2.imread(str(source), cv2.IMREAD_UNCHANGED)
-            if image is None:
-                raise RuntimeError(f"OpenCV could not decode {source}")
-            image = prepare_rgb(image, settings.input_long_edge, cv2)
+            decoded = decode_image_bgr(source, cv2)
+            versions["image_decoder"] = decoded.decoder
+            versions["image_recovered"] = str(decoded.recovered).lower()
+            image = prepare_rgb(decoded.bgr_or_bgra, settings.input_long_edge, cv2)
             tensor = torch.from_numpy(image).permute(2, 0, 1).contiguous().to(
                 device=device,
                 dtype=torch.float32,
