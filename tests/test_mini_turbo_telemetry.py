@@ -5,14 +5,18 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import numpy as np
+
 import workers.mini_turbo_generate as telemetry
 from workers.mini_turbo_generate import (
     CONSOLE_DEGRADED,
     CONSOLE_HEALTHY,
     _cuda_stats,
     _mesh_summary,
+    _mesh_boundary_summary,
     _reset_console_state,
     _safe_console_write,
+    _sanitize_decoded_mesh,
     _tensor_summary,
     _trace,
     _write_json_artifact,
@@ -22,6 +26,25 @@ from workers.mini_turbo_generate import (
 class SyntheticMesh:
     vertices = [0, 1, 2, 3]
     faces = [(0, 1, 2), (0, 2, 3)]
+
+
+class SyntheticDecodedMesh:
+    def __init__(self):
+        self.vertices = np.asarray(
+            [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)],
+            dtype=np.float32,
+        )
+        self.faces = np.asarray([(0, 0, 1), (0, 1, 2), (0, 0, 3)], dtype=np.int64)
+
+    def update_faces(self, mask):
+        self.faces = self.faces[mask]
+
+    def remove_unreferenced_vertices(self):
+        used = np.unique(self.faces)
+        remap = np.full(len(self.vertices), -1, dtype=np.int64)
+        remap[used] = np.arange(len(used))
+        self.vertices = self.vertices[used]
+        self.faces = remap[self.faces]
 
 
 class FailingStream(io.StringIO):
@@ -180,6 +203,17 @@ class MiniTurboTelemetryTests(unittest.TestCase):
 
     def test_synthetic_mesh_summary_is_serializable(self):
         self.assertEqual(_mesh_summary(SyntheticMesh()), {"vertices": 4, "triangles": 2})
+
+    def test_decoder_sanitizer_removes_only_duplicate_index_faces(self):
+        mesh = SyntheticDecodedMesh()
+        before = _mesh_boundary_summary(mesh)
+        mesh, removed = _sanitize_decoded_mesh(mesh)
+        after = _mesh_boundary_summary(mesh)
+        self.assertEqual(before["duplicate_index_faces"], 2)
+        self.assertEqual(removed, 2)
+        self.assertEqual(after["triangles"], 1)
+        self.assertEqual(after["duplicate_index_faces"], 0)
+        self.assertNotEqual(before["index_array_sha256"], after["index_array_sha256"])
 
     def test_valid_status_events_and_error_json_after_sink_failure(self):
         with tempfile.TemporaryDirectory() as temp:

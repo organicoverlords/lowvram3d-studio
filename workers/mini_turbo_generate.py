@@ -122,6 +122,55 @@ def _mesh_summary(mesh):
     }
 
 
+def _mesh_boundary_summary(mesh):
+    """Describe mesh arrays at a serialization boundary without changing them."""
+    import numpy as np
+
+    vertices = np.ascontiguousarray(np.asarray(mesh.vertices, dtype="<f4"))
+    faces = np.ascontiguousarray(np.asarray(mesh.faces, dtype="<u4").reshape(-1, 3))
+    duplicate = (
+        (faces[:, 0] == faces[:, 1])
+        | (faces[:, 1] == faces[:, 2])
+        | (faces[:, 0] == faces[:, 2])
+    )
+    return {
+        "vertices": int(len(vertices)),
+        "triangles": int(len(faces)),
+        "duplicate_index_faces": int(duplicate.sum()),
+        "duplicate_index_percent": round(float(duplicate.mean() * 100.0), 6) if len(faces) else 0.0,
+        "vertex_array_sha256": hashlib.sha256(vertices.tobytes()).hexdigest(),
+        "index_array_sha256": hashlib.sha256(faces.tobytes()).hexdigest(),
+    }
+
+
+def _sanitize_decoded_mesh(mesh):
+    """Drop exact duplicate-index faces immediately after decoder output.
+
+    Mini Turbo's decoder can return a trimesh object containing a large duplicate-index face
+    population. Those faces are zero-area and Blender silently drops them later, which makes the
+    corruption look like a GLB/import problem. Sanitize the returned mesh before any downstream
+    component, UV, or texture stage and keep all non-duplicate faces unchanged.
+    """
+    import numpy as np
+
+    vertices = np.asarray(mesh.vertices)
+    faces = np.asarray(mesh.faces)
+    if vertices.ndim != 2 or vertices.shape[1] != 3 or not np.isfinite(vertices).all():
+        raise RuntimeError("decoded mesh has invalid or non-finite vertices")
+    if faces.ndim != 2 or faces.shape[1] != 3:
+        raise RuntimeError("decoded mesh has invalid face indices")
+    duplicate = (
+        (faces[:, 0] == faces[:, 1])
+        | (faces[:, 1] == faces[:, 2])
+        | (faces[:, 0] == faces[:, 2])
+    )
+    removed = int(duplicate.sum())
+    if removed:
+        mesh.update_faces(~duplicate)
+        mesh.remove_unreferenced_vertices()
+    return mesh, removed
+
+
 def _classify_generation_failure(exc: Exception) -> str | None:
     text = str(exc).lower()
     if "empty active point" in text:
@@ -403,9 +452,48 @@ def main() -> int:
 
         if isinstance(mesh, list):
             mesh = mesh[0]
-        _trace(trace_path, "mesh_ready", torch, diagnostic=args.diagnostic_telemetry, boundary_name="mesh_decode", last_successful_operation="mesh_decode", vertices=len(mesh.vertices), triangles=len(mesh.faces))
+        decoded_boundary = _mesh_boundary_summary(mesh)
+        _trace(
+            trace_path,
+            "mesh_decoded",
+            torch,
+            diagnostic=args.diagnostic_telemetry,
+            boundary_name="mesh_decode",
+            last_successful_operation="mesh_decode",
+            **decoded_boundary,
+        )
+        mesh, removed_degenerate_faces = _sanitize_decoded_mesh(mesh)
+        sanitized_boundary = _mesh_boundary_summary(mesh)
+        _trace(
+            trace_path,
+            "mesh_sanitized",
+            torch,
+            diagnostic=args.diagnostic_telemetry,
+            boundary_name="mesh_sanitize",
+            last_successful_operation="mesh_sanitize",
+            removed_degenerate_faces=removed_degenerate_faces,
+            **sanitized_boundary,
+        )
+        _trace(
+            trace_path,
+            "mesh_ready",
+            torch,
+            diagnostic=args.diagnostic_telemetry,
+            boundary_name="mesh_ready",
+            last_successful_operation="mesh_sanitize",
+            **sanitized_boundary,
+        )
         mesh.export(str(output))
-        _trace(trace_path, "mesh_exported", torch, diagnostic=args.diagnostic_telemetry, boundary_name="mesh_exported", last_successful_operation="mesh.export", output=str(output))
+        _trace(
+            trace_path,
+            "mesh_exported",
+            torch,
+            diagnostic=args.diagnostic_telemetry,
+            boundary_name="mesh_exported",
+            last_successful_operation="mesh.export",
+            output=str(output),
+            **sanitized_boundary,
+        )
         verify_real_glb(output, started_at)
 
         payload.update(
