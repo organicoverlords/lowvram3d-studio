@@ -4,8 +4,9 @@
 
 .DESCRIPTION
     Creates a persistent dedicated Python environment without modifying ComfyUI or the
-    production control environment. The source image and environment are hash/version checked,
-    the GPU worker runs alone, and all raw maps plus compact previews are retained for proof.
+    production control environment. The lighthouse source is resolved by exact SHA-256
+    across normal user and benchmark folders, so moving or renaming the image does not
+    break the run. Raw maps and compact previews are retained for proof.
 #>
 [CmdletBinding()]
 param(
@@ -29,6 +30,10 @@ $Python = Join-Path $EnvironmentRoot "Scripts\python.exe"
 $Marker = Join-Path $EnvironmentRoot "image-world-moge-environment.json"
 $EnvironmentContract = "moge2-vits-normal-torch2.8.0-cu128-b942f00-v1"
 $SetupReport = Join-Path $OutputRoot "setup-report.json"
+$RequestedImagePath = $ImagePath
+$ResolvedImagePath = $null
+$SourceSearchRoots = @()
+$SourceCandidatesChecked = 0
 
 function Assert-File([string]$Path, [string]$Label) {
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
@@ -39,6 +44,94 @@ function Assert-File([string]$Path, [string]$Label) {
     }
 }
 
+function Test-ExpectedSourceHash([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
+    if ((Get-Item -LiteralPath $Path).Length -le 0) { return $false }
+    $script:SourceCandidatesChecked += 1
+    try {
+        $hash = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($hash -eq $ExpectedSha256.ToLowerInvariant()) {
+            $script:ResolvedImagePath = (Resolve-Path -LiteralPath $Path).Path
+            return $true
+        }
+    } catch {
+        Write-Warning "Could not hash candidate '$Path': $($_.Exception.Message)"
+    }
+    return $false
+}
+
+function Resolve-LighthouseSource([string]$RequestedPath) {
+    if (Test-ExpectedSourceHash $RequestedPath) {
+        return $script:ResolvedImagePath
+    }
+
+    $roots = @(
+        (Split-Path -Parent $RequestedPath),
+        (Join-Path $env:USERPROFILE "Downloads"),
+        (Join-Path $env:USERPROFILE "Desktop"),
+        (Join-Path $env:USERPROFILE "Pictures"),
+        (Join-Path $env:USERPROFILE "Documents"),
+        (Join-Path $env:USERPROFILE "OneDrive\Downloads"),
+        (Join-Path $env:USERPROFILE "OneDrive\Desktop"),
+        (Join-Path $env:USERPROFILE "OneDrive\Pictures"),
+        "C:\AI\LowVRAM3D-benchmarks",
+        "C:\AI\LowVRAM3D-benchmarks\inputs",
+        "C:\AI\LowVRAM3D-benchmarks\sources"
+    ) | Where-Object {
+        $_ -and (Test-Path -LiteralPath $_ -PathType Container)
+    } | Select-Object -Unique
+    $script:SourceSearchRoots = @($roots)
+
+    $seen = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase
+    )
+    $candidates = [System.Collections.Generic.List[string]]::new()
+    function Add-Candidate([string]$CandidatePath) {
+        if ($CandidatePath -and $seen.Add($CandidatePath)) {
+            $candidates.Add($CandidatePath)
+        }
+    }
+
+    $requestedName = [IO.Path]::GetFileName($RequestedPath)
+    foreach ($root in $roots) {
+        foreach ($file in Get-ChildItem -LiteralPath $root -File -Recurse -Filter $requestedName -ErrorAction SilentlyContinue) {
+            Add-Candidate $file.FullName
+        }
+    }
+    foreach ($root in $roots) {
+        foreach ($pattern in @("*00.40.32*.png", "*lighthouse*.png", "*majakka*.png")) {
+            foreach ($file in Get-ChildItem -Path (Join-Path $root $pattern) -File -Recurse -ErrorAction SilentlyContinue) {
+                Add-Candidate $file.FullName
+            }
+        }
+    }
+
+    # If the name changed, scan image files only in ordinary user folders. Benchmark
+    # roots can be very large, so they remain limited to the targeted name search above.
+    $broadRoots = @($roots | Where-Object {
+        $_ -notlike "C:\AI\LowVRAM3D-benchmarks*"
+    })
+    foreach ($root in $broadRoots) {
+        foreach ($file in Get-ChildItem -LiteralPath $root -File -Recurse -ErrorAction SilentlyContinue) {
+            if ($file.Extension.ToLowerInvariant() -in @(".png", ".jpg", ".jpeg", ".webp")) {
+                Add-Candidate $file.FullName
+            }
+        }
+    }
+
+    Write-Host "LIGHTHOUSE_SOURCE_CANDIDATES=$($candidates.Count)"
+    foreach ($candidate in $candidates) {
+        if (Test-ExpectedSourceHash $candidate) {
+            return $script:ResolvedImagePath
+        }
+    }
+
+    throw (
+        "Canonical lighthouse image was not found by SHA-256. " +
+        "Checked $SourceCandidatesChecked image candidates under: $($roots -join '; ')"
+    )
+}
+
 function Write-SetupReport([string]$Status, [string[]]$Errors = @()) {
     New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
     [ordered]@{
@@ -47,7 +140,10 @@ function Write-SetupReport([string]$Status, [string[]]$Errors = @()) {
         base_python = $BasePython
         environment_python = $Python
         environment_root = $EnvironmentRoot
-        source = $ImagePath
+        source_requested = $RequestedImagePath
+        source_resolved = $ResolvedImagePath
+        source_search_roots = $SourceSearchRoots
+        source_candidates_checked = $SourceCandidatesChecked
         source_sha256_expected = $ExpectedSha256
         num_tokens = $NumTokens
         input_long_edge = $InputLongEdge
@@ -59,17 +155,19 @@ function Write-SetupReport([string]$Status, [string[]]$Errors = @()) {
 }
 
 try {
-    Assert-File $ImagePath "canonical lighthouse source"
-    $ActualHash = (Get-FileHash -LiteralPath $ImagePath -Algorithm SHA256).Hash.ToLowerInvariant()
-    if ($ActualHash -ne $ExpectedSha256.ToLowerInvariant()) {
-        throw "Lighthouse source SHA-256 mismatch. Expected $ExpectedSha256, got $ActualHash"
-    }
-    Assert-File $BasePython "LowVRAM3D control Python"
-
     if (Test-Path -LiteralPath $OutputRoot) {
         Remove-Item -LiteralPath $OutputRoot -Recurse -Force
     }
     New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
+
+    $ImagePath = Resolve-LighthouseSource $RequestedImagePath
+    Assert-File $ImagePath "canonical lighthouse source"
+    $ActualHash = (Get-FileHash -LiteralPath $ImagePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($ActualHash -ne $ExpectedSha256.ToLowerInvariant()) {
+        throw "Resolved lighthouse source SHA-256 mismatch. Expected $ExpectedSha256, got $ActualHash"
+    }
+    Write-Host "LIGHTHOUSE_SOURCE_RESOLVED=$ImagePath"
+    Assert-File $BasePython "LowVRAM3D control Python"
 
     $EnvironmentReady = $false
     if ((Test-Path -LiteralPath $Python -PathType Leaf) -and (Test-Path -LiteralPath $Marker -PathType Leaf)) {
@@ -165,6 +263,7 @@ try {
         Assert-File (Join-Path $OutputRoot $Required) $Required
     }
     Write-Host "IMAGE_WORLD_LIGHTHOUSE_MOGE_PROBE_PASS"
+    Write-Host "SOURCE: $ImagePath"
     Write-Host "OUTPUT: $OutputRoot"
     Write-Host "PEAK_RESERVED_MB: $($Report.peak_gpu_reserved_mb)"
     exit 0
