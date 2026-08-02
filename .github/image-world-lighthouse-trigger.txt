@@ -1,2 +1,0 @@
-triggered_at=2026-08-02T17:07:00Z
-mode=guarded_gpu_idle_only
