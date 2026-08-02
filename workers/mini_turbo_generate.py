@@ -25,36 +25,50 @@ import time
 from pathlib import Path
 
 GLB_MAGIC = b"glTF"
+CONSOLE_HEALTHY = "HEALTHY"
+CONSOLE_DEGRADED = "DEGRADED"
+_console_state = CONSOLE_HEALTHY
+_console_exit_message_sent = False
 
 
-def _tensor_summary(name, value):
-    """Return synchronized metadata without copying the tensor contents."""
+def _reset_console_state():
+    global _console_state, _console_exit_message_sent
+    _console_state = CONSOLE_HEALTHY
+    _console_exit_message_sent = False
+
+
+def _tensor_summary(name, value, diagnostic=False):
+    """Return cheap production metadata, with scans only in explicit diagnostic mode."""
     import torch
 
     if not isinstance(value, torch.Tensor):
         return None
-    torch.cuda.synchronize(value.device) if value.is_cuda else None
     probe = value.detach()
-    if probe.numel():
-        finite = bool(torch.isfinite(probe).all().item())
-        minimum = float(probe.float().amin().item())
-        maximum = float(probe.float().amax().item())
-    else:
-        finite, minimum, maximum = True, None, None
-    return {
+    summary = {
         "name": name,
         "shape": list(probe.shape),
         "dtype": str(probe.dtype),
         "device": str(probe.device),
         "numel": int(probe.numel()),
-        "finite": finite,
-        "min": minimum,
-        "max": maximum,
     }
+    if diagnostic and value.is_cuda:
+        torch.cuda.synchronize(value.device)
+    if diagnostic and probe.numel():
+        finite = bool(torch.isfinite(probe).all().item())
+        minimum = float(probe.float().amin().item())
+        maximum = float(probe.float().amax().item())
+        summary.update({"finite": finite, "min": minimum, "max": maximum})
+    elif diagnostic:
+        finite, minimum, maximum = True, None, None
+        summary.update({"finite": finite, "min": minimum, "max": maximum})
+    return summary
 
 
-def _cuda_stats(torch):
-    torch.cuda.synchronize()
+def _cuda_stats(torch, synchronize=False, boundary_name=None):
+    if synchronize:
+        if not boundary_name:
+            raise ValueError("diagnostic CUDA synchronization requires a named boundary")
+        torch.cuda.synchronize()
     return {
         "allocated_bytes": int(torch.cuda.memory_allocated()),
         "reserved_bytes": int(torch.cuda.memory_reserved()),
@@ -63,18 +77,36 @@ def _cuda_stats(torch):
 
 
 def _safe_console_write(stream, message, flush=True):
-    """Best-effort console sink; telemetry and artifact writes must survive sink errors."""
+    """Best-effort bounded console sink; telemetry and artifacts never depend on it."""
+    global _console_state
+    if _console_state == CONSOLE_DEGRADED:
+        return None
+    message = " ".join(str(message).replace("\r", " ").replace("\n", " ").split())[:512] + "\n"
     try:
         stream.write(message)
         if flush:
             stream.flush()
-    except (OSError, ValueError) as exc:
+    except (OSError, UnicodeError, ValueError, BrokenPipeError) as exc:
+        _console_state = CONSOLE_DEGRADED
         return {
             "type": type(exc).__name__,
             "errno": getattr(exc, "errno", None),
             "message": str(exc),
         }
     return None
+
+
+def _emit_console_exit_status():
+    """Allow one compact ASCII status after a degraded run, at process exit only."""
+    global _console_exit_message_sent
+    if _console_state != CONSOLE_DEGRADED or _console_exit_message_sent:
+        return
+    _console_exit_message_sent = True
+    # A degraded stdout is skipped by _safe_console_write; stderr remains best effort.
+    previous = _console_state
+    globals()["_console_state"] = CONSOLE_HEALTHY
+    _safe_console_write(sys.stderr, "MINI_TURBO_CONSOLE_DEGRADED")
+    globals()["_console_state"] = previous
 
 
 def _write_json_artifact(path, payload):
@@ -90,19 +122,38 @@ def _mesh_summary(mesh):
     }
 
 
-def _trace(trace_path, operation, torch=None, tensors=None, artifact_callback=None, **fields):
-    record = {"time": time.time(), "operation": operation, **fields}
+def _trace(
+    trace_path,
+    operation,
+    torch=None,
+    tensors=None,
+    artifact_callback=None,
+    diagnostic=False,
+    boundary_name=None,
+    **fields,
+):
+    record = {
+        "time": time.time(),
+        "operation": operation,
+        "telemetry_mode": "diagnostic" if diagnostic else "production",
+        **fields,
+    }
     if torch is not None and torch.cuda.is_available():
-        record["cuda"] = _cuda_stats(torch)
+        record["cuda"] = _cuda_stats(torch, synchronize=diagnostic, boundary_name=boundary_name)
     if tensors:
         record["tensors"] = [summary for summary in tensors if summary]
-    console_error = _safe_console_write(sys.stdout, "MINI_TURBO_TRACE " + json.dumps(record) + "\n")
-    if console_error:
-        record["console_sink_error"] = console_error
+    # Force JSON-safe representation before any sink is attempted.
+    record = json.loads(json.dumps(record, default=str))
     with trace_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(record) + "\n")
     if artifact_callback is not None:
         artifact_callback(record)
+    console_error = _safe_console_write(sys.stdout, "MINI_TURBO_TRACE " + json.dumps(record))
+    if console_error:
+        # The durable event already exists; append a sink diagnostic as its own durable event.
+        sink_record = {"time": time.time(), "operation": "console_sink_failure", "error": console_error}
+        with trace_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(sink_record) + "\n")
     return record
 
 
@@ -164,6 +215,7 @@ def main() -> int:
     parser.add_argument("--steps", type=int, default=5)
     parser.add_argument("--guidance-scale", type=float, default=5.0)
     parser.add_argument("--seed", type=int, default=12345)
+    parser.add_argument("--diagnostic-telemetry", action="store_true")
     # Descending ladder of geometry settings. Only VRAM pressure moves us down it; the generator
     # never changes. Each entry is (octree_resolution, num_chunks).
     parser.add_argument("--octree-ladder", default="384:3000,320:2000,256:1500")
@@ -196,6 +248,7 @@ def main() -> int:
         "seed": args.seed,
         "steps": args.steps,
         "octree_ladder": args.octree_ladder,
+        "diagnostic_telemetry": args.diagnostic_telemetry,
     }
 
     try:
@@ -221,7 +274,7 @@ def main() -> int:
             raise RuntimeError("CUDA is unavailable; Mini Turbo requires the GPU on this machine")
         payload["torch"] = torch.__version__
         payload["gpu"] = torch.cuda.get_device_name(0)
-        _trace(trace_path, "cuda_ready", torch, device=str(torch.cuda.current_device()))
+        _trace(trace_path, "cuda_ready", torch, diagnostic=args.diagnostic_telemetry, boundary_name="cuda_ready", device=str(torch.cuda.current_device()))
 
         if args.conditioning_image:
             from PIL import Image
@@ -243,7 +296,7 @@ def main() -> int:
         conditioning.save(matted)
         payload["conditioning_image"] = str(matted)
         payload["image_dimensions"] = list(conditioning.size)
-        _trace(trace_path, "conditioning_loaded", torch, image_dimensions=list(conditioning.size))
+        _trace(trace_path, "conditioning_loaded", torch, diagnostic=args.diagnostic_telemetry, boundary_name="conditioning_loaded", image_dimensions=list(conditioning.size))
 
         pipeline = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained(
             str(model_root),
@@ -252,12 +305,12 @@ def main() -> int:
             variant="fp16",
             device="cuda",
         )
-        _trace(trace_path, "pipeline_loaded", torch, model_root=str(model_root), subfolder=args.subfolder)
+        _trace(trace_path, "pipeline_loaded", torch, diagnostic=args.diagnostic_telemetry, boundary_name="pipeline_loaded", model_root=str(model_root), subfolder=args.subfolder)
         # FlashVDM keeps volume decoding inside a 6 GB budget without changing the generator.
         try:
             pipeline.enable_flashvdm(topk_mode="merge")
             payload["flashvdm"] = True
-            _trace(trace_path, "flashvdm_enabled", torch, topk_mode="merge")
+            _trace(trace_path, "flashvdm_enabled", torch, diagnostic=args.diagnostic_telemetry, boundary_name="flashvdm_enabled", topk_mode="merge")
         except Exception as exc:  # pragma: no cover - depends on installed hy3dgen build
             payload["flashvdm"] = False
             payload["flashvdm_error"] = str(exc)
@@ -279,6 +332,8 @@ def main() -> int:
                     trace_path,
                     "generation_attempt_begin",
                     torch,
+                    diagnostic=args.diagnostic_telemetry,
+                    boundary_name="generation_attempt_begin",
                     octree_resolution=octree_resolution,
                     num_chunks=num_chunks,
                     seed=args.seed,
@@ -288,13 +343,15 @@ def main() -> int:
                 def generation_callback(step_idx, timestep, outputs):
                     tensors = []
                     if hasattr(outputs, "items"):
-                        tensors.extend(_tensor_summary(name, value) for name, value in outputs.items())
+                        tensors.extend(_tensor_summary(name, value, diagnostic=args.diagnostic_telemetry) for name, value in outputs.items())
                     else:
-                        tensors.append(_tensor_summary("prev_sample", getattr(outputs, "prev_sample", None)))
+                        tensors.append(_tensor_summary("prev_sample", getattr(outputs, "prev_sample", None), diagnostic=args.diagnostic_telemetry))
                     _trace(
                         trace_path,
                         "diffusion_step_complete",
                         torch,
+                        diagnostic=args.diagnostic_telemetry,
+                        boundary_name=f"diffusion_step_{int(step_idx) + 1}",
                         tensors=tensors,
                         step_number=int(step_idx) + 1,
                         timestep=int(timestep.item()) if hasattr(timestep, "item") else int(timestep),
@@ -313,7 +370,7 @@ def main() -> int:
                     callback=generation_callback,
                     callback_steps=1,
                 )
-                _trace(trace_path, "generation_complete", torch, last_successful_operation="pipeline.__call__")
+                _trace(trace_path, "generation_complete", torch, diagnostic=args.diagnostic_telemetry, boundary_name="generation_complete", last_successful_operation="pipeline.__call__")
                 mesh = generated[0]
                 attempt["status"] = "ok"
                 attempt["peak_vram_mb"] = int(torch.cuda.max_memory_allocated() / (1024 * 1024))
@@ -337,9 +394,9 @@ def main() -> int:
 
         if isinstance(mesh, list):
             mesh = mesh[0]
-        _trace(trace_path, "mesh_ready", torch, last_successful_operation="mesh_decode", vertices=len(mesh.vertices), triangles=len(mesh.faces))
+        _trace(trace_path, "mesh_ready", torch, diagnostic=args.diagnostic_telemetry, boundary_name="mesh_decode", last_successful_operation="mesh_decode", vertices=len(mesh.vertices), triangles=len(mesh.faces))
         mesh.export(str(output))
-        _trace(trace_path, "mesh_exported", torch, last_successful_operation="mesh.export", output=str(output))
+        _trace(trace_path, "mesh_exported", torch, diagnostic=args.diagnostic_telemetry, boundary_name="mesh_exported", last_successful_operation="mesh.export", output=str(output))
         verify_real_glb(output, started_at)
 
         payload.update(
@@ -362,6 +419,7 @@ def main() -> int:
             f"MINI_TURBO_GENERATED glb={output} verts={payload['raw_vertices']} "
             f"tris={payload['raw_triangles']} octree={payload['octree_resolution']}\n",
         )
+        _emit_console_exit_status()
         return 0
     except Exception as exc:
         import traceback
@@ -370,7 +428,8 @@ def main() -> int:
         payload["traceback"] = traceback.format_exc()
         payload["last_successful_operation"] = "see generation_trace.jsonl"
         _write_json_artifact(result_path, payload)
-        _safe_console_write(sys.stderr, f"MINI_TURBO_FAILED error={exc}\n")
+        _safe_console_write(sys.stderr, f"MINI_TURBO_FAILED error={exc}")
+        _emit_console_exit_status()
         return 1
 
 
