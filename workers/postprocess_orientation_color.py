@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -135,7 +136,9 @@ def recover_basecolor(basecolor_path: Path, output_path: Path, source_stats: dic
 
 def run_blender(blender: Path, script: Path, args: list[str], repo_root: Path) -> None:
     command = [str(blender), "--background", "--python-use-system-env", "--python", str(script), "--", *args]
-    result = subprocess.run(command, cwd=str(repo_root), capture_output=True, text=True)
+    env = dict(os.environ)
+    env["PYTHONPATH"] = ";".join(str(repo_root / part) for part in ("blender", "workers", "src"))
+    result = subprocess.run(command, cwd=str(repo_root), env=env, capture_output=True, text=True)
     if result.returncode:
         raise RuntimeError((result.stdout + result.stderr)[-3000:])
 
