@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "source_policy": "Fixtures are identified by measured SHA-256 and dimensions. Binary sources are not committed in this foundation change.",
+  "fixtures": [
+    {
+      "fixture_id": "lighthouse_archipelago_vista",
+      "source_filename": "ChatGPT Image 30.7.2026 klo 00.40.32.png",
+      "sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+      "width": 1448,
+      "height": 1086,
+      "has_meaningful_alpha": false,
+      "expected_route": "perspective_vista",
+      "subcategory": "coastal_archipelago",
+      "required_proofs": ["camera_recovery", "terrain_landmark_separation", "water_level_constraint", "source_view_match", "unreal_landscape_package"]
+    },
+    {
+      "fixture_id": "forest_mountain_diorama",
+      "source_filename": "92830d1d-38df-4645-af8c-124c86fe2dd4.png",
+      "sha256": "19863d0be2dd9c14a2bc8338dadb3e2521a15fa28a45416963621ab0e2f805ec",
+      "width": 1448,
+      "height": 1086,
+      "has_meaningful_alpha": false,
+      "expected_route": "diorama_map",
+      "subcategory": "isometric_world_board",
+      "required_proofs": ["board_rectification", "terrain_object_separation", "path_and_river_extraction", "placement_masks", "unreal_landscape_package"]
+    },
+    {
+      "fixture_id": "storm_tree_and_shack",
+      "source_filename": "ChatGPT Image 2.8.2026 klo 14.41.01(3).png",
+      "sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+      "width": 1448,
+      "height": 1086,
+      "has_meaningful_alpha": false,
+      "expected_route": "composite_scene",
+      "subcategory": "tree_structure_local_environment",
+      "required_proofs": ["tree_shack_terrain_decomposition", "wind_direction_observation", "review_package_only"]
+    },
+    {
+      "fixture_id": "fantasy_castle_landmark",
+      "source_filename": "source_concept_fantasy_castle_city.png",
+      "sha256": "6f71eacabfc5699aaceecfe45d2877ac7f1b807d5bf6f9bf83a87694a55a3083",
+      "width": 1536,
+      "height": 1024,
+      "has_meaningful_alpha": true,
+      "alpha_zero_fraction": 0.555343,
+      "alpha_soft_fraction": 0.122585,
+      "expected_route": "isolated_asset",
+      "subcategory": "landmark_structure",
+      "required_proofs": ["source_alpha_preserved", "separate_foundation_contact", "fresh_process_export_validation"]
+    },
+    {
+      "fixture_id": "treehouse_roots_tree",
+      "source_filename": "source_concept_treehouse_roots.png",
+      "sha256": "b09ad532cd9899c1ce31c006dd4771e15e608c7973f45f582a7f54d7536f8668",
+      "width": 1024,
+      "height": 1536,
+      "has_meaningful_alpha": true,
+      "alpha_zero_fraction": 0.485218,
+      "alpha_soft_fraction": 0.23851,
+      "expected_route": "isolated_asset",
+      "subcategory": "tree_with_constructed_components",
+      "required_proofs": ["structural_visual_foliage_alpha_split", "tree_structure_platform_separation", "root_ground_contact"]
+    },
+    {
+      "fixture_id": "glowing_white_tree",
+      "source_filename": "source_concept_glowing_white_tree.png",
+      "sha256": "a7c02ad1031870975ad968f5bf3982b5b7297ca6f115f38d461d5e39bcc36c32",
+      "width": 1024,
+      "height": 1536,
+      "has_meaningful_alpha": true,
+      "alpha_zero_fraction": 0.352616,
+      "alpha_soft_fraction": 0.261175,
+      "expected_route": "isolated_asset",
+      "subcategory": "tree_emissive_hanging_foliage",
+      "required_proofs": ["structural_visual_foliage_alpha_split", "emissive_component_separation", "foliage_not_solid_shell"]
+    },
+    {
+      "fixture_id": "rooted_canopy_tree",
+      "source_filename": "source_concept_rooted_canopy_tree.png",
+      "sha256": "2855b8cb8554a1a0922e5dab8eb58d37a0758866a9883ef6691c64196dd77c6d",
+      "width": 1024,
+      "height": 1536,
+      "has_meaningful_alpha": true,
+      "alpha_zero_fraction": 0.485054,
+      "alpha_soft_fraction": 0.223406,
+      "expected_route": "isolated_asset",
+      "subcategory": "tree_root_architecture",
+      "required_proofs": ["main_trunk_continuity", "root_ground_contact", "branch_graph_attachment"]
+    },
+    {
+      "fixture_id": "spiral_trunk_tree",
+      "source_filename": "source_concept_spiral_trunk_tree.png",
+      "sha256": "98cffea910746300c11f092d928925d27e143d0a6d9ebc7f96e6a15a5c4ac4ef",
+      "width": 1024,
+      "height": 1536,
+      "has_meaningful_alpha": true,
+      "alpha_zero_fraction": 0.593204,
+      "alpha_soft_fraction": 0.232428,
+      "expected_route": "isolated_asset",
+      "subcategory": "tree_spiral_trunk",
+      "required_proofs": ["spiral_silhouette_preserved", "main_trunk_continuity", "emissive_channel_preserved"]
+    },
+    {
+      "fixture_id": "treehouse_canopy_tree",
+      "source_filename": "source_concept_treehouse_canopy.png",
+      "sha256": "09b7418ad89fa26527c786aff72c3497067046fa080ef6f418a3ba3a52484acb",
+      "width": 1024,
+      "height": 1536,
+      "has_meaningful_alpha": true,
+      "alpha_zero_fraction": 0.423508,
+      "alpha_soft_fraction": 0.323893,
+      "expected_route": "isolated_asset",
+      "subcategory": "tree_dense_hanging_canopy",
+      "required_proofs": ["soft_alpha_preserved", "foliage_instancing", "collision_excludes_foliage"]
+    }
+  ]
+}
