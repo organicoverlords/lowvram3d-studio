@@ -48,6 +48,9 @@ def render_yaws(glb: Path, output_dir: Path, front_direction: str, resolution: i
         path = output_dir / f"yaw_{yaw}.png"
         scene.render.filepath = str(path)
         bpy.ops.render.render(write_still=True)
+    place_camera(camera, centre, radius, 35.0, 8.0, 1.0, centre, front_sign)
+    scene.render.filepath = str(output_dir / "three_quarter.png")
+    bpy.ops.render.render(write_still=True)
 
 
 def rotate_export(glb: Path, output_glb: Path, yaw_deg: float):

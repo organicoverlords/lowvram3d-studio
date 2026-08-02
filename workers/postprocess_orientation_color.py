@@ -140,6 +140,32 @@ def run_blender(blender: Path, script: Path, args: list[str], repo_root: Path) -
         raise RuntimeError((result.stdout + result.stderr)[-3000:])
 
 
+def add_required_view_aliases(directory: Path) -> None:
+    for source, target in (("yaw_0.png", "front.png"), ("three_quarter.png", "three_quarter.png"),
+                           ("yaw_90.png", "side.png"), ("yaw_180.png", "rear.png")):
+        source_path, target_path = directory / source, directory / target
+        if source_path.exists() and source_path != target_path:
+            shutil.copy2(source_path, target_path)
+
+
+def make_proof_sheet(before: Path, after: Path, output: Path) -> None:
+    labels = ((before, "before"), (after, "after"))
+    rows = []
+    for directory, group in labels:
+        tiles = []
+        for name in ("front.png", "three_quarter.png", "side.png", "rear.png"):
+            image = cv2.imread(str(directory / name), cv2.IMREAD_COLOR)
+            if image is None:
+                raise RuntimeError(f"missing proof render: {directory / name}")
+            image = cv2.resize(image, (320, 320), interpolation=cv2.INTER_AREA)
+            cv2.putText(image, f"{group}:{name[:-4]}", (10, 26), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.65, (255, 255, 255), 2, cv2.LINE_AA)
+            tiles.append(image)
+        rows.append(np.concatenate(tiles, axis=1))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(str(output), np.concatenate(rows, axis=0))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--glb", required=True)
@@ -166,6 +192,7 @@ def main() -> int:
                 ["--mode", "render_yaws", "--glb", args.glb, "--output-dir", str(before_dir),
                  "--front-direction", args.front_direction, "--resolution", str(args.resolution),
                  "--samples", str(args.samples)], repo_root)
+    add_required_view_aliases(before_dir)
     scores = {}
     for yaw, name in YAW_NAMES.items():
         image = cv2.imread(str(before_dir / f"{name}.png"), cv2.IMREAD_UNCHANGED)
@@ -188,6 +215,7 @@ def main() -> int:
                 ["--mode", "render_yaws", "--glb", str(working_glb), "--output-dir", str(after_dir),
                  "--front-direction", args.front_direction, "--resolution", str(args.resolution),
                  "--samples", str(args.samples)], repo_root)
+    add_required_view_aliases(after_dir)
     front = cv2.imread(str(after_dir / "yaw_0.png"), cv2.IMREAD_UNCHANGED)
     source_stats = colour_stats(source, foreground_mask(source))
     render_stats = colour_stats(front, foreground_mask(front))
@@ -206,6 +234,7 @@ def main() -> int:
                     ["--mode", "render_yaws", "--glb", str(working_glb), "--output-dir", str(after_dir),
                      "--front-direction", args.front_direction, "--resolution", str(args.resolution),
                      "--samples", str(args.samples)], repo_root)
+        add_required_view_aliases(after_dir)
     else:
         shutil.copy2(args.basecolor, recovered_path)
         recovery = {"action": "not_needed", "basecolor_output": str(recovered_path)}
@@ -214,16 +243,23 @@ def main() -> int:
     for yaw, name in YAW_NAMES.items():
         image = cv2.imread(str(after_dir / f"{name}.png"), cv2.IMREAD_UNCHANGED)
         after_scores[yaw] = masked_similarity(source, image)
+    after_front = cv2.imread(str(after_dir / "front.png"), cv2.IMREAD_UNCHANGED)
+    after_render_stats = colour_stats(after_front, foreground_mask(after_front))
+    after_colour_decision = pale_texture_decision(source_stats, after_render_stats)
+    proof_sheet = output / "before_after_proof_sheet.png"
+    make_proof_sheet(before_dir, after_dir, proof_sheet)
     receipt = {
         "input_glb": str(args.glb), "corrected_glb": str(working_glb),
         "orientation_qa": {"scores_before": scores, "decision": orientation,
                             "action": orientation_action, "scores_after": after_scores},
-        "texture_color_qa": {"source_stats": source_stats, "front_render_stats": render_stats,
+        "texture_color_qa": {"source_stats": source_stats, "front_render_stats_before": render_stats,
                               "decision": colour_decision, "action": colour_action,
-                              "recovery": recovery},
+                              "recovery": recovery, "front_render_stats_after": after_render_stats,
+                              "decision_after": after_colour_decision},
         "geometry_regenerated": False, "projection_rerun": False, "lod_rerun": False, "xatlas_rerun": False,
-        "proof_views": {"before": str(before_dir), "after": str(after_dir)},
-        "classification": "PROVEN" if (orientation["decision"] != "undetermined" and not colour_decision["pale"])
+        "proof_views": {"before": str(before_dir), "after": str(after_dir),
+                        "before_after_proof_sheet": str(proof_sheet)},
+        "classification": "PROVEN" if (orientation["decision"] != "undetermined" and not after_colour_decision["pale"])
                            else "NOT_PROVEN",
     }
     (output / "postprocess_receipt.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
