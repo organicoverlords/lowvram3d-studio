@@ -23,6 +23,9 @@ concurrency:
   group: image-world-lighthouse-moge-probe
   cancel-in-progress: true
 
+env:
+  IMAGE_WORLD_LOCAL_WORKER_TRIGGER: "2026-08-02T19:09:00+03:00"
+
 jobs:
   lighthouse-moge:
     if: github.repository_owner == 'organicoverlords'
@@ -51,6 +54,7 @@ jobs:
           if ($head -ne "${{ github.sha }}") {
             throw "Checked-out HEAD $head does not equal workflow SHA ${{ github.sha }}"
           }
+          Write-Host "TRIGGER=$env:IMAGE_WORLD_LOCAL_WORKER_TRIGGER"
           Write-Host "REPO=$PWD"
           Write-Host "BRANCH=${{ github.ref_name }}"
           Write-Host "HEAD=$head"
