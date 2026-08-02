@@ -25,6 +25,8 @@ class _UnavailableRasterModule(types.ModuleType):
     """Import-compatible module that refuses every raster operation."""
 
     def __getattr__(self, name: str) -> Any:
+        if name.startswith("__"):
+            raise AttributeError(name)
         raise RuntimeError(
             "nvdiffrast is unavailable in camera-only MV-Adapter mode; "
             f"attempted to access nvdiffrast.torch.{name}"
