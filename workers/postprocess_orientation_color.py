@@ -102,6 +102,26 @@ def pale_texture_decision(source_stats: dict, render_stats: dict) -> dict:
             "rule": "saturation<0.72_or_luma_contrast<0.65"}
 
 
+def rear_face_check(directory: Path) -> dict:
+    front = cv2.imread(str(directory / "front.png"), cv2.IMREAD_UNCHANGED)
+    rear = cv2.imread(str(directory / "rear.png"), cv2.IMREAD_UNCHANGED)
+    if front is None or rear is None:
+        return {"available": False, "suspected": True, "reason": "missing_front_or_rear_render"}
+    front_patch = normalised_patch(cv2.cvtColor(front[:, :, :3], cv2.COLOR_BGR2RGB).astype(np.float32),
+                                   foreground_mask(front))
+    rear_patch = normalised_patch(cv2.cvtColor(rear[:, :, :3], cv2.COLOR_BGR2RGB).astype(np.float32),
+                                  foreground_mask(rear))
+    if front_patch is None or rear_patch is None:
+        return {"available": False, "suspected": True, "reason": "empty_render_mask"}
+    front_luma = front_patch.mean(axis=2)
+    rear_luma = rear_patch.mean(axis=2)
+    mirrored = float(np.corrcoef(front_luma.ravel(), rear_luma[:, ::-1].ravel())[0, 1])
+    direct = float(np.corrcoef(front_luma.ravel(), rear_luma.ravel())[0, 1])
+    return {"available": True, "mirrored_correlation": round(mirrored, 6),
+            "direct_correlation": round(direct, 6), "threshold": 0.82,
+            "suspected": bool(mirrored > 0.82 and mirrored > direct + 0.10)}
+
+
 def recover_basecolor(basecolor_path: Path, output_path: Path, source_stats: dict,
                       render_stats: dict, coverage_path: Path | None = None) -> dict:
     image = cv2.imread(str(basecolor_path), cv2.IMREAD_COLOR)
@@ -249,6 +269,7 @@ def main() -> int:
     after_front = cv2.imread(str(after_dir / "front.png"), cv2.IMREAD_UNCHANGED)
     after_render_stats = colour_stats(after_front, foreground_mask(after_front))
     after_colour_decision = pale_texture_decision(source_stats, after_render_stats)
+    rear_check = rear_face_check(after_dir)
     proof_sheet = output / "before_after_proof_sheet.png"
     make_proof_sheet(before_dir, after_dir, proof_sheet)
     receipt = {
@@ -259,11 +280,13 @@ def main() -> int:
                               "decision": colour_decision, "action": colour_action,
                               "recovery": recovery, "front_render_stats_after": after_render_stats,
                               "decision_after": after_colour_decision},
+        "rear_face_check": rear_check,
         "geometry_regenerated": False, "projection_rerun": False, "lod_rerun": False, "xatlas_rerun": False,
         "proof_views": {"before": str(before_dir), "after": str(after_dir),
                         "before_after_proof_sheet": str(proof_sheet)},
-        "classification": "PROVEN" if (orientation["decision"] != "undetermined" and not after_colour_decision["pale"])
-                           else "NOT_PROVEN",
+        "classification": "REJECTED" if rear_check["suspected"] else (
+            "PROVEN" if (orientation["decision"] != "undetermined" and not after_colour_decision["pale"])
+            else "NOT_PROVEN"),
     }
     (output / "postprocess_receipt.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
     print(json.dumps(receipt, indent=2))
