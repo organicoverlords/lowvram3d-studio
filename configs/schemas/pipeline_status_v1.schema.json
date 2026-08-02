@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lowvram3d.local/schemas/pipeline_status_v1.schema.json",
+  "title": "LowVRAM3D pipeline status v1",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "run_id",
+    "asset_id",
+    "state",
+    "classification",
+    "overall_progress",
+    "current_stage",
+    "progress_mode",
+    "elapsed_seconds",
+    "updated_at",
+    "last_heartbeat_at",
+    "last_progress_at",
+    "completed_stages",
+    "remaining_stages",
+    "resource_snapshot"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "attempt_id": {"type": "string"},
+    "asset_id": {"type": "string", "minLength": 1},
+    "state": {
+      "enum": ["PLANNED", "RUNNING", "PAUSED", "COMPLETED", "FAILED", "CANCELED"]
+    },
+    "classification": {
+      "enum": ["PROVEN", "REJECTED", "NOT_PROVEN", "BLOCKED"]
+    },
+    "overall_progress": {
+      "oneOf": [
+        {"type": "number", "minimum": 0, "maximum": 100},
+        {"type": "null"}
+      ]
+    },
+    "current_stage": {"type": ["string", "null"]},
+    "current_substage": {"type": ["string", "null"]},
+    "current_operation": {"type": ["string", "null"]},
+    "progress_mode": {
+      "enum": ["EXACT_UNITS", "WEIGHTED_OPERATIONS", "INDETERMINATE"]
+    },
+    "units_completed": {"type": ["integer", "number", "null"], "minimum": 0},
+    "units_total": {"type": ["integer", "number", "null"], "exclusiveMinimum": 0},
+    "stage_percent": {
+      "oneOf": [
+        {"type": "number", "minimum": 0, "maximum": 100},
+        {"type": "null"}
+      ]
+    },
+    "elapsed_seconds": {"type": "number", "minimum": 0},
+    "eta_seconds": {"type": ["number", "null"], "minimum": 0},
+    "eta_confidence": {"enum": ["HIGH", "MEDIUM", "LOW", "NONE"]},
+    "started_at": {"type": ["string", "null"], "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "last_heartbeat_at": {"type": "string", "format": "date-time"},
+    "last_progress_at": {"type": "string", "format": "date-time"},
+    "last_completed_checkpoint": {"type": ["string", "null"]},
+    "current_artifact": {"type": ["string", "null"]},
+    "completed_stages": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "remaining_stages": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "blocked_reason": {"type": ["string", "null"]},
+    "user_action_required": {"type": ["string", "null"]},
+    "resume_command_or_token": {"type": ["string", "null"]},
+    "resource_snapshot": {
+      "type": "object",
+      "required": ["process_ram_bytes"],
+      "additionalProperties": true,
+      "properties": {
+        "process_ram_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "system_ram_available_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "gpu_allocated_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "gpu_reserved_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "gpu_peak_allocated_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "gpu_total_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "gpu_utilization_percent": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+        "gpu_temperature_c": {"type": ["number", "null"]}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"progress_mode": {"const": "EXACT_UNITS"}}},
+      "then": {"required": ["units_completed", "units_total", "stage_percent"]}
+    },
+    {
+      "if": {"properties": {"eta_confidence": {"const": "NONE"}}},
+      "then": {"properties": {"eta_seconds": {"type": "null"}}}
+    }
+  ]
+}
