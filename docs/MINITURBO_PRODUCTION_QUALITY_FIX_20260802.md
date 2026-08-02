@@ -2,16 +2,16 @@
 
 ## Why this change is required
 
-The pipeline promoted one-step and two-step Mini Turbo outputs into textured benchmark baselines. Those settings were introduced as fast execution/decoder diagnostics. They are not the production Turbo setting.
+The pipeline promoted one-step and two-step Mini Turbo outputs into textured benchmark baselines without first proving geometry quality. The real pipeline defect is **missing pre-texture geometry acceptance**, not simply the use of low step counts.
 
-Tencent's official Hunyuan3D-2 Gradio app sets Turbo mode to **5 inference steps**, octree resolution 256, and guidance scale 5.0. The frog's fused debris halo was generated at two steps and cannot be repaired safely by deleting connected surface patches. The pipeline must stop promoting under-denoised smoke geometry.
+A blanket five-step policy would waste production time on easy assets. The corrected policy uses a fast candidate first and escalates only when the geometry gate rejects it.
 
 ## Authoritative classification
 
 - `tactical_red_panda_scout` repaired v7 remains the accepted basic baseline.
 - `frog_salvage_diver` v7 and v8 remain rejected/blocked evidence.
-- `BLOCKED_FROG_COMPONENTS_FUSED_REQUIRES_DIFFERENT_GEOMETRY` means the current geometry is not repairable by detached-component cleanup.
-- No more per-asset frog deletion work is authorized.
+- `BLOCKED_FROG_COMPONENTS_FUSED_REQUIRES_DIFFERENT_GEOMETRY` means those preserved frog candidates cannot be repaired safely by detached-component cleanup.
+- No more per-asset deletion work on frog v7/v8 is authorized.
 
 ## Required pipeline change
 
@@ -19,7 +19,7 @@ Implement this as a shared generation-quality policy, not a frog-specific script
 
 ### 1. Separate smoke and baseline intents
 
-Add an explicit run intent accepted by the generation orchestrator and worker:
+Add explicit run intent:
 
 - `smoke`
 - `baseline`
@@ -27,34 +27,37 @@ Add an explicit run intent accepted by the generation orchestrator and worker:
 `smoke`:
 
 - may use `steps=1`;
-- proves only model load, diffusion execution, decoder execution, and GLB serialization;
-- writes only into a diagnostic/canary directory;
+- is used only after model/runtime/pipeline changes or for explicit diagnostics;
+- proves model load, diffusion execution, decoder execution, and GLB serialization only;
+- writes to a diagnostic/canary directory;
 - can never be promoted to a canonical asset;
 - can never enter UV, texture, material, or final-render stages;
-- must report `NON_PROMOTABLE_SMOKE_OUTPUT=true`.
+- reports `NON_PROMOTABLE_SMOKE_OUTPUT=true`.
 
-`baseline`:
+Do **not** run a smoke attempt before every normal asset. That would add avoidable production time.
 
-- Mini Turbo `num_inference_steps=5`;
+`baseline` Candidate A:
+
+- Mini Turbo `num_inference_steps=2`;
 - `guidance_scale=5.0`;
 - `octree_resolution=256`;
-- `num_chunks=1500` for this 6 GB machine unless an already-proven lower-memory value is required;
+- `num_chunks=1500` on this 6 GB machine;
+- seed `12345`;
 - one GPU-heavy process at a time;
-- no automatic downgrade to steps 1 or 2;
-- only a baseline-intent candidate may proceed toward texturing.
+- may proceed only to the pre-texture geometry gate.
 
-Remove the previous policy that treated a successful two-step retry as production geometry.
+A two-step candidate is not automatically accepted. It becomes promotable only when the geometry gate passes.
 
 ### 2. Add a pre-texture geometry quality gate
 
-Run this gate after raw GLB generation and clean fresh import, before UV generation, projection, or texture work.
+Run after raw GLB generation and clean fresh import, before UV generation, projection, or texture work.
 
 Inputs:
 
 - canonical source image;
-- exact conditioning alpha/matte used by generation;
+- exact conditioning alpha/matte;
 - raw generated GLB;
-- source-facing camera transform used for the benchmark.
+- source-facing camera transform.
 
 Required evidence:
 
@@ -67,23 +70,20 @@ Required evidence:
 Required metrics:
 
 - source-mask/mesh-mask IoU;
-- mesh silhouette area;
-- source silhouette area;
-- unsupported mesh-silhouette ratio outside a bounded dilation of the source mask;
+- mesh and source silhouette areas;
+- unsupported mesh-silhouette ratio outside a bounded source-mask dilation;
 - missing-source-silhouette ratio;
-- number and area of unsupported screen-space islands;
+- unsupported screen-space island count and area;
 - welded connected-component count;
 - detached face/area fractions;
 - boundary and non-manifold edges;
 - single-use indexed-vertex percentage;
 - source-facing depth-separated outboard region count.
 
-Do not invent fixed thresholds from theory. Calibrate deterministic thresholds using the existing anchors:
+Calibrate deterministic asset-agnostic thresholds using existing anchors:
 
 - `tactical_red_panda_scout` repaired v7 must pass;
-- frog v7 and frog v8 must fail because of their visible debris halo and fragmented silhouette.
-
-Record the selected threshold values and both anchor metric sets in tests/fixtures. Thresholds must remain asset-agnostic.
+- frog v7 and frog v8 must fail.
 
 The gate returns only:
 
@@ -93,71 +93,77 @@ The gate returns only:
 - `REJECT_GEOMETRY_TOPOLOGY`
 - `NOT_PROVEN_GATE_ERROR`
 
-A rejected geometry candidate must not be textured.
+Rejected geometry must not be textured.
 
-### 3. Bounded automatic candidate policy
+### 3. Quality-gated escalation policy
 
 For an asset without reusable accepted geometry:
 
-Candidate A:
+#### Candidate A — fast baseline
 
-- baseline intent;
-- Mini Turbo steps 5;
+- steps 2;
 - guidance 5.0;
 - octree 256;
 - chunks 1500;
 - seed 12345.
 
-If Candidate A fails the pre-texture geometry gate, permit exactly one Candidate B:
+If Candidate A passes, texture it immediately. Do not run five steps.
 
-- same model, conditioning, steps, guidance, octree, and chunks;
-- seed 1234;
+#### Candidate B — quality escalation
+
+Run only when Candidate A fails specifically because of fused debris, fragmented silhouette, or another geometry-quality rejection—not for unrelated I/O or implementation errors.
+
+- steps 5;
+- same guidance, octree, chunks, conditioning, and seed;
 - no other parameter changes.
 
-Select the passing candidate. If both pass, select the higher deterministic geometry-gate score. If neither passes, block that asset and continue to the next benchmark.
+Candidate B is the only authorized quality escalation. Do not run an intermediate three-step candidate and do not change seed at the same time, because that would obscure which correction helped.
 
-Do not use detached-component cleanup to force a rejected fused candidate through the gate.
+If Candidate B passes, texture it. If it fails, block that asset and continue to the next benchmark.
+
+This means normal assets cost one two-step generation. Only rejected geometry pays for a five-step rerun.
 
 ### 4. Cleanup remains secondary
 
-The existing welded connected-component cleanup remains valid for genuinely detached rods, blobs, and tiny islands after a candidate passes the pre-texture quality gate.
+The welded connected-component cleanup remains valid for genuinely detached rods, blobs, and tiny islands after a candidate passes the pre-texture gate.
 
 It must not:
 
-- rescue a geometry candidate that fails the fused-halo gate;
+- rescue geometry that fails the fused-halo gate;
 - delete connected surface patches merely because they are unsupported;
-- use frog-specific coordinates or component IDs;
+- use asset-specific coordinates or component IDs;
 - promote structural import success over visible geometry rejection.
 
 ### 5. Texture only accepted geometry
 
 Only after `PASS_GEOMETRY_FOR_TEXTURE`:
 
-1. run conservative detached-component cleanup;
-2. validate topology;
-3. unwrap/preserve UVs;
-4. run the repaired raster projection route;
-5. export textured GLB;
-6. fresh-import in a clean Blender process;
-7. render front, three-quarter, side, and rear views;
-8. classify the basic textured baseline.
+1. conservative detached-component cleanup;
+2. topology validation;
+3. UV preservation/unwrap;
+4. repaired raster projection;
+5. textured GLB export;
+6. clean fresh import;
+7. front, three-quarter, side, and rear renders;
+8. baseline classification.
 
 ## Frog regression execution
 
 After code and CPU fixture tests pass:
 
-1. Prove the new gate rejects preserved frog v7 and v8 without modifying them.
-2. Prove the gate accepts panda repaired v7.
-3. Run exactly one new frog Candidate A at the 5-step baseline settings.
-4. Run Candidate B only if Candidate A fails the gate.
+1. Prove the gate rejects preserved frog v7 and v8.
+2. Prove it accepts panda repaired v7.
+3. Run one new frog Candidate A at two steps.
+4. If Candidate A fails the geometry gate, run one Candidate B at five steps with every other input unchanged.
 5. Texture only a passing candidate.
-6. Do not perform another manual or component-deletion repair of v7/v8.
+6. Do not perform another deletion repair of v7/v8.
 
-Possible final outcomes:
+Possible outcomes:
 
-- `FROG_5STEP_GEOMETRY_GATE=PROVEN`
+- `FROG_2STEP_GEOMETRY_GATE=PROVEN`
+- `FROG_5STEP_ESCALATION_GEOMETRY_GATE=PROVEN`
 - `FROG_BASIC_TEXTURED_BASELINE=PROVEN_WITH_LIMITATIONS`
-- `BLOCKED_MINITURBO_FROG_5STEP_CANDIDATES_FAILED_GEOMETRY_GATE`
+- `BLOCKED_MINITURBO_FROG_2_AND_5_STEP_CANDIDATES_FAILED_GEOMETRY_GATE`
 
 ## Scope limits
 
@@ -167,4 +173,4 @@ Do not rerun the barn.
 
 Do not change panda v7.
 
-Commit the shared policy/code/tests first, then run the bounded frog regression. Preserve all old rejected artifacts and proof receipts.
+Commit shared policy/code/tests first, then run the bounded frog regression. Preserve all old rejected artifacts and proof receipts.
