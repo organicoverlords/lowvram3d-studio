@@ -191,3 +191,26 @@ staff lane is unblocked.
 | --- | --- | --- |
 | 0 — audit and truth packet | `cd2473c` | PROVEN |
 | 1 — rig base, staff policy, regions | (this commit) | rig base PROVEN, staff PROVEN, parts NOT PROVEN |
+
+## Textured animation review (Milestones B / C / D)
+
+Run root: `C:\AI\LowVRAM3D-benchmarks\shaman-rig-animation\run-20260802-123123`
+
+| Item | Status | Evidence |
+| --- | --- | --- |
+| ANTLER_DEBRIS_CLEANUP | PROVEN | 187 of 2,423 components removed, 823 v / 465 tri (0.21%); 15 ambiguous kept |
+| TEXTURED_RIG_BIND | PROVEN | 135,955 v, 0 unweighted, max 4 influences, ShamanPBR + UVMap + 3x4K intact |
+| MILESTONE_B_ARM_ARTICULATION | RENDERED_AWAITING_REVIEW | separate shoulder/elbow/wrist arcs, staff side pinned |
+| MILESTONE_C_IDLE_BREATHE | RENDERED_AWAITING_REVIEW | 96 frames @ 24 fps, loop delta 1.8e-17 |
+| MILESTONE_D_WAVE | RENDERED_AWAITING_REVIEW | right (free) arm, torso counterbalance, delayed cloth |
+| EXPORT_STRUCTURE / NAME / MATERIAL / TEXTURE / ANIMATION parity | PROVEN | `shaman_textured_export_validation.json` |
+| EXPORT_TOPOLOGY_PARITY | **NOT PROVEN** | export emits 2 meshes against 1, +80 triangles |
+| EXPORT_FIDELITY | **NOT PROVEN** | gated on topology parity |
+| TEXTURE_QUALITY | REJECTED | source carries `REJECTED_VISUAL_BASELINE`; review target only |
+
+The armature was not rebuilt. The proven rig-base mesh remains in the textured
+blend as the authoritative bind and is hidden from render.
+
+An earlier export QA reported `EXPORT_FIDELITY_PROVEN=true` while triangle and
+mesh counts disagreed. Topology parity is now part of that gate, and fidelity
+correctly reports false.

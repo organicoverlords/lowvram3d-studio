@@ -103,3 +103,28 @@ region moves with the wrong bone" — after burning a full skinning pass on
   right-hand density peak count (10) is cloth fringe noise, not fingers.
 - Do not promote anything on an AI image judgement alone. Deterministic
   geometry / topology / skin / animation / fresh-import gates are authoritative.
+
+## Textured review target (current)
+
+Authoritative animation source stays `C:\AI\LowVRAM3D-benchmarks\shaman-rig-animation\run-20260802-123123\motion\shaman_animated.blend`.
+Textured review target: `C:\AI\LowVRAM3D-benchmarks\shaman-rig-animation\run-20260802-123123	extured_rig\shaman_textured_rigged.blend`.
+Review bundle: `C:\AI\LowVRAM3D-benchmarks\shaman-rig-animation\run-20260802-123123\shaman_textured_motion_review.zip`.
+
+Rebuild the textured target with:
+
+1. `blender/shaman_antler_debris_cleanup.py` (textured LOD0 -> cleaned GLB)
+2. `blender/shaman_textured_bind.py` (cleaned GLB + animated blend -> textured rig)
+3. `blender/shaman_textured_export_qa.py` (parity-gated GLB export)
+
+## Next action
+
+1. Milestone E - weight shift with both feet planted, prove pelvis transfer and
+   robe response before any walk work resumes.
+2. Fix export topology parity: the GLB emits 2 meshes against 1 and 80 extra
+   triangles. Suspect the hidden rig-base mesh or an exporter split.
+3. Milestone F - two-step contact test with explicit heel strike, foot flat,
+   mid stance, heel off, toe off and swing phases.
+
+Still outstanding from earlier instructions: PROFILE_DISCOVERY stage, the
+CLOTH_PREP / CLOTH_SIM / CLOTH_QA stages, the motion visual evaluator with its
+14 deterministic detectors, and the texture CUDA lane.
