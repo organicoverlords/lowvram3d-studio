@@ -124,7 +124,11 @@ def register_unified_stages(pipeline: Pipeline, manifest: dict,
     """Compose current core/production stages and a static EXPORT_QA boundary."""
     stages = register_stages(pipeline, manifest, existing_master=existing_master)
     stages.update(register_production_stages(pipeline, manifest))
-    stages = apply_repair_overrides(pipeline, manifest, stages)
+    # Source-preserved baselines deliberately expose one immutable CLEAN geometry boundary.  The
+    # shaman repair wrappers expect a generated four-LOD chain and would otherwise try to repair
+    # or enumerate absent LOD1..LOD3 outputs.  Generated/required modes retain those proven repairs.
+    if (manifest.get("lod") or {}).get("mode") != "preserve_source":
+        stages = apply_repair_overrides(pipeline, manifest, stages)
 
     def export_qa():
         texture = pipeline.read_receipt("TEXTURE") or {}
