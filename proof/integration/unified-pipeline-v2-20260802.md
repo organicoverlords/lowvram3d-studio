@@ -131,8 +131,8 @@ artifact therefore remains unproven.
 - `XATLAS_DEFAULT_ROUTE=REJECTED_FOR_RUNTIME`
 - `PANDA_GEOMETRY_IDENTITY=NOT_PROVEN`
 - `GRAPH_MATERIAL_PROPAGATION=NOT_PROVEN`
-- `TEXTURE_COMPLETION_STAGE=PROVEN_WITH_LIMITATIONS`
-- `TEXTURE_QA=REJECTED_FLOATING_DEBRIS_AND_UV_OVERLAP`
+- `TEXTURE_COMPLETION_STAGE=PROVEN` (with visible limitations documented above)
+- `TEXTURE_QA=REJECTED`
 - `EXPORT_QA_TEXTURE_COMPLETION=NOT_PROVEN`
 - `WHOLE_OLD_BRANCH_MERGE=REJECTED`
 - `LOD_220K_STRUCTURAL_IMPORT=PROVEN`
@@ -140,7 +140,7 @@ artifact therefore remains unproven.
 - `LOD_BASELINE=NOT_PROVEN`
 - `UV_ATLAS_V2=NOT_PROVEN` (blocked by the LOD topology gate; no real xatlas
   process was started in this proof)
-- `FULL_AROUND_TEXTURE_BASELINE=REJECTED_TEXTURE_QA`
+- `FULL_AROUND_TEXTURE_BASELINE=REJECTED`
 
 No new dropped-image GPU run was started. The production branch remained
 untouched; this worktree is the only location containing the integration
