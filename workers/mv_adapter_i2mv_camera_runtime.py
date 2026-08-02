@@ -124,7 +124,7 @@ def _expected_reference_processor_names(pipe: Any) -> tuple[str, ...]:
 
 
 def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
-    """Preserve the proven reference cache until the first denoising UNet call.
+    """Preserve the proven reference cache for every denoising UNet call.
 
     On the installed MV-Adapter/Diffusers combination the reference UNet pass
     populates all custom-attention cache entries, but the pipeline later supplies
@@ -134,9 +134,9 @@ def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
 
     Accelerate's model CPU-offload wrapper sits around ``UNet.forward`` and can
     pass a copied cross-attention dictionary to the wrapped forward. Therefore
-    the relay must be installed as ``_old_forward`` inside that wrapper, not
-    outside it. This keeps capture and injection on the exact dictionaries seen
-    by the attention processors.
+    the relay is installed as ``_old_forward`` inside that wrapper. Because every
+    denoising call can receive a fresh empty copy, the expanded cache is retained
+    and injected on every step rather than only the first step.
 
     It never fabricates features: missing expected entries fail closed. A
     non-empty upstream cache is validated and passed through unchanged.
@@ -159,6 +159,7 @@ def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
         placement = "direct_forward"
 
     raw_cache: dict[str, Any] = {}
+    expanded_cache: dict[str, Any] = {}
     state: dict[str, Any] = {
         "installed": True,
         "placement": placement,
@@ -173,6 +174,7 @@ def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
         "denoise_cache_count_before": None,
         "denoise_cache_count_after": None,
         "relay_injected": False,
+        "relay_injection_count": 0,
         "relay_mode": "pending",
         "num_views": None,
         "classifier_free_guidance": None,
@@ -198,6 +200,7 @@ def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
                 )
             raw_cache.clear()
             raw_cache.update({name: cache_target[name] for name in expected_names})
+            expanded_cache.clear()
             state["relay_mode"] = "reference_cache_captured"
             print(
                 f"REFERENCE_CACHE_RELAY_CAPTURED={len(raw_cache)}",
@@ -222,44 +225,46 @@ def install_reference_cache_relay(pipe: Any) -> dict[str, Any]:
                 state["relay_mode"] = "upstream_cache_passthrough"
                 return original_forward(*args, **kwargs)
 
-            if not raw_cache:
-                raise RuntimeError(
-                    "denoising reference cache is empty and no captured cache is available"
-                )
-
-            num_views = int(cross_kwargs.get("num_views", len(AZIMUTHS)))
-            if num_views != len(AZIMUTHS):
-                raise RuntimeError(
-                    f"unexpected MV view count for cache relay: {num_views}"
-                )
-
-            do_cfg = bool(pipe.do_classifier_free_guidance)
-            expanded: dict[str, Any] = {}
-            batch_sizes: dict[str, int] = {}
-            for name in expected_names:
-                value = raw_cache[name]
-                if not isinstance(value, torch.Tensor):
-                    raise RuntimeError(f"reference cache entry is not a tensor: {name}")
-                if value.shape[0] != 1:
+            if not expanded_cache:
+                if not raw_cache:
                     raise RuntimeError(
-                        f"unexpected reference cache batch for {name}: {value.shape[0]}"
+                        "denoising reference cache is empty and no captured cache is available"
                     )
-                value = value.repeat_interleave(num_views, dim=0)
-                if do_cfg:
-                    value = torch.cat([torch.zeros_like(value), value], dim=0)
-                expanded[name] = value
-                batch_sizes[name] = int(value.shape[0])
 
-            cross_kwargs["ref_hidden_states"] = expanded
-            raw_cache.clear()
+                num_views = int(cross_kwargs.get("num_views", len(AZIMUTHS)))
+                if num_views != len(AZIMUTHS):
+                    raise RuntimeError(
+                        f"unexpected MV view count for cache relay: {num_views}"
+                    )
+
+                do_cfg = bool(pipe.do_classifier_free_guidance)
+                batch_sizes: dict[str, int] = {}
+                for name in expected_names:
+                    value = raw_cache[name]
+                    if not isinstance(value, torch.Tensor):
+                        raise RuntimeError(f"reference cache entry is not a tensor: {name}")
+                    if value.shape[0] != 1:
+                        raise RuntimeError(
+                            f"unexpected reference cache batch for {name}: {value.shape[0]}"
+                        )
+                    value = value.repeat_interleave(num_views, dim=0)
+                    if do_cfg:
+                        value = torch.cat([torch.zeros_like(value), value], dim=0)
+                    expanded_cache[name] = value
+                    batch_sizes[name] = int(value.shape[0])
+
+                raw_cache.clear()
+                state["num_views"] = num_views
+                state["classifier_free_guidance"] = do_cfg
+                state["expanded_batch_sizes"] = batch_sizes
+
+            cross_kwargs["ref_hidden_states"] = expanded_cache
             state["relay_injected"] = True
+            state["relay_injection_count"] += 1
             state["relay_mode"] = "captured_cache_injected"
-            state["num_views"] = num_views
-            state["classifier_free_guidance"] = do_cfg
-            state["denoise_cache_count_after"] = len(expanded)
-            state["expanded_batch_sizes"] = batch_sizes
+            state["denoise_cache_count_after"] = len(expanded_cache)
             print(
-                f"REFERENCE_CACHE_RELAY_INJECTED={len(expanded)}",
+                f"REFERENCE_CACHE_RELAY_INJECTED={len(expanded_cache)}",
                 flush=True,
             )
 
