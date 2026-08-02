@@ -10,6 +10,7 @@ codes the repair policy is keyed on.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -72,10 +73,19 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
                                    gates={"adopted_existing_master": str(existing_master),
                                           "sha256": sha256(master)})
             matte = pipeline.stage_dir("INGEST") / "proven" / "matte.png"
+            result_json = stage / "generate_report.json"
+            model_root = Path(os.environ.get(
+                "LOWVRAM3D_MINI_TURBO_MODEL_ROOT",
+                r"C:\AI\HY3D2\HuggingFaceHub\hunyuan3d-2mini-direct",
+            ))
             code, out = pipeline.run([
                 pipeline.python, w("mini_turbo_generate.py"),
-                "--conditioning-image", matte, "--output", master,
-                "--report", stage / "generate_report.json",
+                "--image", source_image,
+                "--conditioning-image", matte,
+                "--output", master,
+                "--result-json", result_json,
+                "--model-root", model_root,
+                "--prompt", "weathered rustic static barn shed with separate corrugated roofs, wind-bent trees and ground vegetation; no armature, no animation, no humanoid or vehicle parts",
             ])
             if code != 0 or not master.exists():
                 return StageResult("failed", detail=f"generator exit {code}: {out[-800:]}")

@@ -162,8 +162,15 @@ class Pipeline:
 
     def run(self, command: list, cwd: Path | None = None, env_extra: dict | None = None) -> tuple[int, str]:
         env = dict(os.environ)
+        repo_paths = [
+            str(REPO_ROOT / "blender"),
+            str(REPO_ROOT / "src"),
+            str(REPO_ROOT / "workers"),
+            str(REPO_ROOT),
+        ]
+        existing_pythonpath = env.get("PYTHONPATH", "")
         env["PYTHONPATH"] = os.pathsep.join(
-            [str(REPO_ROOT / "blender"), str(REPO_ROOT / "src"), str(REPO_ROOT / "workers"), str(REPO_ROOT)]
+            repo_paths + ([existing_pythonpath] if existing_pythonpath else [])
         )
         if env_extra:
             env.update(env_extra)
