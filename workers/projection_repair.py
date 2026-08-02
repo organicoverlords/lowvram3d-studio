@@ -87,3 +87,33 @@ def rear_face_provenance_violations(
         raise ValueError("provenance arrays must have matching shapes")
     return rear_dominant & (winning_view >= 0) & winning_facial
 
+
+def face_id_matches_within_radius(
+    face_id: np.ndarray,
+    sample_x: np.ndarray,
+    sample_y: np.ndarray,
+    triangle_id: int,
+    radius: int = 0,
+) -> np.ndarray:
+    """Match a sampled point to a rendered face ID with raster quantization tolerance.
+
+    The tolerance is measured in rendered pixels and is intentionally small.
+    It handles a UV sample landing on an adjacent pixel when the source mesh
+    triangle is subpixel-sized, without accepting an unrelated face outside
+    the local raster footprint.
+    """
+    ids = np.asarray(face_id, dtype=np.int32)
+    x = np.asarray(sample_x, dtype=np.int64)
+    y = np.asarray(sample_y, dtype=np.int64)
+    if x.shape != y.shape or x.ndim != 1:
+        raise ValueError("sample coordinates must be matching 1-D arrays")
+    if ids.ndim != 2:
+        raise ValueError("face_id must be a 2-D array")
+    result = np.zeros(x.shape, dtype=bool)
+    radius = max(int(radius), 0)
+    for dy in range(-radius, radius + 1):
+        yy = np.clip(y + dy, 0, ids.shape[0] - 1)
+        for dx in range(-radius, radius + 1):
+            xx = np.clip(x + dx, 0, ids.shape[1] - 1)
+            result |= ids[yy, xx] == int(triangle_id)
+    return result

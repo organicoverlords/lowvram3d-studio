@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from workers.projection_repair import (
+    face_id_matches_within_radius,
     facial_source_region,
     gated_sample_mask,
     rear_face_provenance_violations,
@@ -55,3 +56,12 @@ def test_provenance_shape_mismatch_fails_closed():
         rear_face_provenance_violations(
             np.array([True]), np.array([-1, -1]), np.array([False])
         )
+
+
+def test_face_id_radius_handles_subpixel_quantization_only_locally():
+    face_id = np.full((5, 5), -1, dtype=np.int32)
+    face_id[2, 3] = 7
+    x = np.array([2, 0])
+    y = np.array([2, 0])
+    assert face_id_matches_within_radius(face_id, x, y, 7, radius=1).tolist() == [True, False]
+    assert face_id_matches_within_radius(face_id, x, y, 7, radius=0).tolist() == [False, False]

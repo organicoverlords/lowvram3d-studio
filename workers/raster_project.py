@@ -27,10 +27,18 @@ from scipy.spatial import cKDTree
 
 try:
     from .texture_contract import assert_atlas_dimensions, validate_requested_atlas_size
-    from .projection_repair import gated_sample_mask, rear_face_provenance_violations
+    from .projection_repair import (
+        face_id_matches_within_radius,
+        gated_sample_mask,
+        rear_face_provenance_violations,
+    )
 except ImportError:  # direct worker execution
     from texture_contract import assert_atlas_dimensions, validate_requested_atlas_size
-    from projection_repair import gated_sample_mask, rear_face_provenance_violations
+    from projection_repair import (
+        face_id_matches_within_radius,
+        gated_sample_mask,
+        rear_face_provenance_violations,
+    )
 
 FACING_POWER = 3.0
 FACING_MIN = 0.15
@@ -76,6 +84,7 @@ def main() -> None:
     parser.add_argument("--provenance", default="")
     parser.add_argument("--facial-mask", default="")
     parser.add_argument("--require-face-id", action="store_true")
+    parser.add_argument("--face-id-radius", type=int, default=0)
     parser.add_argument("--neutral-fill-only", action="store_true")
     args = parser.parse_args()
 
@@ -230,7 +239,9 @@ def main() -> None:
             conf = src_conf * (max(facing[t], 0.0) ** FACING_POWER) * alpha * edge
             source_mask_valid = inframe & (alpha > ALPHA_MIN)
             if face_id is not None:
-                face_id_match = face_id[sy, sx] == int(t)
+                face_id_match = face_id_matches_within_radius(
+                    face_id, sx, sy, int(t), args.face_id_radius
+                )
             else:
                 face_id_match = np.ones_like(source_mask_valid, dtype=bool)
             gated = gated_sample_mask(
@@ -528,6 +539,7 @@ def main() -> None:
             "depth_visible_required": True,
             "front_facing_threshold": FACING_MIN,
             "face_id_match_required": bool(args.require_face_id),
+            "face_id_pixel_tolerance": max(int(args.face_id_radius), 0),
             "source_mask_alpha_min": ALPHA_MIN,
             "confidence_threshold": 0.20,
             "rear_facial_guard": True,
