@@ -27,6 +27,85 @@ from pathlib import Path
 GLB_MAGIC = b"glTF"
 
 
+def _tensor_summary(name, value):
+    """Return synchronized metadata without copying the tensor contents."""
+    import torch
+
+    if not isinstance(value, torch.Tensor):
+        return None
+    torch.cuda.synchronize(value.device) if value.is_cuda else None
+    probe = value.detach()
+    if probe.numel():
+        finite = bool(torch.isfinite(probe).all().item())
+        minimum = float(probe.float().amin().item())
+        maximum = float(probe.float().amax().item())
+    else:
+        finite, minimum, maximum = True, None, None
+    return {
+        "name": name,
+        "shape": list(probe.shape),
+        "dtype": str(probe.dtype),
+        "device": str(probe.device),
+        "numel": int(probe.numel()),
+        "finite": finite,
+        "min": minimum,
+        "max": maximum,
+    }
+
+
+def _cuda_stats(torch):
+    torch.cuda.synchronize()
+    return {
+        "allocated_bytes": int(torch.cuda.memory_allocated()),
+        "reserved_bytes": int(torch.cuda.memory_reserved()),
+        "peak_allocated_bytes": int(torch.cuda.max_memory_allocated()),
+    }
+
+
+def _safe_console_write(stream, message, flush=True):
+    """Best-effort console sink; telemetry and artifact writes must survive sink errors."""
+    try:
+        stream.write(message)
+        if flush:
+            stream.flush()
+    except (OSError, ValueError) as exc:
+        return {
+            "type": type(exc).__name__,
+            "errno": getattr(exc, "errno", None),
+            "message": str(exc),
+        }
+    return None
+
+
+def _write_json_artifact(path, payload):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
+def _mesh_summary(mesh):
+    return {
+        "vertices": int(len(mesh.vertices)),
+        "triangles": int(len(mesh.faces)),
+    }
+
+
+def _trace(trace_path, operation, torch=None, tensors=None, artifact_callback=None, **fields):
+    record = {"time": time.time(), "operation": operation, **fields}
+    if torch is not None and torch.cuda.is_available():
+        record["cuda"] = _cuda_stats(torch)
+    if tensors:
+        record["tensors"] = [summary for summary in tensors if summary]
+    console_error = _safe_console_write(sys.stdout, "MINI_TURBO_TRACE " + json.dumps(record) + "\n")
+    if console_error:
+        record["console_sink_error"] = console_error
+    with trace_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record) + "\n")
+    if artifact_callback is not None:
+        artifact_callback(record)
+    return record
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -95,6 +174,8 @@ def main() -> int:
     result_path = Path(args.result_json).resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     result_path.parent.mkdir(parents=True, exist_ok=True)
+    trace_path = result_path.with_name("generation_trace.jsonl")
+    trace_path.unlink(missing_ok=True)
 
     payload: dict = {
         "success": False,
@@ -111,6 +192,10 @@ def main() -> int:
         "target_fbx_used": False,
         "texture_pipeline_run": False,
         "rig_pipeline_run": False,
+        "diagnostics_trace": str(trace_path),
+        "seed": args.seed,
+        "steps": args.steps,
+        "octree_ladder": args.octree_ladder,
     }
 
     try:
@@ -136,6 +221,7 @@ def main() -> int:
             raise RuntimeError("CUDA is unavailable; Mini Turbo requires the GPU on this machine")
         payload["torch"] = torch.__version__
         payload["gpu"] = torch.cuda.get_device_name(0)
+        _trace(trace_path, "cuda_ready", torch, device=str(torch.cuda.current_device()))
 
         if args.conditioning_image:
             from PIL import Image
@@ -156,6 +242,8 @@ def main() -> int:
         matted = output.parent / "mini_turbo_conditioning.png"
         conditioning.save(matted)
         payload["conditioning_image"] = str(matted)
+        payload["image_dimensions"] = list(conditioning.size)
+        _trace(trace_path, "conditioning_loaded", torch, image_dimensions=list(conditioning.size))
 
         pipeline = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained(
             str(model_root),
@@ -164,10 +252,12 @@ def main() -> int:
             variant="fp16",
             device="cuda",
         )
+        _trace(trace_path, "pipeline_loaded", torch, model_root=str(model_root), subfolder=args.subfolder)
         # FlashVDM keeps volume decoding inside a 6 GB budget without changing the generator.
         try:
             pipeline.enable_flashvdm(topk_mode="merge")
             payload["flashvdm"] = True
+            _trace(trace_path, "flashvdm_enabled", torch, topk_mode="merge")
         except Exception as exc:  # pragma: no cover - depends on installed hy3dgen build
             payload["flashvdm"] = False
             payload["flashvdm_error"] = str(exc)
@@ -185,6 +275,33 @@ def main() -> int:
             try:
                 torch.cuda.empty_cache()
                 torch.cuda.reset_peak_memory_stats()
+                _trace(
+                    trace_path,
+                    "generation_attempt_begin",
+                    torch,
+                    octree_resolution=octree_resolution,
+                    num_chunks=num_chunks,
+                    seed=args.seed,
+                    steps=args.steps,
+                )
+
+                def generation_callback(step_idx, timestep, outputs):
+                    tensors = []
+                    if hasattr(outputs, "items"):
+                        tensors.extend(_tensor_summary(name, value) for name, value in outputs.items())
+                    else:
+                        tensors.append(_tensor_summary("prev_sample", getattr(outputs, "prev_sample", None)))
+                    _trace(
+                        trace_path,
+                        "diffusion_step_complete",
+                        torch,
+                        tensors=tensors,
+                        step_number=int(step_idx) + 1,
+                        timestep=int(timestep.item()) if hasattr(timestep, "item") else int(timestep),
+                        chunk_range=None,
+                        last_successful_operation="scheduler.step",
+                    )
+
                 generated = pipeline(
                     image=conditioning,
                     num_inference_steps=args.steps,
@@ -193,7 +310,10 @@ def main() -> int:
                     num_chunks=num_chunks,
                     generator=torch.manual_seed(args.seed),
                     output_type="trimesh",
+                    callback=generation_callback,
+                    callback_steps=1,
                 )
+                _trace(trace_path, "generation_complete", torch, last_successful_operation="pipeline.__call__")
                 mesh = generated[0]
                 attempt["status"] = "ok"
                 attempt["peak_vram_mb"] = int(torch.cuda.max_memory_allocated() / (1024 * 1024))
@@ -217,7 +337,9 @@ def main() -> int:
 
         if isinstance(mesh, list):
             mesh = mesh[0]
+        _trace(trace_path, "mesh_ready", torch, last_successful_operation="mesh_decode", vertices=len(mesh.vertices), triangles=len(mesh.faces))
         mesh.export(str(output))
+        _trace(trace_path, "mesh_exported", torch, last_successful_operation="mesh.export", output=str(output))
         verify_real_glb(output, started_at)
 
         payload.update(
@@ -234,11 +356,11 @@ def main() -> int:
                 "seed": args.seed,
             }
         )
-        result_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-        print(
+        _write_json_artifact(result_path, payload)
+        _safe_console_write(
+            sys.stdout,
             f"MINI_TURBO_GENERATED glb={output} verts={payload['raw_vertices']} "
-            f"tris={payload['raw_triangles']} octree={payload['octree_resolution']}",
-            flush=True,
+            f"tris={payload['raw_triangles']} octree={payload['octree_resolution']}\n",
         )
         return 0
     except Exception as exc:
@@ -246,8 +368,9 @@ def main() -> int:
 
         payload["error"] = str(exc)
         payload["traceback"] = traceback.format_exc()
-        result_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-        print(f"MINI_TURBO_FAILED error={exc}", file=sys.stderr, flush=True)
+        payload["last_successful_operation"] = "see generation_trace.jsonl"
+        _write_json_artifact(result_path, payload)
+        _safe_console_write(sys.stderr, f"MINI_TURBO_FAILED error={exc}\n")
         return 1
 
 
