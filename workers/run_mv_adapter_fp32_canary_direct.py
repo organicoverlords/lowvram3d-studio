@@ -35,6 +35,63 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def install_fp32_vae_boundaries(pipe, torch_module) -> dict[str, str]:
+    """Keep VAE math in FP32 while returning denoising latents in caller dtype.
+
+    MV-Adapter's SD2.1 pipeline converts the reference image to the prompt/UNet
+    dtype before calling ``vae.encode`` and passes denoising latents directly to
+    ``vae.decode``.  When the VAE is intentionally kept in FP32, both boundaries
+    otherwise receive FP16 tensors and fail with a convolution dtype mismatch.
+
+    The wrappers are local to the canary pipeline instance.  Accelerate's model
+    offload hooks remain active because the original bound encode/decode methods
+    are still called.  The returned reference latents are converted back to the
+    dtype requested by the pipeline before they enter the FP16 UNet.
+    """
+
+    vae = pipe.vae
+    vae.to(dtype=torch_module.float32)
+
+    original_encode = vae.encode
+    original_decode = vae.decode
+    original_prepare_image_latents = pipe.prepare_image_latents
+
+    def encode_fp32(sample, *args, **kwargs):
+        if not isinstance(sample, torch_module.Tensor):
+            raise TypeError(f"VAE encode expected a tensor, received {type(sample)!r}")
+        sample = sample.to(dtype=torch_module.float32)
+        return original_encode(sample, *args, **kwargs)
+
+    def decode_fp32(latents, *args, **kwargs):
+        if not isinstance(latents, torch_module.Tensor):
+            raise TypeError(f"VAE decode expected a tensor, received {type(latents)!r}")
+        latents = latents.to(dtype=torch_module.float32)
+        return original_decode(latents, *args, **kwargs)
+
+    def prepare_image_latents_with_boundary(*args, **kwargs):
+        requested_dtype = kwargs.get("dtype")
+        if requested_dtype is None and len(args) >= 5:
+            requested_dtype = args[4]
+
+        latents = original_prepare_image_latents(*args, **kwargs)
+
+        if requested_dtype is not None:
+            latents = latents.to(dtype=requested_dtype)
+
+        return latents
+
+    vae.encode = encode_fp32
+    vae.decode = decode_fp32
+    pipe.prepare_image_latents = prepare_image_latents_with_boundary
+
+    return {
+        "vae_parameter_dtype": str(vae.dtype),
+        "vae_encode_input_dtype": "torch.float32",
+        "vae_decode_input_dtype": "torch.float32",
+        "reference_latent_return_dtype": "pipeline_requested_dtype",
+    }
+
+
 def main() -> None:
     args = parse_args()
     official_repo = Path(args.official_repo).resolve()
@@ -66,6 +123,9 @@ def main() -> None:
             "scheduler": "ddpm",
             "pipeline_dtype": "float16",
             "vae_dtype": "float32",
+            "vae_encode_input_dtype": "float32",
+            "vae_decode_input_dtype": "float32",
+            "reference_latent_return_dtype": "float16",
             "vae_slicing": True,
             "vae_tiling": True,
             "attention_slicing": "max",
@@ -149,7 +209,7 @@ def main() -> None:
         pipe.init_custom_adapter(num_views=len(AZIMUTHS))
         pipe.load_custom_adapter(str(adapter_file.parent), weight_name=adapter_file.name)
 
-        pipe.vae.to(dtype=torch.float32)
+        report["vae_dtype_boundaries"] = install_fp32_vae_boundaries(pipe, torch)
         if hasattr(pipe.vae, "config"):
             try:
                 pipe.vae.config.force_upcast = True
@@ -172,6 +232,9 @@ def main() -> None:
 
         print(f"OFFLOAD_MODE={offload_mode}", flush=True)
         print(f"VAE_DTYPE={pipe.vae.dtype}", flush=True)
+        print("VAE_ENCODE_INPUT_DTYPE=torch.float32", flush=True)
+        print("VAE_DECODE_INPUT_DTYPE=torch.float32", flush=True)
+        print("REFERENCE_LATENT_RETURN_DTYPE=torch.float16", flush=True)
         print("STARTING_BOUNDED_DIRECT_CANARY", flush=True)
 
         with warnings.catch_warnings(record=True) as records:
