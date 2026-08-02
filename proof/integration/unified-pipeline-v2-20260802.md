@@ -142,6 +142,26 @@ artifact therefore remains unproven.
   process was started in this proof)
 - `FULL_AROUND_TEXTURE_BASELINE=REJECTED`
 
+## Bounded orientation and colour post-process
+
+The preserved texture artifact was processed without geometry generation,
+projection rerun, LOD, UV changes, or xatlas. Evidence is in:
+
+`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\texture_completion_v2\unified_pipeline\state\POSTPROCESS_ORIENTATION_COLOR`
+
+Orientation QA selected yaw 180 by only `0.003359`, below the required clear
+margin of `0.08`, so no root rotation was applied. The front render was
+classified pale and received exactly one bounded base-colour recovery pass.
+After recovery it remained below the colour threshold. The rear render still
+contains front-face content: mirrored front/rear correlation is `0.868299`
+versus direct correlation `-0.005798`, with a leak threshold of `0.82`.
+
+- `ORIENTATION_QA=NOT_PROVEN`
+- `ORIENTATION_REPAIR=NOT_PROVEN`
+- `TEXTURE_COLOR_QA=REJECTED`
+- `REAR_FACE_PROJECTION=REJECTED`
+- `POSTPROCESS_BASELINE=REJECTED`
+
 No new dropped-image GPU run was started. The production branch remained
 untouched; this worktree is the only location containing the integration
 changes.
