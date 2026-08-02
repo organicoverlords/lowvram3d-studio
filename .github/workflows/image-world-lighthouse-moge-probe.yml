@@ -9,6 +9,11 @@ on:
         required: false
         default: false
         type: boolean
+  push:
+    branches:
+      - feature/image-world-lighthouse-probe-20260802
+    paths:
+      - .github/image-world-lighthouse-trigger.txt
 
 permissions:
   contents: write
@@ -19,6 +24,7 @@ concurrency:
 
 env:
   LIGHTHOUSE_FIXTURE_SHA256: "4847ca1ceaba7da83bccd698cbbad56b99d6288530c9e5eab957339caf0302cb"
+  FORCE_WHEN_GPU_BUSY: ${{ github.event_name == 'workflow_dispatch' && inputs.force_when_gpu_busy || false }}
 
 jobs:
   lighthouse-moge:
@@ -38,28 +44,16 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $expectedRef = "refs/heads/feature/image-world-lighthouse-probe-20260802"
-          if ("${{ github.ref }}" -ne $expectedRef) {
-            throw "Unexpected ref. Expected $expectedRef, got ${{ github.ref }}"
-          }
-          if (@(git status --short).Count -gt 0) {
-            throw "Runner checkout is dirty before execution"
-          }
+          if ("${{ github.ref }}" -ne $expectedRef) { throw "Unexpected ref: ${{ github.ref }}" }
+          if (@(git status --short).Count -gt 0) { throw "Runner checkout is dirty" }
           $head = (git rev-parse HEAD).Trim()
-          if ($head -ne "${{ github.sha }}") {
-            throw "Checked-out HEAD $head does not equal workflow SHA ${{ github.sha }}"
-          }
+          if ($head -ne "${{ github.sha }}") { throw "HEAD mismatch: $head != ${{ github.sha }}" }
           $remote = (git remote get-url origin).Trim()
-          if ($remote -notmatch "organicoverlords/lowvram3d-studio") {
-            throw "Unexpected origin remote: $remote"
-          }
+          if ($remote -notmatch "organicoverlords/lowvram3d-studio") { throw "Unexpected remote: $remote" }
           $fixture = Join-Path $PWD "benchmarks\image_world\fixtures\lighthouse_probe_512_q80.jpg"
-          if (-not (Test-Path -LiteralPath $fixture -PathType Leaf)) {
-            throw "Lighthouse fixture is missing: $fixture"
-          }
+          if (-not (Test-Path -LiteralPath $fixture -PathType Leaf)) { throw "Fixture missing: $fixture" }
           $actual = (Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($actual -ne $env:LIGHTHOUSE_FIXTURE_SHA256) {
-            throw "Lighthouse fixture hash mismatch. Expected $env:LIGHTHOUSE_FIXTURE_SHA256, got $actual"
-          }
+          if ($actual -ne $env:LIGHTHOUSE_FIXTURE_SHA256) { throw "Fixture hash mismatch: $actual" }
           Write-Host "REPO=$PWD"
           Write-Host "BRANCH=${{ github.ref_name }}"
           Write-Host "HEAD=$head"
@@ -67,32 +61,27 @@ jobs:
           Write-Host "FIXTURE_SHA256=$actual"
 
       - name: Verify GPU is idle
-        id: gpu_preflight
         shell: powershell
         run: |
           $ErrorActionPreference = "Stop"
           $output = Join-Path $env:RUNNER_TEMP "image-world-lighthouse-moge"
           New-Item -ItemType Directory -Path $output -Force | Out-Null
-          $rows = @()
-          try {
-            $rows = @(
-              & nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader,nounits 2>$null |
-                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-            )
-          } catch {
-            throw "Could not query GPU compute processes: $($_.Exception.Message)"
-          }
+          $rows = @(
+            & nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader,nounits 2>$null |
+              Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+          )
           $busy = $rows.Count -gt 0
+          $force = "$env:FORCE_WHEN_GPU_BUSY".ToLowerInvariant() -eq "true"
           [ordered]@{
             status = $(if ($busy) { "GPU_BUSY" } else { "GPU_IDLE" })
-            force_when_gpu_busy = [System.Convert]::ToBoolean("${{ inputs.force_when_gpu_busy }}")
+            force_when_gpu_busy = $force
             compute_processes = $rows
             checked_at = (Get-Date).ToUniversalTime().ToString("o")
           } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $output "gpu-preflight.json") -Encoding utf8
-          if ($busy -and "${{ inputs.force_when_gpu_busy }}" -ne "true") {
+          if ($busy -and -not $force) {
             Write-Host "GPU_BUSY_BLOCKED"
             $rows | ForEach-Object { Write-Host "GPU_PROCESS=$_" }
-            throw "GPU is currently busy. Re-run manually after it is idle, or explicitly enable force_when_gpu_busy."
+            throw "GPU is busy; inference was not started."
           }
           Write-Host "GPU_PREFLIGHT=PASS"
 
@@ -101,21 +90,12 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $python = "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe"
-          if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
-            throw "LowVRAM3D control Python is missing: $python"
-          }
+          if (-not (Test-Path -LiteralPath $python -PathType Leaf)) { throw "Control Python missing: $python" }
           $env:PYTHONPATH = "$PWD\src;$PWD"
-          & $python -m py_compile `
-            workers\image_world\moge_probe.py `
-            workers\image_world\render_moge_previews.py `
-            src\lowvram3d\image_world\moge_probe.py `
-            src\lowvram3d\image_world\moge_preview.py
-          if ($LASTEXITCODE -ne 0) { throw "Image-world probe compilation failed" }
-          & $python -m pytest `
-            tests\test_image_world_moge_probe.py `
-            tests\test_image_world_moge_preview.py `
-            -q
-          if ($LASTEXITCODE -ne 0) { throw "Focused image-world probe tests failed" }
+          & $python -m py_compile workers\image_world\moge_probe.py workers\image_world\render_moge_previews.py src\lowvram3d\image_world\moge_probe.py src\lowvram3d\image_world\moge_preview.py
+          if ($LASTEXITCODE -ne 0) { throw "Probe compilation failed" }
+          & $python -m pytest tests\test_image_world_moge_probe.py tests\test_image_world_moge_preview.py -q
+          if ($LASTEXITCODE -ne 0) { throw "Focused probe tests failed" }
 
       - name: Run lighthouse hardware probe
         shell: powershell
@@ -131,9 +111,7 @@ jobs:
             -NumTokens 1200 `
             -InputLongEdge 512 `
             -MaxGpuMemoryMb 5600
-          if ($LASTEXITCODE -ne 0) {
-            throw "Lighthouse MoGe probe failed with exit code $LASTEXITCODE"
-          }
+          if ($LASTEXITCODE -ne 0) { throw "Lighthouse MoGe probe failed with exit code $LASTEXITCODE" }
 
       - name: Publish compact probe evidence
         if: always()
@@ -141,38 +119,24 @@ jobs:
         run: |
           $source = Join-Path $env:RUNNER_TEMP "image-world-lighthouse-moge"
           $evidence = Join-Path $PWD "evidence\latest-image-world-lighthouse-moge"
-          if (Test-Path -LiteralPath $evidence) {
-            Remove-Item -LiteralPath $evidence -Recurse -Force
-          }
+          if (Test-Path -LiteralPath $evidence) { Remove-Item -LiteralPath $evidence -Recurse -Force }
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
           foreach ($name in @("gpu-preflight.json", "setup-report.json", "moge-probe-report.json")) {
             $path = Join-Path $source $name
-            if (Test-Path -LiteralPath $path -PathType Leaf) {
-              Copy-Item -LiteralPath $path -Destination (Join-Path $evidence $name) -Force
-            }
+            if (Test-Path -LiteralPath $path -PathType Leaf) { Copy-Item -LiteralPath $path -Destination (Join-Path $evidence $name) -Force }
           }
           $previewSource = Join-Path $source "previews"
-          if (Test-Path -LiteralPath $previewSource -PathType Container) {
-            Copy-Item -LiteralPath $previewSource -Destination (Join-Path $evidence "previews") -Recurse -Force
-          }
+          if (Test-Path -LiteralPath $previewSource -PathType Container) { Copy-Item -LiteralPath $previewSource -Destination (Join-Path $evidence "previews") -Recurse -Force }
           $probeStatus = "MISSING"
           $peakReservedMb = $null
           $probeReport = Join-Path $source "moge-probe-report.json"
+          $gpuReport = Join-Path $source "gpu-preflight.json"
           if (Test-Path -LiteralPath $probeReport -PathType Leaf) {
-            try {
-              $probe = Get-Content -LiteralPath $probeReport -Raw | ConvertFrom-Json
-              $probeStatus = $probe.status
-              $peakReservedMb = $probe.peak_gpu_reserved_mb
-            } catch {
-              $probeStatus = "INVALID_REPORT"
-            }
-          } elseif (Test-Path -LiteralPath (Join-Path $source "gpu-preflight.json") -PathType Leaf) {
-            try {
-              $preflight = Get-Content -LiteralPath (Join-Path $source "gpu-preflight.json") -Raw | ConvertFrom-Json
-              $probeStatus = $preflight.status
-            } catch {
-              $probeStatus = "INVALID_GPU_PREFLIGHT"
-            }
+            $probe = Get-Content -LiteralPath $probeReport -Raw | ConvertFrom-Json
+            $probeStatus = $probe.status
+            $peakReservedMb = $probe.peak_gpu_reserved_mb
+          } elseif (Test-Path -LiteralPath $gpuReport -PathType Leaf) {
+            $probeStatus = (Get-Content -LiteralPath $gpuReport -Raw | ConvertFrom-Json).status
           }
           [ordered]@{
             workflow_run_id = "${{ github.run_id }}"
@@ -190,9 +154,9 @@ jobs:
           git add -- evidence/latest-image-world-lighthouse-moge
           if (@(git status --porcelain -- evidence/latest-image-world-lighthouse-moge).Count -gt 0) {
             git commit -m "evidence: record lighthouse MoGe probe ${{ github.run_id }}"
-            if ($LASTEXITCODE -ne 0) { throw "Could not commit lighthouse probe evidence" }
+            if ($LASTEXITCODE -ne 0) { throw "Evidence commit failed" }
             git push origin HEAD:feature/image-world-lighthouse-probe-20260802
-            if ($LASTEXITCODE -ne 0) { throw "Could not push lighthouse probe evidence" }
+            if ($LASTEXITCODE -ne 0) { throw "Evidence push failed" }
           }
 
       - name: Upload raw geometry maps and proof
