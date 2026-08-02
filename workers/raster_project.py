@@ -27,8 +27,10 @@ from scipy.spatial import cKDTree
 
 try:
     from .texture_contract import assert_atlas_dimensions, validate_requested_atlas_size
+    from .projection_repair import gated_sample_mask, rear_face_provenance_violations
 except ImportError:  # direct worker execution
     from texture_contract import assert_atlas_dimensions, validate_requested_atlas_size
+    from projection_repair import gated_sample_mask, rear_face_provenance_violations
 
 FACING_POWER = 3.0
 FACING_MIN = 0.15
@@ -71,6 +73,10 @@ def main() -> None:
     parser.add_argument("--atlas-size", type=int, default=1024)
     parser.add_argument("--progress", default="")
     parser.add_argument("--report", default="")
+    parser.add_argument("--provenance", default="")
+    parser.add_argument("--facial-mask", default="")
+    parser.add_argument("--require-face-id", action="store_true")
+    parser.add_argument("--neutral-fill-only", action="store_true")
     args = parser.parse_args()
 
     npz, viewdir, meta_path, outdir = Path(args.npz), Path(args.views_dir), Path(args.view_metadata), Path(args.output_dir)
@@ -88,6 +94,14 @@ def main() -> None:
     view_locs, ortho = d["view_locs"], float(d["ortho_scale"])
     total_tris = len(tris)
 
+    face_id_arrays: dict[str, np.ndarray] = {}
+    for vname in view_names:
+        key = f"face_id_{vname}"
+        if key in d.files:
+            face_id_arrays[vname] = np.asarray(d[key], dtype=np.int32)
+        elif args.require_face_id:
+            raise RuntimeError(f"FACE_ID_BUFFER_MISSING:{key}")
+
     usable = [(i, n) for i, n in enumerate(view_names)
               if conf_by_view.get(n, ("synthetic", 0.0))[0] in semantic_types
               and conf_by_view.get(n, ("synthetic", 0.0))[1] > 0.0]
@@ -103,7 +117,21 @@ def main() -> None:
     triangle_observed = np.zeros(total_tris, dtype=bool)
     triangle_observed_sum = np.zeros((total_tris, 3), np.float64)
     triangle_observed_count = np.zeros(total_tris, dtype=np.int64)
+    triangle_visible = np.zeros(total_tris, dtype=bool)
+    triangle_front_facing = np.zeros(total_tris, dtype=bool)
+    triangle_face_id_matched = np.zeros(total_tris, dtype=bool)
+    triangle_mask_valid = np.zeros(total_tris, dtype=bool)
+    triangle_winning_view = np.full(total_tris, -1, np.int16)
+    triangle_winning_conf = np.zeros(total_tris, np.float32)
+    triangle_winning_facial = np.zeros(total_tris, dtype=bool)
     gate_counts = {}
+
+    facial_mask_by_view: dict[str, np.ndarray] = {}
+    if args.facial_mask:
+        facial = cv2.imread(str(args.facial_mask), cv2.IMREAD_GRAYSCALE)
+        if facial is None:
+            raise RuntimeError(f"FACIAL_MASK_UNREADABLE:{args.facial_mask}")
+        facial_mask_by_view["front"] = facial > 0
 
     uv_px = uvs.copy()
     uv_px[..., 0] *= (atlas_size - 1)
@@ -137,16 +165,31 @@ def main() -> None:
             salpha = np.ones(src.shape[:2], np.float32)
         sh, sw = salpha.shape
         src_conf = conf_by_view[vname][1]
+        face_id = face_id_arrays.get(vname)
+        if args.require_face_id and face_id is None:
+            raise RuntimeError(f"FACE_ID_BUFFER_MISSING:{vname}")
+        if face_id is not None and face_id.shape != salpha.shape:
+            raise RuntimeError(
+                f"FACE_ID_DIMENSION_MISMATCH:{vname}:{face_id.shape}!={salpha.shape}"
+            )
+        facial = facial_mask_by_view.get(vname)
+        if facial is not None and facial.shape != salpha.shape:
+            raise RuntimeError(
+                f"FACIAL_MASK_DIMENSION_MISMATCH:{vname}:{facial.shape}!={salpha.shape}"
+            )
 
         cam = view_locs[vi]
         vdir = cam / (np.linalg.norm(cam) + 1e-9)
         vis = d[f"vis_{vname}"]
         facing = normals @ vdir
         projection_gate = projection_triangle_gate(vis, facing)
+        triangle_visible |= vis
+        triangle_front_facing |= np.isfinite(facing) & (facing > FACING_MIN)
         gate_counts[vname] = {
             "depth_visible_triangles": int(np.count_nonzero(vis)),
             "normal_facing_triangles": int(np.count_nonzero(facing > FACING_MIN)),
             "eligible_triangles": int(np.count_nonzero(projection_gate)),
+            "face_id_buffer": bool(face_id is not None),
         }
         axis = int(np.argmax(np.abs(vdir)))
         ua, va = (0, 2) if axis == 1 else ((1, 2) if axis == 0 else (0, 1))
@@ -185,7 +228,21 @@ def main() -> None:
             alpha = salpha[sy, sx]
             edge = np.clip(np.minimum.reduce([u, 1 - u, v, 1 - v]) * 10.0, 0.0, 1.0)
             conf = src_conf * (max(facing[t], 0.0) ** FACING_POWER) * alpha * edge
-            conf = np.where(inframe & (alpha > ALPHA_MIN), conf, 0.0).astype(np.float32)
+            source_mask_valid = inframe & (alpha > ALPHA_MIN)
+            if face_id is not None:
+                face_id_match = face_id[sy, sx] == int(t)
+            else:
+                face_id_match = np.ones_like(source_mask_valid, dtype=bool)
+            gated = gated_sample_mask(
+                depth_visible=bool(vis[t]),
+                facing_score=float(facing[t]),
+                face_id_match=face_id_match,
+                source_mask_valid=source_mask_valid,
+                confidence=conf,
+            )
+            triangle_face_id_matched[t] |= bool(np.any(face_id_match & source_mask_valid))
+            triangle_mask_valid[t] |= bool(np.any(source_mask_valid))
+            conf = np.where(gated, conf, 0.0).astype(np.float32)
             if not (conf > 0).any():
                 continue
             triangle_observed[t] = True
@@ -197,6 +254,12 @@ def main() -> None:
                 best_view[yi, xi] = vi
                 triangle_observed_sum[t] += srgb[sy[win], sx[win]].astype(np.float64).sum(axis=0)
                 triangle_observed_count[t] += int(np.count_nonzero(win))
+                winning_max = float(conf[win].max())
+                if winning_max >= float(triangle_winning_conf[t]):
+                    triangle_winning_conf[t] = winning_max
+                    triangle_winning_view[t] = int(vi)
+                    if facial is not None:
+                        triangle_winning_facial[t] = bool(np.any(facial[sy[win], sx[win]]))
             processed += 1
 
         write_progress(slot + 1, processed)
@@ -414,6 +477,17 @@ def main() -> None:
                 colour[this_island] = global_prior
             mask[this_island] = True
 
+    if args.neutral_fill_only:
+        # Neutral material is assigned per unobserved polygon by raster_export.
+        # Also keep the atlas itself free of front-source colour in those
+        # polygons, so the texture cannot be reused accidentally downstream.
+        neutral_rgb = np.asarray([72.0, 65.0, 54.0], dtype=np.float32)
+        unobserved_atlas = island & (tri_id >= 0)
+        valid_tri = tri_id[unobserved_atlas]
+        unobserved_atlas[unobserved_atlas] = ~triangle_observed[valid_tri]
+        colour[unobserved_atlas] = neutral_rgb
+        mask[unobserved_atlas] = True
+
     atlas = np.clip(colour, 0, 255).astype(np.uint8)
     basecolor_path = outdir / "basecolor.png"
     cv2.imwrite(str(basecolor_path), cv2.cvtColor(atlas, cv2.COLOR_RGB2BGR))
@@ -423,6 +497,49 @@ def main() -> None:
     assert_atlas_dimensions(decoded.shape[:2][::-1], atlas_size, "raster_project output")
     observed_mask_path = outdir / "observed_triangles.npy"
     np.save(observed_mask_path, triangle_observed)
+
+    rear_direction = view_locs[usable[0][0]] / (np.linalg.norm(view_locs[usable[0][0]]) + 1e-9)
+    rear_dominant = (normals @ rear_direction) < -FACING_MIN
+    illegal_rear = rear_face_provenance_violations(
+        rear_dominant,
+        triangle_winning_view,
+        triangle_winning_facial,
+    )
+    provenance_path = Path(args.provenance) if args.provenance else outdir / "triangle_texture_provenance.json"
+    provenance_path.parent.mkdir(parents=True, exist_ok=True)
+    provenance = {
+        "schema": "triangle_texture_provenance_v2",
+        "triangle_count": int(total_tris),
+        "source_views": view_names,
+        "winning_source_view": triangle_winning_view.astype(int).tolist(),
+        "winning_confidence": triangle_winning_conf.astype(float).tolist(),
+        "visible": triangle_visible.tolist(),
+        "front_facing": triangle_front_facing.tolist(),
+        "face_id_matched": triangle_face_id_matched.tolist(),
+        "masked_valid": triangle_mask_valid.tolist(),
+        "rear_dominant": rear_dominant.tolist(),
+        "winning_source_is_facial": triangle_winning_facial.tolist(),
+        "fallback_mode": [
+            "source_view" if bool(observed) else "neutral_synthesis"
+            for observed in triangle_observed
+        ],
+        "illegal_rear_facial_triangle_ids": np.flatnonzero(illegal_rear).astype(int).tolist(),
+        "gates": {
+            "depth_visible_required": True,
+            "front_facing_threshold": FACING_MIN,
+            "face_id_match_required": bool(args.require_face_id),
+            "source_mask_alpha_min": ALPHA_MIN,
+            "confidence_threshold": 0.20,
+            "rear_facial_guard": True,
+        },
+    }
+    provenance_path.write_text(json.dumps(provenance, indent=2), encoding="utf-8")
+    if illegal_rear.any():
+        raise RuntimeError(
+            "REJECTED_REAR_FACE_PROJECTION: "
+            f"{int(illegal_rear.sum())} rear triangles received facial provenance; "
+            f"see {provenance_path}"
+        )
 
     dbg = np.zeros((atlas_size, atlas_size, 3), np.uint8)
     dbg[island] = (60, 60, 60)
@@ -467,9 +584,14 @@ def main() -> None:
                 "depth_visibility_mask_required": True,
                 "normal_facing_threshold": FACING_MIN,
                 "invalid_normals_rejected": True,
+                "face_id_match_required": bool(args.require_face_id),
+                "source_mask_required": True,
+                "sample_confidence_threshold": 0.20,
                 "per_view_counts": gate_counts,
             },
+            "triangle_texture_provenance": str(provenance_path),
             "unseen_fill_policy": "neutral_material_for_unobserved_triangles",
+            "neutral_fill_only": bool(args.neutral_fill_only),
             "fill_tier_triangle_counts": {
                 "observed": int((fill_tier == 0).sum()),
                 "constrained_donor": int((fill_tier == 1).sum()),
