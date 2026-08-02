@@ -195,6 +195,8 @@ def run_job(
         str(job.get("negative_prompt", defaults.get("negative_prompt", ""))),
         "--seed",
         str(job.get("seed", defaults.get("seed", 1))),
+        "--view-index",
+        str(job.get("view_index", defaults.get("view_index", 0))),
         "--resolution",
         str(job.get("resolution", defaults.get("resolution", 512))),
         "--fallback-resolution",
@@ -206,6 +208,9 @@ def run_job(
         "--report",
         str(receipt_path),
     ]
+    mesh = job.get("mesh", defaults.get("mesh", ""))
+    if mesh:
+        command.extend(["--mesh", str(mesh)])
     for name in ("depth", "normal", "mask"):
         value = job.get(name)
         if value:
@@ -264,9 +269,15 @@ def main() -> int:
         "jobs": [],
     }
     output_root.mkdir(parents=True, exist_ok=True)
+    completed_outputs: dict[str, Path] = {}
 
     for index, raw_job in enumerate(manifest.get("jobs", []), start=1):
         job = dict(raw_job)
+        source_from = job.get("source_from")
+        if source_from:
+            if source_from not in completed_outputs:
+                raise RuntimeError(f"SOURCE_DEPENDENCY_MISSING:{source_from}")
+            job["source"] = str(completed_outputs[source_from])
         for key in ("source", "depth", "normal", "mask"):
             if job.get(key):
                 path = Path(job[key])
@@ -295,6 +306,7 @@ def main() -> int:
             stable = output_root / f"{name}.png"
             if assessment["success"]:
                 shutil.copy2(output, stable)
+                completed_outputs[name] = stable
             receipt["jobs"].append(
                 {
                     "name": name,

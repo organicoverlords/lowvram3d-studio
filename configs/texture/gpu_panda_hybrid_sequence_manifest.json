@@ -1,0 +1,63 @@
+{
+  "schema": "lowvram3d_gpu_texture_repair_sequence_manifest_v1",
+  "asset": "tactical_red_panda_scout",
+  "job_config": "gpu_panda_mvadapter_ig2mv_api.json",
+  "front_reference": "C:\\Users\\Lauri\\Desktop\\lowvram3d-unified-pipeline-v2-20260802\\benchmarks\\source-images\\20260802-six-variation-pack\\02_tactical_red_panda_scout.jpg",
+  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\bundle\\tactical_red_panda_scout_5step_uv_chart_separated.glb",
+  "conditions_dir": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\hybrid_conditions_20260803",
+  "defaults": {
+    "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\bundle\\tactical_red_panda_scout_5step_uv_chart_separated.glb",
+    "seed": 12345,
+    "resolution": 512,
+    "fallback_resolution": 384,
+    "timeout_seconds": 300,
+    "minimum_free_mb": 1200
+  },
+  "qa": {
+    "minimum_mask_iou": 0.55,
+    "minimum_saturation": 0.08,
+    "maximum_rear_front_correlation": 0.82
+  },
+  "jobs": [
+    {
+      "name": "front_albedo",
+      "view": "front",
+      "view_index": 0,
+      "source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-unified-pipeline-v2-20260802\\benchmarks\\source-images\\20260802-six-variation-pack\\02_tactical_red_panda_scout.jpg",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\hybrid_conditions_20260803\\front_mask.png",
+      "prompt": "high quality unlit front albedo reference for the exact tactical red panda scout, preserve silhouette and identity, coherent fur, ghillie suit, rifle and backpack, no baked lighting",
+      "negative_prompt": "watermark, deformed, extra limbs, changed silhouette, pale gray wash, face on rear, mirrored rear",
+      "required": true
+    },
+    {
+      "name": "left_reference",
+      "view": "left",
+      "view_index": 1,
+      "source_from": "front_albedo",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\hybrid_conditions_20260803\\left_mask.png",
+      "prompt": "left side reference of the exact tactical red panda scout, preserve the existing mesh silhouette, coherent fur and ghillie suit, visible rifle and backpack side details, no frontal face pasted onto side",
+      "negative_prompt": "watermark, deformed, changed silhouette, front-view copy, face duplication, black holes, pale gray wash",
+      "required": true
+    },
+    {
+      "name": "right_reference",
+      "view": "right",
+      "view_index": 3,
+      "source_from": "front_albedo",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\hybrid_conditions_20260803\\right_mask.png",
+      "prompt": "right side reference of the exact tactical red panda scout, preserve the existing mesh silhouette, coherent fur and ghillie suit, visible rifle and backpack side details, no frontal face pasted onto side",
+      "negative_prompt": "watermark, deformed, changed silhouette, front-view copy, face duplication, black holes, pale gray wash",
+      "required": true
+    },
+    {
+      "name": "rear_reference",
+      "view": "rear",
+      "view_index": 2,
+      "source_from": "front_albedo",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\hybrid_conditions_20260803\\rear_mask.png",
+      "prompt": "true rear reference of the exact tactical red panda scout, backpack, rear ghillie suit and rear tail only, no face, eyes, muzzle, front chest or mirrored front view",
+      "negative_prompt": "face, eyes, muzzle, snout, front chest, mirrored front view, watermark, deformed, changed silhouette, pale gray wash",
+      "required": true
+    }
+  ]
+}

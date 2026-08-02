@@ -337,6 +337,8 @@ def run_attempt(
     prompt: str,
     negative_prompt: str,
     seed: int,
+    mesh_path: str,
+    view_index: int,
     resolution: int,
     timeout_seconds: float,
     minimum_free_mb: int,
@@ -355,6 +357,8 @@ def run_attempt(
         "height": resolution,
         "resolution": resolution,
         "seed": seed,
+        "mesh": mesh_path,
+        "view_index": view_index,
         "output_prefix": f"lowvram3d/{view}/{seed}",
     }
     workflow = build_attempt_workflow(workflow_template, bindings, values)
@@ -395,6 +399,8 @@ def main() -> int:
     parser.add_argument("--prompt", required=True)
     parser.add_argument("--negative-prompt", default="")
     parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument("--mesh", default="")
+    parser.add_argument("--view-index", type=int, default=0)
     parser.add_argument("--resolution", type=int, default=512)
     parser.add_argument("--fallback-resolution", type=int, default=384)
     parser.add_argument("--timeout", type=float, default=300.0)
@@ -500,6 +506,8 @@ def main() -> int:
                     prompt=args.prompt,
                     negative_prompt=args.negative_prompt,
                     seed=args.seed,
+                    mesh_path=args.mesh,
+                    view_index=args.view_index,
                     resolution=resolution,
                     timeout_seconds=args.timeout,
                     minimum_free_mb=args.minimum_free_mb,
