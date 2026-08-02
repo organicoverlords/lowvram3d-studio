@@ -1,0 +1,87 @@
+{
+  "stage": "TEXTURED_RIG_BIND",
+  "passed": true,
+  "failures": [],
+  "rigged_source": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\motion\\shaman_animated.blend",
+  "textured_source": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\shaman_textured_cleaned.glb",
+  "armature": "shaman_rig",
+  "armature_rebuilt": false,
+  "proven_rig_base_preserved": true,
+  "bone_count": 46,
+  "deform_bone_count": 36,
+  "socket_count": 10,
+  "sockets": [
+    "foot_l_fx",
+    "foot_r_fx",
+    "hand_l_fx",
+    "hand_l_socket",
+    "hand_r_fx",
+    "hand_r_socket",
+    "head_fx",
+    "root_fx",
+    "staff_socket",
+    "staff_tip_fx"
+  ],
+  "actions": [
+    "hand_curl_test",
+    "idle_breathe",
+    "leg_alternate_robe_response",
+    "milestone_b_arm_articulation",
+    "secondary_sway",
+    "staff_ready",
+    "torso_turn",
+    "walk_cycle",
+    "wave"
+  ],
+  "action_count": 9,
+  "transfer_method": "DATA_TRANSFER_POLYINTERP_NEAREST",
+  "alignment_delta": 0.04283785820007324,
+  "source_bounds": [
+    [
+      -0.8374379277229309,
+      -0.2942837178707123,
+      -1.0099999904632568
+    ],
+    [
+      0.8127260208129883,
+      0.3009500205516815,
+      0.9709314703941345
+    ]
+  ],
+  "target_bounds": [
+    [
+      -0.8363710045814514,
+      -0.292082816362381,
+      -0.9948316216468811
+    ],
+    [
+      0.8109636902809143,
+      0.30103835463523865,
+      0.9280936121940613
+    ]
+  ],
+  "textured_mesh": {
+    "name": "shaman_textured_skinned",
+    "vertices": 135955,
+    "polygons": 219346,
+    "materials": [
+      "ShamanPBR"
+    ],
+    "uv_layers": [
+      "UVMap"
+    ],
+    "images": [
+      "shaman_v2_validation_basecolor_4k",
+      "shaman_v2_validation_normal_4k",
+      "shaman_v2_validation_orm_4k"
+    ]
+  },
+  "skin": {
+    "unweighted_vertices": 0,
+    "max_influences": 4,
+    "mean_influences": 3.394917435916296,
+    "weight_sum_min": 0.9999998584389687,
+    "weight_sum_max": 1.0000001527369022
+  },
+  "texture_status": "REJECTED_VISUAL_BASELINE_USED_FOR_MOTION_REVIEW_ONLY"
+}

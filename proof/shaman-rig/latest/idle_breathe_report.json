@@ -1,0 +1,24 @@
+{
+  "stage": "TEXTURED_MOTION_REVIEW",
+  "clip": "idle_breathe",
+  "textured": true,
+  "render_engine": "BLENDER_EEVEE_NEXT",
+  "texture_status": "REJECTED_VISUAL_BASELINE_USED_FOR_MOTION_REVIEW_ONLY",
+  "finger_tier": 0,
+  "finger_motion_fabricated": false,
+  "cloth_mode": "bone_driven_only",
+  "cloth_simulation_started": false,
+  "staff_side": "left",
+  "free_arm_used_for_wave": "right",
+  "gifs": {
+    "front": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\motion_textured\\idle_breathe_front.gif",
+    "threequarter": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\motion_textured\\idle_breathe_threequarter.gif",
+    "side": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\motion_textured\\idle_breathe_side.gif"
+  },
+  "frame_counts": {
+    "front": 25,
+    "threequarter": 25,
+    "side": 25
+  },
+  "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\motion_textured\\idle_breathe_contact_sheet.png"
+}

@@ -151,6 +151,42 @@ def clip_leg_alternate(armature, frames=96):
     return frames
 
 
+def clip_milestone_b_arm(armature, frames=96):
+    """Milestone B: shoulder, elbow and wrist articulate on separate arcs.
+
+    The staff is held in the left hand (staff axis x is about -0.33, hand_l at
+    -0.517), so the right arm is the free arm. The left arm and the staff bone
+    are keyed flat at every frame to prove grip stability rather than assuming
+    it from absent keys.
+    """
+
+    new_action(armature, "milestone_b_arm_articulation")
+    reset_pose(armature)
+    pose = armature.pose.bones
+    for step in range(0, frames + 1, 3):
+        frame = 1 + step
+        t = step / frames
+        # Three offset arcs: shoulder leads, elbow follows, wrist trails.
+        shoulder = math.sin(t * 2.0 * math.pi)
+        elbow = math.sin((t - 0.12) * 2.0 * math.pi)
+        wrist = math.sin((t - 0.24) * 2.0 * math.pi)
+
+        key(pose["clavicle_r"], frame, rotation=[0.0, 0.0, radians(-6.0 * shoulder)])
+        key(pose["upperarm_r"], frame, rotation=[radians(-8.0 * shoulder), 0.0,
+                                                 radians(-20.0 * shoulder)])
+        key(pose["lowerarm_r"], frame, rotation=[radians(-24.0 * max(elbow, 0.0)), 0.0,
+                                                 radians(-10.0 * elbow)])
+        key(pose["hand_r"], frame, rotation=[radians(14.0 * wrist), 0.0,
+                                             radians(-22.0 * wrist)])
+        # Restrained torso counterbalance.
+        key(pose["chest"], frame, rotation=[0.0, 0.0, radians(2.2 * shoulder)])
+        key(pose["spine_02"], frame, rotation=[0.0, 0.0, radians(1.2 * shoulder)])
+        # Staff side pinned flat: any drift here is a real defect, not noise.
+        for name in ("clavicle_l", "upperarm_l", "lowerarm_l", "hand_l", "staff_deform"):
+            key(pose[name], frame, rotation=[0.0, 0.0, 0.0])
+    return frames
+
+
 def clip_wave(armature, frames=72):
     """Right-arm wave.
 
@@ -162,23 +198,45 @@ def clip_wave(armature, frames=72):
     new_action(armature, "wave")
     reset_pose(armature)
     pose = armature.pose.bones
-    for step in range(0, frames + 1, 3):
+    for step in range(0, frames + 1, 2):
         frame = 1 + step
         t = step / frames
-        # Raise over the first quarter, hold and oscillate, lower at the end.
-        envelope = math.sin(min(t / 0.25, 1.0) * math.pi * 0.5) if t < 0.25 else (
-            1.0 if t < 0.75 else math.cos((t - 0.75) / 0.25 * math.pi * 0.5)
-        )
-        wave = math.sin(t * 6.0 * math.pi) * envelope
-        key(pose["clavicle_r"], frame, rotation=[0.0, 0.0, radians(-10.0 * envelope)])
-        key(pose["upperarm_r"], frame, rotation=[radians(-6.0 * envelope), 0.0,
-                                                 radians(-26.0 * envelope)])
-        key(pose["lowerarm_r"], frame, rotation=[radians(-18.0 * envelope), 0.0,
-                                                 radians(-20.0 * wave)])
-        key(pose["hand_r"], frame, rotation=[radians(10.0 * wave), 0.0,
-                                             radians(-34.0 * wave)])
-        key(pose["chest"], frame, rotation=[0.0, 0.0, radians(3.0 * envelope)])
-        key(pose["head"], frame, rotation=[0.0, 0.0, radians(4.0 * envelope)])
+        # Smooth raise / hold / lower envelope; no abrupt direction changes.
+        if t < 0.22:
+            envelope = 0.5 - 0.5 * math.cos(t / 0.22 * math.pi)
+        elif t < 0.78:
+            envelope = 1.0
+        else:
+            envelope = 0.5 + 0.5 * math.cos((t - 0.78) / 0.22 * math.pi)
+
+        # Separate arcs: shoulder holds the lift, elbow sets forearm direction,
+        # wrist oscillates fastest and trails both.
+        oscillation = math.sin(t * 5.0 * math.pi)
+        elbow_arc = math.sin((t - 0.06) * 5.0 * math.pi)
+        wrist_arc = math.sin((t - 0.13) * 5.0 * math.pi)
+
+        key(pose["clavicle_r"], frame, rotation=[radians(-5.0 * envelope), 0.0,
+                                                 radians(-12.0 * envelope)])
+        key(pose["upperarm_r"], frame, rotation=[radians(-10.0 * envelope), 0.0,
+                                                 radians(-38.0 * envelope)])
+        key(pose["lowerarm_r"], frame, rotation=[radians(-46.0 * envelope), 0.0,
+                                                 radians(-12.0 * elbow_arc * envelope)])
+        key(pose["hand_r"], frame, rotation=[radians(12.0 * wrist_arc * envelope), 0.0,
+                                             radians(-30.0 * wrist_arc * envelope)])
+        # Torso counterbalance leans away from the raised arm.
+        key(pose["chest"], frame, rotation=[0.0, 0.0, radians(4.5 * envelope)])
+        key(pose["spine_02"], frame, rotation=[0.0, 0.0, radians(2.5 * envelope)])
+        key(pose["spine_01"], frame, rotation=[0.0, 0.0, radians(1.2 * envelope)])
+        key(pose["head"], frame, rotation=[0.0, 0.0, radians(-3.0 * envelope)])
+        # Delayed cloth and ornament response: lags the arm by ~10% of the clip.
+        lag = 0.5 - 0.5 * math.cos(max(min((t - 0.10) / 0.22, 1.0), 0.0) * math.pi)
+        for tag in ("f", "b", "l", "r"):
+            key(pose[f"cloth_{tag}_01"], frame, rotation=[0.0, 0.0, radians(1.4 * lag)])
+            key(pose[f"cloth_{tag}_02"], frame, rotation=[0.0, 0.0, radians(2.2 * lag)])
+            key(pose[f"cloth_{tag}_03"], frame, rotation=[0.0, 0.0, radians(3.0 * lag)])
+        # Staff grip pinned: drift here is a defect.
+        for name in ("clavicle_l", "upperarm_l", "lowerarm_l", "hand_l", "staff_deform"):
+            key(pose[name], frame, rotation=[0.0, 0.0, 0.0])
     return frames
 
 
@@ -224,6 +282,7 @@ def clip_walk_cycle(armature, frames=48):
 
 CLIPS = (
     ("idle_breathe", clip_idle_breathe, True),
+    ("milestone_b_arm_articulation", clip_milestone_b_arm, True),
     ("wave", clip_wave, False),
     ("walk_cycle", clip_walk_cycle, True),
     ("staff_ready", clip_staff_ready, True),

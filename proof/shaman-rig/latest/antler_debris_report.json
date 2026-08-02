@@ -1,0 +1,1446 @@
+{
+  "stage": "ANTLER_DEBRIS_CLEANUP",
+  "passed": true,
+  "failures": [],
+  "source": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb",
+  "source_modified": false,
+  "source_is_rejected_visual_baseline": true,
+  "thresholds": {
+    "roi_start_fraction": 0.84,
+    "max_debris_triangles": 600,
+    "max_debris_extent_over_height": 0.06,
+    "min_separation_over_height": 0.004
+  },
+  "model_height": 1.9554998278617859,
+  "roi_z": 0.6477882337570189,
+  "component_count": 2423,
+  "protected_core_component": 722,
+  "protected_core_vertices": 2721,
+  "debris_component_count": 187,
+  "ambiguous_kept_count": 15,
+  "removed_vertices": 823,
+  "removed_triangles": 465,
+  "removed_polygon_ratio": 0.002115453730705015,
+  "before": {
+    "vertices": 136771,
+    "polygons": 219811,
+    "materials": [
+      "ShamanPBR"
+    ],
+    "uv_layers": [
+      "UVMap"
+    ]
+  },
+  "after": {
+    "vertices": 135948,
+    "polygons": 219346,
+    "materials": [
+      "ShamanPBR"
+    ],
+    "uv_layers": [
+      "UVMap"
+    ]
+  },
+  "renders": {
+    "before": [
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_before_front.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_before_right.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_before_back.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_before_three_quarter.png"
+    ],
+    "after": [
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_after_front.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_after_right.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_after_back.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_after_three_quarter.png"
+    ],
+    "overlay": [
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_removed_overlay_front.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_removed_overlay_right.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_removed_overlay_back.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup\\antler_debris_removed_overlay_three_quarter.png"
+    ]
+  },
+  "components": [
+    {
+      "component": 261,
+      "vertex_count": 2294,
+      "triangle_count": 4253,
+      "extent": 0.9191565364599228,
+      "extent_over_height": 0.4700366235597994,
+      "centroid": [
+        -0.03521015959069102,
+        0.25384959717522315,
+        -0.3451847646885539
+      ],
+      "z_min": -0.8122003078460693,
+      "separation_from_core": 0.0,
+      "separation_over_height": 0.0,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": false
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1199,
+      "vertex_count": 2287,
+      "triangle_count": 4219,
+      "extent": 0.8242106884717941,
+      "extent_over_height": 0.4214833858477072,
+      "centroid": [
+        -0.2170636155587594,
+        0.00875830499681158,
+        -0.2874464082013718
+      ],
+      "z_min": -0.6904184818267822,
+      "separation_from_core": 0.24439148604869843,
+      "separation_over_height": 0.12497648047145313,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1020,
+      "vertex_count": 2265,
+      "triangle_count": 4263,
+      "extent": 0.7763705402612686,
+      "extent_over_height": 0.39701897652948415,
+      "centroid": [
+        -0.3559433279579575,
+        0.09828060422725893,
+        -0.34730783207172417
+      ],
+      "z_min": -0.7599039673805237,
+      "separation_from_core": 0.3234262466430664,
+      "separation_over_height": 0.16539313480621082,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1734,
+      "vertex_count": 2205,
+      "triangle_count": 3974,
+      "extent": 1.0191837698221207,
+      "extent_over_height": 0.5211883710245748,
+      "centroid": [
+        -0.17046732322607624,
+        0.21274697468394324,
+        -0.20953610179976975
+      ],
+      "z_min": -0.8000601530075073,
+      "separation_from_core": 0.07618708908557892,
+      "separation_over_height": 0.038960417178294834,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1306,
+      "vertex_count": 2173,
+      "triangle_count": 4099,
+      "extent": 0.5528747737407684,
+      "extent_over_height": 0.2827281116896347,
+      "centroid": [
+        0.03428206182307363,
+        0.12252402741734575,
+        -0.38305299991404906
+      ],
+      "z_min": -0.6345189809799194,
+      "separation_from_core": 0.08328135311603546,
+      "separation_over_height": 0.0425882692135536,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 973,
+      "vertex_count": 2147,
+      "triangle_count": 4003,
+      "extent": 0.9379279538989067,
+      "extent_over_height": 0.47963591739328915,
+      "centroid": [
+        -0.2557878686721568,
+        0.06321171930858221,
+        -0.2906604786961696
+      ],
+      "z_min": -0.8177192211151123,
+      "separation_from_core": 0.2415076345205307,
+      "separation_over_height": 0.12350174164147275,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 496,
+      "vertex_count": 1976,
+      "triangle_count": 3736,
+      "extent": 0.6274772780016065,
+      "extent_over_height": 0.320878206717979,
+      "centroid": [
+        -0.05662372849415281,
+        -0.21414679618409047,
+        -0.3535241289431916
+      ],
+      "z_min": -0.6384908556938171,
+      "separation_from_core": 0.41031917929649353,
+      "separation_over_height": 0.20982828709586301,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1731,
+      "vertex_count": 1975,
+      "triangle_count": 3651,
+      "extent": 0.9336070939898491,
+      "extent_over_height": 0.47742632379093014,
+      "centroid": [
+        0.17459896380576906,
+        0.2041095408457744,
+        -0.3494838364887688
+      ],
+      "z_min": -0.8739230036735535,
+      "separation_from_core": 0.0,
+      "separation_over_height": 0.0,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": false
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 741,
+      "vertex_count": 1902,
+      "triangle_count": 3540,
+      "extent": 0.7728964276611805,
+      "extent_over_height": 0.39524239104960357,
+      "centroid": [
+        -0.3762974159637335,
+        0.06131512797778224,
+        -0.30377888114440976
+      ],
+      "z_min": -0.7210267782211304,
+      "separation_from_core": 0.35064271092414856,
+      "separation_over_height": 0.17931104157015137,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1197,
+      "vertex_count": 1893,
+      "triangle_count": 3356,
+      "extent": 1.0802951902151108,
+      "extent_over_height": 0.5524394197448458,
+      "centroid": [
+        -0.11279195725687323,
+        0.20969325497675623,
+        -0.22107922694555665
+      ],
+      "z_min": -0.8589975833892822,
+      "separation_from_core": 0.07754813879728317,
+      "separation_over_height": 0.03965642834245458,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 437,
+      "vertex_count": 1703,
+      "triangle_count": 3123,
+      "extent": 0.8616199493408203,
+      "extent_over_height": 0.44061366667720275,
+      "centroid": [
+        0.28335321964548393,
+        -0.010316118000979816,
+        -0.25895833304684135
+      ],
+      "z_min": -0.7466533184051514,
+      "separation_from_core": 0.058538809418678284,
+      "separation_over_height": 0.0299354715273418,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1027,
+      "vertex_count": 1685,
+      "triangle_count": 3183,
+      "extent": 0.7425296157598495,
+      "extent_over_height": 0.379713465161364,
+      "centroid": [
+        -0.06488102086017755,
+        -0.09415224437112713,
+        -0.45332920618510036
+      ],
+      "z_min": -0.9115656614303589,
+      "separation_from_core": 0.25257667899131775,
+      "separation_over_height": 0.12916220978014312,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 845,
+      "vertex_count": 1681,
+      "triangle_count": 3103,
+      "extent": 0.8832323551177979,
+      "extent_over_height": 0.45166578003924246,
+      "centroid": [
+        0.4375528853291348,
+        -0.0024048776684454628,
+        -0.1706846449610385
+      ],
+      "z_min": -0.6861910223960876,
+      "separation_from_core": 0.08901666849851608,
+      "separation_over_height": 0.045521184522859366,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 2146,
+      "vertex_count": 1478,
+      "triangle_count": 2369,
+      "extent": 0.8597663063555956,
+      "extent_over_height": 0.439665754046982,
+      "centroid": [
+        -0.3024746887537075,
+        0.03557654601264109,
+        -0.36769906846806094
+      ],
+      "z_min": -0.8307942152023315,
+      "separation_from_core": 0.34664565324783325,
+      "separation_over_height": 0.17726703337369665,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1072,
+      "vertex_count": 1472,
+      "triangle_count": 2656,
+      "extent": 0.9396672993898392,
+      "extent_over_height": 0.4805253807755664,
+      "centroid": [
+        0.3537131189368665,
+        0.05993183319435996,
+        -0.2727069199942059
+      ],
+      "z_min": -0.8228328824043274,
+      "separation_from_core": 0.05012276768684387,
+      "separation_over_height": 0.025631691178234425,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 106,
+      "vertex_count": 1457,
+      "triangle_count": 2709,
+      "extent": 0.8744388967752457,
+      "extent_over_height": 0.44716899705963603,
+      "centroid": [
+        0.01066035364341651,
+        0.2396812801726812,
+        -0.3826505496422049
+      ],
+      "z_min": -0.8113452196121216,
+      "separation_from_core": 0.013738714158535004,
+      "separation_over_height": 0.007025679042660622,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 862,
+      "vertex_count": 1339,
+      "triangle_count": 2465,
+      "extent": 0.7405323963612318,
+      "extent_over_height": 0.3786921306819836,
+      "centroid": [
+        0.38056070691974775,
+        0.061600988119846885,
+        -0.40019445707485957
+      ],
+      "z_min": -0.7118995785713196,
+      "separation_from_core": 0.02826499193906784,
+      "separation_over_height": 0.014454100959944243,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1163,
+      "vertex_count": 1291,
+      "triangle_count": 2372,
+      "extent": 0.4530695825815201,
+      "extent_over_height": 0.23168991176896328,
+      "centroid": [
+        0.04337064560040723,
+        -0.15654725076430162,
+        -0.3448599806931202
+      ],
+      "z_min": -0.571212649345398,
+      "separation_from_core": 0.3380822241306305,
+      "separation_over_height": 0.17288788232740568,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1314,
+      "vertex_count": 1265,
+      "triangle_count": 2331,
+      "extent": 0.829262837767601,
+      "extent_over_height": 0.42406694490704555,
+      "centroid": [
+        0.1398569751867708,
+        0.07519838898313846,
+        -0.42215205436874287
+      ],
+      "z_min": -0.9915119409561157,
+      "separation_from_core": 0.08462628722190857,
+      "separation_over_height": 0.043276039208063756,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 392,
+      "vertex_count": 1173,
+      "triangle_count": 2147,
+      "extent": 0.6061748825013638,
+      "extent_over_height": 0.3099846258560796,
+      "centroid": [
+        0.256650051319589,
+        -0.1384687592789137,
+        -0.3130930942996943
+      ],
+      "z_min": -0.6188393235206604,
+      "separation_from_core": 0.21632279455661774,
+      "separation_over_height": 0.11062276328254801,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 537,
+      "vertex_count": 1159,
+      "triangle_count": 2102,
+      "extent": 0.5596407949924469,
+      "extent_over_height": 0.28618810752050966,
+      "centroid": [
+        0.3071459705480941,
+        -0.08095721693646363,
+        -0.1360320559821037
+      ],
+      "z_min": -0.41481587290763855,
+      "separation_from_core": 0.1159972995519638,
+      "separation_over_height": 0.05931849131318996,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1007,
+      "vertex_count": 1149,
+      "triangle_count": 2071,
+      "extent": 0.4909711629152298,
+      "extent_over_height": 0.2510719540446472,
+      "centroid": [
+        -0.029029316588737468,
+        0.14089823168604346,
+        -0.4002334988822721
+      ],
+      "z_min": -0.6211549043655396,
+      "separation_from_core": 0.07233224809169769,
+      "separation_over_height": 0.03698913549421704,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1315,
+      "vertex_count": 1144,
+      "triangle_count": 2093,
+      "extent": 0.7909513711929321,
+      "extent_over_height": 0.4044752957394974,
+      "centroid": [
+        0.15747632894508698,
+        -0.10777667025429802,
+        -0.4424599135307582
+      ],
+      "z_min": -0.9153128862380981,
+      "separation_from_core": 0.18856793642044067,
+      "separation_over_height": 0.09642953363316205,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1393,
+      "vertex_count": 1134,
+      "triangle_count": 2100,
+      "extent": 0.7441450953483582,
+      "extent_over_height": 0.3805395862202828,
+      "centroid": [
+        0.08781301185514982,
+        -0.03394046921215867,
+        -0.4699342925449738
+      ],
+      "z_min": -0.9947636127471924,
+      "separation_from_core": 0.15798860788345337,
+      "separation_over_height": 0.08079193136836213,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 50,
+      "vertex_count": 1112,
+      "triangle_count": 1916,
+      "extent": 0.8658861853182316,
+      "extent_over_height": 0.4427953267912188,
+      "centroid": [
+        -0.12076927987496844,
+        0.17335571104111216,
+        -0.3856010940746679
+      ],
+      "z_min": -0.8880071640014648,
+      "separation_from_core": 0.10463304817676544,
+      "separation_over_height": 0.053507060796407734,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 82,
+      "vertex_count": 1061,
+      "triangle_count": 1964,
+      "extent": 0.5941128432750702,
+      "extent_over_height": 0.3038163618376252,
+      "centroid": [
+        -0.01774923449639872,
+        0.037513070623160644,
+        -0.4602298254285861
+      ],
+      "z_min": -0.811225175857544,
+      "separation_from_core": 0.1612742692232132,
+      "separation_over_height": 0.08247214698022055,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1807,
+      "vertex_count": 1033,
+      "triangle_count": 1632,
+      "extent": 0.9165488108992577,
+      "extent_over_height": 0.4687030895325852,
+      "centroid": [
+        0.30275204497870034,
+        0.14507184660879016,
+        -0.30486262726607855
+      ],
+      "z_min": -0.8190390467643738,
+      "separation_from_core": 0.0,
+      "separation_over_height": 0.0,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": false
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 533,
+      "vertex_count": 1013,
+      "triangle_count": 1897,
+      "extent": 0.4012489765882492,
+      "extent_over_height": 0.20518998307813166,
+      "centroid": [
+        0.37133103139838247,
+        -0.09697397634545493,
+        0.02661939490766831
+      ],
+      "z_min": -0.19551683962345123,
+      "separation_from_core": 0.19968704879283905,
+      "separation_over_height": 0.10211560540569521,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1274,
+      "vertex_count": 996,
+      "triangle_count": 1807,
+      "extent": 0.4602717235684395,
+      "extent_over_height": 0.2353729297290285,
+      "centroid": [
+        -0.01915519008670377,
+        -0.16919924716753174,
+        -0.35459255192982386
+      ],
+      "z_min": -0.5633816719055176,
+      "separation_from_core": 0.39211153984069824,
+      "separation_over_height": 0.20051729703778454,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1651,
+      "vertex_count": 970,
+      "triangle_count": 1694,
+      "extent": 0.8271051645278931,
+      "extent_over_height": 0.4229635578297543,
+      "centroid": [
+        -0.08263733677143596,
+        0.2084652395899763,
+        -0.3654717988113767
+      ],
+      "z_min": -0.8555023074150085,
+      "separation_from_core": 0.0791696161031723,
+      "separation_over_height": 0.04048561650334647,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 2000,
+      "vertex_count": 957,
+      "triangle_count": 1487,
+      "extent": 0.4624880403280258,
+      "extent_over_height": 0.23650630582449447,
+      "centroid": [
+        -0.15830635981266403,
+        -0.17742248670496785,
+        0.07471722802268004
+      ],
+      "z_min": -0.1356411725282669,
+      "separation_from_core": 0.4722236096858978,
+      "separation_over_height": 0.24148486384795245,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1500,
+      "vertex_count": 938,
+      "triangle_count": 1677,
+      "extent": 0.4553273022174835,
+      "extent_over_height": 0.23284446039320536,
+      "centroid": [
+        0.08080557562015044,
+        -0.22371653403872366,
+        0.08185622091210551
+      ],
+      "z_min": -0.1795707643032074,
+      "separation_from_core": 0.3139626979827881,
+      "separation_over_height": 0.16055368223994487,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1215,
+      "vertex_count": 936,
+      "triangle_count": 1646,
+      "extent": 0.5280450135469437,
+      "extent_over_height": 0.2700307133876494,
+      "centroid": [
+        0.25654827392636204,
+        0.030892168141480606,
+        -0.48576284668002373
+      ],
+      "z_min": -0.7466533184051514,
+      "separation_from_core": 0.08269020169973373,
+      "separation_over_height": 0.04228596726093818,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1140,
+      "vertex_count": 933,
+      "triangle_count": 1726,
+      "extent": 0.3674401044845581,
+      "extent_over_height": 0.1879008626077612,
+      "centroid": [
+        0.5736175704296251,
+        0.10055721322391961,
+        0.03490147955853159
+      ],
+      "z_min": -0.11749079823493958,
+      "separation_from_core": 0.23280467092990875,
+      "separation_over_height": 0.11905123570604749,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1896,
+      "vertex_count": 873,
+      "triangle_count": 1386,
+      "extent": 0.49537140130996704,
+      "extent_over_height": 0.25332214007485954,
+      "centroid": [
+        -0.18140739801618241,
+        0.05500833052369197,
+        -0.4397990378590657
+      ],
+      "z_min": -0.6966239809989929,
+      "separation_from_core": 0.22621259093284607,
+      "separation_over_height": 0.11568018964245835,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 822,
+      "vertex_count": 847,
+      "triangle_count": 1507,
+      "extent": 0.5635297894477844,
+      "extent_over_height": 0.28817685454054387,
+      "centroid": [
+        -0.14375582025106007,
+        0.13121081667885168,
+        -0.09359342881080193
+      ],
+      "z_min": -0.4130452275276184,
+      "separation_from_core": 0.1622828245162964,
+      "separation_over_height": 0.0829879001798442,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 135,
+      "vertex_count": 844,
+      "triangle_count": 1528,
+      "extent": 0.7918051481246948,
+      "extent_over_height": 0.40491189865789107,
+      "centroid": [
+        -0.14674716435761248,
+        0.062403777549683306,
+        -0.448876830444658
+      ],
+      "z_min": -0.9930577278137207,
+      "separation_from_core": 0.20692773163318634,
+      "separation_over_height": 0.1058183328297444,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 916,
+      "vertex_count": 840,
+      "triangle_count": 1510,
+      "extent": 0.6057132743299007,
+      "extent_over_height": 0.3097485694960196,
+      "centroid": [
+        -0.006046365774518509,
+        -0.20811022812766689,
+        -0.30357992645086984
+      ],
+      "z_min": -0.6212592720985413,
+      "separation_from_core": 0.4193933606147766,
+      "separation_over_height": 0.21446862568807099,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 581,
+      "vertex_count": 839,
+      "triangle_count": 1498,
+      "extent": 0.8362968564033508,
+      "extent_over_height": 0.4276639887602486,
+      "centroid": [
+        -0.009294148819999539,
+        0.19937193006525733,
+        -0.383823972362309
+      ],
+      "z_min": -0.8106772303581238,
+      "separation_from_core": 0.04833825305104256,
+      "separation_over_height": 0.02471912927954453,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1123,
+      "vertex_count": 833,
+      "triangle_count": 1468,
+      "extent": 0.6558463852852583,
+      "extent_over_height": 0.3353855499963835,
+      "centroid": [
+        0.4535001425110564,
+        -0.03320605344608785,
+        -0.3041517445448638
+      ],
+      "z_min": -0.6791577339172363,
+      "separation_from_core": 0.18234966695308685,
+      "separation_over_height": 0.09324964612882353,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 2243,
+      "vertex_count": 769,
+      "triangle_count": 1224,
+      "extent": 0.5388069599866867,
+      "extent_over_height": 0.27553413828516554,
+      "centroid": [
+        -0.09510698960791251,
+        -0.19243939546444327,
+        -0.4159802129426765
+      ],
+      "z_min": -0.6384719014167786,
+      "separation_from_core": 0.4284142553806305,
+      "separation_over_height": 0.21908171469852497,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1955,
+      "vertex_count": 734,
+      "triangle_count": 1188,
+      "extent": 0.44536460377275944,
+      "extent_over_height": 0.22774975350406304,
+      "centroid": [
+        -0.36319461452701113,
+        -0.026524403278473403,
+        0.13057586110110728
+      ],
+      "z_min": -0.007844159379601479,
+      "separation_from_core": 0.4303717017173767,
+      "separation_over_height": 0.22008271010075242,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 886,
+      "vertex_count": 717,
+      "triangle_count": 1273,
+      "extent": 0.3613007813692093,
+      "extent_over_height": 0.18476134654753132,
+      "centroid": [
+        0.16892455315095278,
+        -0.19706070967631692,
+        -0.37665670540708546
+      ],
+      "z_min": -0.5435969233512878,
+      "separation_from_core": 0.34179824590682983,
+      "separation_over_height": 0.17478817488854723,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 390,
+      "vertex_count": 714,
+      "triangle_count": 1249,
+      "extent": 0.48552657291293144,
+      "extent_over_height": 0.24828770935961866,
+      "centroid": [
+        0.3794581291555357,
+        -0.13829579697895786,
+        -0.18398015698098777
+      ],
+      "z_min": -0.4351983368396759,
+      "separation_from_core": 0.26782819628715515,
+      "separation_over_height": 0.13696150338198096,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 375,
+      "vertex_count": 689,
+      "triangle_count": 1212,
+      "extent": 0.4709799736738205,
+      "extent_over_height": 0.2408488954912397,
+      "centroid": [
+        0.34202135383477233,
+        0.013017253530682647,
+        -0.11106641437901513
+      ],
+      "z_min": -0.3541455566883087,
+      "separation_from_core": 0.06871183216571808,
+      "separation_over_height": 0.035137733681546816,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 840,
+      "vertex_count": 664,
+      "triangle_count": 1171,
+      "extent": 0.27147926948964596,
+      "extent_over_height": 0.13882858265781142,
+      "centroid": [
+        -0.4398253043013883,
+        -0.14280785458072662,
+        0.014268337268950711
+      ],
+      "z_min": -0.07888077199459076,
+      "separation_from_core": 0.5113897323608398,
+      "separation_over_height": 0.26151356552151267,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 2065,
+      "vertex_count": 643,
+      "triangle_count": 1009,
+      "extent": 0.37356406450271606,
+      "extent_over_height": 0.19103252231486234,
+      "centroid": [
+        -0.2870032431131944,
+        -0.06795769090183777,
+        0.022520875656782395
+      ],
+      "z_min": -0.17638443410396576,
+      "separation_from_core": 0.3862704038619995,
+      "separation_over_height": 0.19753026738149168,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1295,
+      "vertex_count": 637,
+      "triangle_count": 1145,
+      "extent": 0.5012083575129509,
+      "extent_over_height": 0.2563070322849326,
+      "centroid": [
+        -0.21627367525310306,
+        -0.12744580332066988,
+        -0.39376672315213895
+      ],
+      "z_min": -0.596653163433075,
+      "separation_from_core": 0.4405673146247864,
+      "separation_over_height": 0.2252965243707122,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1130,
+      "vertex_count": 626,
+      "triangle_count": 1060,
+      "extent": 0.5644086338579655,
+      "extent_over_height": 0.2886262764211594,
+      "centroid": [
+        0.21678181256825169,
+        0.13200197302209685,
+        -0.32673651775041707
+      ],
+      "z_min": -0.5928149819374084,
+      "separation_from_core": 0.041710227727890015,
+      "separation_over_height": 0.021329701559471618,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1191,
+      "vertex_count": 624,
+      "triangle_count": 1068,
+      "extent": 0.4932142198085785,
+      "extent_over_height": 0.25221900446182943,
+      "centroid": [
+        -0.06963006174564959,
+        0.15517860806236664,
+        -0.4549146596676646
+      ],
+      "z_min": -0.6799874901771545,
+      "separation_from_core": 0.10521591454744339,
+      "separation_over_height": 0.053805125957229194,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1194,
+      "vertex_count": 623,
+      "triangle_count": 1086,
+      "extent": 0.9204972609877586,
+      "extent_over_height": 0.4707222408678315,
+      "centroid": [
+        -0.4333012495339395,
+        -0.21722151965716102,
+        -0.38892999644216336
+      ],
+      "z_min": -0.9904342889785767,
+      "separation_from_core": 0.6259234547615051,
+      "separation_over_height": 0.32008361537209257,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 2110,
+      "vertex_count": 619,
+      "triangle_count": 968,
+      "extent": 0.5918191969394684,
+      "extent_over_height": 0.30264344108206076,
+      "centroid": [
+        -0.18493610326808566,
+        -0.02970950311611772,
+        -0.5177327500887949
+      ],
+      "z_min": -0.9243441224098206,
+      "separation_from_core": 0.30713510513305664,
+      "separation_over_height": 0.157062200035522,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 107,
+      "vertex_count": 611,
+      "triangle_count": 1050,
+      "extent": 0.8440323118120432,
+      "extent_over_height": 0.4316197320942434,
+      "centroid": [
+        0.2853564979743255,
+        0.14614727487101686,
+        -0.44841930657052076
+      ],
+      "z_min": -0.8704819679260254,
+      "separation_from_core": 0.013145964592695236,
+      "separation_over_height": 0.006722559831196461,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1384,
+      "vertex_count": 611,
+      "triangle_count": 1091,
+      "extent": 0.36473673582077026,
+      "extent_over_height": 0.18651841878175288,
+      "centroid": [
+        0.41000710244849936,
+        -0.1274834208688874,
+        -0.3002057929939412
+      ],
+      "z_min": -0.4678332209587097,
+      "separation_from_core": 0.21943047642707825,
+      "separation_over_height": 0.11221196407212751,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 921,
+      "vertex_count": 610,
+      "triangle_count": 1078,
+      "extent": 0.2533937096595764,
+      "extent_over_height": 0.12958002146011244,
+      "centroid": [
+        -0.3161556595661601,
+        0.10897017876755019,
+        0.05536679513597399
+      ],
+      "z_min": -0.07170155644416809,
+      "separation_from_core": 0.278939813375473,
+      "separation_over_height": 0.14264374222956383,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 709,
+      "vertex_count": 604,
+      "triangle_count": 1113,
+      "extent": 0.29587435349822044,
+      "extent_over_height": 0.15130369703061552,
+      "centroid": [
+        0.29650486184173075,
+        0.2494746550350197,
+        0.14824682608592193
+      ],
+      "z_min": 0.0379430390894413,
+      "separation_from_core": 0.04481714963912964,
+      "separation_over_height": 0.022918513722465693,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1070,
+      "vertex_count": 595,
+      "triangle_count": 1010,
+      "extent": 0.5864062607288361,
+      "extent_over_height": 0.2998753834563278,
+      "centroid": [
+        0.15220419036991456,
+        0.19703461142147288,
+        -0.4607350458367532
+      ],
+      "z_min": -0.7703520655632019,
+      "separation_from_core": 0.022459672763943672,
+      "separation_over_height": 0.011485387236521462,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 1305,
+      "vertex_count": 580,
+      "triangle_count": 963,
+      "extent": 0.6125245988368988,
+      "extent_over_height": 0.31323173242446933,
+      "centroid": [
+        0.28007208812853385,
+        0.12630058601498603,
+        -0.45620647527534386
+      ],
+      "z_min": -0.7520694732666016,
+      "separation_from_core": 0.017975814640522003,
+      "separation_over_height": 0.00919243989920337,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 991,
+      "vertex_count": 579,
+      "triangle_count": 989,
+      "extent": 0.5170191824436188,
+      "extent_over_height": 0.26439234362344394,
+      "centroid": [
+        0.10169067179755226,
+        0.19425573376279215,
+        -0.3062060448969996
+      ],
+      "z_min": -0.5880363583564758,
+      "separation_from_core": 0.020365126430988312,
+      "separation_over_height": 0.010414281883755662,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    },
+    {
+      "component": 127,
+      "vertex_count": 545,
+      "triangle_count": 947,
+      "extent": 0.8489016145467758,
+      "extent_over_height": 0.43410978740662715,
+      "centroid": [
+        -0.475386389679865,
+        -0.21603946352223738,
+        -0.4244292006306692
+      ],
+      "z_min": -0.993110179901123,
+      "separation_from_core": 0.6428807973861694,
+      "separation_over_height": 0.32875523087573905,
+      "conditions": {
+        "is_protected_core": false,
+        "inside_roi": false,
+        "small_triangle_count": false,
+        "small_extent": false,
+        "separated_from_core": true
+      },
+      "classification": "outside_roi_kept"
+    }
+  ]
+}
