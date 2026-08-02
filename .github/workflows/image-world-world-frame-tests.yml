@@ -1,0 +1,57 @@
+name: Image World world-frame tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/image-world-world-frame-20260802
+    paths:
+      - .github/workflows/image-world-world-frame-tests.yml
+      - src/lowvram3d/image_world/world_frame.py
+      - src/lowvram3d/image_world/surface_projection.py
+      - src/lowvram3d/image_world/terrain.py
+      - src/lowvram3d/image_world/hydrology.py
+      - workers/image_world/project_moge_surface.py
+      - tests/test_image_world_world_frame.py
+  pull_request:
+    paths:
+      - src/lowvram3d/image_world/world_frame.py
+      - src/lowvram3d/image_world/surface_projection.py
+      - workers/image_world/project_moge_surface.py
+      - tests/test_image_world_world_frame.py
+
+permissions:
+  contents: read
+
+jobs:
+  focused-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install focused test dependencies
+        run: python -m pip install --disable-pip-version-check numpy pytest
+
+      - name: Compile pure modules and worker
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m py_compile \
+            src/lowvram3d/image_world/world_frame.py \
+            src/lowvram3d/image_world/surface_projection.py \
+            workers/image_world/project_moge_surface.py
+
+      - name: Run foundation, terrain and world-frame tests
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m pytest \
+            tests/test_image_world_foundation.py \
+            tests/test_image_world_terrain_core.py \
+            tests/test_image_world_world_frame.py \
+            -q
