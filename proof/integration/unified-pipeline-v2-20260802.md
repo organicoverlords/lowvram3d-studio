@@ -165,3 +165,50 @@ versus direct correlation `-0.005798`, with a leak threshold of `0.82`.
 No new dropped-image GPU run was started. The production branch remained
 untouched; this worktree is the only location containing the integration
 changes.
+
+## Bounded projection repair from existing sanitized 5-step UV source
+
+Run root:
+
+`C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260802\tactical_red_panda_scout\diagnostics\panda_projection_repair_bounded_v2`
+
+The immutable input was the existing UV-bearing 5-step source mesh:
+
+`...\texture_completion_v2\uv_source\tactical_red_panda_scout_5step_uv_source_immutable.glb`
+
+No geometry generation, LOD, xatlas, or mesh/UV mutation was run. The source
+mesh was reused for projection and export. The repaired lane used a CPU 1024
+face-ID/depth raster, front-facing normals, registered source alpha, a 0.20
+sample-confidence threshold, and a two-pixel face-ID rasterization tolerance.
+Unobserved polygons were assigned `RasterNeutralSynthesis`; the atlas was not
+overwritten after projection because that would erase valid observed texels in
+the existing overlapping UV ownership.
+
+Receipt:
+
+`...\panda_projection_repair_bounded_v2\texture_receipt.json`
+
+Artifacts include the candidate GLB, 1024 base colour, four views, contact
+sheet, rear provenance overlay, per-triangle provenance, projection report,
+fresh-import report, and texture QA receipt. The exact UV ownership checker
+failed closed on the existing UV source (`candidate pair count exceeded
+5,000,000`; `16,890` degenerate UV triangles), so no chart separation or
+xatlas run was authorized.
+
+Classifications:
+
+- `GEOMETRY_REUSED=PROVEN`
+- `UV_REUSED=PROVEN`
+- `UV_CHART_SEPARATION=NOT_PROVEN`
+- `PROJECTION_GATING=PROVEN`
+- `TRIANGLE_PROVENANCE=PROVEN`
+- `REAR_FACE_PROJECTION=PROVEN_ABSENT`
+- `TEXTURE_COLOR_QA=REJECTED`
+- `FRESH_IMPORT=PROVEN`
+- `PROMOTED=false`
+- `FULL_AROUND_TEXTURE_BASELINE=REJECTED`
+
+The rear render contains no facial provenance and is neutral, but the front
+and three-quarter renders remain visibly pale/mostly neutral because strict
+face-ID gating leaves insufficient source colour coverage. This candidate is
+preserved as rejected evidence and does not replace the prior artifacts.

@@ -489,15 +489,14 @@ def main() -> None:
             mask[this_island] = True
 
     if args.neutral_fill_only:
-        # Neutral material is assigned per unobserved polygon by raster_export.
-        # Also keep the atlas itself free of front-source colour in those
-        # polygons, so the texture cannot be reused accidentally downstream.
-        neutral_rgb = np.asarray([72.0, 65.0, 54.0], dtype=np.float32)
-        unobserved_atlas = island & (tri_id >= 0)
-        valid_tri = tri_id[unobserved_atlas]
-        unobserved_atlas[unobserved_atlas] = ~triangle_observed[valid_tri]
-        colour[unobserved_atlas] = neutral_rgb
-        mask[unobserved_atlas] = True
+        # Do not overwrite the atlas here.  Existing UVs may have ownership
+        # collisions; erasing every texel whose *last* raster owner is
+        # unobserved would also erase a valid observed front texel.  The
+        # exporter applies neutral material per unobserved polygon, which is
+        # the ownership-safe rear protection rule.
+        neutral_fill_policy = "per_polygon_neutral_material"
+    else:
+        neutral_fill_policy = "atlas_fill_policy"
 
     atlas = np.clip(colour, 0, 255).astype(np.uint8)
     basecolor_path = outdir / "basecolor.png"
@@ -604,6 +603,7 @@ def main() -> None:
             "triangle_texture_provenance": str(provenance_path),
             "unseen_fill_policy": "neutral_material_for_unobserved_triangles",
             "neutral_fill_only": bool(args.neutral_fill_only),
+            "neutral_fill_policy": neutral_fill_policy,
             "fill_tier_triangle_counts": {
                 "observed": int((fill_tier == 0).sum()),
                 "constrained_donor": int((fill_tier == 1).sum()),

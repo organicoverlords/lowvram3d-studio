@@ -15,6 +15,7 @@ import cv2
 import numpy as np
 
 from mesh_io import face_normals, read_glb
+from shaman_texture_views import mask_iou, refine_box, warp_to_frame
 
 
 def project(vertices: np.ndarray, direction: np.ndarray, ortho: float) -> tuple[np.ndarray, np.ndarray]:
@@ -84,6 +85,45 @@ def build_bundle(mesh: Path, front_image: Path, output_npz: Path, report_path: P
     ortho = 2.6
     screen, depth = project(verts, direction, ortho)
     face_id, visible = rasterise_face_ids(screen, depth, tris, size)
+    silhouette = face_id >= 0
+    if image.shape[2] == 4:
+        source_bgr = image[:, :, :3]
+        source_alpha = image[:, :, 3]
+        source_mask = source_alpha > 127
+    else:
+        source_bgr = image[:, :, :3]
+        source_alpha = np.full(image.shape[:2], 255, np.uint8)
+        source_mask = source_bgr.min(axis=2) < 245
+    source_ys, source_xs = np.nonzero(source_mask)
+    if not len(source_xs):
+        raise RuntimeError("FRONT_SOURCE_MASK_EMPTY")
+    source_box = (
+        int(source_xs.min()), int(source_ys.min()),
+        int(source_xs.max()) + 1, int(source_ys.max()) + 1,
+    )
+    mesh_ys, mesh_xs = np.nonzero(silhouette)
+    mesh_box = (
+        int(mesh_xs.min()), int(mesh_ys.min()),
+        int(mesh_xs.max()) + 1, int(mesh_ys.max()) + 1,
+    )
+    registered_box, affine_iou = refine_box(
+        source_mask, silhouette, source_box, mesh_box, size
+    )
+    registered_bgr = warp_to_frame(
+        source_bgr, source_box, registered_box, size, interpolation=cv2.INTER_LINEAR
+    )
+    registered_alpha = warp_to_frame(
+        source_alpha, source_box, registered_box, size, interpolation=cv2.INTER_NEAREST
+    )
+    registered_path = output_npz.parent / "front.png"
+    cv2.imwrite(str(registered_path), np.dstack([registered_bgr, registered_alpha]))
+    (output_npz.parent / "view_metadata.json").write_text(
+        json.dumps({
+            "policy": {"semantic_projection": ["real", "generated"]},
+            "views": [{"view": "front", "source_type": "real", "confidence": 1.0}],
+        }, indent=2),
+        encoding="utf-8",
+    )
     normals = face_normals(verts, tris).astype(np.float32)
     output_npz.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
@@ -109,6 +149,11 @@ def build_bundle(mesh: Path, front_image: Path, output_npz: Path, report_path: P
         "visible_triangles": int(visible.sum()),
         "face_id_pixels": int(np.count_nonzero(face_id >= 0)),
         "face_id_buffer": "nearest_triangle_depth_raster_cpu",
+        "source_bbox": list(source_box),
+        "mesh_bbox": list(mesh_box),
+        "registered_bbox": list(registered_box),
+        "registration_affine_iou": round(float(affine_iou), 6),
+        "registered_front": str(registered_path),
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
