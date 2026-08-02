@@ -1,9 +1,4 @@
-"""Project MoGe camera-space observations into an auditable Z-up baseline.
-
-This module deliberately calls the result an *unclassified surface baseline*.
-It is not promoted as terrain until semantic masks have removed water,
-vegetation, architecture and other non-terrain observations.
-"""
+"""Project MoGe camera-space observations into an auditable Z-up baseline."""
 
 from __future__ import annotations
 
@@ -13,6 +8,7 @@ import numpy as np
 
 from .contracts import ContractError
 from .hydrology import d8_flow_direction, flow_accumulation, priority_flood_fill, stream_mask
+from .semantic_masks import SemanticMaskSet
 from .terrain import (
     CompletedHeightfield,
     HeightfieldObservation,
@@ -39,9 +35,11 @@ class SurfaceProjectionResult:
     stream_mask: np.ndarray
     candidate_mask: np.ndarray
     alignment: np.ndarray
+    semantic_mask_applied: bool
+    semantic_terrain_fraction: float | None
     cell_size: float
     stream_minimum_cells: float
-    classification: str = "UNCLASSIFIED_SURFACE_BASELINE_NOT_TERRAIN_PROOF"
+    classification: str
 
     def validate(self) -> None:
         self.observation.validate()
@@ -62,6 +60,10 @@ class SurfaceProjectionResult:
             raise ContractError("hydrology height must be finite")
         if self.cell_size <= 0.0:
             raise ContractError("cell_size must be positive")
+        if self.semantic_mask_applied and self.semantic_terrain_fraction is None:
+            raise ContractError("semantic terrain fraction is required when a semantic mask is applied")
+        if not self.semantic_mask_applied and self.classification != "UNCLASSIFIED_SURFACE_BASELINE_NOT_TERRAIN_PROOF":
+            raise ContractError("unclassified projection cannot be labelled terrain-safe")
 
 
 def project_moge_surface(
@@ -69,6 +71,7 @@ def project_moge_surface(
     normal_map: np.ndarray,
     valid_mask: np.ndarray,
     *,
+    semantic_masks: SemanticMaskSet | None = None,
     grid_size: int = 513,
     minimum_surface_alignment: float = 0.15,
     smoothing_iterations: int = 32,
@@ -77,10 +80,9 @@ def project_moge_surface(
 ) -> SurfaceProjectionResult:
     """Create a deterministic top-down baseline from MoGe arrays.
 
-    The surface mask is intentionally conservative: only points whose normal
-    has some alignment with estimated world-up are rasterized.  This rejects
-    most vertical walls, but roofs and other horizontal structures may remain;
-    semantic terrain separation is therefore still required before promotion.
+    When ``semantic_masks`` is omitted, the result is deliberately classified
+    as unpromotable.  When supplied, only pixels proven as terrain candidates
+    may enter rasterization; unresolved and non-terrain pixels are excluded.
     """
 
     points = np.asarray(point_map, dtype=np.float64)
@@ -93,9 +95,19 @@ def project_moge_surface(
     if not 0.0 <= minimum_surface_alignment <= 1.0:
         raise ContractError("minimum_surface_alignment must be in [0, 1]")
 
+    semantic_terrain_fraction: float | None = None
+    if semantic_masks is not None:
+        semantic_masks.validate()
+        if semantic_masks.terrain_candidate.shape != valid.shape:
+            raise ContractError("semantic mask shape must match MoGe image-space maps")
+        semantic_gate = semantic_masks.terrain_candidate
+        semantic_terrain_fraction = float(semantic_gate.mean())
+    else:
+        semantic_gate = np.ones(valid.shape, dtype=bool)
+
     frame = estimate_world_up_from_normals(
         normals,
-        valid,
+        valid & semantic_gate,
         allow_fallback=allow_up_fallback,
     )
     rotation = np.asarray(frame.rotation_camera_to_world, dtype=np.float64)
@@ -109,9 +121,9 @@ def project_moge_surface(
     normalized[good_normals] = world_normals[good_normals] / normal_lengths[good_normals, None]
     alignment = np.zeros(valid.shape, dtype=np.float32)
     alignment[good_normals] = np.abs(normalized[good_normals, 2]).astype(np.float32)
-    candidate = valid & finite & (alignment >= minimum_surface_alignment)
+    candidate = valid & semantic_gate & finite & (alignment >= minimum_surface_alignment)
     if not candidate.any():
-        raise ContractError("no surface candidates remain after world-up alignment filtering")
+        raise ContractError("no terrain surface candidates remain after semantic and alignment filtering")
 
     bounds = robust_xy_bounds(world_points, candidate)
     confidence = np.where(candidate, alignment, 0.0).astype(np.float32)
@@ -153,8 +165,15 @@ def project_moge_surface(
         stream_mask=streams,
         candidate_mask=candidate,
         alignment=alignment,
+        semantic_mask_applied=semantic_masks is not None,
+        semantic_terrain_fraction=semantic_terrain_fraction,
         cell_size=float(cell_size),
         stream_minimum_cells=threshold,
+        classification=(
+            "SEMANTICALLY_FILTERED_TERRAIN_BASELINE_NOT_SOURCE_QUALITY_PROOF"
+            if semantic_masks is not None
+            else "UNCLASSIFIED_SURFACE_BASELINE_NOT_TERRAIN_PROOF"
+        ),
     )
     result.validate()
     return result
@@ -168,8 +187,6 @@ def robust_xy_bounds(
     upper_percentile: float = 99.5,
     padding_fraction: float = 0.01,
 ) -> tuple[float, float, float, float]:
-    """Return robust XY bounds without allowing one outlier to define the map."""
-
     points = np.asarray(world_points, dtype=np.float64)
     valid = np.asarray(mask, dtype=bool)
     if points.ndim != 3 or points.shape[-1] != 3 or valid.shape != points.shape[:2]:
