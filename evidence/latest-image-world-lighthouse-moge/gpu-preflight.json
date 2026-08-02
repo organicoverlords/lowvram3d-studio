@@ -15,7 +15,6 @@
                               "11684, C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe, [N/A]",
                               "16836, C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe, [N/A]",
                               "28560, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.727.6591.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A]",
-                              "16852, [Insufficient Permissions], [N/A]",
                               "11640, C:\\Windows\\System32\\ApplicationFrameHost.exe, [N/A]",
                               "28012, C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe, [N/A]",
                               "27180, C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe, [N/A]",
@@ -25,7 +24,7 @@
                               "9144, C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor.exe, [N/A]",
                               "25032, C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\LiveCodingConsole.exe, [N/A]",
                               "18300, C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe, [N/A]",
-                              "24416, C:\\AI\\HY3D2\\python_standalone\\python.exe, [N/A]"
+                              "23776, [Insufficient Permissions], [N/A]"
                           ],
-    "checked_at":  "2026-08-02T17:09:15.5536794Z"
+    "checked_at":  "2026-08-02T17:45:38.7482751Z"
 }
