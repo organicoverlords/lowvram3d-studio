@@ -1,0 +1,59 @@
+{
+  "stage": "MOTION",
+  "fps": 24,
+  "bind_pose": "SOURCE_POSE",
+  "finger_tier": 0,
+  "finger_tier_note": "hand_curl_test articulates wrist only. Hands are inside sleeves; no finger separation is observable, so no finger chains exist.",
+  "clip_count": 8,
+  "clips": [
+    {
+      "name": "idle_breathe",
+      "frames": 96,
+      "loop": true,
+      "duration_seconds": 4.0
+    },
+    {
+      "name": "wave",
+      "frames": 72,
+      "loop": false,
+      "duration_seconds": 3.0
+    },
+    {
+      "name": "walk_cycle",
+      "frames": 48,
+      "loop": true,
+      "duration_seconds": 2.0
+    },
+    {
+      "name": "staff_ready",
+      "frames": 48,
+      "loop": true,
+      "duration_seconds": 2.0
+    },
+    {
+      "name": "hand_curl_test",
+      "frames": 48,
+      "loop": true,
+      "duration_seconds": 2.0
+    },
+    {
+      "name": "secondary_sway",
+      "frames": 96,
+      "loop": true,
+      "duration_seconds": 4.0
+    },
+    {
+      "name": "torso_turn",
+      "frames": 48,
+      "loop": true,
+      "duration_seconds": 2.0
+    },
+    {
+      "name": "leg_alternate_robe_response",
+      "frames": 96,
+      "loop": true,
+      "duration_seconds": 4.0
+    }
+  ],
+  "hidden_leg_policy": "Leg bones animate to drive robe response and collision proxies; they carry zero skin weight so the skirt cannot split into legs."
+}

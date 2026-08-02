@@ -101,6 +101,7 @@ def main() -> None:
     parser.add_argument("--height", type=int, default=800)
     parser.add_argument("--samples", type=int, default=8)
     parser.add_argument("--frame", type=int, default=None)
+    parser.add_argument("--action", default=None)
     parser.add_argument("--views", default="front,right,back,left,three_quarter")
     parser.add_argument("--report", default=None)
     args = parser.parse_args(argv_after_double_dash())
@@ -108,8 +109,19 @@ def main() -> None:
     load(args.input)
     configure(args.width, args.height, args.samples)
 
+    if args.action:
+        armature = next((obj for obj in bpy.data.objects if obj.type == "ARMATURE"), None)
+        if armature is None:
+            raise RuntimeError("--action requires an armature in the scene")
+        if armature.animation_data is None:
+            armature.animation_data_create()
+        if args.action not in bpy.data.actions:
+            raise RuntimeError(f"action {args.action!r} not found")
+        armature.animation_data.action = bpy.data.actions[args.action]
+
     if args.frame is not None:
         bpy.context.scene.frame_set(args.frame)
+        bpy.context.view_layer.update()
 
     minimum, maximum = scene_bounds()
     centre = (minimum + maximum) * 0.5

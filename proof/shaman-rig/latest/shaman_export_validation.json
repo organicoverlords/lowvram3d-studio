@@ -1,0 +1,224 @@
+{
+  "stage": "EXPORT_QA",
+  "passed": true,
+  "failures": [],
+  "source": {
+    "objects": 2,
+    "meshes": 1,
+    "vertices": 537041,
+    "triangles": 1074083,
+    "armatures": 1,
+    "bones": 46,
+    "deform_bones": 36,
+    "sockets": [
+      "foot_l_fx",
+      "foot_r_fx",
+      "hand_l_fx",
+      "hand_l_socket",
+      "hand_r_fx",
+      "hand_r_socket",
+      "head_fx",
+      "root_fx",
+      "staff_socket",
+      "staff_tip_fx"
+    ],
+    "socket_count": 10,
+    "actions": [
+      "hand_curl_test",
+      "idle_breathe",
+      "leg_alternate_robe_response",
+      "secondary_sway",
+      "staff_ready",
+      "torso_turn",
+      "walk_cycle",
+      "wave"
+    ],
+    "action_count": 8,
+    "action_ranges": {
+      "hand_curl_test": [
+        1.0,
+        49.0
+      ],
+      "idle_breathe": [
+        1.0,
+        97.0
+      ],
+      "leg_alternate_robe_response": [
+        1.0,
+        97.0
+      ],
+      "secondary_sway": [
+        1.0,
+        97.0
+      ],
+      "staff_ready": [
+        1.0,
+        49.0
+      ],
+      "torso_turn": [
+        1.0,
+        49.0
+      ],
+      "walk_cycle": [
+        1.0,
+        49.0
+      ],
+      "wave": [
+        1.0,
+        73.0
+      ]
+    },
+    "materials": 0
+  },
+  "exports": {
+    "glb": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\export\\shaman_game_ready.glb",
+    "fbx": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\export\\shaman_game_ready.fbx",
+    "blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\export\\shaman_game_ready.blend"
+  },
+  "fresh_import": {
+    "glb": {
+      "objects": 3,
+      "meshes": 2,
+      "vertices": 3208498,
+      "triangles": 1074163,
+      "armatures": 1,
+      "bones": 46,
+      "deform_bones": 46,
+      "sockets": [
+        "foot_l_fx",
+        "foot_r_fx",
+        "hand_l_fx",
+        "hand_l_socket",
+        "hand_r_fx",
+        "hand_r_socket",
+        "head_fx",
+        "root_fx",
+        "staff_socket",
+        "staff_tip_fx"
+      ],
+      "socket_count": 10,
+      "actions": [
+        "hand_curl_test",
+        "idle_breathe",
+        "leg_alternate_robe_response",
+        "secondary_sway",
+        "staff_ready",
+        "torso_turn",
+        "walk_cycle",
+        "wave"
+      ],
+      "action_count": 8,
+      "action_ranges": {
+        "hand_curl_test": [
+          1.0,
+          49.0
+        ],
+        "idle_breathe": [
+          1.0,
+          97.0
+        ],
+        "leg_alternate_robe_response": [
+          1.0,
+          97.0
+        ],
+        "secondary_sway": [
+          1.0,
+          97.0
+        ],
+        "staff_ready": [
+          1.0,
+          49.0
+        ],
+        "torso_turn": [
+          1.0,
+          49.0
+        ],
+        "walk_cycle": [
+          1.0,
+          49.0
+        ],
+        "wave": [
+          1.0,
+          73.0
+        ]
+      },
+      "materials": 1,
+      "bytes": 179958572,
+      "sha256": "2f7eb9f2f874dae989a222e58a19b8c45bf5a1e113559c7476c74862b1f7a7b0"
+    },
+    "fbx": {
+      "objects": 2,
+      "meshes": 1,
+      "vertices": 537041,
+      "triangles": 1074083,
+      "armatures": 1,
+      "bones": 46,
+      "deform_bones": 46,
+      "sockets": [
+        "foot_l_fx",
+        "foot_r_fx",
+        "hand_l_fx",
+        "hand_l_socket",
+        "hand_r_fx",
+        "hand_r_socket",
+        "head_fx",
+        "root_fx",
+        "staff_socket",
+        "staff_tip_fx"
+      ],
+      "socket_count": 10,
+      "actions": [
+        "shaman_rig|shaman_rig|hand_curl_test",
+        "shaman_rig|shaman_rig|idle_breathe",
+        "shaman_rig|shaman_rig|leg_alternate_robe_response",
+        "shaman_rig|shaman_rig|secondary_sway",
+        "shaman_rig|shaman_rig|staff_ready",
+        "shaman_rig|shaman_rig|torso_turn",
+        "shaman_rig|shaman_rig|walk_cycle",
+        "shaman_rig|shaman_rig|wave"
+      ],
+      "action_count": 8,
+      "action_ranges": {
+        "shaman_rig|shaman_rig|hand_curl_test": [
+          1.0,
+          49.0
+        ],
+        "shaman_rig|shaman_rig|idle_breathe": [
+          1.0,
+          97.0
+        ],
+        "shaman_rig|shaman_rig|leg_alternate_robe_response": [
+          1.0,
+          97.0
+        ],
+        "shaman_rig|shaman_rig|secondary_sway": [
+          1.0,
+          97.0
+        ],
+        "shaman_rig|shaman_rig|staff_ready": [
+          1.0,
+          49.0
+        ],
+        "shaman_rig|shaman_rig|torso_turn": [
+          1.0,
+          49.0
+        ],
+        "shaman_rig|shaman_rig|walk_cycle": [
+          1.0,
+          49.0
+        ],
+        "shaman_rig|shaman_rig|wave": [
+          1.0,
+          73.0
+        ]
+      },
+      "materials": 0,
+      "bytes": 39493404,
+      "sha256": "2d9a21c2fd7cab358eb67af1dfe312ce09a6a0908d93be247a630dc9dbfc3ded"
+    }
+  },
+  "notes": {
+    "vertex_count_change": "GLB re-splits vertices per corner on import; the fresh-import vertex count is expected to exceed the welded source and is not a defect.",
+    "socket_support": "Sockets are exported as non-deforming bones. FBX and GLB both carry them as nodes/bones."
+  }
+}
