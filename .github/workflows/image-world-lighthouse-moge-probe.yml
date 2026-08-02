@@ -3,30 +3,21 @@ run-name: Lighthouse MoGe hardware probe ${{ github.run_id }}
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - feature/image-world-lighthouse-probe-20260802
-    paths:
-      - .github/workflows/image-world-lighthouse-moge-probe.yml
-      - scripts/run-image-world-lighthouse-moge-probe.ps1
-      - benchmarks/image_world/fixtures/lighthouse_probe_512_q80.jpg
-      - benchmarks/image_world/fixtures/lighthouse_probe_512_q80.jpg.b64
-      - workers/image_world/moge_probe.py
-      - workers/image_world/render_moge_previews.py
-      - src/lowvram3d/image_world/moge_probe.py
-      - src/lowvram3d/image_world/moge_preview.py
-      - tests/test_image_world_moge_probe.py
-      - tests/test_image_world_moge_preview.py
+    inputs:
+      force_when_gpu_busy:
+        description: Run even when another compute process is using the GPU
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
 
 concurrency:
   group: image-world-lighthouse-moge-probe
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
-  IMAGE_WORLD_LOCAL_WORKER_TRIGGER: "2026-08-02T19:42:00+03:00"
   LIGHTHOUSE_FIXTURE_SHA256: "4847ca1ceaba7da83bccd698cbbad56b99d6288530c9e5eab957339caf0302cb"
 
 jobs:
@@ -45,6 +36,7 @@ jobs:
       - name: Verify repository and fixture identity
         shell: powershell
         run: |
+          $ErrorActionPreference = "Stop"
           $expectedRef = "refs/heads/feature/image-world-lighthouse-probe-20260802"
           if ("${{ github.ref }}" -ne $expectedRef) {
             throw "Unexpected ref. Expected $expectedRef, got ${{ github.ref }}"
@@ -74,9 +66,40 @@ jobs:
           Write-Host "REMOTE=$remote"
           Write-Host "FIXTURE_SHA256=$actual"
 
+      - name: Verify GPU is idle
+        id: gpu_preflight
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $output = Join-Path $env:RUNNER_TEMP "image-world-lighthouse-moge"
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          $rows = @()
+          try {
+            $rows = @(
+              & nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader,nounits 2>$null |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+            )
+          } catch {
+            throw "Could not query GPU compute processes: $($_.Exception.Message)"
+          }
+          $busy = $rows.Count -gt 0
+          [ordered]@{
+            status = $(if ($busy) { "GPU_BUSY" } else { "GPU_IDLE" })
+            force_when_gpu_busy = [System.Convert]::ToBoolean("${{ inputs.force_when_gpu_busy }}")
+            compute_processes = $rows
+            checked_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $output "gpu-preflight.json") -Encoding utf8
+          if ($busy -and "${{ inputs.force_when_gpu_busy }}" -ne "true") {
+            Write-Host "GPU_BUSY_BLOCKED"
+            $rows | ForEach-Object { Write-Host "GPU_PROCESS=$_" }
+            throw "GPU is currently busy. Re-run manually after it is idle, or explicitly enable force_when_gpu_busy."
+          }
+          Write-Host "GPU_PREFLIGHT=PASS"
+
       - name: Compile probe and run focused tests
         shell: powershell
         run: |
+          $ErrorActionPreference = "Stop"
           $python = "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe"
           if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
             throw "LowVRAM3D control Python is missing: $python"
@@ -97,6 +120,7 @@ jobs:
       - name: Run lighthouse hardware probe
         shell: powershell
         run: |
+          $ErrorActionPreference = "Stop"
           $fixture = Join-Path $PWD "benchmarks\image_world\fixtures\lighthouse_probe_512_q80.jpg"
           $output = Join-Path $env:RUNNER_TEMP "image-world-lighthouse-moge"
           & .\scripts\run-image-world-lighthouse-moge-probe.ps1 `
@@ -121,7 +145,7 @@ jobs:
             Remove-Item -LiteralPath $evidence -Recurse -Force
           }
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-          foreach ($name in @("setup-report.json", "moge-probe-report.json")) {
+          foreach ($name in @("gpu-preflight.json", "setup-report.json", "moge-probe-report.json")) {
             $path = Join-Path $source $name
             if (Test-Path -LiteralPath $path -PathType Leaf) {
               Copy-Item -LiteralPath $path -Destination (Join-Path $evidence $name) -Force
@@ -141,6 +165,13 @@ jobs:
               $peakReservedMb = $probe.peak_gpu_reserved_mb
             } catch {
               $probeStatus = "INVALID_REPORT"
+            }
+          } elseif (Test-Path -LiteralPath (Join-Path $source "gpu-preflight.json") -PathType Leaf) {
+            try {
+              $preflight = Get-Content -LiteralPath (Join-Path $source "gpu-preflight.json") -Raw | ConvertFrom-Json
+              $probeStatus = $preflight.status
+            } catch {
+              $probeStatus = "INVALID_GPU_PREFLIGHT"
             }
           }
           [ordered]@{
