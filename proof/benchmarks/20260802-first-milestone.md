@@ -32,7 +32,7 @@ targeted cleanup of the proven detached rod/blob artifact. No new GPU generation
 - Texture evidence: `85.2%` observed semantic coverage, `14.8%` explicitly synthesized local fill for unseen/rear regions, `0` residual island holes; front render preserves face, fur/suit, rifle, and tail colours.
 - Generation policy: normalized conditioning; steps 1 failed with the allowed empty-reduction code; one steps 2 retry succeeded; octree 256, chunks 1500, seed 12345 unchanged.
 
-## frog_salvage_diver — REJECTED
+## frog_salvage_diver — BLOCKED_FROG_COMPONENTS_FUSED_REQUIRES_DIFFERENT_GEOMETRY
 
 Neither frog textured artifact is an accepted result. The bounded fresh run below uses
 the current Mini Turbo route, generic relative/source/screen component evidence, the repaired
@@ -54,6 +54,11 @@ raw white-background image.
 - Geometry evidence: generic audit applied only confirmed debris removals (`5780` faces, `0.9159%`) and preserved unresolved components; topology remained `boundary_edges 28 -> 28`, `non_manifold_edges 39 -> 39`; `manual_review_required=true`.
 - Texture evidence: `76.85%` observed semantic coverage, `23.15%` constrained synthesized fill, `100%` final filled UVs, and `0` residual island holes; fresh Blender import/material/texture/render checks all passed.
 - Visual rejection: attached generated surface noise and several small floating dark components remain visible in front, three-quarter, and side views. Therefore `BASIC_TEXTURED_BASELINE=REJECTED_VISUAL_ARTIFACTS`, `DETACHED_ARTIFACT_CLEANUP=NOT_PROVEN_COMPLETE`, and the passing structural/material gates do not approve this asset.
+- CPU-only bounded repair candidate: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\repair_cpu_v8\frog_salvage_diver_repaired_v8.glb`
+- Repair decision/report: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\repair_cpu_v8\FROG_REPAIR_DECISION.json`
+- Repair contact sheet: `C:\AI\LowVRAM3D-benchmarks\six-benchmark-baselines-20260802-frog-v7\frog_salvage_diver\repair_cpu_v8\renders\frog_salvage_diver_repaired_v8_contact_sheet.png`
+- Repair evidence: six components selected by generic multi-view/source-support rules (`391` faces, `0.0651%`) were removed; lantern, bag, backpack/tank, feet, arms, and torso remained. Fresh import/material checks passed, but front/three-quarter/side/rear visual acceptance still failed due to a debris halo, floating shards, and fragmented rear/side silhouette.
+- Final classification: `BLOCKED_FROG_COMPONENTS_FUSED_REQUIRES_DIFFERENT_GEOMETRY`. No GPU geometry rerun was performed, and the rejected v7 baseline remains preserved.
 
 The validation reports independently confirm non-empty geometry, UVs, material presence, packed
 readable non-constant base-colour textures linked to Principled Base Color, and rendered previews.
