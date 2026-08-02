@@ -29,6 +29,7 @@ from mathutils import Vector
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from common import argv_after_double_dash  # noqa: E402
+from shaman_weight_diagnostics import semantic_masks  # noqa: E402
 
 MAX_INFLUENCES = 4
 CLOTH_CHAINS = (("f", 0.0, -1.0), ("b", 0.0, 1.0), ("l", -1.0, 0.0), ("r", 1.0, 0.0))
@@ -186,7 +187,7 @@ def build_skeleton(landmarks: dict, staff: dict):
     return armature, spec, socket_records
 
 
-def compute_weights(points: np.ndarray, spec, landmarks: dict, staff_mask: np.ndarray):
+def compute_weights(points: np.ndarray, spec, landmarks: dict, staff_mask: np.ndarray, masks: dict):
     """Robe-first spatial influence volumes.
 
     Returns {bone_name: (indices, weights)}. Leg bones are deliberately absent:
@@ -218,43 +219,52 @@ def compute_weights(points: np.ndarray, spec, landmarks: dict, staff_mask: np.nd
     accumulate("staff_deform", staff_mask, 1.0)
     free = ~staff_mask
 
-    # 2. Sleeves: lateral volumes around the arm chains only.
+    # 2. Sleeves: arm bones may only reach vertices the semantic masks classify
+    #    as sleeve or hand. The previous version used a raw lateral band plus a
+    #    distance falloff and then removed every touched vertex from the torso
+    #    blend, so a cape vertex grazed by the arm volume with influence 0.001
+    #    normalised to 100% arm weight - that is what produced the fan-shaped
+    #    cape slabs. Arm reach is now bounded by classification, not distance.
     sleeve_any = np.zeros(count, dtype=bool)
-    for side, sign in (("l", -1.0), ("r", 1.0)):
-        lateral = (x - symmetry) * sign > shoulder_half * 0.45
-        vertical = (z <= shoulder_z + body * 0.05) & (z >= hip_z - body * 0.30)
-        candidate = free & lateral & vertical
-        if not candidate.any():
+    arm_share = np.zeros(count, dtype=np.float64)
+    for side in ("l", "r"):
+        allowed = (
+            (masks[f"sleeve_{side}"] | masks[f"hand_{side}_region"]) & free
+        )
+        if not allowed.any():
             continue
-        chain = [f"upperarm_{side}", f"lowerarm_{side}", f"hand_{side}", f"clavicle_{side}"]
-        # The hand volume is generous relative to the others: the hand bone sits
-        # on the measured distal lobe centroid, and a tight radius there left the
-        # visible hand almost unweighted, so it did not move when the bone did.
+        chain = [f"clavicle_{side}", f"upperarm_{side}", f"lowerarm_{side}", f"hand_{side}"]
+        radius = float(masks["sleeve_radius"])
         radii = {
-            f"clavicle_{side}": shoulder_half * 0.55,
-            f"upperarm_{side}": shoulder_half * 0.50,
-            f"lowerarm_{side}": shoulder_half * 0.50,
-            f"hand_{side}": shoulder_half * 0.72,
+            f"clavicle_{side}": radius * 1.10,
+            f"upperarm_{side}": radius * 1.10,
+            f"lowerarm_{side}": radius * 1.10,
+            f"hand_{side}": radius * 1.30,
         }
         for name in chain:
             head, tail = bones[name]
             distance = segment_distance(points, head, tail)
-            radius = radii[name]
-            influence = np.clip(1.0 - distance / max(radius, 1e-6), 0.0, 1.0) ** 2
-            mask = candidate & (influence > 0.0)
+            influence = np.clip(1.0 - distance / max(radii[name], 1e-6), 0.0, 1.0) ** 2
+            mask = allowed & (influence > 0.0)
             accumulate(name, mask, influence)
             sleeve_any |= mask
+            arm_share[mask] += influence[mask]
+    arm_share = np.clip(arm_share, 0.0, 1.0)
+
+    # Body bones still reach sleeve vertices, scaled down by the arm's share.
+    # Excluding them entirely was the normalisation trap described above.
+    body_share = 1.0 - arm_share
 
     # 3. Head and neck.
-    head_mask = free & ~sleeve_any & (z > neck_z)
-    accumulate("head", head_mask, 1.0)
-    neck_mask = free & ~sleeve_any & (z <= neck_z) & (z > neck_z - body * 0.05)
+    head_mask = free & (z > neck_z)
+    accumulate("head", head_mask, body_share)
+    neck_mask = free & (z <= neck_z) & (z > neck_z - body * 0.05)
     blend = np.clip((z - (neck_z - body * 0.05)) / max(body * 0.05, 1e-6), 0.0, 1.0)
-    accumulate("neck", neck_mask, blend)
-    accumulate("chest", neck_mask, 1.0 - blend)
+    accumulate("neck", neck_mask, blend * body_share)
+    accumulate("chest", neck_mask, (1.0 - blend) * body_share)
 
     # 4. Upper robe: pelvis -> spine_01 -> spine_02 -> chest by height.
-    upper = free & ~sleeve_any & ~head_mask & ~neck_mask & (z >= hip_z)
+    upper = free & ~head_mask & ~neck_mask & (z >= hip_z)
     stops = [
         ("pelvis", hip_z),
         ("spine_01", landmarks["waist_z"]),
@@ -268,16 +278,16 @@ def compute_weights(points: np.ndarray, spec, landmarks: dict, staff_mask: np.nd
         span = max(upper_z - lower_z, 1e-6)
         band = upper & (z >= lower_z) & (z < upper_z)
         t = np.clip((z - lower_z) / span, 0.0, 1.0)
-        accumulate(lower_name, band, 1.0 - t)
-        accumulate(upper_name, band, t)
+        accumulate(lower_name, band, (1.0 - t) * body_share)
+        accumulate(upper_name, band, t * body_share)
 
     # 5. Lower robe: pelvis support near the waist, cloth chains toward the hem.
-    lower = free & ~sleeve_any & (z < hip_z)
+    lower = free & (z < hip_z)
     if lower.any():
         span = max(hip_z - hem_z, 1e-6)
         descent = np.clip((hip_z - z) / span, 0.0, 1.0)
         pelvis_share = np.clip(1.0 - descent * 1.25, 0.0, 1.0)
-        accumulate("pelvis", lower, pelvis_share)
+        accumulate("pelvis", lower, pelvis_share * body_share)
 
         angle = np.arctan2(points[:, 1] - torso_y, x - symmetry)
         chain_angles = {"f": -np.pi / 2, "b": np.pi / 2, "l": np.pi, "r": 0.0}
@@ -294,7 +304,7 @@ def compute_weights(points: np.ndarray, spec, landmarks: dict, staff_mask: np.nd
                     # (feet, trailing fringe) must still be covered.
                     low = -np.inf
                 band = lower & (z >= low) & (z < high + 1e-9)
-                accumulate(name, band, cloth_share * azimuth)
+                accumulate(name, band, cloth_share * azimuth * body_share)
 
     return weights
 
@@ -315,10 +325,16 @@ def nearest_bone_fallback(points, spec, weights, count):
     if missing.size == 0:
         return 0, []
 
+    # Arm bones are excluded as fallback targets. A vertex the semantic volume
+    # rules did not classify as sleeve is by definition not a sleeve vertex, and
+    # letting the fallback bind it to an arm bone reintroduces exactly the cape
+    # bleed the semantic masks exist to prevent.
     candidates = [
         (name, head, tail)
         for name, head, tail, _p, deform in spec
-        if deform and not name.startswith(("thigh", "calf", "foot", "toe", "staff"))
+        if deform
+        and not name.startswith(("thigh", "calf", "foot", "toe", "staff"))
+        and not name.startswith(("clavicle", "upperarm", "lowerarm", "hand"))
     ]
     distances = np.stack(
         [segment_distance(points[missing], head, tail) for _n, head, tail in candidates],
@@ -389,7 +405,8 @@ def main() -> None:
 
     armature, spec, socket_records = build_skeleton(landmarks, staff)
 
-    weights = compute_weights(points, spec, landmarks, staff_mask)
+    masks = semantic_masks(points, landmarks, staff_mask)
+    weights = compute_weights(points, spec, landmarks, staff_mask, masks)
     fallback_count, fallback_bones = nearest_bone_fallback(points, spec, weights, count)
     names, matrix, totals, unweighted = normalise(weights, count)
 
@@ -468,6 +485,12 @@ def main() -> None:
         "max_influences": int(influences.max(initial=0)),
         "mean_influences": float(influences.mean()),
         "staff_vertices": int(staff_mask.sum()),
+        "semantic_region_sizes": {
+            name: int(value.sum())
+            for name, value in masks.items()
+            if isinstance(value, np.ndarray)
+        },
+        "sleeve_radius": float(masks["sleeve_radius"]),
         "nearest_bone_fallback_vertices": fallback_count,
         "nearest_bone_fallback_ratio": float(fallback_count / max(count, 1)),
         "nearest_bone_fallback_bones": fallback_bones,
