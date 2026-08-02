@@ -31,6 +31,8 @@ def test_positive_area_front_rear_conflict_is_proven():
     assert report["classification"] == "PROVEN"
     assert report["reported_pairs"][0]["front_triangle"] == 0
     assert report["reported_pairs"][0]["rear_triangle"] == 1
+    assert report["conflicting_front_triangle_ids"] == [0]
+    assert report["conflicting_rear_triangle_ids"] == [1]
 
 
 def test_candidate_cap_fails_closed():

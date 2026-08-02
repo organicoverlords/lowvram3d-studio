@@ -125,6 +125,8 @@ def diagnose(
     total_area = 0.0
     tested = 0
     positive = 0
+    conflicting_front: set[int] = set()
+    conflicting_rear: set[int] = set()
     for front_id, rear_id in pairs:
         if time.monotonic() - started > timeout_seconds:
             report["timed_out"] = True
@@ -144,6 +146,8 @@ def diagnose(
         if area > AREA_EPSILON_UV:
             positive += 1
             total_area += area
+            conflicting_front.add(int(front_id))
+            conflicting_rear.add(int(rear_id))
             if len(report["reported_pairs"]) < max_reported_pairs:
                 report["reported_pairs"].append(
                     {
@@ -160,6 +164,10 @@ def diagnose(
     report["positive_overlap_total_texels_equivalent"] = float(
         total_area * atlas_resolution * atlas_resolution
     )
+    report["conflicting_front_triangle_ids"] = sorted(conflicting_front)
+    report["conflicting_rear_triangle_ids"] = sorted(conflicting_rear)
+    report["conflicting_front_triangle_count"] = len(conflicting_front)
+    report["conflicting_rear_triangle_count"] = len(conflicting_rear)
     report["reported_pair_cap"] = int(max_reported_pairs)
     report["reported_pairs_truncated"] = positive > len(report["reported_pairs"])
     report["success"] = not report["timed_out"]
