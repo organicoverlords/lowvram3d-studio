@@ -1,0 +1,31 @@
+﻿{
+    "status":  "GPU_BUSY",
+    "force_when_gpu_busy":  false,
+    "compute_processes":  [
+                              "5432, [Insufficient Permissions], [N/A]",
+                              "26924, C:\\Windows\\System32\\ShellHost.exe, [N/A]",
+                              "6836, C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe, [N/A]",
+                              "16528, C:\\Windows\\explorer.exe, [N/A]",
+                              "8980, C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe, [N/A]",
+                              "6464, C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe, [N/A]",
+                              "5648, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\150.0.4078.105\\msedgewebview2.exe, [N/A]",
+                              "20260, C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe, [N/A]",
+                              "25312, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.727.6591.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A]",
+                              "21252, C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe, [N/A]",
+                              "11684, C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe, [N/A]",
+                              "16836, C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe, [N/A]",
+                              "28560, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.727.6591.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A]",
+                              "16852, [Insufficient Permissions], [N/A]",
+                              "11640, C:\\Windows\\System32\\ApplicationFrameHost.exe, [N/A]",
+                              "28012, C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe, [N/A]",
+                              "27180, C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe, [N/A]",
+                              "12732, C:\\Program Files\\WindowsApps\\Microsoft.WindowsNotepad_11.2605.34.0_x64__8wekyb3d8bbwe\\Notepad\\Notepad.exe, [N/A]",
+                              "25284, C:\\Users\\Lauri\\AppData\\Local\\Programs\\hermes-desktop\\hermes-agent.exe, [N/A]",
+                              "24852, C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe, [N/A]",
+                              "9144, C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor.exe, [N/A]",
+                              "25032, C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\LiveCodingConsole.exe, [N/A]",
+                              "18300, C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe, [N/A]",
+                              "24416, C:\\AI\\HY3D2\\python_standalone\\python.exe, [N/A]"
+                          ],
+    "checked_at":  "2026-08-02T17:09:15.5536794Z"
+}
