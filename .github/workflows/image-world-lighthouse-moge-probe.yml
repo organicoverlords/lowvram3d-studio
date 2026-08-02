@@ -9,6 +9,7 @@ on:
     paths:
       - .github/workflows/image-world-lighthouse-moge-probe.yml
       - scripts/run-image-world-lighthouse-moge-probe.ps1
+      - benchmarks/image_world/fixtures/lighthouse_probe_512_q80.jpg
       - benchmarks/image_world/fixtures/lighthouse_probe_512_q80.jpg.b64
       - workers/image_world/moge_probe.py
       - workers/image_world/render_moge_previews.py
@@ -25,7 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_WORLD_LOCAL_WORKER_TRIGGER: "2026-08-02T19:29:00+03:00"
+  IMAGE_WORLD_LOCAL_WORKER_TRIGGER: "2026-08-02T19:35:00+03:00"
 
 jobs:
   lighthouse-moge:
@@ -85,6 +86,18 @@ jobs:
       - name: Run repository lighthouse hardware probe
         shell: powershell
         run: |
+          $binaryFixture = Join-Path $PWD "benchmarks\image_world\fixtures\lighthouse_probe_512_q80.jpg"
+          $base64Fixture = Join-Path $PWD "benchmarks\image_world\fixtures\lighthouse_probe_512_q80.jpg.b64"
+          if (-not (Test-Path -LiteralPath $binaryFixture -PathType Leaf)) {
+            throw "Binary lighthouse fixture is missing: $binaryFixture"
+          }
+          $binaryHash = (Get-FileHash -LiteralPath $binaryFixture -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($binaryHash -ne "058302a0bbb39071d05bef63514dbb0e7b0250a9af6ec1055cbb50f39411b8ed") {
+            throw "Binary lighthouse fixture hash mismatch: $binaryHash"
+          }
+          $encoded = [Convert]::ToBase64String([IO.File]::ReadAllBytes($binaryFixture))
+          [IO.File]::WriteAllText($base64Fixture, $encoded, [Text.Encoding]::ASCII)
+
           $output = Join-Path $env:RUNNER_TEMP "image-world-lighthouse-moge"
           & .\scripts\run-image-world-lighthouse-moge-probe.ps1 `
             -OutputRoot $output `
@@ -150,6 +163,7 @@ jobs:
             recorded_at = (Get-Date).ToUniversalTime().ToString("o")
           } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence "workflow-receipt.json") -Encoding utf8
 
+          git checkout -- benchmarks/image_world/fixtures/lighthouse_probe_512_q80.jpg.b64
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- evidence/latest-image-world-lighthouse-moge
