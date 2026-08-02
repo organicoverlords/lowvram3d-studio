@@ -1,0 +1,166 @@
+name: Image World lighthouse MoGe probe
+run-name: Lighthouse MoGe hardware probe ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/image-world-lighthouse-probe-20260802
+    paths:
+      - .github/workflows/image-world-lighthouse-moge-probe.yml
+      - scripts/run-image-world-lighthouse-moge-probe.ps1
+      - workers/image_world/moge_probe.py
+      - workers/image_world/render_moge_previews.py
+      - src/lowvram3d/image_world/moge_probe.py
+      - src/lowvram3d/image_world/moge_preview.py
+      - tests/test_image_world_moge_probe.py
+      - tests/test_image_world_moge_preview.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: image-world-lighthouse-moge-probe
+  cancel-in-progress: true
+
+jobs:
+  lighthouse-moge:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout exact probe branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify trusted ref and clean checkout
+        shell: powershell
+        run: |
+          $expected = "refs/heads/feature/image-world-lighthouse-probe-20260802"
+          if ("${{ github.ref }}" -ne $expected) {
+            throw "Unexpected ref. Expected $expected, got ${{ github.ref }}"
+          }
+          $dirty = @(git status --short)
+          if ($dirty.Count -gt 0) {
+            throw "Runner checkout is dirty before execution: $($dirty -join '; ')"
+          }
+          $head = (git rev-parse HEAD).Trim()
+          if ($head -ne "${{ github.sha }}") {
+            throw "Checked-out HEAD $head does not equal workflow SHA ${{ github.sha }}"
+          }
+          Write-Host "REPO=$PWD"
+          Write-Host "BRANCH=${{ github.ref_name }}"
+          Write-Host "HEAD=$head"
+          git remote -v
+
+      - name: Compile probe and run focused tests
+        shell: powershell
+        run: |
+          $python = "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe"
+          if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
+            throw "LowVRAM3D control Python is missing: $python"
+          }
+          $env:PYTHONPATH = "$PWD\src;$PWD"
+          & $python -m py_compile `
+            workers\image_world\moge_probe.py `
+            workers\image_world\render_moge_previews.py `
+            src\lowvram3d\image_world\moge_probe.py `
+            src\lowvram3d\image_world\moge_preview.py
+          if ($LASTEXITCODE -ne 0) { throw "Image-world probe compilation failed" }
+
+          & $python -m pytest `
+            tests\test_image_world_moge_probe.py `
+            tests\test_image_world_moge_preview.py `
+            -q
+          if ($LASTEXITCODE -ne 0) { throw "Focused image-world probe tests failed" }
+
+      - name: Run canonical lighthouse hardware probe
+        shell: powershell
+        run: |
+          $output = Join-Path $env:RUNNER_TEMP "image-world-lighthouse-moge"
+          & .\scripts\run-image-world-lighthouse-moge-probe.ps1 `
+            -OutputRoot $output `
+            -NumTokens 1200 `
+            -InputLongEdge 768 `
+            -MaxGpuMemoryMb 5600
+          if ($LASTEXITCODE -ne 0) {
+            throw "Canonical lighthouse MoGe probe failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Publish compact probe evidence
+        if: always()
+        shell: powershell
+        run: |
+          $source = Join-Path $env:RUNNER_TEMP "image-world-lighthouse-moge"
+          $evidence = Join-Path $PWD "evidence\latest-image-world-lighthouse-moge"
+          if (Test-Path -LiteralPath $evidence) {
+            Remove-Item -LiteralPath $evidence -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+
+          foreach ($name in @("setup-report.json", "moge-probe-report.json")) {
+            $path = Join-Path $source $name
+            if (Test-Path -LiteralPath $path -PathType Leaf) {
+              Copy-Item -LiteralPath $path -Destination (Join-Path $evidence $name) -Force
+            }
+          }
+
+          $previewSource = Join-Path $source "previews"
+          $previewEvidence = Join-Path $evidence "previews"
+          if (Test-Path -LiteralPath $previewSource -PathType Container) {
+            New-Item -ItemType Directory -Path $previewEvidence -Force | Out-Null
+            Get-ChildItem -LiteralPath $previewSource -File | Where-Object {
+              $_.Extension -in @(".png", ".json")
+            } | ForEach-Object {
+              Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $previewEvidence $_.Name) -Force
+            }
+          }
+
+          $probeStatus = "MISSING"
+          $peakReservedMb = $null
+          $probeReport = Join-Path $source "moge-probe-report.json"
+          if (Test-Path -LiteralPath $probeReport -PathType Leaf) {
+            try {
+              $probe = Get-Content -LiteralPath $probeReport -Raw | ConvertFrom-Json
+              $probeStatus = $probe.status
+              $peakReservedMb = $probe.peak_gpu_reserved_mb
+            } catch {
+              $probeStatus = "INVALID_REPORT"
+            }
+          }
+
+          [ordered]@{
+            workflow_run_id = "${{ github.run_id }}"
+            workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            workflow = "${{ github.workflow }}"
+            branch = "${{ github.ref_name }}"
+            head_sha = "${{ github.sha }}"
+            probe_status = $probeStatus
+            peak_gpu_reserved_mb = $peakReservedMb
+            compact_evidence_only = $true
+            raw_geometry_in_artifact = (Test-Path -LiteralPath (Join-Path $source "geometry\points.npy"))
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence "workflow-receipt.json") -Encoding utf8
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- evidence/latest-image-world-lighthouse-moge
+          $changes = @(git status --porcelain -- evidence/latest-image-world-lighthouse-moge)
+          if ($changes.Count -gt 0) {
+            git commit -m "evidence: record lighthouse MoGe probe ${{ github.run_id }}"
+            if ($LASTEXITCODE -ne 0) { throw "Could not commit lighthouse probe evidence" }
+            git push origin HEAD:feature/image-world-lighthouse-probe-20260802
+            if ($LASTEXITCODE -ne 0) { throw "Could not push lighthouse probe evidence" }
+          }
+
+      - name: Upload raw geometry maps and proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-world-lighthouse-moge-${{ github.run_id }}
+          path: ${{ runner.temp }}\image-world-lighthouse-moge
+          if-no-files-found: warn
+          retention-days: 14
