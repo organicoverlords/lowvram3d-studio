@@ -22,6 +22,12 @@ def main() -> int:
     parser.add_argument("--from-stage", default="INGEST")
     parser.add_argument("--to-stage", default="EXPORT_QA")
     parser.add_argument("--existing-master", default="")
+    parser.add_argument("--existing-clean", default="",
+                        help="adopt an already-proven CLEAN geometry boundary")
+    parser.add_argument("--existing-matte", default="",
+                        help="adopt an already-proven INGEST matte boundary")
+    parser.add_argument("--existing-uv", default="",
+                        help="adopt and validate an existing UV mesh without unwrapping")
     parser.add_argument("--existing-textured", default="",
                         help="adopt an already-proven textured GLB for EXPORT_QA only")
     parser.add_argument("--write-manifest-only", action="store_true")
@@ -40,6 +46,8 @@ def main() -> int:
         stage_to=args.to_stage,
         existing_master=args.existing_master,
     )
+    if args.existing_uv:
+        manifest["uv_mesh"] = str(Path(args.existing_uv))
 
     root = Path(manifest["output_root"])
     root.mkdir(parents=True, exist_ok=True)
@@ -50,7 +58,11 @@ def main() -> int:
     pipeline = Pipeline(manifest, root, args.python, args.blender)
     start, stop = args.from_stage.upper(), args.to_stage.upper()
     stages = register_unified_stages(pipeline, manifest, existing_master=args.existing_master)
-    if args.existing_master and start == "CLEAN":
+    if args.existing_clean:
+        clean_source = Path(args.existing_clean)
+        _seed_existing_receipt(pipeline, "GENERATE", "master", clean_source, [clean_source])
+        _seed_existing_receipt(pipeline, "CLEAN", "clean", clean_source, [clean_source])
+    elif args.existing_master and start == "CLEAN":
         _seed_existing_receipt(pipeline, "GENERATE", "master", Path(args.existing_master), [Path(args.existing_master)])
     elif args.existing_master and start == "UV":
         _seed_existing_receipt(pipeline, "LOD", "lod0", Path(args.existing_master), [Path(args.existing_master)])
@@ -59,6 +71,14 @@ def main() -> int:
             pipeline, "TEXTURE", "textured_glb", Path(args.existing_textured),
             [Path(args.existing_textured)],
         )
+    if args.existing_uv:
+        uv_source = Path(args.existing_uv)
+        if not uv_source.is_file() or uv_source.stat().st_size == 0:
+            raise SystemExit(f"EXISTING_UV_INVALID: {uv_source}")
+        _seed_existing_receipt(pipeline, "UV", "uv_mesh", uv_source, [uv_source])
+    if args.existing_matte:
+        matte_source = Path(args.existing_matte)
+        _seed_existing_receipt(pipeline, "INGEST", "matte", matte_source, [matte_source])
 
     summary = {}
     exit_code = 0

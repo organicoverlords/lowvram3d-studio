@@ -58,6 +58,11 @@ def normalize_manifest(manifest: dict, *, stage_from: str = "INGEST",
         "kind": "existing_master" if existing_master else "generated",
         "path": existing_master or None,
     }
+    lod = result.get("lod") or {}
+    lod_mode = str(lod.get("mode", "generate")).strip().lower()
+    if lod_mode not in {"preserve_source", "generate", "required"}:
+        raise ValueError(f"UNIFIED_LOD_MODE_INVALID: {lod_mode}")
+    result["lod"] = {**lod, "mode": lod_mode}
     result["lod_policy"] = result.get("lod_policy") or result.get("geometry", {}).get(
         "lod_triangle_targets", []
     )
@@ -65,7 +70,11 @@ def normalize_manifest(manifest: dict, *, stage_from: str = "INGEST",
         "resolution": 1024,
         "padding": 4,
         "candidate_timeout_seconds": 600,
+        "route": "fast_blender",
     }
+    result["uv"]["route"] = str(result["uv"].get("route", "fast_blender")).lower()
+    if result["uv"]["route"] not in {"existing", "fast_blender", "xatlas"}:
+        raise ValueError(f"UNIFIED_UV_ROUTE_INVALID: {result['uv']['route']}")
     result["intent"] = {
         "static": True,
         "rigged": False,

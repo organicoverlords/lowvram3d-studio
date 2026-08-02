@@ -168,7 +168,8 @@ class Pipeline:
     def write_receipt(self, stage: str, payload: dict) -> None:
         self.receipt_path(stage).write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
-    def run(self, command: list, cwd: Path | None = None, env_extra: dict | None = None) -> tuple[int, str]:
+    def run(self, command: list, cwd: Path | None = None, env_extra: dict | None = None,
+            timeout: float | None = None) -> tuple[int, str]:
         env = dict(os.environ)
         repo_paths = [
             str(REPO_ROOT / "blender"),
@@ -182,8 +183,13 @@ class Pipeline:
         )
         if env_extra:
             env.update(env_extra)
-        process = subprocess.run([str(c) for c in command], cwd=str(cwd or REPO_ROOT),
-                                 env=env, capture_output=True, text=True)
+        try:
+            process = subprocess.run([str(c) for c in command], cwd=str(cwd or REPO_ROOT),
+                                     env=env, capture_output=True, text=True,
+                                     timeout=timeout)
+        except subprocess.TimeoutExpired as exc:
+            output = (exc.stdout or "") + (exc.stderr or "")
+            return 124, output + f"\nPROCESS_TIMEOUT_SECONDS={timeout}"
         output = (process.stdout or "") + (process.stderr or "")
         return process.returncode, output
 

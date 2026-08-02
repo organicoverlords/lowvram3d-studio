@@ -75,4 +75,18 @@ def test_xatlas_policy_is_isolated_and_stops_at_first_valid_preset():
 
 def test_normalized_manifest_defaults_to_bounded_uv_contract(tmp_path):
     result = normalize_manifest(manifest(tmp_path))
-    assert result["uv"] == {"resolution": 1024, "padding": 4, "candidate_timeout_seconds": 600}
+    assert result["uv"] == {
+        "resolution": 1024, "padding": 4, "candidate_timeout_seconds": 600,
+        "route": "fast_blender",
+    }
+
+
+def test_lod_policy_accepts_only_bounded_modes(tmp_path):
+    value = manifest(tmp_path)
+    value["lod"] = {"mode": "preserve_source"}
+    assert normalize_manifest(value)["lod"]["mode"] == "preserve_source"
+    value["lod"] = {"mode": "required"}
+    assert normalize_manifest(value)["lod"]["mode"] == "required"
+    value["lod"] = {"mode": "invent"}
+    with pytest.raises(ValueError, match="LOD_MODE_INVALID"):
+        normalize_manifest(value)

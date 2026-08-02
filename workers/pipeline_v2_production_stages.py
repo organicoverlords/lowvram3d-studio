@@ -10,7 +10,7 @@ import json
 import shutil
 from pathlib import Path
 
-from run_asset_pipeline import REPO_ROOT, StageResult, sha256
+from run_asset_pipeline import REPO_ROOT, StageResult, hash_inputs, sha256
 
 
 def _json(path: Path) -> dict:
@@ -60,6 +60,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     uv_resolution = int((manifest.get("uv") or {}).get("resolution", 1024))
     uv_padding = int((manifest.get("uv") or {}).get("padding", 4))
     uv_timeout = float((manifest.get("uv") or {}).get("candidate_timeout_seconds", 600))
+    lod_mode = str((manifest.get("lod") or {}).get("mode", "generate")).lower()
     suffix = "4k" if resolution >= 4096 else "2k"
 
     def w(name: str) -> Path:
@@ -71,6 +72,27 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     # ---------------------------------------------------------------- LOD
     def lod():
         clean = _output(pipeline, "CLEAN", "clean")
+
+        if lod_mode == "preserve_source":
+            current_hashes = hash_inputs([clean])
+            previous = pipeline.read_receipt("LOD")
+            if (previous and previous.get("status") == "passed"
+                    and previous.get("input_hashes") == current_hashes
+                    and previous.get("gates", {}).get("LOD_STAGE") == "BYPASSED_SOURCE_GEOMETRY"):
+                return previous
+            source_hash = sha256(clean)
+            receipt = {
+                "stage": "LOD", "status": "passed", "profile": profile.name,
+                "asset_id": asset_id, "input_hashes": current_hashes,
+                "outputs": {"lod0": {"path": str(clean), "sha256": source_hash,
+                                      "bytes": clean.stat().st_size}},
+                "gates": {"LOD_STAGE": "BYPASSED_SOURCE_GEOMETRY", "LOD_REQUIRED": False,
+                          "SOURCE_GEOMETRY_SHA256": source_hash, "source_path": str(clean)},
+                "attempts": [{"attempt": 0, "status": "passed", "detail": "source geometry preserved"}],
+                "failure_codes": [], "needs_human": False,
+            }
+            pipeline.write_receipt("LOD", receipt)
+            return receipt
 
         def runner(overrides):
             stage = pipeline.stage_dir("LOD") / "candidate"
@@ -123,12 +145,57 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
 
     # ---------------------------------------------------------------- UV
     def uv():
-        lod0 = _output(pipeline, "LOD", "lod0")
+        explicit = manifest.get("uv_mesh") or (manifest.get("uv") or {}).get("mesh")
+        if explicit:
+            explicit_path = Path(explicit)
+            expected_hash = manifest.get("uv_mesh_sha256") or (manifest.get("uv") or {}).get("mesh_sha256")
+
+            def existing_runner(_overrides):
+                stage = pipeline.stage_dir("UV") / "candidate"
+                report = stage / "existing_uv_validation.json"
+                code, out = _blender(pipeline, b("validate_existing_uv.py"),
+                                      "--input", explicit_path, "--report", report,
+                                      "--require-texture")
+                data = _json(report)
+                actual = sha256(explicit_path) if explicit_path.is_file() else None
+                gates = {"existing_uv_reused": True, "source_sha256": actual,
+                         "expected_sha256": expected_hash, **(data.get("gates") or {})}
+                if expected_hash and actual != expected_hash:
+                    return StageResult("failed", gates=gates, failure_codes=["UV_SOURCE_HASH_MISMATCH"],
+                                       detail="explicit UV source hash mismatch")
+                if code != 0 or not data.get("success"):
+                    return StageResult("failed", gates=gates, failure_codes=["UV_EXISTING_INVALID"],
+                                       detail=f"existing UV validation exit {code}: {out[-1000:]}")
+                return StageResult("passed", outputs={"uv_mesh": explicit_path, "uv_report": report}, gates=gates)
+
+            return pipeline.execute("UV", [explicit_path], existing_runner)
+
+        lod_receipt = pipeline.read_receipt("LOD") or {}
+        if lod_receipt.get("status") == "passed":
+            lod0 = _output(pipeline, "LOD", "lod0")
+        elif lod_mode == "preserve_source":
+            lod0 = _output(pipeline, "CLEAN", "clean")
+        else:
+            raise RuntimeError("UV_NO_PROVEN_GEOMETRY_INPUT")
 
         def runner(overrides):
             stage = pipeline.stage_dir("UV") / "candidate"
             output = stage / f"{asset_id}_lod0_uv.glb"
             report = stage / "uv_report.json"
+            route = (manifest.get("uv") or {}).get("route", "fast_blender")
+            if route != "xatlas":
+                output = stage / f"{asset_id}_uv.glb"
+                code, out = _blender(
+                    pipeline, b("final_pipeline_uv.py"), "--input", lod0,
+                    "--output", output, "--report", report,
+                    "--resolution", str(uv_resolution), "--overlap-timeout-seconds", "180",
+                )
+                data = _json(report)
+                if code != 0 or not output.exists() or not data.get("gate_passed"):
+                    return StageResult("failed", gates=data, failure_codes=["UV_FAST_ROUTE_FAILED"],
+                                       detail=f"fast Blender UV exit {code}: {out[-1000:]}")
+                return StageResult("passed", outputs={"uv_mesh": output, "uv_report": report},
+                                   gates={"route": "fast_blender", **data})
             code, out = pipeline.run([
                 pipeline.python, w("uv_xatlas_isolated.py"),
                 "--input", lod0, "--output", output, "--report", report,
