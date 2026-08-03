@@ -56,8 +56,14 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $env:MPLBACKEND = 'Agg'
+$ffmpeg = (& $venvPython -c "import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())" | Out-String).Trim()
+if (-not $ffmpeg -or -not (Test-Path -LiteralPath $ffmpeg)) {
+    throw "External FFmpeg is missing: $ffmpeg"
+}
+
 if ($env:GITHUB_ENV) {
     'MPLBACKEND=Agg' | Add-Content -LiteralPath $env:GITHUB_ENV
+    "FFMPEG_EXE=$ffmpeg" | Add-Content -LiteralPath $env:GITHUB_ENV
 }
 
 & $venvPython -c "import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot, imageio, tqdm, Cython; print('THREEDDFA_RUNTIME=PROVEN')"
@@ -65,4 +71,5 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Pinned 3DDFA runtime import validation failed.'
 }
 
+Write-Host "EXTERNAL_FFMPEG=$ffmpeg"
 Write-Host 'BEGGARS_V2_RUNTIME_DEPENDENCIES=PROVEN'
