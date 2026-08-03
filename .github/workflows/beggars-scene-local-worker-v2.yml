@@ -1,7 +1,7 @@
 name: Beggars meme Blender recreation v2
 run-name: Beggars meme recreation v2 ${{ github.run_id }}
 
-# registration-trigger: 2026-08-04T02:32:00+03:00
+# registration-trigger: 2026-08-04T02:38:00+03:00
 
 on:
   workflow_dispatch:
@@ -11,6 +11,7 @@ on:
     paths:
       - .github/workflows/beggars-scene-local-worker-v2.yml
       - scripts/ensure-beggars-v2-runtime.ps1
+      - scripts/apply-beggars-blender-runtime-compat.ps1
       - scripts/run-beggars-scene-v2.ps1
       - configs/scene/beggars_banquet_recreation_v1.json
       - tools/beggars_scene/prepare_reference_sequence.py
@@ -43,6 +44,14 @@ jobs:
           & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\ensure-beggars-v2-runtime.ps1
           if ($LASTEXITCODE -ne 0) {
             throw "3DDFA runtime bootstrap failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Apply Blender Eevee runtime compatibility
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-blender-runtime-compat.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Blender runtime compatibility patch failed with exit code $LASTEXITCODE"
           }
 
       - name: Run memory-bounded reconstruction and Blender build
