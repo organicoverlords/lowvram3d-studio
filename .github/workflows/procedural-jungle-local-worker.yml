@@ -1,0 +1,110 @@
+name: Build playable procedural jungle on local worker
+run-name: Procedural jungle and walking panda ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/procedural-jungle-playable-20260804
+    paths:
+      - worker-triggers/procedural-jungle-direct-worker.txt
+
+permissions:
+  contents: write
+
+concurrency:
+  group: procedural-jungle-playable-local-worker
+  cancel-in-progress: false
+
+jobs:
+  build-and-prove:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact jungle branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/procedural-jungle-playable-20260804
+          clean: true
+          fetch-depth: 0
+
+      - name: Verify branch equals remote
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $remote = git config --get remote.origin.url
+          $branch = git branch --show-current
+          $head = git rev-parse HEAD
+          $status = @(git status --short)
+          if ($remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $remote" }
+          if ($branch -ne 'feature/procedural-jungle-playable-20260804') { throw "Branch mismatch: $branch" }
+          if ($status.Count -ne 0) { throw 'Checkout is dirty' }
+          git fetch origin $branch --quiet
+          $remoteHead = git rev-parse "origin/$branch"
+          if ($head -ne $remoteHead) { throw "Checkout head differs from remote: $head vs $remoteHead" }
+          "WORKER_START_HEAD=$head" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Run deterministic local-worker pipeline
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          powershell -NoProfile -ExecutionPolicy Bypass -File scripts\procedural_jungle\run-procedural-jungle-local-worker.ps1
+
+      - name: Independently gate compact acceptance evidence
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $acceptancePath = 'evidence\latest-procedural-jungle\acceptance.json'
+          $receiptPath = 'evidence\latest-procedural-jungle\workflow_receipt.json'
+          $reportPath = 'proof\scene\20260804-procedural-jungle\FINAL_REPORT.md'
+          foreach ($path in @($acceptancePath, $receiptPath, $reportPath)) {
+            if (-not (Test-Path -LiteralPath $path)) { throw "Required proof file missing: $path" }
+          }
+          $a = Get-Content -LiteralPath $acceptancePath -Raw | ConvertFrom-Json
+          if ($a.classification -ne 'JUNGLE_PANDA_PLAYABLE_PROVEN') { throw "Acceptance rejected: $($a.classification)" }
+          foreach ($key in @('project_exists','tests_passed')) {
+            if (-not $a.$key) { throw "Acceptance field is false: $key" }
+          }
+          foreach ($key in @('map_save_reload','no_external_art_assets','terrain','river','waterfall','lower_pool','vegetation','wind','lighting_atmosphere','player_controls','collision_route','panda_skeletal_mesh','panda_walk_animation','panda_route_motion','standalone_launch','visual_capture','performance_1080p')) {
+            if ($a.$key -ne 'PROVEN') { throw "Acceptance field is not PROVEN: $key=$($a.$key)" }
+          }
+          if ([double]$a.average_fps -lt 30) { throw "Average FPS below 30: $($a.average_fps)" }
+          if ([double]$a.minimum_fps -lt 20) { throw "5th-percentile FPS below 20: $($a.minimum_fps)" }
+          if ([double]$a.panda_travel_distance_cm -lt 300) { throw 'Panda travel proof too short' }
+          if ([int]$a.capture_count -lt 8) { throw 'Too few proof captures' }
+          if ([int]$a.generated_variant_count -lt 20) { throw 'Too few generated mesh variants' }
+          if ([int]$a.generated_instance_count -lt 800) { throw 'Too few generated jungle instances' }
+          if ([int]$a.panda_bone_count -lt 21) { throw 'Panda skeleton is incomplete' }
+          if ([int]$a.forbidden_asset_reference_count -ne 0) { throw 'Forbidden external art references found' }
+          if ($a.codex_invoked -or $a.claude_invoked -or $a.magicmusic_invoked) { throw 'An unauthorized helper was invoked' }
+          Write-Host ($a | ConvertTo-Json -Depth 20)
+
+      - name: Commit compact proof only
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- evidence/latest-procedural-jungle/acceptance.json evidence/latest-procedural-jungle/workflow_receipt.json proof/scene/20260804-procedural-jungle/FINAL_REPORT.md
+          $changed = @(git status --porcelain -- evidence/latest-procedural-jungle proof/scene/20260804-procedural-jungle)
+          if ($changed.Count -eq 0) { throw 'No compact proof changes were produced' }
+          git commit -m "proof(jungle): playable scene with walking panda ${{ github.run_id }}"
+          git push origin HEAD:feature/procedural-jungle-playable-20260804
+
+      - name: Upload selected proof logs and images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: procedural-jungle-proof-${{ github.run_id }}
+          path: |
+            C:\AI\ProceduralJungle\20260804\acceptance.json
+            C:\AI\ProceduralJungle\20260804\preflight.json
+            C:\AI\ProceduralJungle\20260804\panda_source.json
+            C:\AI\ProceduralJungle\20260804\unreal_build_report.json
+            C:\AI\ProceduralJungle\20260804\map_reload_audit.json
+            C:\AI\ProceduralJungle\20260804\proof\*.json
+            C:\AI\ProceduralJungle\20260804\proof\*.png
+            C:\AI\ProceduralJungle\20260804\logs\*.log
+          if-no-files-found: warn
+          retention-days: 14
