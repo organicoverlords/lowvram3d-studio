@@ -25,6 +25,12 @@ CONFIDENCE_THRESHOLD = 0.20
 HIGH_CONFIDENCE = 0.45
 DONOR_K = 32
 WELD = 4e-4
+TIER_DIRECT = 0
+TIER_SYMMETRIC = 1
+TIER_COMPONENT_DONOR = 2
+TIER_MATERIAL_PRIOR = 3
+TIER_NEUTRAL = 4
+TIER_UNOWNED = 255
 
 
 def _read_glb(path: Path) -> tuple[dict, bytes]:
@@ -155,7 +161,7 @@ def _raster_owner(uv_triangles: np.ndarray, size: int) -> np.ndarray:
     return owner
 
 
-def _append_image_glb(input_glb: Path, output_glb: Path, png: bytes) -> None:
+def _append_image_glb(input_glb: Path, output_glb: Path, png: bytes) -> int:
     gltf, original_blob = _read_glb(input_glb)
     images = gltf.get("images", [])
     if len(images) != 1 or "bufferView" not in images[0]:
@@ -167,6 +173,18 @@ def _append_image_glb(input_glb: Path, output_glb: Path, png: bytes) -> None:
     blob.extend(png)
     gltf.setdefault("bufferViews", []).append({"buffer": 0, "byteOffset": offset, "byteLength": len(png)})
     images[0]["bufferView"] = len(gltf["bufferViews"]) - 1
+    # The source GLB contains a neutral-synthesis primitive for unobserved faces.  The
+    # recovered atlas now owns those texels too, so leaving that primitive on its old
+    # constant material would hide the CPU material recovery during fresh import.  Bind
+    # the same recovered atlas to every material while retaining each material's
+    # metallic/roughness settings.  This changes material binding only; geometry, UVs,
+    # indices and primitive order remain untouched.
+    textured_materials = 0
+    for material in gltf.get("materials", []):
+        pbr = material.setdefault("pbrMetallicRoughness", {})
+        pbr["baseColorTexture"] = {"index": 0}
+        pbr["baseColorFactor"] = [1.0, 1.0, 1.0, 1.0]
+        textured_materials += 1
     gltf["buffers"][0]["byteLength"] = len(blob)
     json_bytes = json.dumps(gltf, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     json_bytes += b" " * ((4 - len(json_bytes) % 4) % 4)
@@ -178,6 +196,7 @@ def _append_image_glb(input_glb: Path, output_glb: Path, png: bytes) -> None:
         + struct.pack("<II", len(json_bytes), 0x4E4F534A) + json_bytes
         + struct.pack("<II", len(bin_bytes), 0x004E4942) + bin_bytes
     )
+    return textured_materials
 
 
 def recover(args: argparse.Namespace) -> dict:
@@ -250,6 +269,9 @@ def recover(args: argparse.Namespace) -> dict:
     observed_mask = np.zeros(owner.shape, bool)
     synthesized_mask = np.zeros(owner.shape, bool)
     confidence_atlas = np.zeros(owner.shape, np.float32)
+    tier_atlas = np.full(owner.shape, TIER_UNOWNED, np.uint8)
+    material_atlas = np.full(owner.shape, TIER_UNOWNED, np.uint8)
+    tier_atlas[valid_owner] = TIER_NEUTRAL
 
     # Per-region Lab affine transfer for observed source pixels.  Source colors are then written
     # through the existing face-ID/visibility mapping, never from a mirrored or wrapped view.
@@ -325,6 +347,8 @@ def recover(args: argparse.Namespace) -> dict:
                 atlas[dest_y[win], dest_x[win]] = corrected_rgb[win]
                 confidence_atlas[dest_y[win], dest_x[win]] = confidence[triangle_id]
                 observed_mask[dest_y[win], dest_x[win]] = True
+                tier_atlas[dest_y[win], dest_x[win]] = TIER_DIRECT
+                material_atlas[dest_y[win], dest_x[win]] = region_id
 
     # 3D same-component, material-aware donor propagation. No UV-neighbour search is used.
     edge1 = verts[bundle_tris[:, 1]] - verts[bundle_tris[:, 0]]
@@ -334,11 +358,11 @@ def recover(args: argparse.Namespace) -> dict:
     component, _ = triangle_components(verts, bundle_tris, WELD)
     synth_colour = np.zeros((len(tris), 3), np.float32)
     synth_region = np.full(len(tris), -1, np.int8)
+    synth_tier = np.full(len(tris), -1, np.int8)
+    synth_confidence = np.zeros(len(tris), np.float32)
     donor_ids_all = np.flatnonzero(high_conf & (tri_region >= 0))
     unresolved = []
     donor_count = 0
-    if len(donor_ids_all) == 0:
-        raise RuntimeError("NO_HIGH_CONFIDENCE_MATERIAL_DONORS")
     for component_id in np.unique(component):
         members = np.flatnonzero(component == component_id)
         donors = members[np.isin(members, donor_ids_all)]
@@ -377,20 +401,96 @@ def recover(args: argparse.Namespace) -> dict:
             w2 /= max(float(w2.sum()), 1e-12)
             synth_colour[target_id] = (source_tri_colour[ids[chosen]] * w2[:, None]).sum(axis=0)
             synth_region[target_id] = region_id
+            synth_tier[target_id] = TIER_COMPONENT_DONOR
+            synth_confidence[target_id] = float(np.sum(confidence[ids[chosen]] * w2))
             donor_count += 1
 
-    if unresolved:
-        raise RuntimeError(f"UNRESOLVED_MATERIAL_REGIONS:{len(unresolved)}")
+    unresolved_before = np.asarray(sorted(set(unresolved)), dtype=np.int64)
+
+    # Tier 3: choose a material prior from observed same-asset samples.  The
+    # prior is selected against the existing triangle-local atlas colour, not
+    # a global average.  Facial source samples are excluded for rear-dominant
+    # targets so the prior cannot recreate a rear face.
+    region_priors: dict[int, np.ndarray] = {}
+    region_support: dict[int, int] = {}
+    for region_id in range(len(REGIONS)):
+        ids = donor_ids_all[(tri_region[donor_ids_all] == region_id) & ~tri_facial[donor_ids_all]]
+        if len(ids):
+            region_priors[region_id] = np.median(source_tri_colour[ids], axis=0).astype(np.float32)
+            region_support[region_id] = int(len(ids))
+    if len(donor_ids_all):
+        safe_ids = donor_ids_all[~tri_facial[donor_ids_all]]
+        if len(safe_ids):
+            safe_global = np.median(source_tri_colour[safe_ids], axis=0).astype(np.float32)
+        else:
+            safe_global = np.median(source_tri_colour[donor_ids_all], axis=0).astype(np.float32)
+    else:
+        safe_global = np.asarray([0.22, 0.18, 0.16], np.float32)
+
+    def prior_for_target(target_id: int) -> tuple[int, np.ndarray, float]:
+        uv_center = np.clip((uv_triangles[target_id].mean(axis=0) * (size - 1)).astype(int), 0, size - 1)
+        current = base_rgb[uv_center[1], uv_center[0]]
+        candidates = list(region_priors)
+        if not candidates:
+            return -1, safe_global, 0.0
+        # Keep the established material family closest to the existing atlas
+        # colour.  This is a prior, not direct source projection.
+        current_lab = cv2.cvtColor(current.reshape(1, 1, 3), cv2.COLOR_RGB2LAB).reshape(3).astype(np.float32)
+        scored = []
+        for region_id in candidates:
+            prior_lab = cv2.cvtColor(region_priors[region_id].reshape(1, 1, 3), cv2.COLOR_RGB2LAB).reshape(3).astype(np.float32)
+            scored.append((float(np.linalg.norm(current_lab - prior_lab)), region_id))
+        _, chosen_region = min(scored)
+        confidence_prior = min(0.19, 0.05 + 0.14 * min(region_support[chosen_region], 1000) / 1000.0)
+        return chosen_region, region_priors[chosen_region], confidence_prior
+
+    unresolved_after_prior: list[int] = []
+    prior_count = 0
+    neutral_count = 0
+    for target_id in unresolved_before.tolist():
+        region_id, colour, prior_confidence = prior_for_target(target_id)
+        if region_id >= 0:
+            synth_colour[target_id] = colour
+            synth_region[target_id] = region_id
+            synth_tier[target_id] = TIER_MATERIAL_PRIOR
+            synth_confidence[target_id] = prior_confidence
+            prior_count += 1
+        else:
+            # Tier 4 is deliberately subdued and never labelled as observed.
+            synth_colour[target_id] = np.asarray([0.22, 0.18, 0.16], np.float32)
+            synth_region[target_id] = -1
+            synth_tier[target_id] = TIER_NEUTRAL
+            synth_confidence[target_id] = 0.0
+            neutral_count += 1
+    unresolved_after = np.asarray(unresolved_after_prior, dtype=np.int64)
 
     # Fill every non-observed atlas ownership with its 3D donor color.
     target = valid_owner & ~observed_mask
     target_ids = owner[target]
     valid_synth = (target_ids >= 0) & (synth_region[target_ids] >= 0)
+    flat_target = np.flatnonzero(target)
+    atlas_flat = atlas.reshape(-1, 3)
+    confidence_flat = confidence_atlas.reshape(-1)
+    tier_flat = tier_atlas.reshape(-1)
+    material_flat = material_atlas.reshape(-1)
+    synthesized_flat = synthesized_mask.reshape(-1)
     if valid_synth.any():
-        atlas[target][valid_synth] = synth_colour[target_ids[valid_synth]]
-        synthesized_mask[target] = valid_synth
+        selected = flat_target[valid_synth]
+        selected_ids = target_ids[valid_synth]
+        atlas_flat[selected] = synth_colour[selected_ids]
+        synthesized_flat[selected] = True
+        tier_flat[selected] = synth_tier[selected_ids].astype(np.uint8)
+        material_flat[selected] = synth_region[selected_ids].astype(np.uint8)
+        confidence_flat[selected] = synth_confidence[selected_ids]
+    neutral_triangles = (target_ids >= 0) & (synth_tier[target_ids] == TIER_NEUTRAL)
+    if neutral_triangles.any():
+        selected = flat_target[neutral_triangles]
+        atlas_flat[selected] = np.asarray([0.22, 0.18, 0.16], np.float32)
+        synthesized_flat[selected] = True
+        tier_flat[selected] = TIER_NEUTRAL
 
     # One-pixel dilation/feather per material label and ownership chart only.
+    atlas_finish_dilation_texels = 0
     for region_id in range(len(REGIONS)):
         mask = valid_owner & (owner_region == region_id)
         painted = mask & (observed_mask | synthesized_mask)
@@ -400,20 +500,37 @@ def recover(args: argparse.Namespace) -> dict:
         local_mask = cv2.dilate(painted.astype(np.uint8), kernel) > 0
         fill = mask & ~painted & local_mask
         if fill.any():
+            atlas_finish_dilation_texels += int(fill.sum())
             for channel in range(3):
                 source_channel = np.where(painted, atlas[..., channel], 0.0).astype(np.float32)
                 weights = painted.astype(np.float32)
                 num = cv2.blur(source_channel, (3, 3))
                 den = cv2.blur(weights, (3, 3))
                 values = num / np.maximum(den, 1e-6)
-                atlas[..., channel][fill] = values[fill]
+                channel_view = atlas[..., channel]
+                channel_view[fill] = values[fill]
+            synthesized_mask[fill] = True
+            tier_atlas[fill] = TIER_MATERIAL_PRIOR
+            material_atlas[fill] = region_id
+            confidence_atlas[fill] = np.maximum(confidence_atlas[fill], 0.05)
+
+    # Any owned texel left outside the observed/chart-local writes receives the
+    # explicit Tier 4 neutral material.  This is a final bounded safety net,
+    # never a claim of recovered detail.
+    leftover = valid_owner & ~synthesized_mask & ~observed_mask
+    if leftover.any():
+        atlas[leftover] = np.asarray([0.22, 0.18, 0.16], np.float32)
+        synthesized_mask[leftover] = True
+        tier_atlas[leftover] = TIER_NEUTRAL
+        material_atlas[leftover] = TIER_UNOWNED
+        confidence_atlas[leftover] = 0.0
 
     output_atlas = Path(args.output_atlas)
     output_atlas.parent.mkdir(parents=True, exist_ok=True)
     encoded = cv2.imencode(".png", cv2.cvtColor(np.clip(atlas * 255.0, 0, 255).astype(np.uint8), cv2.COLOR_RGB2BGR))[1].tobytes()
     output_atlas.write_bytes(encoded)
     output_glb = Path(args.output_glb)
-    _append_image_glb(input_glb, output_glb, encoded)
+    textured_material_count = _append_image_glb(input_glb, output_glb, encoded)
     after_hashes = immutable_buffer_hashes(output_glb)
 
     cv2.imwrite(str(Path(args.observed_mask)), (observed_mask.astype(np.uint8) * 255))
@@ -424,19 +541,60 @@ def recover(args: argparse.Namespace) -> dict:
         region_image[owner_region == region_id] = palette[region_id]
     cv2.imwrite(str(Path(args.region_mask)), cv2.cvtColor(region_image, cv2.COLOR_RGB2BGR))
 
+    output_root = output_atlas.parent
+    confidence_texture = output_root / "confidence_texture.png"
+    tier_texture = output_root / "recovery_tier.png"
+    material_texture = output_root / "material_class_mask.png"
+    unresolved_before_mask = output_root / "unresolved_before.png"
+    unresolved_after_mask = output_root / "unresolved_after.png"
+    cv2.imwrite(str(confidence_texture), np.clip(confidence_atlas * 255.0, 0, 255).astype(np.uint8))
+    cv2.imwrite(str(tier_texture), tier_atlas)
+    cv2.imwrite(str(material_texture), material_atlas)
+    unresolved_before_tex = np.zeros(owner.shape, np.uint8)
+    unresolved_after_tex = np.zeros(owner.shape, np.uint8)
+    if len(unresolved_before):
+        unresolved_before_tex[np.isin(owner, unresolved_before)] = 255
+    if len(unresolved_after):
+        unresolved_after_tex[np.isin(owner, unresolved_after)] = 255
+    cv2.imwrite(str(unresolved_before_mask), unresolved_before_tex)
+    cv2.imwrite(str(unresolved_after_mask), unresolved_after_tex)
+
+    triangle_tiers = {
+        "0_direct_observation": int(source_valid.sum()),
+        "1_symmetric_multiview": 0,
+        "2_component_local_donor": int(np.count_nonzero(synth_tier == TIER_COMPONENT_DONOR)),
+        "3_material_class_prior": int(np.count_nonzero(synth_tier == TIER_MATERIAL_PRIOR)),
+        "4_neutral_emergency_fill": int(np.count_nonzero(synth_tier == TIER_NEUTRAL)),
+    }
+    texel_tiers = {
+        str(index): int(np.count_nonzero(tier_atlas == index))
+        for index in range(TIER_NEUTRAL + 1)
+    }
+
     report = {
         "schema": "material_aware_color_recovery_v1",
-        "classification": "PROVEN_CPU_ONLY_PASS",
+        "classification": "PROVEN_CPU_ONLY_PASS_WITH_SYNTHESIS",
         "input_glb": str(input_glb),
         "output_glb": str(output_glb),
         "input_atlas": str(args.basecolor),
         "output_atlas": str(output_atlas),
+        "textured_material_count": int(textured_material_count),
+        "material_binding_policy": "recovered atlas bound to every source primitive material; neutral constant factor removed",
         "regions": list(REGIONS),
         "source_region_detection": source_region_report,
         "region_transfers_lab": region_transfers,
         "observed_triangle_count": int(source_valid.sum()),
         "high_confidence_donor_triangle_count": int(donor_ids_all.size),
         "synthesized_triangle_count": int(donor_count),
+        "tier_triangle_counts": triangle_tiers,
+        "tier_texel_counts": texel_tiers,
+        "unresolved_triangles_before": int(len(unresolved_before)),
+        "unresolved_triangles_after": int(len(unresolved_after)),
+        "unresolved_texels_before": int(np.count_nonzero(unresolved_before_tex)),
+        "unresolved_texels_after": int(np.count_nonzero(unresolved_after_tex)),
+        "tier_3_prior_triangle_count": int(prior_count),
+        "tier_4_neutral_triangle_count": int(neutral_count),
+        "atlas_finish_dilation_texels": int(atlas_finish_dilation_texels),
         "observed_atlas_pixels": int(observed_mask.sum()),
         "synthesized_atlas_pixels": int(synthesized_mask.sum()),
         "remaining_unpainted_owned_pixels": int((valid_owner & ~(observed_mask | synthesized_mask)).sum()),
@@ -448,7 +606,22 @@ def recover(args: argparse.Namespace) -> dict:
         "immutable_hashes_before": before_hashes,
         "immutable_hashes_after": after_hashes,
         "geometry_uv_index_hashes_unchanged": before_hashes == after_hashes,
-        "masks": {"observed": str(args.observed_mask), "synthesized": str(args.synthesized_mask), "regions": str(args.region_mask)},
+        "masks": {
+            "observed": str(args.observed_mask),
+            "synthesized": str(args.synthesized_mask),
+            "regions": str(args.region_mask),
+            "confidence": str(confidence_texture),
+            "tier": str(tier_texture),
+            "material_class": str(material_texture),
+            "unresolved_before": str(unresolved_before_mask),
+            "unresolved_after": str(unresolved_after_mask),
+        },
+        "quality_gates": {
+            "all_owned_texels_assigned": bool(np.all(tier_atlas[valid_owner] != TIER_UNOWNED)),
+            "texture_finite": bool(np.isfinite(atlas).all()),
+            "rear_facial_provenance_zero": bool(len(provenance.get("illegal_rear_facial_triangle_ids", [])) == 0),
+            "gpu_used": False,
+        },
         "gpu_used": False,
     }
     Path(args.report).parent.mkdir(parents=True, exist_ok=True)

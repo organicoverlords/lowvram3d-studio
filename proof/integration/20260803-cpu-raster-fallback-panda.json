@@ -1,0 +1,82 @@
+{
+  "schema": "cpu_raster_fallback_panda_proof_v1",
+  "classification": "CPU_RASTER_FALLBACK_PRODUCED",
+  "neural_salvage": "NEURAL_STATE_NOT_RECOVERABLE",
+  "gpu_used": false,
+  "geometry_reused": "PROVEN",
+  "uv_reused": "PROVEN",
+  "geometry_uv_index_hashes_unchanged": "PROVEN",
+  "projection_gating": "PROVEN",
+  "rear_facial_provenance_zero": "PROVEN",
+  "material_aware_recovery": "PROVEN_WITH_SYNTHESIS",
+  "fresh_import": "PROVEN",
+  "eight_view_render": "PROVEN",
+  "visual_texture_qa": "PROVEN_WITH_LIMITATIONS",
+  "limitations": [
+    "Only the registered front source view is directly observed.",
+    "Clothing and tail region-specific source transfer had no direct classified samples; their unseen colors are component/material-local synthesis.",
+    "Rear detail is intentionally lower-confidence than the front and is not a claim of neural rear reconstruction."
+  ],
+  "immutable_input": {
+    "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\bundle\\tactical_red_panda_scout_5step_uv_chart_separated.glb",
+    "sha256": "ec335a02e8975b1302f3a5c3a3a842e7ab256cff270f54ab415795b0c0ec76c1"
+  },
+  "output_root": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound",
+  "artifacts": {
+    "glb": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\tactical_red_panda_scout_cpu_material_bound.glb",
+      "sha256": "3a0004e3188614cee258394db0ad39ef4f5c4edf7d4d10290b000a2678995931"
+    },
+    "basecolor": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\basecolor_material_bound.png",
+      "sha256": "2c250e6dfa19e725fe7c405526f7b0f9b7f5ee3682cc4a465aae9cfd050f800f"
+    },
+    "observed_mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\observed_mask.png",
+    "synthesized_mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\synthesized_mask.png",
+    "confidence_texture": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\confidence_texture.png",
+    "recovery_tier": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\recovery_tier.png",
+    "material_class_mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\material_class_mask.png",
+    "unresolved_before": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\unresolved_before.png",
+    "unresolved_after": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\unresolved_after.png",
+    "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\contact_sheet_8views.png",
+    "fresh_import_report": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\fresh_import_validation.json",
+    "qa_report": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\cpu_fallback_eight_view_qa.json",
+    "material_recovery_report": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\material_aware_color_recovery_receipt.json",
+    "geometry_quality_report": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\geometry_quality.json"
+  },
+  "counts": {
+    "observed_triangles": 24425,
+    "component_local_donor_triangles": 438814,
+    "material_prior_triangles": 181173,
+    "neutral_emergency_triangles": 0,
+    "observed_texels": 65764,
+    "component_donor_texels": 465225,
+    "material_prior_texels": 142619,
+    "neutral_texels": 2,
+    "unresolved_triangles_before": 181173,
+    "unresolved_triangles_after": 0,
+    "remaining_unpainted_owned_pixels": 0,
+    "rear_facial_provenance_count": 0
+  },
+  "fresh_import_mesh": {
+    "objects": 1,
+    "vertices": 456131,
+    "faces": 644412,
+    "uv_layers": 1,
+    "materials": 2,
+    "armatures": 0,
+    "actions": 0,
+    "upright_z": true
+  },
+  "render_views": [
+    "front",
+    "right",
+    "rear",
+    "left",
+    "top",
+    "bottom",
+    "front_three_quarter",
+    "rear_three_quarter"
+  ],
+  "render_directory": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\eight_views_front_plus_z"
+}
