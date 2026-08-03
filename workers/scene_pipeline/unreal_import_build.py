@@ -18,6 +18,7 @@ MAP = CONTENT + "/Maps/L_Castlegrounds_ImageToScene_Smoke"
 STATIC_MESH_ASSET = CONTENT + "/Geometry/balanced_010/StaticMeshes/balanced_010.balanced_010"
 EXTERNAL = ROOT
 FOV = 66.5083847
+ASPECT_RATIO = 4.0 / 3.0
 
 
 def write_json(name: str, payload: dict) -> None:
@@ -87,6 +88,8 @@ def camera(label: str, position: list[float], target: list[float]):
     actor = spawn(label, unreal.CameraActor, location, unreal.MathLibrary.find_look_at_rotation(location, unreal.Vector(*target)))
     component = actor.get_component_by_class(unreal.CameraComponent)
     component.set_editor_property("field_of_view", FOV)
+    component.set_editor_property("aspect_ratio", ASPECT_RATIO)
+    component.set_editor_property("constrain_aspect_ratio", True)
     return actor
 
 
@@ -117,11 +120,11 @@ def main() -> None:
     mesh_actor.tags = ["ImageToSceneSmoke20260803", "MoGe2P2P5D"]
     lighting = configure_world()
     cameras = {
-        "source": camera("Castlegrounds_Camera_Source", [0, 0, 0], [0, 0, 200]),
-        "left": camera("Castlegrounds_Camera_Left", [-1.9, 0, 0], [-1.9, 0, 200]),
-        "right": camera("Castlegrounds_Camera_Right", [1.9, 0, 0], [1.9, 0, 200]),
-        "forward": camera("Castlegrounds_Camera_Forward", [0, 0, -0.95], [0, 0, 199.05]),
-        "elevated": camera("Castlegrounds_Camera_Elevated", [0, -1.9, 1.9], [0, -1.9, 201.9]),
+        "source": camera("Castlegrounds_Camera_Source", [0, 0, 0], [0, 20000, 0]),
+        "left": camera("Castlegrounds_Camera_Left", [-190, 0, 0], [-190, 20000, 0]),
+        "right": camera("Castlegrounds_Camera_Right", [190, 0, 0], [190, 20000, 0]),
+        "forward": camera("Castlegrounds_Camera_Forward", [0, -95, 0], [0, 19905, 0]),
+        "elevated": camera("Castlegrounds_Camera_Elevated", [0, 190, -190], [0, 20190, -190]),
     }
     unreal.EditorLevelLibrary.save_current_level()
     unreal.EditorAssetLibrary.save_directory(CONTENT)
@@ -152,8 +155,11 @@ def main() -> None:
         "lighting": lighting,
         "source_plane_present": False,
         "representation": "SOURCE_VISIBLE_EDGE_AWARE_2P5D_MESH",
-        "camera_convention": "MOGE_POINT_MAP_PLUS_Z_AWAY_FROM_SOURCE_CAMERA",
-        "camera_target_direction": [0.0, 0.0, 1.0],
+        "camera_convention": "MOGE_POINT_MAP_TO_UNREAL_AXIS_FIXTURE",
+        "camera_target_direction": [0.0, 1.0, 0.0],
+        "camera_aspect_ratio": ASPECT_RATIO,
+        "M_raw_moge_to_unreal": [[100.0, 0.0, 0.0, 0.0], [0.0, 0.0, 100.0, 0.0], [0.0, 100.0, 0.0, 0.0], [0.0, 0.0, 0.0, 1.0]],
+        "unreal_handedness": "FLIPPED_BY_AXIS_FIXTURE",
         "collision": "NOT_PROVEN_NO_GROUND_PLANE_CONFIRMED",
         "spatial_depth_ranges": 3,
         "renders": renders,

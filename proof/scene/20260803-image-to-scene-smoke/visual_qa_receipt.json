@@ -1,12 +1,16 @@
 {
   "schema": "image_to_scene_visual_qa_v1",
-  "classification": "VISUAL_QA_PARTIAL_UNREAL_CAPTURE_BLOCKED",
+  "classification": "VISUAL_QA_PARTIAL_EXACT_SOURCE_MESH_COVERAGE_REJECTED",
   "source_image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
   "cpu_blender_import": "PROVEN",
-  "cpu_visual_contact_sheet": "PROVEN",
+  "cpu_visual_contact_sheet": "DIAGNOSTIC_ONLY_EXTERNAL_CAMERA",
+  "exact_source_camera_render": "REJECTED_MESH_COVERAGE",
+  "exact_source_camera_comparison": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_comparison.json",
   "source_facing_geometry": "VISIBLE_WITH_DEPTH",
   "side_rear_geometry": "FRAGMENTED_2P5D_UNSEEN_REGIONS",
   "unreal_viewport_capture": "BLOCKED_NO_LIVE_MCP_OR_WORKING_HEADLESS_VIEWPORT",
+  "unreal_transform_audit": "PROVEN_AXIS_FIXTURE",
+  "unreal_map_reload": "PROVEN",
   "geometry_regeneration": "NOT_RUN",
   "texture_regeneration": "NOT_RUN",
   "contact_sheet": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\contact_sheet.png"

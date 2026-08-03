@@ -1,0 +1,163 @@
+{
+  "schema": "moge_glb_blender_transform_audit_v1",
+  "classification": "MOGE_GLB_BLENDER_TRANSFORM_PROVEN",
+  "selected": {
+    "object": "geometry_0",
+    "matrix_world": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "accessor_vertex_count": 191847,
+    "used_vertex_count": 133132,
+    "M_raw_moge_to_blender_fit": [
+      [
+        1.0000000000000113,
+        7.750976872609516e-16,
+        4.2762408713218837e-16,
+        -3.561140118475479e-14
+      ],
+      [
+        -3.186774761516574e-15,
+        -4.9960036108132044e-15,
+        -1.0000000000000102,
+        -7.196326867742187e-14
+      ],
+      [
+        1.12024888300251e-15,
+        0.9999999999999903,
+        0.0,
+        1.5851903123476063e-14
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "max_residual": 3.888194767985786e-12,
+    "mean_residual": 1.140630545737409e-12,
+    "world_bounds_min": [
+      -179.62083435058594,
+      -313.8658752441406,
+      -134.04359436035156
+    ],
+    "world_bounds_max": [
+      183.95266723632812,
+      -48.52790069580078,
+      28.97603416442871
+    ]
+  },
+  "axis_fixture": {
+    "object": "geometry_0.001",
+    "input_vertices": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0,
+        1.0
+      ]
+    ],
+    "world_vertices": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        -1.0,
+        0.0
+      ],
+      [
+        1.0,
+        -1.0,
+        1.0
+      ]
+    ],
+    "M_glb_to_blender": [
+      [
+        0.9999999999999999,
+        8.201049798707641e-17,
+        8.201049798707641e-17,
+        -1.4999749576260234e-16
+      ],
+      [
+        1.1102230246251568e-16,
+        -1.6653345369377348e-16,
+        -1.0,
+        2.7755575615628914e-17
+      ],
+      [
+        -1.1102230246251568e-16,
+        1.0000000000000002,
+        1.6653345369377348e-16,
+        -2.220446049250313e-16
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "max_residual": 4.236704743275018e-16,
+    "mean_residual": 2.0927893503805156e-16,
+    "determinant": 1.0,
+    "handedness": "preserved"
+  },
+  "composition_check": "M_raw_moge_to_blender = M_glb_to_blender x M_raw_moge_to_glb; raw-to-GLB is audited separately",
+  "uv_orientation": "GLB UVs retained; source Y-down is represented by v=1-y/(height-1)",
+  "normal_transform": "inverse-transpose of linear component required for transformed normals; identity at raw-to-GLB boundary"
+}

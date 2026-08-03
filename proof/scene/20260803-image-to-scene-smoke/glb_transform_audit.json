@@ -1,0 +1,117 @@
+{
+  "schema": "moge_glb_transform_audit_v1",
+  "classification": "MOGE_RAW_GLB_TRANSFORM_PROVEN",
+  "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.glb",
+  "asset": {
+    "version": "2.0",
+    "generator": "https://github.com/mikedh/trimesh"
+  },
+  "scene": 0,
+  "nodes": [
+    {
+      "name": "geometry_0",
+      "mesh": 0,
+      "matrix": null,
+      "translation": null,
+      "rotation": null,
+      "scale": null
+    }
+  ],
+  "root_node_transform": "IDENTITY_DEFAULT_IF_UNSPECIFIED",
+  "mesh_primitive": {
+    "attributes": {
+      "POSITION": 1,
+      "TEXCOORD_0": 2,
+      "NORMAL": 3
+    },
+    "indices_accessor": 0,
+    "mode": 4,
+    "material": 0
+  },
+  "position_accessor": {
+    "count": 191847,
+    "min": [
+      -262.6045837402344,
+      -347.051025390625,
+      48.52790069580078
+    ],
+    "max": [
+      370.67572021484375,
+      28.97603416442871,
+      742.4088745117188
+    ],
+    "type": "VEC3",
+    "componentType": 5126
+  },
+  "index_winding": {
+    "mode": 4,
+    "triangle_count": 250574,
+    "sample_faces": [
+      [
+        210,
+        211,
+        327
+      ],
+      [
+        210,
+        327,
+        326
+      ],
+      [
+        211,
+        212,
+        328
+      ],
+      [
+        211,
+        328,
+        327
+      ],
+      [
+        212,
+        213,
+        329
+      ]
+    ]
+  },
+  "material": {
+    "doubleSided": false,
+    "alphaMode": "OPAQUE",
+    "name": null
+  },
+  "gltf_declared_convention": "glTF 2.0 right-handed, Y-up convention; this file declares no node transform",
+  "raw_vertex_count": 191847,
+  "glb_accessor_vertex_count": 191847,
+  "used_accessor_vertex_count": 133132,
+  "used_accessor_indices": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010_used_vertex_indices.npy",
+  "M_raw_moge_to_glb": [
+    [
+      0.9999999999999623,
+      -3.1880257905939182e-15,
+      -1.658877104599155e-15,
+      1.729393181154467e-13
+    ],
+    [
+      1.051339698027772e-15,
+      1.0000000000000056,
+      0.0,
+      -2.4008356067084513e-14
+    ],
+    [
+      4.702359105892297e-17,
+      -1.9984014443252818e-15,
+      0.9999999999999998,
+      4.748154994183018e-15
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "mapping_max_residual": 1.3985098441878844e-11,
+  "mapping_mean_residual": 1.9549338027847506e-12,
+  "uv_policy": "DIRECT_SOURCE_PIXEL_UV_u=x/(width-1),v=1-y/(height-1)",
+  "normal_policy": "source normals embedded; no transform at raw-to-GLB identity boundary"
+}

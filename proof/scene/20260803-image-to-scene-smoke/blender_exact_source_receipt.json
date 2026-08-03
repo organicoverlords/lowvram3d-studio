@@ -1,0 +1,47 @@
+{
+  "schema": "blender_exact_source_camera_v1",
+  "classification": "BLENDER_EXACT_SOURCE_CAMERA_RENDER_READY",
+  "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.glb",
+  "transform_source": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_transform_audit.json",
+  "camera": {
+    "origin": [
+      -1.4999749120901782e-16,
+      2.7755575615628914e-17,
+      -2.220446049250313e-16
+    ],
+    "forward": [
+      8.201049757676981e-17,
+      -1.0,
+      1.6653345369377348e-16
+    ],
+    "up": [
+      -8.201049757676981e-17,
+      -1.6653345369377348e-16,
+      -1.0
+    ],
+    "right": [
+      1.0,
+      8.201049757676981e-17,
+      -8.201049757676981e-17
+    ],
+    "fov_x_deg": 66.50838470458984,
+    "fov_y_deg": 52.37591552734375,
+    "lens_mm": 24.400161743164062
+  },
+  "resolution": [
+    512,
+    384
+  ],
+  "principal_point_shift": [
+    0.0,
+    0.0
+  ],
+  "backface_culling_initial": false,
+  "colour_management": "Standard_None_Exposure0_Gamma1",
+  "renders": {
+    "source_cull_off": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_cull_off.png",
+    "wireframe": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_wireframe.png",
+    "source_cull_on": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_cull_on.png"
+  },
+  "source_plane_present": false
+}

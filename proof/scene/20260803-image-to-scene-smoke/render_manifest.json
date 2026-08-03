@@ -13,6 +13,13 @@
     "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_rear.png"
   ],
   "contact_sheet": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\contact_sheet.png",
+  "exact_source_camera_renders": [
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_cull_off.png",
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_cull_on.png",
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_wireframe.png"
+  ],
+  "exact_source_camera_classification": "BLENDER_EXACT_SOURCE_CAMERA_REJECTED_MESH_COVERAGE",
+  "external_blender_views_classification": "BLENDER_EXTERNAL_VIEW_DIAGNOSTIC_ONLY",
   "source_plane_present": false,
   "visual_camera_mode": "EXTERNALIZED_FOR_CPU_VISUAL_QA_NOT_UNREAL_SOURCE_CAMERA"
 }

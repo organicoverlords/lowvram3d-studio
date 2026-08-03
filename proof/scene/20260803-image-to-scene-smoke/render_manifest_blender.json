@@ -1,6 +1,6 @@
 {
   "schema": "blender_cpu_visual_proof_v1",
-  "classification": "BLENDER_CPU_RENDER_PROVEN",
+  "classification": "BLENDER_EXTERNAL_VIEW_DIAGNOSTIC_ONLY",
   "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.glb",
   "target": [
     2.1659164428710938,
@@ -34,6 +34,8 @@
   ],
   "camera_fov_deg": 66.5083847,
   "visual_camera_mode": "EXTERNALIZED_FOR_CPU_VISUAL_QA_NOT_UNREAL_SOURCE_CAMERA",
+  "source_camera_gate": "SEE_blender_exact_source_comparison.json",
+  "source_camera_gate_classification": "BLENDER_EXACT_SOURCE_CAMERA_REJECTED_MESH_COVERAGE",
   "views": [
     {
       "name": "source",

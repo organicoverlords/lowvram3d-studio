@@ -4,6 +4,7 @@ import hashlib
 from pathlib import Path
 
 import pytest
+import numpy as np
 
 from workers.scene_pipeline.core import (
     compare_reload_receipt,
@@ -15,6 +16,7 @@ from workers.scene_pipeline.core import (
     validate_collision,
     validate_material_texture_binding,
 )
+from workers.scene_pipeline.projection import project_points, reprojection_metrics, source_uv
 
 
 def test_image_hash_and_dimensions_are_recorded(tmp_path: Path) -> None:
@@ -52,3 +54,19 @@ def test_reload_receipt_detects_reference_loss() -> None:
     after = dict(before)
     after["image_texture"] = None
     assert not compare_reload_receipt(before, after)["passed"]
+
+
+def test_normalized_intrinsics_round_trip() -> None:
+    intrinsics = np.array([[0.75, 0.0, 0.5], [0.0, 1.0, 0.5], [0.0, 0.0, 1.0]])
+    width, height = 512, 384
+    pixels = np.array([[0.0, 0.0], [128.0, 96.0], [511.0, 383.0]])
+    normalized = np.column_stack(((pixels[:, 0] + 0.5) / width, (pixels[:, 1] + 0.5) / height))
+    points = np.column_stack(((normalized[:, 0] - 0.5) / 0.75, (normalized[:, 1] - 0.5), np.ones(3)))
+    projected = project_points(points, intrinsics, width, height)
+    assert reprojection_metrics(projected, pixels)["p99_px"] < 1e-9
+
+
+def test_uv_vertical_orientation() -> None:
+    uv = source_uv(4, 3)
+    assert tuple(uv[0, 0]) == (0.0, 1.0)
+    assert tuple(uv[-1, -1]) == (1.0, 0.0)

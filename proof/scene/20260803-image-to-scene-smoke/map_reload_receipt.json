@@ -7,6 +7,18 @@
   "mesh_asset_after_reload": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/balanced_010/StaticMeshes/balanced_010.balanced_010",
   "mesh_present_after_reload": true,
   "source_camera_fov": 66.50838470458984,
+  "source_camera_aspect_ratio": 1.3333333730697632,
+  "source_camera_location": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "source_camera_rotation": [
+    0.0,
+    89.99999999999999,
+    -0.0
+  ],
+  "camera_contract": "M_RAW_MOGE_TO_UNREAL_SCALE100_XYZ_TO_XZY",
   "actor_count": 11,
   "source_plane_present": false
 }

@@ -1,0 +1,91 @@
+{
+  "schema": "moge_glb_unreal_transform_audit_v1",
+  "classification": "MOGE_GLB_UNREAL_TRANSFORM_PROVEN",
+  "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\axis_fixture_markers.glb",
+  "content_root": "/Game/AgentProof/ImageToSceneSmoke_20260803/TransformAudit",
+  "imported_mesh_count": 5,
+  "expected_marker_centers": {
+    "axis_origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "axis_plus_x": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "axis_plus_y": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "axis_plus_z": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "axis_xyz": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "observed_mesh_bounds_centers": {
+    "axis_origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "axis_plus_x": [
+      99.99999618530273,
+      0.0,
+      0.0
+    ],
+    "axis_plus_y": [
+      0.0,
+      0.0,
+      99.99999618530273
+    ],
+    "axis_plus_z": [
+      0.0,
+      99.99999618530273,
+      0.0
+    ],
+    "axis_xyz": [
+      99.99999618530273,
+      99.99999618530273,
+      99.99999618530273
+    ]
+  },
+  "M_glb_to_unreal": [
+    [
+      99.99999618530273,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      99.99999618530273,
+      0.0
+    ],
+    [
+      0.0,
+      99.99999618530273,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "max_residual": 0.0,
+  "determinant": -999999.8855590863,
+  "actor_transform": "IDENTITY_NOT_APPLIED_TO_ASSET_BOUNDS",
+  "scale_conversion": "measured_from_marker_bounds"
+}

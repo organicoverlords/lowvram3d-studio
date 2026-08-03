@@ -1,0 +1,21 @@
+{
+  "schema": "blender_exact_source_comparison_v1",
+  "classification": "BLENDER_EXACT_SOURCE_CAMERA_REJECTED_MESH_COVERAGE",
+  "source": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\source_rgb_512.png",
+  "render": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_cull_off.png",
+  "valid_mask_coverage": 0.9757843017578125,
+  "rendered_nonblack_coverage_inside_mask": 0.7127554770207509,
+  "silhouette_iou_inside_mask": 0.7127554770207509,
+  "ssim_proxy_ncc": -0.11640943586826324,
+  "psnr_db": 10.828679801280586,
+  "mean_abs_colour_error": 44.34157943725586,
+  "edge_correlation": 0.3276058149449809,
+  "median_reprojection_error_px": 1.3127237995801567e-05,
+  "p99_reprojection_error_px": 4.355750872114645e-05,
+  "culling": {
+    "off_render": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_cull_off.png",
+    "on_render": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_cull_on.png",
+    "on_result": "REJECTED_ALL_VISIBLE_FACES_CULLED"
+  },
+  "failure_localization": "RAW_REPROJECTION_PROVEN; GLB_TRANSFORM_PROVEN; EXACT_CAMERA_DIRECTION_PROVEN; SOURCE_RENDER_HAS_LARGE_MESH_HOLES_OR_EDGE_REJECTIONS"
+}

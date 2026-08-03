@@ -18,6 +18,17 @@ def write_json(name: str, payload: dict) -> None:
     (ROOT / name).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
+def vector3(value: object) -> list[float] | None:
+    """Serialize Unreal Vector-like and Rotator-like values without guessing."""
+    if value is None:
+        return None
+    if all(hasattr(value, name) for name in ("x", "y", "z")):
+        return [float(value.x), float(value.y), float(value.z)]
+    if all(hasattr(value, name) for name in ("pitch", "yaw", "roll")):
+        return [float(value.pitch), float(value.yaw), float(value.roll)]
+    raise TypeError(f"Unsupported Unreal value for vector3: {type(value).__name__}")
+
+
 def main() -> None:
     loaded = unreal.EditorLevelLibrary.load_level(MAP)
     actors = unreal.EditorLevelLibrary.get_all_level_actors()
@@ -37,7 +48,9 @@ def main() -> None:
     mesh_component = mesh_actor.get_component_by_class(unreal.StaticMeshComponent) if mesh_actor else None
     mesh = mesh_component.get_editor_property("static_mesh") if mesh_component else None
     source_camera = labels.get("Castlegrounds_Camera_Source")
-    fov = source_camera.get_component_by_class(unreal.CameraComponent).get_editor_property("field_of_view") if source_camera else None
+    camera_component = source_camera.get_component_by_class(unreal.CameraComponent) if source_camera else None
+    fov = camera_component.get_editor_property("field_of_view") if camera_component else None
+    aspect_ratio = camera_component.get_editor_property("aspect_ratio") if camera_component else None
     receipt = {
         "schema": "unreal_image_to_scene_reload_v1",
         "classification": "SCENE_SAVE_RELOAD_PROVEN" if loaded and not missing and mesh else "SCENE_SAVE_RELOAD_REJECTED",
@@ -47,6 +60,10 @@ def main() -> None:
         "mesh_asset_after_reload": mesh.get_path_name() if mesh else None,
         "mesh_present_after_reload": mesh is not None,
         "source_camera_fov": fov,
+        "source_camera_aspect_ratio": aspect_ratio,
+        "source_camera_location": vector3(source_camera.get_actor_location()) if source_camera else None,
+        "source_camera_rotation": vector3(source_camera.get_actor_rotation()) if source_camera else None,
+        "camera_contract": "M_RAW_MOGE_TO_UNREAL_SCALE100_XYZ_TO_XZY",
         "actor_count": len(actors),
         "source_plane_present": "SceneSmoke_ImageSurface" in labels,
     }
