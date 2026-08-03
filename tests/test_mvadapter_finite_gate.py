@@ -133,7 +133,7 @@ def test_a_non_finite_reference_output_is_classified_as_a_reference_failure(tmp_
     _run(pipe, steps=2)
     probe.uninstall()
 
-    assert probe.classification() == "MVADAPTER_REFERENCE_UNET_OUTPUT_NONFINITE"
+    assert probe.classification() == "MVADAPTER_RUNTIME_REJECTED_NONFINITE"
     assert probe.finite_gate(expected_steps=2)["checks"]["reference_unet_output_finite"] is False
 
 

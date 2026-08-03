@@ -312,6 +312,46 @@ def _color_qa(array: np.ndarray, mask: np.ndarray) -> dict[str, Any]:
     }
 
 
+def _install_boundary_telemetry(pipe: Any, telemetry: Any, torch: Any) -> dict[str, Any]:
+    """Record the three tensors the denoising loop does not expose through its step callback.
+
+    ``prepare_latents`` produces the initial latent; the VAE decode boundary sees the post-scaling
+    latent going in and the decoded tensor coming back. All three are observed where they actually
+    occur -- none is reconstructed by multiplying a scaling factor back out, because a reconstructed
+    tensor proves nothing about what the pipeline really handled.
+
+    Installed on top of the FP32 casting boundary from ``install_vae_dtype_boundary``, so the
+    recorded decode input is exactly what the pipeline passed and the recorded output is exactly
+    what the pipeline received.
+    """
+    original_prepare = pipe.prepare_latents
+    original_decode = pipe.vae.decode
+    state: dict[str, Any] = {"prepare_latents_calls": 0, "decode_calls": 0}
+
+    def prepare_latents(*args: Any, **kwargs: Any):
+        latents = original_prepare(*args, **kwargs)
+        state["prepare_latents_calls"] += 1
+        if isinstance(latents, torch.Tensor) and state["prepare_latents_calls"] == 1:
+            telemetry.record("initial_latent", latents, save=True)
+        return latents
+
+    def decode(latents: torch.Tensor, *args: Any, **kwargs: Any):
+        state["decode_calls"] += 1
+        if isinstance(latents, torch.Tensor):
+            telemetry.record("latents_after_vae_scaling", latents, save=True)
+        result = original_decode(latents, *args, **kwargs)
+        sample = result[0] if isinstance(result, tuple) else getattr(result, "sample", result)
+        if isinstance(sample, torch.Tensor):
+            telemetry.record("raw_vae_decoded_tensor", sample, save=True)
+        return result
+
+    pipe.prepare_latents = prepare_latents
+    pipe.vae.decode = decode
+    state["restore"] = lambda: (setattr(pipe, "prepare_latents", original_prepare),
+                                setattr(pipe.vae, "decode", original_decode))
+    return state
+
+
 def _decoded_image_gate(images: list[Image.Image]) -> dict[str, Any]:
     """Are the decoded PNGs finite, non-black, non-flat and not six copies of one another?
 
@@ -662,6 +702,18 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         telemetry = LatentTelemetry(output_dir / "latent_telemetry",
                                     snapshot_steps=(1, 5, 10, 15, 18, 19, 20))
         receipt["latent_telemetry_dir"] = str(output_dir / "latent_telemetry")
+        # Reference-side tensors are recorded before denoising in the same artifact as the step
+        # stream. The reference UNet's zero return sentinel is recorded by StepSplitProbe after the
+        # explicit cache owner has been validated.
+        telemetry.record("reference_latent", reference_latents, expect_variation=True, save=True,
+                         extra={"stage": "reference"})
+        telemetry.record("reference_prompt_embeddings", reference_prompt_embeds,
+                         expect_variation=True, extra={"stage": "reference"})
+        for cache_name, cache_value in sorted(reference_cache.items()):
+            telemetry.record(f"reference_cache.{cache_name}", cache_value,
+                             expect_variation=True, extra={"stage": "reference_cache"})
+        _heartbeat(heartbeat_path, receipt, "reference_telemetry_recorded",
+                   cache_entries=len(reference_cache))
 
         def on_step_end(_pipe: Any, step: int, timestep: Any, callback_kwargs: dict[str, Any]) -> dict[str, Any]:
             receipt["denoising_steps_completed"] = int(step) + 1
@@ -671,8 +723,20 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
                     "diffusion_latents", latents
                 )
             if isinstance(latents, torch.Tensor):
+                # The probe holds this step's UNet-boundary tensors; folding them in here keeps one
+                # chronological artifact that answers every per-step question on its own.
+                boundary = probe.take_step_tensors() if probe is not None else {}
                 telemetry.record_step(int(step) + 1, timestep, latents,
-                                      scheduler=getattr(_pipe, "scheduler", None))
+                                      scheduler=getattr(_pipe, "scheduler", None),
+                                      scaled_input=boundary.get("scaled_input"),
+                                      noise_pred=boundary.get("noise_pred"),
+                                      condition_residuals=condition_residuals,
+                                      scheduler_input_sample=boundary.get("scheduler_input_sample"),
+                                      processed_model_prediction=boundary.get("processed_model_prediction"))
+                # The tensor the pipeline is about to divide by the VAE scaling factor. Recorded on
+                # the last step only, where it is the input to the decode.
+                if int(step) + 1 == int(selected["steps"]):
+                    telemetry.record("final_latent_before_vae_scaling", latents, save=True)
             _heartbeat(
                 heartbeat_path,
                 receipt,
@@ -689,7 +753,11 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         if step_split_probe:
             from mvadapter_step_split_probe import StepSplitProbe, UNetModuleProbe
 
-            probe = StepSplitProbe(output_dir / "step_split", target_step=1)
+            probe = StepSplitProbe(
+                output_dir / "step_split", target_step=1,
+                expected_reference_cache=reference_cache,
+                reference_output_contract="CACHE_SIDE_EFFECT_WITH_ZERO_SENTINEL",
+            )
             probe.install(pipe)
             module_probe = UNetModuleProbe()
             module_probe.install(pipe.unet)
@@ -702,11 +770,17 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             # than the gate is worth once the failing module is already known.
             from mvadapter_step_split_probe import StepSplitProbe
 
-            probe = StepSplitProbe(output_dir / "finite_gate", target_step=None,
-                                   save_scheduler_inputs=False, abort_on_first_failure=False)
+            probe = StepSplitProbe(
+                output_dir / "finite_gate", target_step=None,
+                save_scheduler_inputs=False, abort_on_first_failure=False,
+                expected_reference_cache=reference_cache,
+                reference_output_contract="CACHE_SIDE_EFFECT_WITH_ZERO_SENTINEL",
+            )
             probe.install(pipe)
             receipt["finite_gate_dir"] = str(output_dir / "finite_gate")
 
+        boundary_telemetry = _install_boundary_telemetry(pipe, telemetry, torch)
+        receipt["boundary_telemetry_installed"] = True
         torch.cuda.reset_peak_memory_stats()
         receipt["memory_before_denoising"] = {**_nvidia_snapshot(), **_torch_memory(torch)}
         result = pipe(
@@ -727,6 +801,10 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         )
         receipt["reference_unet_call_count"] = state["reference_unet_calls"]
         receipt["denoising_unet_call_count"] = state["denoising_unet_calls"]
+        receipt["boundary_telemetry"] = {
+            "prepare_latents_calls": boundary_telemetry["prepare_latents_calls"],
+            "vae_decode_calls": boundary_telemetry["decode_calls"],
+        }
         if probe is not None:
             probe.uninstall()
             if finite_gate:
@@ -739,6 +817,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
                            failed=receipt["finite_gate"]["failed_checks"])
             else:
                 receipt["step_split_probe"] = {**probe.summary(), "report": str(probe.write())}
+            telemetry.attach_probe(probe.summary(), probe.records)
         images = list(result.images)
         receipt["vae_decode_completed"] = True
         # Final post-processed image tensor, as the last telemetry checkpoint. This is the stage
@@ -794,6 +873,10 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             else:
                 receipt["step_split_probe"] = {**probe.summary(), "report": str(probe.write())}
             receipt["classification"] = probe.classification()
+            if "telemetry" in locals() and telemetry is not None:
+                telemetry.attach_probe(probe.summary(), probe.records)
+                receipt["latent_telemetry"] = telemetry.summary()
+                telemetry.write()
         receipt["reference_unet_call_count"] = state.get("reference_unet_calls", 0) if "state" in locals() else 0
         receipt["denoising_unet_call_count"] = state.get("denoising_unet_calls", 0) if "state" in locals() else 0
         genuine_oom = _is_cuda_oom(exc)

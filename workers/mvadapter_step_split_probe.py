@@ -21,6 +21,7 @@ broken anywhere".
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 from typing import Any
 
@@ -34,11 +35,89 @@ class StepSplitAbort(RuntimeError):
     """Raised to stop the pipeline as soon as the first non-finite checkpoint is captured."""
 
 
+#: The failure labels that mean "the arithmetic broke". Only these abort a run.
+#:
+#: ``ALL_ZERO`` and ``NEAR_ZERO_STD`` describe a tensor whose values collapsed, which is a real
+#: defect in a latent but a *documented expectation* elsewhere: this pipeline injects the reference
+#: cache and returns ``torch.zeros_like(sample)`` from the in-pipeline reference forward instead of
+#: running the UNet, so ``ref01_unet_raw_output`` is all-zero in every healthy run. Aborting on that
+#: would kill a production run before step 1, and reporting it as non-finite -- which
+#: ``classification()`` previously did -- names the wrong defect.
+NONFINITE_FAILURES = ("NAN", "INF", "NON_FINITE_PRESENT")
+FLAT_FAILURES = ("ALL_ZERO", "NEAR_ZERO_STD", "ALL_VIEWS_IDENTICAL")
+REFERENCE_CACHE_CONTRACT_FAILURE = "REFERENCE_CACHE_CONTRACT_FAILED"
+
+
+def _is_zero_or_flat(stats: dict[str, Any]) -> bool:
+    return any(label in FLAT_FAILURES for label in failures_for(stats, expect_variation=True))
+
+
+def _cache_contract(expected: dict[str, torch.Tensor] | None,
+                    actual: Any) -> dict[str, Any]:
+    """Validate the explicit reference-cache owner without inventing missing entries."""
+    expected_keys = sorted(expected or {})
+    actual_keys = sorted(actual) if isinstance(actual, dict) else []
+    missing = sorted(set(expected_keys) - set(actual_keys))
+    unexpected = sorted(set(actual_keys) - set(expected_keys))
+    entries: list[dict[str, Any]] = []
+    all_finite = True
+    all_nonflat = True
+    shape_dtype_device_ok = True
+    nonfinite_present = False
+    for key in expected_keys:
+        value = actual.get(key) if isinstance(actual, dict) else None
+        expected_value = expected[key]
+        record: dict[str, Any] = {"key": key, "present": isinstance(value, torch.Tensor)}
+        if isinstance(value, torch.Tensor):
+            stats = tensor_stats(f"reference_cache.{key}", value)
+            record["stats"] = stats
+            finite = stats["finite_fraction"] == 1.0
+            nonflat = not _is_zero_or_flat(stats)
+            same_shape = list(value.shape) == list(expected_value.shape)
+            same_dtype = value.dtype == expected_value.dtype
+            same_device = str(value.device) == str(expected_value.device)
+            record.update({"finite": finite, "nonflat": nonflat, "shape_match": same_shape,
+                           "dtype_match": same_dtype, "device_match": same_device})
+            all_finite &= finite
+            all_nonflat &= nonflat
+            shape_dtype_device_ok &= same_shape and same_dtype and same_device
+            nonfinite_present |= not finite
+        else:
+            record.update({"finite": False, "nonflat": False, "shape_match": False,
+                           "dtype_match": False, "device_match": False})
+            all_finite = False
+            all_nonflat = False
+            shape_dtype_device_ok = False
+        entries.append(record)
+    valid = bool(
+        expected is not None and not missing and not unexpected and entries and all_finite
+        and all_nonflat and shape_dtype_device_ok
+    )
+    return {
+        "contract": "EXPLICIT_REFERENCE_CACHE_FP16_BATCH1",
+        "configured": expected is not None,
+        "expected_key_count": len(expected_keys),
+        "actual_key_count": len(actual_keys),
+        "expected_keys": expected_keys,
+        "actual_keys": actual_keys,
+        "missing_keys": missing,
+        "unexpected_keys": unexpected,
+        "all_finite": bool(all_finite),
+        "nonfinite_present": bool(nonfinite_present),
+        "all_nonflat": bool(all_nonflat),
+        "shape_dtype_device_match": bool(shape_dtype_device_ok),
+        "valid": valid,
+        "entries": entries,
+    }
+
+
 class StepSplitProbe:
     """Instruments one denoising step and stops at the first finite-to-non-finite transition."""
 
     def __init__(self, root: Path, target_step: int | None = 1, save_scheduler_inputs: bool = True,
-                 abort_on_first_failure: bool = True, expected_views: int = 6) -> None:
+                 abort_on_first_failure: bool = True, expected_views: int = 6,
+                 expected_reference_cache: dict[str, torch.Tensor] | None = None,
+                 reference_output_contract: str = "CACHE_SIDE_EFFECT_WITH_ZERO_SENTINEL") -> None:
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         #: ``None`` instruments every step instead of one, which is what the whole-run gate needs.
@@ -53,12 +132,63 @@ class StepSplitProbe:
         self.records: list[dict[str, Any]] = []
         self.current_step = 0
         self.first_failure: dict[str, Any] | None = None
+        #: The earliest non-finite tensor specifically. Kept apart from ``first_failure`` because a
+        #: collapsed-to-zero tensor and a NaN tensor are different defects with different fixes, and
+        #: only one of them may stop a run.
+        self.first_nonfinite: dict[str, Any] | None = None
+        self.first_unexpected_flat: dict[str, Any] | None = None
+        self.expected_reference_cache = expected_reference_cache
+        self.reference_output_contract = reference_output_contract
+        self.reference_cache_contract: dict[str, Any] | None = None
+        self.reference_output_zero_sentinel: dict[str, Any] | None = None
         self.saved_npz: dict[str, str] = {}
+        #: The two tensors either side of the current step's UNet forward, so a step-end callback can
+        #: fold them into the chronological latent telemetry instead of a second file having to be
+        #: read alongside it. Overwritten each step; never accumulated.
+        self.latest_scaled_input: torch.Tensor | None = None
+        self.latest_unet_output: torch.Tensor | None = None
+        self.latest_scheduler_input_sample: torch.Tensor | None = None
+        self.latest_processed_model_prediction: torch.Tensor | None = None
         self._installed: list[tuple[Any, str, Any]] = []
         self._sequence = 0
 
+    def take_step_tensors(self) -> dict[str, torch.Tensor | None]:
+        """Hand over the current step's UNet-boundary tensors and forget them."""
+        tensors = {"scaled_input": self.latest_scaled_input, "noise_pred": self.latest_unet_output,
+                   "scheduler_input_sample": self.latest_scheduler_input_sample,
+                   "processed_model_prediction": self.latest_processed_model_prediction}
+        self.latest_scaled_input = None
+        self.latest_unet_output = None
+        self.latest_scheduler_input_sample = None
+        self.latest_processed_model_prediction = None
+        return tensors
+
     # ------------------------------------------------------------------ recording
-    def record(self, label: str, value: Any, *, stage: str) -> Any:
+    def _failure_summary(self, label: str, stage: str, entry: dict[str, Any],
+                         failures: list[str]) -> dict[str, Any]:
+        previous = [item for item in self.records[:-1] if item.get("tensor")]
+        last_clean = next((item["checkpoint"] for item in reversed(previous)
+                           if not item["failures"]), None)
+        summary = {
+            "checkpoint": label,
+            "stage": stage,
+            "sequence": entry["sequence"],
+            "failures": failures,
+            "last_finite_checkpoint": last_clean,
+            "nan_count": entry.get("stats", {}).get("nan_count"),
+            "posinf_count": entry.get("stats", {}).get("posinf_count"),
+            "neginf_count": entry.get("stats", {}).get("neginf_count"),
+        }
+        if self.first_failure is None:
+            self.first_failure = summary
+        if self.first_nonfinite is None and any(name in NONFINITE_FAILURES for name in failures):
+            self.first_nonfinite = summary
+        if self.first_unexpected_flat is None and any(name in FLAT_FAILURES for name in failures):
+            self.first_unexpected_flat = summary
+        return summary
+
+    def record(self, label: str, value: Any, *, stage: str, expect_variation: bool = True,
+               allow_flat: bool = False, extra_failures: list[str] | None = None) -> Any:
         if not isinstance(value, torch.Tensor):
             self._sequence += 1
             self.records.append({
@@ -68,10 +198,13 @@ class StepSplitProbe:
             return value
         stats = tensor_stats(label, value)
         views = per_view_stats(label, value) if value.dim() >= 1 and value.shape[0] > 1 else []
-        failures = failures_for(stats, expect_variation=False)
+        failures = failures_for(stats, expect_variation=expect_variation, allow_flat=allow_flat)
+        if extra_failures:
+            failures.extend(item for item in extra_failures if item not in failures)
         self._sequence += 1
         entry = {
             "sequence": self._sequence,
+            "timestamp": time.time(),
             "checkpoint": label,
             "stage": stage,
             "tensor": True,
@@ -81,21 +214,19 @@ class StepSplitProbe:
             "failures": failures,
         }
         self.records.append(entry)
-        if failures and self.first_failure is None:
-            previous = [item for item in self.records[:-1] if item.get("tensor")]
-            last_finite = next((item["checkpoint"] for item in reversed(previous)
-                                if not item["failures"]), None)
-            self.first_failure = {
-                "checkpoint": label,
-                "stage": stage,
-                "sequence": entry["sequence"],
-                "failures": failures,
-                "last_finite_checkpoint": last_finite,
-                "nan_count": stats.get("nan_count"),
-                "posinf_count": stats.get("posinf_count"),
-                "neginf_count": stats.get("neginf_count"),
-            }
+        if failures:
+            self._failure_summary(label, stage, entry, failures)
         return value
+
+    def record_event(self, label: str, stage: str, payload: dict[str, Any],
+                     failures: list[str] | None = None) -> None:
+        self._sequence += 1
+        entry = {"sequence": self._sequence, "checkpoint": label, "stage": stage,
+                 "timestamp": time.time(), "tensor": False, "payload": payload,
+                 "failures": list(failures or [])}
+        self.records.append(entry)
+        if failures:
+            self._failure_summary(label, stage, entry, list(failures))
 
     def _save(self, name: str, tensor: torch.Tensor) -> None:
         if not self.save_scheduler_inputs or not isinstance(tensor, torch.Tensor):
@@ -105,8 +236,16 @@ class StepSplitProbe:
         self.saved_npz[name] = str(path)
 
     def _maybe_abort(self, reason: str) -> None:
+        """Stop the run at the earliest non-finite tensor, and only for that.
+
+        Aborting means no further UNet forwards, no scheduler steps and no decode -- which is the
+        point: once a tensor is NaN everything downstream is black output that proves nothing and
+        costs minutes of GPU time to produce.
+        """
         if self.abort_on_first_failure and self.first_failure is not None:
-            raise StepSplitAbort(f"STEP_SPLIT_FIRST_NONFINITE:{reason}:{self.first_failure['checkpoint']}")
+            raise StepSplitAbort(
+                f"STEP_SPLIT_FIRST_FAILURE:{reason}:{self.first_failure['checkpoint']}"
+            )
 
     def _active(self) -> bool:
         return self.target_step is None or self.current_step + 1 == self.target_step
@@ -138,6 +277,8 @@ class StepSplitProbe:
             result = original_scale(sample, timestep, *args, **kwargs) if original_scale else sample
             if active:
                 self.record(f"{prefix}02_scale_model_input_result", result, stage="scale_model_input")
+                if isinstance(result, torch.Tensor):
+                    self.latest_scaled_input = result.detach()
                 self._maybe_abort("scale_model_input")
             return result
 
@@ -158,7 +299,48 @@ class StepSplitProbe:
                 self.record(f"{reference_prefix}unet_sample_input", sample, stage="reference_unet")
                 result = original_forward(sample, timestep, encoder_hidden_states, *args, **kwargs)
                 tensor = result[0] if isinstance(result, tuple) else getattr(result, "sample", result)
-                self.record(f"{reference_prefix}unet_raw_output", tensor, stage="reference_unet")
+                cross = kwargs.get("cross_attention_kwargs") or {}
+                cache_sink = cross.get("cache_hidden_states") if isinstance(cross, dict) else None
+                self.reference_cache_contract = _cache_contract(self.expected_reference_cache, cache_sink)
+                cache_configured = bool(self.reference_cache_contract.get("configured"))
+                cache_failures = (
+                    [] if not cache_configured or self.reference_cache_contract["valid"]
+                    else [REFERENCE_CACHE_CONTRACT_FAILURE]
+                )
+                if cache_configured and self.reference_cache_contract["nonfinite_present"]:
+                    cache_failures.extend(["NON_FINITE_PRESENT"])
+                    for cache_entry in self.reference_cache_contract.get("entries", []):
+                        stats = cache_entry.get("stats") or {}
+                        if stats.get("has_nan"):
+                            cache_failures.append("NAN")
+                        if stats.get("has_inf"):
+                            cache_failures.append("INF")
+                output_stats = tensor_stats(f"{reference_prefix}unet_raw_output", tensor) if isinstance(tensor, torch.Tensor) else None
+                output_is_zero = bool(output_stats is not None and output_stats["finite_fraction"] == 1.0 and _is_zero_or_flat(output_stats))
+                sentinel_valid = bool(
+                    output_is_zero
+                    and self.reference_output_contract == "CACHE_SIDE_EFFECT_WITH_ZERO_SENTINEL"
+                    and cache_configured and self.reference_cache_contract["valid"]
+                )
+                self.reference_output_zero_sentinel = {
+                    "checkpoint": f"{reference_prefix}unet_raw_output",
+                    "accepted": sentinel_valid,
+                    "contract": self.reference_output_contract,
+                    "cache_contract_valid": bool(self.reference_cache_contract["valid"]),
+                    "finite": bool(output_stats and output_stats["finite_fraction"] == 1.0),
+                    "all_zero_or_flat": output_is_zero,
+                }
+                output_failures = cache_failures if output_is_zero and not sentinel_valid else None
+                self.record(
+                    f"{reference_prefix}unet_raw_output", tensor, stage="reference_unet",
+                    allow_flat=sentinel_valid, extra_failures=output_failures,
+                )
+                self.record_event(
+                    f"{reference_prefix}reference_cache_contract", "reference_cache",
+                    self.reference_cache_contract,
+                    [] if not cache_configured or self.reference_cache_contract["valid"]
+                    else [REFERENCE_CACHE_CONTRACT_FAILURE],
+                )
                 self._maybe_abort("reference_unet")
                 return result
             prefix = self._prefix()
@@ -184,7 +366,10 @@ class StepSplitProbe:
             result = original_forward(sample, timestep, encoder_hidden_states, *args, **kwargs)
             if active:
                 tensor = result[0] if isinstance(result, tuple) else getattr(result, "sample", result)
-                self.record(f"{prefix}09_unet_raw_output", tensor, stage="unet_output")
+                self.record(f"{prefix}09_unet_raw_output", tensor, stage="unet_output",
+                            expect_variation=True)
+                if isinstance(tensor, torch.Tensor):
+                    self.latest_unet_output = tensor.detach()
                 self._maybe_abort("unet_output")
             return result
 
@@ -194,11 +379,13 @@ class StepSplitProbe:
             prefix = self._prefix()
             if active:
                 self.record(f"{prefix}10_model_output_into_scheduler", model_output,
-                            stage="scheduler_input")
+                            stage="scheduler_input", expect_variation=True)
                 self.record(f"{prefix}11_sample_into_scheduler", sample, stage="scheduler_input")
                 self.record(f"{prefix}12_scheduler_timestep", timestep, stage="scheduler_input")
                 self._save(f"{prefix}scheduler_input_model_output", model_output)
                 self._save(f"{prefix}scheduler_input_sample", sample)
+                self.latest_scheduler_input_sample = sample.detach() if isinstance(sample, torch.Tensor) else None
+                self.latest_processed_model_prediction = model_output.detach() if isinstance(model_output, torch.Tensor) else None
                 self.scheduler_timestep = _scalar(timestep)
                 self._maybe_abort("scheduler_input")
             result = original_step(model_output, timestep, sample, *args, **kwargs)
@@ -208,9 +395,10 @@ class StepSplitProbe:
                     self.record(f"{prefix}13_pred_original_sample", predicted, stage="scheduler_output")
                 previous = result[0] if isinstance(result, tuple) else getattr(result, "prev_sample", None)
                 if isinstance(previous, torch.Tensor):
-                    self.record(f"{prefix}14_prev_sample", previous, stage="scheduler_output")
+                    self.record(f"{prefix}14_prev_sample", previous, stage="scheduler_output",
+                                expect_variation=True)
                     self.record(f"{prefix}15_latent_for_next_iteration", previous,
-                                stage="scheduler_output")
+                                stage="scheduler_output", expect_variation=True)
                 self.current_step += 1
                 self._maybe_abort("scheduler_output")
             else:
@@ -232,19 +420,22 @@ class StepSplitProbe:
 
     # ------------------------------------------------------------------ output
     def classification(self) -> str:
+        """What broke, named after the defect that actually occurred.
+
+        Non-finiteness, unexpected flatness and cache-contract defects are separate outcomes. The
+        valid reference zero sentinel produces none of them.
+        """
         if self.first_failure is None:
             return ("MVADAPTER_ALL_RECORDED_CHECKPOINTS_FINITE" if self.target_step is None
                     else "MVADAPTER_STEP1_FINITE_FAILURE_MOVED_LATER")
-        stage = self.first_failure["stage"]
-        if stage == "reference_unet":
-            return "MVADAPTER_REFERENCE_UNET_OUTPUT_NONFINITE"
-        if stage in ("scale_model_input", "unet_input"):
-            return "MVADAPTER_UNET_INPUT_NONFINITE"
-        if stage == "unet_output":
-            return "MVADAPTER_UNET_OUTPUT_NONFINITE"
-        if stage in ("scheduler_input", "scheduler_output"):
-            return "MVADAPTER_SCHEDULER_OUTPUT_NONFINITE"
-        return "MVADAPTER_STEP1_FAILURE_NOT_LOCALIZED"
+        if self.first_nonfinite is not None:
+            return "MVADAPTER_RUNTIME_REJECTED_NONFINITE"
+        failures = set(self.first_failure.get("failures", []))
+        if REFERENCE_CACHE_CONTRACT_FAILURE in failures:
+            return "MVADAPTER_REFERENCE_CACHE_CONTRACT_FAILED"
+        if self.first_unexpected_flat is not None:
+            return "MVADAPTER_RUNTIME_REJECTED_FLAT_TENSOR"
+        return "MVADAPTER_RUNTIME_REJECTED_NONFINITE"
 
     def finite_gate(self, expected_steps: int = 2) -> dict[str, Any]:
         """Named per-stage verdicts for a whole-run recording.
@@ -264,6 +455,17 @@ class StepSplitProbe:
         checks: dict[str, bool | None] = {
             "reference_unet_output_finite": finite("ref01_unet_raw_output"),
         }
+        if self.expected_reference_cache is not None:
+            checks.update({
+                "reference_zero_sentinel_accepted": (
+                    None if self.reference_output_zero_sentinel is None
+                    else bool(self.reference_output_zero_sentinel.get("accepted"))
+                ),
+                "reference_cache_contract_valid": (
+                    None if self.reference_cache_contract is None
+                    else bool(self.reference_cache_contract.get("valid"))
+                ),
+            })
         for step in range(1, int(expected_steps) + 1):
             prefix = f"step{step:02d}_"
             checks[f"step{step}_scaled_input_finite"] = finite(f"{prefix}02_scale_model_input_result")
@@ -294,11 +496,14 @@ class StepSplitProbe:
             "expected_steps": int(expected_steps),
             "reference_forwards": self.reference_forwards,
             "steps_recorded": self.current_step,
+            "first_nonfinite": self.first_nonfinite,
             "checks": checks,
             "missing_checks": sorted(name for name, value in checks.items() if value is None),
             "failed_checks": sorted(name for name, value in checks.items() if value is False),
             "passed": bool(checks) and all(value is True for value in checks.values()),
             "latent_hashes": dict(latent_hashes),
+            "reference_output_zero_sentinel": self.reference_output_zero_sentinel,
+            "reference_cache_contract": self.reference_cache_contract,
         }
 
     def summary(self) -> dict[str, Any]:
@@ -308,7 +513,24 @@ class StepSplitProbe:
             "unet_module_probe": module_probe.summary() if module_probe else None,
             "target_step": self.target_step,
             "classification": self.classification(),
+            "first_nonfinite": self.first_nonfinite,
+            "first_unexpected_flat": self.first_unexpected_flat,
             "first_failure": self.first_failure,
+            "reference_output_zero_sentinel": self.reference_output_zero_sentinel,
+            "reference_cache_contract": self.reference_cache_contract,
+            "reference_cache_key_count_expected": (
+                None if self.reference_cache_contract is None
+                else self.reference_cache_contract.get("expected_key_count")
+            ),
+            "reference_cache_key_count_actual": (
+                None if self.reference_cache_contract is None
+                else self.reference_cache_contract.get("actual_key_count")
+            ),
+            "reference_cache_all_finite": (
+                None if self.reference_cache_contract is None
+                else self.reference_cache_contract.get("all_finite")
+            ),
+            "aborted": self.first_failure is not None and self.abort_on_first_failure,
             "checkpoints_recorded": len(self.records),
             "reference_forwards": self.reference_forwards,
             "saved_npz": self.saved_npz,
