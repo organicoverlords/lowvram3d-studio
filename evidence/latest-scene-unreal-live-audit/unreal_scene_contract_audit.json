@@ -1,0 +1,42 @@
+{
+  "schema_version": "unreal_scene_contract_audit_v1",
+  "classification": "PROVEN",
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "map_loaded": true,
+  "mesh_asset": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2",
+  "mesh_asset_exists": true,
+  "actor_count": 11,
+  "expected_mesh_actor_count": 1,
+  "expected_mesh_actor": {
+    "name": "StaticMeshActor_1",
+    "label": "Castlegrounds_ReconstructedMesh",
+    "location_cm": [0.0, 0.0, 0.0],
+    "scale": [1.0, 1.0, 1.0]
+  },
+  "source_camera": {
+    "name": "CameraActor_5",
+    "label": "Castlegrounds_Camera_Source",
+    "field_of_view_deg": 66.50838470458984,
+    "aspect_ratio": 1.3333333730697632,
+    "forward": [2.220446049250313e-16, 1.0000000000000002, 0.0],
+    "right": [-1.0000000000000002, 2.220446049250313e-16, 0.0],
+    "up": [-0.0, 0.0, 1.0]
+  },
+  "authoritative_fov_x_deg": 66.50838470458984,
+  "fov_error_deg": 0.0,
+  "expected_unreal_forward": [0.0, 1.0, 0.0],
+  "forward_error": 3.1401849173675503e-16,
+  "asset_write_attempted": false,
+  "actor_write_attempted": false,
+  "save_called": false,
+  "import_called": false,
+  "render_called": false,
+  "gpu_work_requested": false,
+  "errors": [],
+  "audit_route": "live_ue_cli_execute_python",
+  "editor_pid": 10044,
+  "editor_project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "editor_executable": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor.exe",
+  "source_mesh_reference_preserved": true,
+  "source_camera_contract_preserved": true
+}

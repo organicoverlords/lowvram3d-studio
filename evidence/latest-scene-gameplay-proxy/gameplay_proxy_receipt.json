@@ -1,0 +1,23 @@
+{
+  "schema_version": "castlegrounds_gameplay_proxy_receipt_v1",
+  "classification": "BLOCKED_EDITOR_NOT_RUNNING",
+  "source_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "proposed_new_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "proxy_attempt_started": false,
+  "proxy_actor_count": 0,
+  "source_map_modified": false,
+  "source_mesh_modified": false,
+  "save_called": false,
+  "render_started": false,
+  "gpu_work_requested": false,
+  "pcg_started": false,
+  "editor_pid_expected": 10044,
+  "bridge_port": 55557,
+  "bridge_state_after_attempt": "CLOSED_EDITOR_PROCESS_ABSENT",
+  "errors": [
+    "UE_CLI_BRIDGE_UNREACHABLE_BEFORE_PROXY_COMMAND",
+    "EDITOR_PID_10044_NOT_RUNNING_AFTER_ATTEMPT",
+    "USER_REVIEW_REQUIRED_TO_RELAUNCH_EDITOR"
+  ],
+  "next_action": "USER_REVIEW_REQUIRED_RELAUNCH_OR_REOPEN_UNREAL_EDITOR"
+}

@@ -1,0 +1,573 @@
+{
+  "assets": [
+    {
+      "collision": "none",
+      "id": "source_mesh_v2",
+      "lod_policy": "nanite",
+      "material_policy": "unlit_projection",
+      "navigation": "ignored",
+      "region_id": "source_shell",
+      "representation": "visual_shell",
+      "semantic_class": "source_visible_shell",
+      "source_uri": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb",
+      "tags": [
+        "proven_import",
+        "source_camera_locked",
+        "authoritative_camera_bound",
+        "proven_unreal_import"
+      ],
+      "transform": {
+        "rotation_deg_xyz": [
+          0,
+          0,
+          0
+        ],
+        "scale_xyz": [
+          1,
+          1,
+          1
+        ],
+        "translation_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triangle_budget": 374959
+    },
+    {
+      "collision": "custom_proxy",
+      "id": "castle_proxy",
+      "lod_policy": "generated_lods",
+      "material_policy": "engine_material",
+      "navigation": "walkable",
+      "region_id": "castle_core",
+      "representation": "gameplay_proxy",
+      "semantic_class": "castle",
+      "tags": [
+        "replaceable",
+        "gameplay",
+        "placement_unproven",
+        "not_promoted"
+      ],
+      "transform": {
+        "rotation_deg_xyz": [
+          0,
+          0,
+          0
+        ],
+        "scale_xyz": [
+          1,
+          1,
+          1
+        ],
+        "translation_m": [
+          10,
+          28,
+          4
+        ]
+      },
+      "triangle_budget": 50000
+    },
+    {
+      "collision": "simple",
+      "id": "bridge_tile",
+      "lod_policy": "generated_lods",
+      "material_policy": "engine_material",
+      "navigation": "walkable",
+      "region_id": "castle_core",
+      "representation": "procedural_module",
+      "semantic_class": "bridge_module",
+      "tags": [
+        "shape_grammar",
+        "gameplay",
+        "placement_unproven",
+        "not_promoted"
+      ],
+      "transform": {
+        "rotation_deg_xyz": [
+          0,
+          0,
+          0
+        ],
+        "scale_xyz": [
+          1,
+          1,
+          1
+        ],
+        "translation_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triangle_budget": 5000
+    },
+    {
+      "collision": "none",
+      "id": "grass_cluster",
+      "lod_policy": "none",
+      "material_policy": "engine_material",
+      "navigation": "ignored",
+      "region_id": "vegetation",
+      "representation": "procedural_module",
+      "semantic_class": "grass",
+      "tags": [
+        "decorative",
+        "gpu_safe",
+        "placement_unproven",
+        "not_promoted"
+      ],
+      "transform": {
+        "rotation_deg_xyz": [
+          0,
+          0,
+          0
+        ],
+        "scale_xyz": [
+          1,
+          1,
+          1
+        ],
+        "translation_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triangle_budget": 48
+    }
+  ],
+  "budgets": {
+    "allow_concurrent_neural_and_unreal_gpu": false,
+    "gpu_vram_mb": 6144,
+    "max_draw_calls_target": 2500,
+    "max_gpu_population_instances": 250000,
+    "max_texture_memory_mb": 1536,
+    "max_total_triangles": 1500000
+  },
+  "camera": {
+    "envelope": {
+      "max_pitch_deg": 3.0,
+      "max_translation_m": 2.0,
+      "max_yaw_deg": 5.0
+    },
+    "required_views": [
+      {
+        "far_m": 500.0,
+        "field_of_view_deg": 66.50838470458984,
+        "id": "source",
+        "look_at_m": [
+          -6.798699363224801e-17,
+          -1.0,
+          -5.551115123125783e-17
+        ],
+        "near_m": 0.1,
+        "position_m": [
+          -1.4999749120901782e-16,
+          2.7755575615628914e-17,
+          -2.220446049250313e-16
+        ],
+        "principal_point_norm": [
+          0.5,
+          0.5
+        ],
+        "projection": "perspective",
+        "purpose": "source_match"
+      },
+      {
+        "far_m": 500.0,
+        "field_of_view_deg": 66.50838470458984,
+        "id": "offset_left",
+        "look_at_m": [
+          -1.0,
+          -1.0,
+          2.649934634551198e-17
+        ],
+        "near_m": 0.1,
+        "position_m": [
+          -1.0000000000000002,
+          -5.4254921961140895e-17,
+          -1.400341073482615e-16
+        ],
+        "principal_point_norm": [
+          0.5,
+          0.5
+        ],
+        "projection": "perspective",
+        "purpose": "offset_parallax"
+      },
+      {
+        "far_m": 500.0,
+        "field_of_view_deg": 66.50838470458984,
+        "id": "offset_right",
+        "look_at_m": [
+          0.9999999999999999,
+          -0.9999999999999999,
+          -1.3752164880802764e-16
+        ],
+        "near_m": 0.1,
+        "position_m": [
+          0.9999999999999999,
+          1.0976607319239872e-16,
+          -3.040551025018011e-16
+        ],
+        "principal_point_norm": [
+          0.5,
+          0.5
+        ],
+        "projection": "perspective",
+        "purpose": "offset_parallax"
+      }
+    ],
+    "source_camera": {
+      "far_m": 500.0,
+      "field_of_view_deg": 66.50838470458984,
+      "id": "source",
+      "look_at_m": [
+        -6.798699363224801e-17,
+        -1.0,
+        -5.551115123125783e-17
+      ],
+      "near_m": 0.1,
+      "position_m": [
+        -1.4999749120901782e-16,
+        2.7755575615628914e-17,
+        -2.220446049250313e-16
+      ],
+      "principal_point_norm": [
+        0.5,
+        0.5
+      ],
+      "projection": "perspective",
+      "purpose": "source_match"
+    }
+  },
+  "coordinate_system": {
+    "handedness": "right",
+    "units": "meters",
+    "unreal_scale_cm_per_unit": 100,
+    "up_axis": "Z"
+  },
+  "depth_bands": [
+    {
+      "far_m": 20.0,
+      "id": "foreground",
+      "near_m": 0.1
+    },
+    {
+      "far_m": 38.0,
+      "id": "castle",
+      "near_m": 20.0
+    },
+    {
+      "far_m": 58.0,
+      "id": "water",
+      "near_m": 38.0
+    },
+    {
+      "far_m": 100.0,
+      "id": "background",
+      "near_m": 58.0
+    }
+  ],
+  "intent": {
+    "description": "Authoritative source camera and visual shell with bounded, independently proved gameplay and PCG layers.",
+    "deterministic_seed": 20260803,
+    "mode": "hybrid_gameplay_scene",
+    "quality_tier": "smoke",
+    "target_engine": "unreal_5_8"
+  },
+  "landmarks": [
+    {
+      "id": "lighthouse_top",
+      "role": "camera_calibration",
+      "source_uv_norm": [
+        0.58,
+        0.19
+      ],
+      "tolerance_px": 38.0,
+      "world_m": [
+        12.0,
+        25.0,
+        49.0
+      ]
+    },
+    {
+      "id": "castle_base",
+      "role": "layout_anchor",
+      "world_m": [
+        10.0,
+        28.0,
+        5.0
+      ]
+    },
+    {
+      "id": "foreground_cliff",
+      "role": "qa_anchor",
+      "world_m": [
+        -22.0,
+        31.0,
+        16.0
+      ]
+    }
+  ],
+  "outputs": {
+    "authoritative_camera_contract": "evidence/latest-scene-camera-local-worker/camera_contract.json",
+    "source_shell_glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb",
+    "unreal_asset_root": "/Game/AgentProof/ImageToSceneSmoke_20260803/",
+    "unreal_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+    "unreal_source_mesh_asset": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2"
+  },
+  "pcg": {
+    "layers": [
+      {
+        "execution": "cpu",
+        "grid_size_m": 64.0,
+        "id": "exclusions",
+        "inputs": [
+          "river_main",
+          "castle_core"
+        ],
+        "outputs": [
+          "buildable_mask"
+        ],
+        "pattern": "exclusion_mask",
+        "reference_graph": "Project/PCG/Reference/ExclusionMask"
+      },
+      {
+        "execution": "cpu",
+        "grid_size_m": 64.0,
+        "id": "bridges",
+        "inputs": [
+          "bridge_axis_main",
+          "bridge_tile"
+        ],
+        "outputs": [
+          "bridge_instances"
+        ],
+        "pattern": "spline_modules",
+        "reference_graph": "Project/PCG/Reference/SplineModules"
+      },
+      {
+        "execution": "cpu",
+        "grid_size_m": 128.0,
+        "id": "large_objects",
+        "inputs": [
+          "buildable_mask",
+          "castle_proxy"
+        ],
+        "outputs": [
+          "gameplay_geometry"
+        ],
+        "pattern": "large_objects",
+        "reference_graph": "Project/PCG/Reference/LargeObjects"
+      },
+      {
+        "execution": "gpu",
+        "grid_size_m": 16.0,
+        "id": "small_scatter",
+        "inputs": [
+          "buildable_mask",
+          "grass_population"
+        ],
+        "outputs": [
+          "decorative_instances"
+        ],
+        "pattern": "small_scatter",
+        "reference_graph": "Project/PCG/Reference/SmallScatter"
+      }
+    ],
+    "policy": "reference_driven_incremental",
+    "reference_graphs": [
+      "Engine/Plugins/PCG/SampleContent",
+      "Project/PCG/Reference/LargeObjects",
+      "Project/PCG/Reference/SmallScatter",
+      "Project/PCG/Reference/SplineModules"
+    ]
+  },
+  "populations": [
+    {
+      "asset_refs": [
+        "grass_cluster"
+      ],
+      "density_per_m2": 1.5,
+      "exclusion_tags": [
+        "water",
+        "road",
+        "hero_structure"
+      ],
+      "execution": "gpu_pcg",
+      "grid_size_m": 16.0,
+      "id": "grass_population",
+      "min_distance_m": 0.25,
+      "region_id": "vegetation",
+      "requires_collision": false,
+      "requires_navigation": false,
+      "runtime_generation": true
+    }
+  ],
+  "proof": {
+    "current_classification": "PARTIAL",
+    "evidence_root": "proof/scene/20260803-image-to-scene-smoke/",
+    "required_gates": [
+      "SCENE_SPEC_VALID",
+      "SOURCE_CAMERA_COVERAGE_PROVEN",
+      "UNREAL_INTERCHANGE_IMPORT_PROVEN",
+      "UNREAL_SAVE_RELOAD_PROVEN",
+      "PCG_REFERENCE_GRAPH_PROVEN",
+      "COLLISION_NAV_PROVEN",
+      "UNREAL_SOURCE_RENDER_PROVEN",
+      "UNREAL_PARALLAX_PROVEN"
+    ]
+  },
+  "regions": [
+    {
+      "confidence": 0.99,
+      "depth_band": "foreground",
+      "id": "source_shell",
+      "interactive": false,
+      "label": "source-visible reconstructed surface",
+      "representation": "visual_shell",
+      "tags": [
+        "source_locked"
+      ],
+      "walkable": false
+    },
+    {
+      "bbox_norm_xyxy": [
+        0.38,
+        0.18,
+        0.72,
+        0.72
+      ],
+      "confidence": 0.72,
+      "depth_band": "castle",
+      "id": "castle_core",
+      "interactive": true,
+      "label": "castle and lighthouse gameplay area",
+      "representation": "editable_mesh",
+      "tags": [
+        "hero_structure"
+      ],
+      "walkable": true
+    },
+    {
+      "confidence": 0.68,
+      "depth_band": "water",
+      "id": "water_channels",
+      "interactive": false,
+      "label": "water channels",
+      "representation": "gameplay_proxy",
+      "tags": [
+        "water",
+        "exclusion"
+      ],
+      "walkable": false
+    },
+    {
+      "confidence": 0.55,
+      "depth_band": "foreground",
+      "id": "vegetation",
+      "interactive": false,
+      "label": "decorative vegetation",
+      "representation": "procedural_population",
+      "tags": [
+        "decorative"
+      ],
+      "walkable": false
+    },
+    {
+      "confidence": 0.95,
+      "id": "sky",
+      "interactive": false,
+      "label": "sky and clouds",
+      "representation": "sky",
+      "tags": [
+        "background"
+      ],
+      "walkable": false
+    }
+  ],
+  "scene_id": "castlegrounds_hybrid_authoritative_v1",
+  "schema_version": "scene_spec_v1",
+  "source": {
+    "dimensions_px": [
+      1448,
+      1086
+    ],
+    "kind": "image",
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
+    "sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba"
+  },
+  "splines": [
+    {
+      "exclusion_radius_m": 3.0,
+      "id": "river_main",
+      "kind": "river",
+      "points_m": [
+        [
+          -30.0,
+          45.0,
+          0.0
+        ],
+        [
+          0.0,
+          50.0,
+          0.0
+        ],
+        [
+          30.0,
+          58.0,
+          0.0
+        ]
+      ],
+      "tags": [
+        "water",
+        "no_build"
+      ],
+      "width_m": 12.0
+    },
+    {
+      "grammar_id": "bridge_tile_v1",
+      "id": "bridge_axis_main",
+      "kind": "bridge_axis",
+      "points_m": [
+        [
+          -10.0,
+          31.0,
+          4.0
+        ],
+        [
+          10.0,
+          31.0,
+          4.0
+        ]
+      ],
+      "tags": [
+        "crossing"
+      ],
+      "width_m": 3.0
+    }
+  ],
+  "uncertainties": [
+    {
+      "description": "Back sides of castle architecture are not observed in the source image.",
+      "fallback": "Use simple gameplay proxy geometry outside the source camera envelope.",
+      "id": "unseen_architecture",
+      "severity": "high"
+    },
+    {
+      "description": "Individual vegetation species and placement are not recoverable reliably.",
+      "fallback": "Use biome-matched procedural populations with deterministic seed.",
+      "id": "vegetation_identity",
+      "severity": "medium"
+    },
+    {
+      "description": "Deterministic Unreal PNG capture is blocked in the current null-RHI execution path.",
+      "fallback": "Require a live editor or render-capable commandlet before promotion.",
+      "id": "unreal_render_capture",
+      "severity": "high"
+    }
+  ]
+}

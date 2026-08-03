@@ -1,0 +1,17 @@
+{
+  "authoritative_fov_x_deg": 66.50838470458984,
+  "blender_work_started": false,
+  "classification": "PROVEN",
+  "gpu_work_started": false,
+  "legacy_fov_removed": true,
+  "neural_work_started": false,
+  "offset_distance_m": 1.0,
+  "parallel_offset_views": true,
+  "scene_spec_valid": true,
+  "schema_version": "scene_hybrid_composition_receipt_v1",
+  "source_mesh_unreal_asset_preserved": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2",
+  "unbuilt_assets_marked_not_promoted": true,
+  "unreal_map_preserved": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "unreal_work_started": false,
+  "validation_errors": []
+}

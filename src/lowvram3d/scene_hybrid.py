@@ -24,6 +24,10 @@ def _scale(value: list[float], scalar: float) -> list[float]:
     return [float(item) * scalar for item in value]
 
 
+def _same_vector(a: list[float], b: list[float], tolerance: float = 1e-9) -> bool:
+    return len(a) == len(b) and all(abs(float(x) - float(y)) <= tolerance for x, y in zip(a, b, strict=True))
+
+
 def _camera_view(
     contract: dict[str, Any],
     view_id: str,
@@ -132,7 +136,8 @@ def compose_authoritative_hybrid_spec(
         "validation_errors": validation["errors"],
         "authoritative_fov_x_deg": source_view["field_of_view_deg"],
         "legacy_fov_removed": source_view["field_of_view_deg"] != 48.0,
-        "parallel_offset_views": source_direction == left_direction == right_direction,
+        "parallel_offset_views": _same_vector(source_direction, left_direction)
+        and _same_vector(source_direction, right_direction),
         "offset_distance_m": 1.0,
         "source_mesh_unreal_asset_preserved": source_mesh_path,
         "unreal_map_preserved": map_path,
