@@ -1,0 +1,21 @@
+{
+  "blender_work_started": false,
+  "camera_contract_preserved": true,
+  "camera_contract_sha256_after": "7215ca5c9d30d3ab0f819e043fafc6c2e6b54b3bc617b9f2c6d650c0afb47fb8",
+  "camera_contract_sha256_before": "7215ca5c9d30d3ab0f819e043fafc6c2e6b54b3bc617b9f2c6d650c0afb47fb8",
+  "classification": "PROVEN",
+  "landmark_contract_preserved": true,
+  "landmark_contract_sha256_after": "116b374ffa0455aa4beccc1f9d119df1968de54cb31794cc2a43a9957cfb25ba",
+  "landmark_contract_sha256_before": "116b374ffa0455aa4beccc1f9d119df1968de54cb31794cc2a43a9957cfb25ba",
+  "mesh_identity_preserved": true,
+  "neural_work_started": false,
+  "scene_spec_valid": true,
+  "schema_version": "scene_spec_legacy_migration_receipt_v1",
+  "source_dimensions_preserved": true,
+  "source_sha256_preserved": true,
+  "transform_contract_preserved": true,
+  "transform_contract_sha256_after": "33827812c6ad092bad28f23399ab6634e5d65499171bbc6b0e1f0cbef6328261",
+  "transform_contract_sha256_before": "33827812c6ad092bad28f23399ab6634e5d65499171bbc6b0e1f0cbef6328261",
+  "unreal_work_started": false,
+  "validation_errors": []
+}

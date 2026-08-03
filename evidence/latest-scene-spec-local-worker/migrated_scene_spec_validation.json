@@ -1,0 +1,20 @@
+{
+  "classification": "PROVEN",
+  "counts": {
+    "assets": 1,
+    "camera_views": 1,
+    "depth_bands": 4,
+    "pcg_layers": 0,
+    "populations": 0,
+    "regions": 5,
+    "splines": 0
+  },
+  "error_count": 0,
+  "errors": [],
+  "scene_id": "castlegrounds_source_locked_v1",
+  "scene_spec_path": "C:\\actions-runner-lowvram3d\\_work\\lowvram3d-studio\\lowvram3d-studio\\evidence\\latest-scene-spec-local-worker\\migrated_scene_spec.json",
+  "scene_spec_valid": true,
+  "schema_version": "scene_spec_v1",
+  "warning_count": 0,
+  "warnings": []
+}
