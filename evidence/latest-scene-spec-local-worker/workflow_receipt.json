@@ -1,0 +1,10 @@
+﻿{
+    "classification":  "PROVEN",
+    "workflow_run_id":  "30852754056",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30852754056",
+    "head_sha":  "80abddb17d060a6cb1504c4ce7b3f6d244461d21",
+    "worker_head":  "80abddb17d060a6cb1504c4ce7b3f6d244461d21",
+    "gpu_work_started":  false,
+    "scope":  "SCENE_SPEC_CPU_ONLY",
+    "recorded_at":  "2026-08-03T21:01:16.6024910Z"
+}

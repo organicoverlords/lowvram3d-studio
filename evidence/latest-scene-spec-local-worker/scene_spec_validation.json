@@ -1,0 +1,20 @@
+{
+  "classification": "PROVEN",
+  "counts": {
+    "assets": 4,
+    "camera_views": 3,
+    "depth_bands": 4,
+    "pcg_layers": 4,
+    "populations": 1,
+    "regions": 5,
+    "splines": 2
+  },
+  "error_count": 0,
+  "errors": [],
+  "scene_id": "castlegrounds_hybrid_v1",
+  "scene_spec_path": "C:\\actions-runner-lowvram3d\\_work\\lowvram3d-studio\\lowvram3d-studio\\configs\\scene\\castlegrounds_scene_spec_v1.json",
+  "scene_spec_valid": true,
+  "schema_version": "scene_spec_v1",
+  "warning_count": 0,
+  "warnings": []
+}

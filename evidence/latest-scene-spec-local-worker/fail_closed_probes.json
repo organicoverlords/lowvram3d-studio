@@ -1,0 +1,33 @@
+{
+  "classification": "PROVEN",
+  "probes": {
+    "gameplay_no_collision": {
+      "classification": "REJECTED",
+      "codes": [
+        "UNSAFE_GAMEPLAY_PROXY"
+      ],
+      "expected_code": "UNSAFE_GAMEPLAY_PROXY"
+    },
+    "gpu_collision": {
+      "classification": "REJECTED",
+      "codes": [
+        "UNSAFE_GPU_PCG"
+      ],
+      "expected_code": "UNSAFE_GPU_PCG"
+    },
+    "gpu_concurrency": {
+      "classification": "REJECTED",
+      "codes": [
+        "UNSAFE_GPU_CONCURRENCY"
+      ],
+      "expected_code": "UNSAFE_GPU_CONCURRENCY"
+    },
+    "gpu_gameplay_output": {
+      "classification": "REJECTED",
+      "codes": [
+        "GPU_GAMEPLAY_OUTPUT"
+      ],
+      "expected_code": "GPU_GAMEPLAY_OUTPUT"
+    }
+  }
+}
