@@ -49,6 +49,11 @@ def direction_key(view: dict) -> tuple[int, int, int]:
     return tuple(int(round(float(component))) for component in view["camera_direction"])
 
 
+def file_prefix(view: dict) -> str:
+    """On-disk array prefix, which stops being the semantic label once a bundle is relabelled."""
+    return str(view.get("control_file_prefix") or view["semantic_name"])
+
+
 def load_view(bundle: Path, prefix: str):
     ids = np.load(bundle / f"{prefix}_triangle_ids.npy")
     mask = np.asarray(Image.open(bundle / f"{prefix}_mask.png").convert("L")) > 127
@@ -126,8 +131,8 @@ def main() -> int:
     for key in sorted(source_views):
         source_view, repaired_view = source_views[key], repaired_views[key]
         index = int(repaired_view["index"])
-        source_map = {index: str(source_view["semantic_name"])}
-        repaired_map = {index: str(repaired_view["semantic_name"])}
+        source_map = {index: file_prefix(source_view)}
+        repaired_map = {index: file_prefix(repaired_view)}
         pairing.append({
             "camera_direction": list(key),
             "source_raw_index": int(source_view["index"]),
@@ -149,6 +154,7 @@ def main() -> int:
             "raw_index": index,
             "source_prefix": source_map[index],
             "repaired_prefix": repaired_map[index],
+            "semantic_label": str(repaired_view.get("proven_semantic") or repaired_map[index]),
             "source_foreground_pixels": int(src_mask.sum()),
             "repaired_foreground_pixels": int(rep_mask.sum()),
             "bar_pixels_in_source": bar_pixels,

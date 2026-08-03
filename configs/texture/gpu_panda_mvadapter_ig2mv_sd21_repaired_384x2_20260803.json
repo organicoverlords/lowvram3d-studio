@@ -1,7 +1,8 @@
 {
   "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
-  "status": "EXECUTED_384_QA_PASSED",
+  "status": "EXECUTED_384_QA_REJECTED",
   "asset": "tactical_red_panda_scout",
+  "purpose": "bounded 384x2 validation of the bar-repaired mesh and the corrected camera permutation",
   "generator_family": "MVADAPTER_SD21",
   "conditioning": "IMAGE_PLUS_GEOMETRY",
   "text_conditioned_fallback": "FORBIDDEN",
@@ -13,13 +14,51 @@
   "base_model": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--stabilityai--stable-diffusion-2-1-base",
   "adapter": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--huanngzh--mv-adapter\\mvadapter_ig2mv_sd21.safetensors",
   "adapter_sha256": "7940d6197be614fc6a3483ece1ed37cac850f94375d127ada6ae6464ce9252c3",
-  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\bundle\\tactical_red_panda_scout_5step_uv_chart_separated.glb",
-  "immutable_mesh_sha256": "ec335a02e8975b1302f3a5c3a3a842e7ab256cff270f54ab415795b0c0ec76c1",
+  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\tactical_red_panda_scout_bar_repaired.glb",
+  "immutable_mesh_sha256": "78c55133165e931bc8d6765610a679d1d18badcdc178820a69e31b7b32bcbfb8",
+  "mesh_provenance": {
+    "canonical_input": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\bundle\\tactical_red_panda_scout_5step_uv_chart_separated.glb",
+    "canonical_input_sha256": "ec335a02e8975b1302f3a5c3a3a842e7ab256cff270f54ab415795b0c0ec76c1",
+    "repair": "PANDA_PRODUCTION_MESH_BAR_REPAIR_PROVEN",
+    "repair_receipt": "proof/integration/20260803-panda-bar-repair/bar_repair_canonical_report.json",
+    "removed_face_count": 64,
+    "added_face_count": 0
+  },
+  "camera_semantics": {
+    "classification": "PANDA_CAMERA_SEMANTICS_PROVEN_BY_USER_REVIEW_AND_CAMERA_VECTORS",
+    "superseded_classification": "PANDA_CAMERA_SEMANTICS_PREVIOUS_CONTRACT_REJECTED",
+    "raw_to_semantic": {
+      "0": "left",
+      "1": "rear",
+      "2": "right",
+      "3": "front",
+      "4": "top",
+      "5": "bottom"
+    },
+    "semantic_to_raw": {
+      "front": 3,
+      "right": 2,
+      "rear": 1,
+      "left": 0,
+      "top": 4,
+      "bottom": 5
+    },
+    "superseded_raw_to_semantic": {
+      "0": "left",
+      "1": "front",
+      "2": "right",
+      "3": "rear",
+      "4": "top",
+      "5": "bottom"
+    },
+    "raw_order_preserved": true,
+    "control_arrays_rewritten": false
+  },
   "primary": {
     "model": "SD2.1",
     "views": 6,
     "resolution": 384,
-    "steps": 20,
+    "steps": 2,
     "guidance_scale": 1.0,
     "reference_conditioning_scale": 1.0,
     "control_conditioning_scale": 1.0,
@@ -39,15 +78,15 @@
     "xformers_required": false,
     "conditioning_reference": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\mvadapter_conditioning_v3\\conditioning_384.png",
     "conditioning_reference_sha256": "8e77e68845069430185cbdec8dd21260f79cee5e412222c5ff85d0ef9e39df08",
-    "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v5_official_scene\\control_tensor.npy",
-    "control_tensor_sha256": "a5ad52b2f8540c6773346bae48dc7a679934a68813b0321bda013ec7c1836f40",
-    "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v5_official_scene\\camera_contract.json",
-    "camera_contract_sha256": "0f3d49d43afd2531e1eca8d055fbe842947bfce0df21f76624ea04d06aa12b12"
+    "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\control_tensor.npy",
+    "control_tensor_sha256": "b4250a05cf256450662a100bcec82fc1096b89a516fd765e3a39b790b27f1c7c",
+    "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\camera_contract.json",
+    "camera_contract_sha256": "d6a5b10be865dc8be8941f2bd1ebf5601f1c9c6f8ac16ffefa36fd750a1677dc"
   },
   "oom_fallback": {
     "authorized_only_after_genuine_cuda_oom": true,
     "resolution": 256,
-    "steps": 20,
+    "steps": 2,
     "conditioning_reference": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\mvadapter_conditioning_v3\\conditioning_256.png",
     "conditioning_reference_sha256": "0fd5491bdf4dfcbcfccc49f6b9af85956fbb87970858a8c61129e1a4c4fe147d",
     "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_256_v5_official_scene\\control_tensor.npy",
@@ -56,42 +95,24 @@
     "camera_contract_sha256": "0f3d49d43afd2531e1eca8d055fbe842947bfce0df21f76624ea04d06aa12b12",
     "second_oom": "HARD_BLOCKER",
     "adapter_switch": "FORBIDDEN",
-    "text_conditioned_fallback": "FORBIDDEN"
+    "text_conditioned_fallback": "FORBIDDEN",
+    "note": "256 fallback still carries the pre-repair controls and the superseded permutation; a fallback result is diagnostic only and may not be promoted."
   },
   "prompt": "high quality clean albedo reference of the same tactical red panda character, consistent materials, consistent identity, flat neutral lighting",
   "negative_prompt": null,
   "classifier_free_guidance": false,
   "attempts_authorized": 1,
-  "attempts_used": 1,
+  "attempts_used": 0,
   "gpu_sequence_consumed": true,
   "fallback_eligible": false,
   "next_action": "USER_REVIEW_REQUIRED",
-  "abort_gate_receipts": {
-    "256": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_abort_gate_256_20260803\\inference_receipt.json",
-    "384": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_abort_gate_384_20260803\\inference_receipt.json",
-    "256_classification": "MVADAPTER_256_PRODUCTION_ABORT_GATE_PROVEN",
-    "384_classification": "MVADAPTER_384_PRODUCTION_ABORT_GATE_PROVEN"
-  },
+  "twenty_step_authorization": "WITHHELD_UNTIL_TWO_STEP_GATE_REVIEWED",
   "repair_proofs": {
     "vae_fp32": "proof/benchmarks/20260803-mvadapter-vae-fp16-nan-root-cause.json",
     "cudnn_guard": "proof/benchmarks/20260803-mvadapter-cudnn-convolution-guard.json",
-    "reference_zero_sentinel": "CACHE_SIDE_EFFECT_WITH_ZERO_SENTINEL"
+    "reference_zero_sentinel": "CACHE_SIDE_EFFECT_WITH_ZERO_SENTINEL",
+    "bar_repair": "proof/integration/20260803-panda-bar-repair/bar_repair_proof.json",
+    "camera_permutation": "proof/integration/20260803-panda-camera-permutation/CAMERA_SEMANTICS.md"
   },
-  "production_result": {
-    "classification": "MVADAPTER_NUMERICALLY_PROVEN_OLD_CONTROLS_UNPROMOTED",
-    "numerical_qa": "PROVEN",
-    "visual_qa": "NOT_FINAL",
-    "receipt": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_production_384x20_20260803\\inference_receipt.json",
-    "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_production_384x20_20260803\\six_view_contact_sheet.png",
-    "rear_face_visual_check": "ABSENT",
-    "superseded_classification": "MVADAPTER_FULL_RUN_PROVEN",
-    "superseded_visual_qa_claim": "PROVEN",
-    "unpromoted_reasons": [
-      "controls were built from a mesh that still contained the stretched geometry bar",
-      "image filenames used the incorrect front/rear mapping (front=raw1, rear=raw3)"
-    ],
-    "do_not_describe_as": "final visual QA passed",
-    "superseded_on": "2026-08-03",
-    "successor_configuration": "configs/texture/gpu_panda_mvadapter_ig2mv_sd21_repaired_384x2_20260803.json"
-  }
+  "supersedes": "configs/texture/gpu_panda_mvadapter_ig2mv_sd21_production_384_20260803.json"
 }

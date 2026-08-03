@@ -1,4 +1,4 @@
-"""Textured re-render of a CPU control bundle, plus raw-index and semantic contact sheets.
+"""Textured control renders and the raw / semantic / mapping contact sheets.
 
 Camera semantics cannot be read off a mask: an orthographic silhouette from +d and -d is
 the same shape mirrored, so front and rear have identical pixel areas.  Landmarks - muzzle,
@@ -6,7 +6,10 @@ tail, backpack, rifle - only become visible once the base-colour texture is samp
 is what this does, reusing the bundle's own triangle-ID and barycentric buffers so the
 result is in exactly the camera frame the controls were built in.
 
-Filenames come from the bundle's camera contract, never from a positional VIEW_NAMES tuple.
+Every filename and every label comes from the camera contract: the on-disk arrays are found
+through ``control_file_prefix`` and the label through ``proven_semantic``.  There is no
+positional VIEW_NAMES tuple anywhere in this file, so a relabelled bundle cannot silently
+pick up the wrong semantic from its ordering.
 """
 from __future__ import annotations
 
@@ -59,16 +62,25 @@ def sample(texture: np.ndarray, uv: np.ndarray) -> np.ndarray:
     return texture[ys, xs]
 
 
-def label(image: Image.Image, text: str) -> Image.Image:
-    framed = Image.new("RGB", (image.width, image.height + 18), (18, 18, 20))
-    framed.paste(image, (0, 18))
-    ImageDraw.Draw(framed).text((4, 4), text, fill=(240, 240, 240))
+def file_prefix(view: dict) -> str:
+    """The on-disk array prefix, which is not the semantic label once a bundle is relabelled."""
+    return str(view.get("control_file_prefix") or view["semantic_name"])
+
+
+def caption(image: Image.Image, lines: list[str]) -> Image.Image:
+    height = 12 * len(lines) + 8
+    framed = Image.new("RGB", (image.width, image.height + height), (18, 18, 20))
+    framed.paste(image, (0, height))
+    draw = ImageDraw.Draw(framed)
+    for position, text in enumerate(lines):
+        draw.text((4, 3 + position * 12), text, fill=(240, 240, 240))
     return framed
 
 
 def contact_sheet(tiles: list[Image.Image], columns: int = 3) -> Image.Image:
     rows = (len(tiles) + columns - 1) // columns
-    width, height = tiles[0].size
+    width = max(tile.width for tile in tiles)
+    height = max(tile.height for tile in tiles)
     sheet = Image.new("RGB", (width * columns, height * rows), (18, 18, 20))
     for position, tile in enumerate(tiles):
         sheet.paste(tile, ((position % columns) * width, (position // columns) * height))
@@ -93,47 +105,70 @@ def main() -> int:
         raise RuntimeError("CONTROL_TEXTURE_UV_MISSING")
     texture = np.asarray(base_colour_image(mesh))
     contract = json.loads((bundle / "camera_contract.json").read_text(encoding="utf-8"))
+    views = sorted(contract["views"], key=lambda item: int(item["index"]))
 
-    raw_tiles, semantic_tiles, records = [], [], []
-    for view in sorted(contract["views"], key=lambda item: int(item["index"])):
+    modalities: dict[str, list[Image.Image]] = {"textured": [], "position": [], "normal": []}
+    records = []
+    for view in views:
         index = int(view["index"])
-        prefix = str(view["semantic_name"])
+        prefix = file_prefix(view)
+        semantic = str(view.get("proven_semantic") or view["semantic_name"])
         ids = np.load(bundle / f"{prefix}_triangle_ids.npy")
         bary = np.load(bundle / f"{prefix}_barycentric.npy")
         visible = ids >= 0
         pixel_uv = np.einsum("nc,ncd->nd", bary[visible], uv[tris[ids[visible]]])
         canvas = np.full(ids.shape + (3,), 24, dtype=np.uint8)
         canvas[visible] = sample(texture, pixel_uv)
-        image = Image.fromarray(canvas)
-        image.save(output_dir / f"raw{index}_{prefix}_textured.png")
-        raw_tiles.append(label(image, f"raw{index}"))
-        semantic_tiles.append(label(image, str(view.get("proven_semantic") or prefix)))
+        textured_path = output_dir / f"raw{index}_{semantic}_textured.png"
+        Image.fromarray(canvas).save(textured_path)
+
+        modalities["textured"].append(Image.fromarray(canvas))
+        modalities["position"].append(Image.open(bundle / f"{prefix}_position.png").convert("RGB"))
+        modalities["normal"].append(Image.open(bundle / f"{prefix}_normal.png").convert("RGB"))
         records.append({
             "raw_index": index,
-            "bundle_prefix": prefix,
-            "declared_semantic": view.get("proven_semantic"),
+            "semantic_label": semantic,
+            "control_file_prefix": prefix,
             "azimuth_deg": view["azimuth_deg"],
             "elevation_deg": view["elevation_deg"],
-            "camera_position_control_space": view["camera_position"],
             "camera_direction_control_space": view["camera_direction"],
-            "camera_up_control_space": view["camera_up"],
-            "textured_render": str(output_dir / f"raw{index}_{prefix}_textured.png"),
+            "camera_direction_mesh_local": view.get("camera_direction_mesh_local"),
+            "textured_render": str(textured_path),
             "foreground_pixels": int(visible.sum()),
         })
 
-    contact_sheet(raw_tiles).save(output_dir / "contact_sheet_a_raw_index.png")
-    contact_sheet(semantic_tiles).save(output_dir / "contact_sheet_b_semantic.png")
+    sheets = {}
+    for modality, images in modalities.items():
+        variants = {
+            "a_raw_index": [f"raw{item['raw_index']}" for item in records],
+            "b_semantic_corrected": [item["semantic_label"] for item in records],
+            "c_raw_and_semantic_mapping": None,
+        }
+        for name, labels in variants.items():
+            if labels is None:
+                tiles = [caption(image, [
+                    f"raw{item['raw_index']} = {item['semantic_label']}",
+                    f"az {item['azimuth_deg']:.2f}  el {item['elevation_deg']:.2f}",
+                ]) for image, item in zip(images, records)]
+            else:
+                tiles = [caption(image, [text]) for image, text in zip(images, labels)]
+            path = output_dir / f"contact_sheet_{name}_{modality}.png"
+            contact_sheet(tiles).save(path)
+            sheets[f"{name}_{modality}"] = str(path)
+
     report = {
-        "schema": "control_bundle_texture_render_v1",
+        "schema": "control_bundle_texture_render_v2",
         "mesh": str(mesh),
         "bundle": str(bundle),
-        "contact_sheet_raw_index": str(output_dir / "contact_sheet_a_raw_index.png"),
-        "contact_sheet_semantic": str(output_dir / "contact_sheet_b_semantic.png"),
+        "camera_contract_classification": contract.get("classification"),
+        "raw_to_semantic": contract.get("raw_to_semantic"),
         "filenames_from_camera_contract": True,
+        "hardcoded_view_name_tuple_used": False,
+        "contact_sheets": sheets,
         "views": records,
     }
     Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")
-    print(f"CONTROL_TEXTURE_RENDER_DONE views={len(records)}", flush=True)
+    print(f"CONTROL_TEXTURE_RENDER_DONE views={len(records)} sheets={len(sheets)}", flush=True)
     return 0
 
 

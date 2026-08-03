@@ -37,6 +37,11 @@ def mirror_scores(mask: np.ndarray) -> dict:
     }
 
 
+def file_prefix(view: dict) -> str:
+    """On-disk array prefix, which stops being the semantic label once a bundle is relabelled."""
+    return str(view.get("control_file_prefix") or view["semantic_name"])
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bundle", required=True)
@@ -50,7 +55,7 @@ def main() -> int:
 
     views = []
     for view in sorted(contract["views"], key=lambda item: int(item["index"])):
-        prefix = str(view["semantic_name"])
+        prefix = file_prefix(view)
         mask = np.asarray(Image.open(bundle / f"{prefix}_mask.png").convert("L")) > 127
         depth = np.load(bundle / f"{prefix}_depth.npy")
         finite = mask & np.isfinite(depth)
