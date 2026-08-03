@@ -99,12 +99,32 @@ def validate_inputs(control_tensor: Path, contract_path: Path, conditioning_imag
         raise RuntimeError("SD21_CAMERA_CONTRACT_INVALID")
     if not contract.get("fixture_gate_passed"):
         raise RuntimeError("SD21_CAMERA_CONTRACT_UNPROVEN")
-    for proof_key in ("semantic_mapping_proven", "handedness_proven", "top_bottom_rotation_proven"):
+    for proof_key in (
+        "semantic_mapping_proven",
+        "handedness_proven",
+        "top_rotation_proven",
+        "bottom_rotation_proven",
+        "top_bottom_rotation_proven",
+    ):
         if not contract.get(proof_key):
             raise RuntimeError(f"SD21_CAMERA_{proof_key.upper()}_UNPROVEN")
     for key in ("front_rear_direction_dot", "left_right_direction_dot", "top_bottom_direction_dot"):
         if float(contract.get(key, 0.0)) > -0.999:
             raise RuntimeError(f"SD21_CAMERA_OPPOSITE_DOT_INVALID:{key}")
+    # The semantics must have been read out of a rendered asymmetric fixture,
+    # never declared.  Reject a contract whose evidence is absent or unresolved.
+    semantics = contract.get("index_semantics") or {}
+    if sorted(semantics) != [str(i) for i in range(6)]:
+        raise RuntimeError(f"SD21_CAMERA_INDEX_SEMANTICS_INCOMPLETE:{sorted(semantics)}")
+    if semantics.get("4") != "top" or semantics.get("5") != "bottom":
+        raise RuntimeError(f"SD21_CAMERA_TOP_BOTTOM_INDEX_INVALID:{semantics}")
+    if len(set(semantics.values())) != 6 or "unresolved" in set(semantics.values()):
+        raise RuntimeError(f"SD21_CAMERA_INDEX_SEMANTICS_AMBIGUOUS:{semantics}")
+    evidence = (contract.get("fixture_evidence") or {}).get("evidence") or []
+    if len(evidence) != 6 or not all(record.get("passed") for record in evidence):
+        raise RuntimeError("SD21_CAMERA_FIXTURE_EVIDENCE_INVALID")
+    if float(contract.get("projection_half_span", 0.0)) != 0.55:
+        raise RuntimeError(f"SD21_CAMERA_PROJECTION_SPAN_INVALID:{contract.get('projection_half_span')}")
     conditioning = validate_conditioning_image(conditioning_image, resolution)
     return {
         "control_sha256": sha256(control_tensor),
@@ -112,6 +132,8 @@ def validate_inputs(control_tensor: Path, contract_path: Path, conditioning_imag
         **conditioning,
         "control_shape": list(tensor.shape),
         "control_dtype": str(tensor.dtype),
+        "camera_index_semantics": semantics,
+        "camera_projection_half_span": contract.get("projection_half_span"),
     }
 
 
@@ -122,10 +144,15 @@ def _assert_no_raster_imports() -> None:
 
 
 def load_sd21_pipeline(base_model: Path, adapter_path: Path, source_root: Path, offload_mode: str) -> dict[str, Any]:
+    """Construct the low-VRAM image+geometry SD2.1 pipeline and offload it.
+
+    Sequential offload is the only supported production mode: model offload
+    keeps a whole component resident, which a 6 GB card cannot afford.
+    """
     if "xl" in str(base_model).lower() or "sdxl" in str(base_model).lower():
         raise RuntimeError("SD21_WORKER_REJECTS_SDXL_BASE")
-    if "ig2mv_sd21" not in adapter_path.name.lower():
-        raise RuntimeError("SD21_WORKER_REQUIRES_IG2MV_SD21_ADAPTER")
+    if offload_mode != "sequential":
+        raise RuntimeError(f"SD21_OFFLOAD_MODE_MUST_BE_SEQUENTIAL:{offload_mode}")
     if not base_model.is_dir() or not (base_model / "model_index.json").is_file():
         raise RuntimeError("SD21_BASE_MODEL_UNAVAILABLE")
     if not adapter_path.is_file():
@@ -135,34 +162,44 @@ def load_sd21_pipeline(base_model: Path, adapter_path: Path, source_root: Path, 
     sys.path.insert(0, str(source_root))
     _assert_no_raster_imports()
     import torch
-    from diffusers import DDPMScheduler
     from safetensors.torch import load_file
-    from mvadapter.models.attention_processor import DecoupledMVRowSelfAttnProcessor2_0
-    from mvadapter.pipelines.pipeline_mvadapter_i2mv_sd import MVAdapterI2MVSDPipeline
-    from mvadapter.schedulers.scheduling_shift_snr import ShiftSNRScheduler
+
+    import lowvram_mvadapter_i2mv_sd21 as lowvram
+
+    # Route restriction: text-only and text+geometry adapters are rejected here,
+    # before any weight is read.
+    lowvram.assert_image_geometry_adapter(adapter_path.name)
 
     if "nvdiffrast" in sys.modules:
         raise RuntimeError("SD21_FORBIDDEN_RASTER_IMPORT_AFTER_PIPELINE_IMPORT")
-    pipe = MVAdapterI2MVSDPipeline.from_pretrained(
-        str(base_model), torch_dtype=torch.float16, local_files_only=True, safety_checker=None
-    )
-    pipe.scheduler = ShiftSNRScheduler.from_scheduler(
-        pipe.scheduler, shift_mode="interpolated", shift_scale=8.0, scheduler_class=DDPMScheduler
-    )
-    pipe.init_custom_adapter(num_views=6, self_attn_processor=DecoupledMVRowSelfAttnProcessor2_0)
+
     adapter_state = load_file(str(adapter_path), device="cpu")
-    pipe.load_custom_adapter(adapter_state, weight_name=adapter_path.name)
-    pipe.enable_vae_slicing()
-    if hasattr(pipe, "enable_attention_slicing"):
-        pipe.enable_attention_slicing()
-    if offload_mode == "model":
-        pipe.enable_model_cpu_offload(device="cuda")
-    elif offload_mode == "sequential":
-        pipe.enable_sequential_cpu_offload(device="cuda")
-    else:
-        raise RuntimeError("SD21_OFFLOAD_MODE_INVALID")
+    pipe, adapter_report = lowvram.build_low_vram_pipeline(
+        str(base_model), adapter_state, adapter_path.name, num_views=6, dtype=torch.float16
+    )
+    inventory = lowvram.component_inventory(pipe)
+    attention = lowvram.attention_report(pipe)
+    devices_before = {
+        name: record.get("devices") for name, record in inventory.items() if record.get("is_torch_module")
+    }
+    offload = lowvram.install_low_vram_offload(pipe, device="cuda")
+    hooks = lowvram.offload_hook_report(pipe)
     _assert_no_raster_imports()
-    return {"pipeline": pipe, "torch_version": torch.__version__, "torch_cuda": torch.version.cuda, "offload_mode": offload_mode, "denoising_called": False}
+    return {
+        "pipeline": pipe,
+        "pipeline_class": type(pipe).__name__,
+        "torch_version": torch.__version__,
+        "torch_cuda": torch.version.cuda,
+        "offload_mode": offload["offload_mode"],
+        "offload": offload,
+        "adapter_report": adapter_report,
+        "component_inventory": inventory,
+        "component_devices_before_offload": devices_before,
+        "component_hooks_after_offload": hooks,
+        "attention": attention,
+        "denoising_called": False,
+        "lowvram_module": lowvram,
+    }
 
 
 def run_load_only(args: argparse.Namespace) -> dict[str, Any]:
@@ -196,16 +233,55 @@ def run_load_only(args: argparse.Namespace) -> dict[str, Any]:
         receipt["base_model_sha256"] = sha256(args.base_model / "model_index.json")
         receipt["adapter_sha256"] = sha256(args.adapter)
         receipt["inputs"] = validate_inputs(args.control_tensor, args.camera_contract, args.conditioning_image, args.resolution)
+        receipt["conditioning_reference_sha256"] = receipt["inputs"]["conditioning_sha256"]
+        receipt["control_tensor_sha256"] = receipt["inputs"]["control_sha256"]
+        receipt["camera_contract_sha256"] = receipt["inputs"]["contract_sha256"]
+        receipt["adapter_file"] = args.adapter.name
+
         loaded = load_sd21_pipeline(args.base_model, args.adapter, args.mvadapter_source, args.offload_mode)
+        lowvram = loaded["lowvram_module"]
         receipt["pipeline_constructed"] = True
+        receipt["pipeline_class"] = loaded["pipeline_class"]
         receipt["adapter_loaded"] = True
-        receipt["offload_hooks_installed"] = True
+        receipt["adapter_report"] = loaded["adapter_report"]
+        receipt["component_inventory"] = loaded["component_inventory"]
+        receipt["component_parameter_counts"] = {
+            name: record.get("parameter_count")
+            for name, record in loaded["component_inventory"].items()
+            if record.get("is_torch_module")
+        }
+        receipt["component_devices_before_offload"] = loaded["component_devices_before_offload"]
+        receipt["component_hooks_after_offload"] = loaded["component_hooks_after_offload"]
+        receipt["attention_backend"] = loaded["attention"]["attention_backend"]
+        receipt["attention_slicing"] = loaded["attention"]["attention_slicing"]
+        receipt["attention_report"] = loaded["attention"]
+        receipt["vae_slicing"] = loaded["offload"]["vae_slicing"]
         receipt["offload_mode"] = loaded["offload_mode"]
+        receipt["offload_hooks_installed"] = True
+        receipt["cond_encoder_registered"] = "cond_encoder" in loaded["component_inventory"]
+        receipt["cond_encoder_hooked"] = bool(
+            loaded["component_hooks_after_offload"]["cond_encoder"]["hook_installed"]
+        )
+
+        control = np.load(args.control_tensor, allow_pickle=False)
+        smoke = lowvram.cond_encoder_device_path_smoke_test(
+            loaded["pipeline"], control, resolution=args.smoke_resolution
+        )
+        receipt["device_path_smoke_test"] = smoke
+        receipt["denoising_called"] = bool(smoke["unet_denoising_called"])
+        receipt["reference_unet_pass_called"] = bool(smoke["reference_unet_pass_called"])
+        receipt["peak_allocated_mb"] = smoke["cuda_peak_allocated_mb"]
+
         receipt["memory_after"] = memory_snapshot()
         receipt["peak_vram_mb"] = receipt["memory_after"].get("torch_peak_allocated_mb")
+        receipt["peak_reserved_mb"] = receipt["memory_after"].get("torch_reserved_mb")
         receipt["nvdiffrast_imported"] = any(name == "nvdiffrast" or name.startswith("nvdiffrast.") for name in sys.modules)
         if receipt["nvdiffrast_imported"] or loaded["denoising_called"] or receipt["output_images"]:
             raise RuntimeError("SD21_LOAD_ONLY_SIDE_EFFECT_DETECTED")
+        if not (receipt["cond_encoder_registered"] and receipt["cond_encoder_hooked"] and smoke.get("passed")):
+            raise RuntimeError("SD21_COND_ENCODER_PREFLIGHT_UNPROVEN")
+        if receipt["denoising_called"] or receipt["reference_unet_pass_called"]:
+            raise RuntimeError("SD21_LOAD_ONLY_DENOISING_DETECTED")
         receipt["success"] = True
         receipt["status"] = "PROVEN"
     except Exception as exc:
@@ -229,9 +305,11 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=12345)
     parser.add_argument("--resolution", type=int, default=256)
     parser.add_argument("--steps", type=int, default=20)
-    parser.add_argument("--guidance-scale", type=float, default=3.0)
+    parser.add_argument("--guidance-scale", type=float, default=1.0)
     parser.add_argument("--reference-conditioning-scale", type=float, default=1.0)
-    parser.add_argument("--offload-mode", choices=("model", "sequential"), default="model")
+    parser.add_argument("--control-conditioning-scale", type=float, default=1.0)
+    parser.add_argument("--smoke-resolution", type=int, default=64)
+    parser.add_argument("--offload-mode", choices=("sequential",), default="sequential")
     parser.add_argument("--load-only", action="store_true")
     parser.add_argument("--report", type=Path, default=None)
     args = parser.parse_args()

@@ -16,6 +16,14 @@ import cv2
 import numpy as np
 
 from mesh_io import read_glb, vertex_normals
+from mvadapter_orientation_fixture import (
+    AXIS_OCCLUDED_COMPONENT,
+    AXIS_SIGNATURE_COMPONENT,
+    COMPONENT_NAMES,
+    COMPONENT_WORLD_DIRECTION,
+    build_fixture,
+    normalise,
+)
 
 
 VIEWS: tuple[dict[str, Any], ...] = (
@@ -26,7 +34,17 @@ VIEWS: tuple[dict[str, Any], ...] = (
     {"index": 4, "semantic_name": "top", "direction": [0.0, 0.0, 1.0], "up": [0.0, 1.0, 0.0], "axis": "top"},
     {"index": 5, "semantic_name": "bottom", "direction": [0.0, 0.0, -1.0], "up": [0.0, 1.0, 0.0], "axis": "bottom"},
 )
-PROJECTION_SPAN = 1.10
+#: Official MV-Adapter geometry framing: object normalised to +/-0.5 and
+#: projected through one shared orthographic span of +/-0.55 for every view.
+PROJECTION_HALF_SPAN = 0.55
+PROJECTION_SPAN = PROJECTION_HALF_SPAN * 2.0
+#: The largest normalised object dimension therefore occupies 1 / 1.1 of the frame.
+FRAMING_EXPECTED_OCCUPANCY = 1.0 / 1.1
+FRAMING_OCCUPANCY_MIN = 0.89
+FRAMING_OCCUPANCY_MAX = 0.93
+
+FIXTURE_RENDER_SIZE = 192
+FIXTURE_MIN_COMPONENT_PIXELS = 16
 
 
 def sha256(path: Path) -> str:
@@ -41,78 +59,165 @@ def _unit(value: list[float] | np.ndarray) -> np.ndarray:
     return vector / length
 
 
-def _fixture_markers() -> tuple[np.ndarray, dict[str, int]]:
-    """Return asymmetric marker centers used to prove image semantics."""
-    markers = np.asarray(
-        [
-            [0.0, -0.78, 0.02],  # front: long narrow spike
-            [0.0, 0.78, -0.04],  # rear: broad block
-            [0.78, 0.0, 0.08],  # right: fin
-            [-0.78, 0.0, -0.08],  # left: plate
-            [0.06, 0.04, 0.78],  # top: pyramid
-            [-0.06, -0.04, -0.78],  # bottom: offset foot
-        ],
-        dtype=np.float64,
-    )
-    return markers, {"front": 0, "rear": 1, "right": 2, "left": 3, "top": 4, "bottom": 5}
+def _render_fixture_view(
+    vertices: np.ndarray,
+    normals: np.ndarray,
+    tris: np.ndarray,
+    component_of_triangle: np.ndarray,
+    direction: np.ndarray,
+    up: np.ndarray,
+    size: int,
+) -> dict[str, Any]:
+    """Rasterise the asymmetric fixture and measure per-component evidence."""
+    screen, depth = _project(vertices, direction, up, PROJECTION_SPAN)
+    face_id, _bary, _position, _normal, zbuffer = _rasterise(screen, depth, vertices, normals, tris, size)
+    mask = face_id >= 0
+    if not mask.any():
+        raise RuntimeError("CAMERA_CONTRACT_FIXTURE_EMPTY_VIEW")
+    ys, xs = np.nonzero(mask)
+    component = component_of_triangle[face_id[mask]]
+    depths = zbuffer[mask]
+    measured: dict[str, dict[str, float]] = {}
+    for component_id, name in enumerate(COMPONENT_NAMES):
+        selected = component == component_id
+        if not selected.any():
+            continue
+        measured[name] = {
+            "pixels": int(selected.sum()),
+            "min_depth": float(depths[selected].min()),
+            "centroid_x": float(xs[selected].mean() / (size - 1)),
+            "centroid_y": float(ys[selected].mean() / (size - 1)),
+        }
+    closest = min(measured, key=lambda name: measured[name]["min_depth"])
+    return {"measured": measured, "closest_component": closest}
 
 
-def _prove_asymmetric_fixture(views: list[dict[str, Any]]) -> dict[str, Any]:
-    markers, marker_ids = _fixture_markers()
+def _prove_semantic_orientation(views: list[dict[str, Any]], size: int = FIXTURE_RENDER_SIZE) -> dict[str, Any]:
+    """Prove six-view semantics from rendered triangle evidence.
+
+    Nothing here is asserted a priori.  Each view is rasterised, every visible
+    component is measured, and the declared semantics only survive if the
+    rendered pixels agree.
+    """
+    fixture = build_fixture()
+    vertices = normalise(fixture["vertices"])
+    tris = fixture["triangles"]
+    component_of_triangle = fixture["component_of_triangle"]
+    normals = vertex_normals(vertices, tris).astype(np.float64)
+    normals /= np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-12)
+
     evidence: list[dict[str, Any]] = []
-    expected = {"front": 0, "right": 2, "rear": 1, "left": 3, "top": 4, "bottom": 5}
     semantic_mapping_proven = True
+    handedness_checks = 0
     handedness_proven = True
-    top_bottom_rotation_proven = True
+    rotation_proven = {"top": False, "bottom": False}
+    index_semantics: dict[str, str] = {}
+
     for view in views:
+        axis = str(view["axis_label"])
         direction = np.asarray(view["camera_direction"], dtype=np.float64)
         up = np.asarray(view["camera_up"], dtype=np.float64)
-        forward = -direction
-        right = _unit(np.cross(forward, up))
-        projected, _depth = _project(markers, direction, up, PROJECTION_SPAN)
-        scores = markers @ direction
-        visible_marker = int(np.argmax(scores))
-        expected_marker = expected[view["axis_label"]]
-        semantic_mapping_proven &= visible_marker == expected_marker
-        right_probe = right * 0.35
-        left_probe = -right * 0.35
-        probe_projection, _ = _project(np.stack([right_probe, left_probe]), direction, up, PROJECTION_SPAN)
-        horizontal_ok = bool(probe_projection[0, 0] > 0.5 and probe_projection[1, 0] < 0.5)
-        handedness_proven &= horizontal_ok
-        up_probe = up * 0.35
-        down_probe = -up * 0.35
-        vertical_projection, _ = _project(np.stack([up_probe, down_probe]), direction, up, PROJECTION_SPAN)
-        vertical_ok = bool(vertical_projection[0, 1] < 0.5 and vertical_projection[1, 1] > 0.5)
-        top_bottom_rotation_proven &= vertical_ok
+        right = np.asarray(view["camera_right"], dtype=np.float64)
+        rendered = _render_fixture_view(
+            vertices, normals, tris, component_of_triangle, direction, up, size
+        )
+        measured = rendered["measured"]
+
+        expected_signature = AXIS_SIGNATURE_COMPONENT[axis]
+        expected_occluded = AXIS_OCCLUDED_COMPONENT[axis]
+        signature_passed = rendered["closest_component"] == expected_signature
+        occlusion_passed = expected_occluded not in measured
+        view_semantic_passed = bool(signature_passed and occlusion_passed)
+        semantic_mapping_proven &= view_semantic_passed
+        # The semantic of this index is read out of the render, not declared.
+        resolved = {name: label for label, name in AXIS_SIGNATURE_COMPONENT.items()}
+        index_semantics[str(int(view["index"]))] = resolved.get(rendered["closest_component"], "unresolved")
+
+        placements: list[dict[str, Any]] = []
+        view_x_passed = True
+        view_y_passed = True
+        for name, stats in measured.items():
+            world_direction = COMPONENT_WORLD_DIRECTION.get(name)
+            if world_direction is None or stats["pixels"] < FIXTURE_MIN_COMPONENT_PIXELS:
+                continue
+            world = np.asarray(world_direction, dtype=np.float64)
+            along_right = float(np.dot(world, right))
+            along_up = float(np.dot(world, up))
+            record: dict[str, Any] = {
+                "component": name,
+                "pixels": stats["pixels"],
+                "centroid_x": round(stats["centroid_x"], 6),
+                "centroid_y": round(stats["centroid_y"], 6),
+                "dot_camera_right": round(along_right, 6),
+                "dot_camera_up": round(along_up, 6),
+            }
+            if abs(along_right) > 0.4:
+                expected_side = "image_right" if along_right > 0 else "image_left"
+                measured_side = "image_right" if stats["centroid_x"] > 0.5 else "image_left"
+                passed = expected_side == measured_side
+                record["expected_image_side_x"] = expected_side
+                record["measured_image_side_x"] = measured_side
+                record["image_side_x_passed"] = passed
+                view_x_passed &= passed
+                handedness_checks += 1
+            if abs(along_up) > 0.4:
+                # Screen y grows downwards, so +camera_up must land in the upper half.
+                expected_side = "image_upper" if along_up > 0 else "image_lower"
+                measured_side = "image_upper" if stats["centroid_y"] < 0.5 else "image_lower"
+                passed = expected_side == measured_side
+                record["expected_image_side_y"] = expected_side
+                record["measured_image_side_y"] = measured_side
+                record["image_side_y_passed"] = passed
+                view_y_passed &= passed
+            placements.append(record)
+
+        if axis in {"front", "rear", "left", "right"}:
+            handedness_proven &= view_x_passed
+        if axis in rotation_proven:
+            rotation_proven[axis] = bool(view_x_passed and view_y_passed and view_semantic_passed)
+
         evidence.append(
             {
                 "index": int(view["index"]),
-                "expected_feature": view["axis_label"],
-                "expected_marker_id": expected_marker,
-                "visible_marker_id": visible_marker,
-                "feature_center_pixel": [
-                    round(float(projected[visible_marker, 0]), 6),
-                    round(float(projected[visible_marker, 1]), 6),
-                ],
-                "camera_right_probe_screen_x": [
-                    round(float(probe_projection[0, 0]), 6),
-                    round(float(probe_projection[1, 0]), 6),
-                ],
-                "camera_up_probe_screen_y": [
-                    round(float(vertical_projection[0, 1]), 6),
-                    round(float(vertical_projection[1, 1]), 6),
-                ],
-                "semantic_mapping_passed": visible_marker == expected_marker,
-                "handedness_passed": horizontal_ok,
-                "top_bottom_rotation_passed": vertical_ok,
+                "axis_label": axis,
+                "camera_direction": direction.tolist(),
+                "camera_up": up.tolist(),
+                "camera_right": right.tolist(),
+                "expected_signature_component": expected_signature,
+                "measured_closest_component": rendered["closest_component"],
+                "expected_occluded_component": expected_occluded,
+                "expected_visible_components": sorted(
+                    name for name in COMPONENT_NAMES if name != expected_occluded
+                ),
+                "measured_visible_components": sorted(measured),
+                "component_pixels": {name: stats["pixels"] for name, stats in measured.items()},
+                "image_side_placements": placements,
+                "signature_passed": signature_passed,
+                "occlusion_passed": occlusion_passed,
+                "image_side_x_passed": view_x_passed,
+                "image_side_y_passed": view_y_passed,
+                "passed": bool(view_semantic_passed and view_x_passed and view_y_passed),
             }
         )
+
+    if handedness_checks < 4:
+        handedness_proven = False
+    top_bottom_rotation_proven = bool(rotation_proven["top"] and rotation_proven["bottom"])
     if not (semantic_mapping_proven and handedness_proven and top_bottom_rotation_proven):
-        raise RuntimeError("CAMERA_CONTRACT_ASYMMETRIC_FIXTURE_FAILED")
+        failed = [record["index"] for record in evidence if not record["passed"]]
+        raise RuntimeError(f"CAMERA_CONTRACT_ASYMMETRIC_FIXTURE_FAILED:{failed}")
     return {
-        "fixture_name": "six_side_asymmetric_markers_v1",
-        "semantic_mapping_proven": semantic_mapping_proven,
-        "handedness_proven": handedness_proven,
+        "fixture_name": "six_side_asymmetric_geometry_v2",
+        "fixture_render_size": size,
+        "fixture_triangle_count": fixture["triangle_count"],
+        "fixture_vertex_count": fixture["vertex_count"],
+        "component_ids": fixture["component_ids"],
+        "index_semantics": index_semantics,
+        "semantic_mapping_proven": bool(semantic_mapping_proven),
+        "handedness_proven": bool(handedness_proven),
+        "handedness_checks": int(handedness_checks),
+        "top_rotation_proven": bool(rotation_proven["top"]),
+        "bottom_rotation_proven": bool(rotation_proven["bottom"]),
         "top_bottom_rotation_proven": top_bottom_rotation_proven,
         "evidence": evidence,
     }
@@ -145,7 +250,7 @@ def build_camera_contract() -> dict[str, Any]:
         )
     by_axis = {v["axis_label"]: np.asarray(v["camera_direction"]) for v in views}
     horizontal = [v for v in views if v["axis_label"] in {"front", "right", "rear", "left"}]
-    fixture_evidence = _prove_asymmetric_fixture(views)
+    fixture_evidence = _prove_semantic_orientation(views)
     fixture_gate = (
         len(views) == 6
         and len({v["index"] for v in views}) == 6
@@ -157,11 +262,17 @@ def build_camera_contract() -> dict[str, Any]:
         and fixture_evidence["semantic_mapping_proven"]
         and fixture_evidence["handedness_proven"]
         and fixture_evidence["top_bottom_rotation_proven"]
+        and fixture_evidence["index_semantics"].get("4") == "top"
+        and fixture_evidence["index_semantics"].get("5") == "bottom"
     )
     if not fixture_gate:
         raise RuntimeError("CAMERA_CONTRACT_FIXTURE_FAILED")
     for view in views:
-        view["fixture_gate_passed"] = True
+        record = fixture_evidence["evidence"][int(view["index"])]
+        view["fixture_gate_passed"] = bool(record["passed"])
+        view["proven_semantic"] = fixture_evidence["index_semantics"][str(int(view["index"]))]
+    if not all(view["fixture_gate_passed"] for view in views):
+        raise RuntimeError("CAMERA_CONTRACT_VIEW_GATE_FAILED")
     return {
         "schema": "lowvram3d_mvadapter_camera_contract_v1",
         "view_count": 6,
@@ -171,9 +282,14 @@ def build_camera_contract() -> dict[str, Any]:
         "top_bottom_direction_dot": float(np.dot(by_axis["top"], by_axis["bottom"])),
         "handedness_proven": fixture_evidence["handedness_proven"],
         "semantic_mapping_proven": fixture_evidence["semantic_mapping_proven"],
+        "top_rotation_proven": fixture_evidence["top_rotation_proven"],
+        "bottom_rotation_proven": fixture_evidence["bottom_rotation_proven"],
         "top_bottom_rotation_proven": fixture_evidence["top_bottom_rotation_proven"],
-        "fixture_gate_passed": True,
+        "index_semantics": fixture_evidence["index_semantics"],
+        "fixture_gate_passed": all(view["fixture_gate_passed"] for view in views),
         "fixture_evidence": fixture_evidence,
+        "projection_half_span": PROJECTION_HALF_SPAN,
+        "projection_span": PROJECTION_SPAN,
         "control_space_transform": "identity_panda_front_minus_y_up_plus_z",
         "control_space_inverse": "identity_panda_front_minus_y_up_plus_z",
     }
@@ -296,13 +412,30 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
         visible = np.zeros(len(tris), dtype=bool)
         visible[np.unique(face_id[mask])] = True
         np.save(str(prefix) + "_visible_triangles.npy", visible)
+        rows, cols = np.nonzero(mask)
+        occupancy_x = float((cols.max() - cols.min() + 1) / size)
+        occupancy_y = float((rows.max() - rows.min() + 1) / size)
+        borders = {
+            "left": bool(cols.min() == 0),
+            "right": bool(cols.max() == size - 1),
+            "top": bool(rows.min() == 0),
+            "bottom": bool(rows.max() == size - 1),
+        }
+        if (borders["left"] and borders["right"]) or (borders["top"] and borders["bottom"]):
+            raise RuntimeError(f"CPU_CONTROL_FRAMING_TOUCHES_OPPOSING_BORDERS:{name}")
         per_view.append({
             "index": index,
             "semantic_name": name,
+            "proven_semantic": item.get("proven_semantic"),
             "direction": item["camera_direction"],
             "camera_to_world": item["camera_to_world"],
             "silhouette_pixels": int(mask.sum()),
             "visible_triangles": int(visible.sum()),
+            "projection_span": PROJECTION_SPAN,
+            "occupancy_x": round(occupancy_x, 6),
+            "occupancy_y": round(occupancy_y, 6),
+            "occupancy": round(max(occupancy_x, occupancy_y), 6),
+            "borders_touched": borders,
             "projected_occupancy": round(float(max(screen[:, 0].max() - screen[:, 0].min(), screen[:, 1].max() - screen[:, 1].min())), 6),
             "depth_finite": True,
             "normal_unit_before_encoding": True,
@@ -312,6 +445,25 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
         raise RuntimeError("CPU_CONTROL_TENSOR_INVALID")
     if sha256(mesh) != original_hash:
         raise RuntimeError("CPU_CONTROL_MESH_MUTATED")
+
+    # Official framing: one shared orthographic span, never a per-view auto-fit.
+    spans = {view["projection_span"] for view in per_view}
+    if spans != {PROJECTION_SPAN}:
+        raise RuntimeError(f"CPU_CONTROL_FRAMING_SPAN_NOT_SHARED:{sorted(spans)}")
+    occupancies = [float(view["occupancy"]) for view in per_view]
+    max_occupancy = max(occupancies)
+    # Occupancy is counted in whole pixels, so the gate has to admit the
+    # quantisation error of a two-pixel measurement.  At production sizes this
+    # is negligible (2/256 = 0.008) and the band stays exactly 0.89-0.93; only
+    # very small fixture renders, where one pixel is several percent of the
+    # frame, get the physically necessary widening.
+    quantisation = 2.0 / size
+    lower_gate = min(FRAMING_OCCUPANCY_MIN, FRAMING_EXPECTED_OCCUPANCY - quantisation)
+    upper_gate = max(FRAMING_OCCUPANCY_MAX, FRAMING_EXPECTED_OCCUPANCY + quantisation)
+    if not lower_gate <= max_occupancy <= upper_gate:
+        raise RuntimeError(f"CPU_CONTROL_FRAMING_OCCUPANCY_INVALID:{max_occupancy:.6f}")
+    if max_occupancy > FRAMING_EXPECTED_OCCUPANCY + quantisation:
+        raise RuntimeError(f"CPU_CONTROL_FRAMING_EXCEEDS_SHARED_SPAN:{max_occupancy:.6f}")
     report = {
         "schema": "lowvram3d_mvadapter_cpu_controls_v1",
         "mesh": str(mesh),
@@ -320,7 +472,23 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
         "geometry_or_uv_mutation": False,
         "size": size,
         "projection_span": PROJECTION_SPAN,
-        "projection_half_span": PROJECTION_SPAN / 2.0,
+        "projection_half_span": PROJECTION_HALF_SPAN,
+        "framing": {
+            "shared_span": PROJECTION_SPAN,
+            "per_view_autofit": False,
+            "expected_occupancy": round(FRAMING_EXPECTED_OCCUPANCY, 6),
+            "occupancy_min_gate": FRAMING_OCCUPANCY_MIN,
+            "occupancy_max_gate": FRAMING_OCCUPANCY_MAX,
+            "occupancy_lower_gate_applied": round(lower_gate, 6),
+            "occupancy_upper_gate_applied": round(upper_gate, 6),
+            "pixel_quantisation": round(quantisation, 6),
+            "measured_occupancy_per_view": {
+                str(view["index"]): view["occupancy"] for view in per_view
+            },
+            "measured_max_occupancy": round(max_occupancy, 6),
+            "opposing_borders_touched": False,
+            "passed": True,
+        },
         "control_tensor": str(output_dir / "control_tensor.npy"),
         "control_tensor_shape": list(tensor.shape),
         "channel_order": ["position_x", "position_y", "position_z", "normal_x", "normal_y", "normal_z"],

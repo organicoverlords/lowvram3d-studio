@@ -24,10 +24,18 @@ def _inputs(tmp_path: Path, shape=(6, 6, 20, 20)) -> tuple[Path, Path, Path]:
         "fixture_gate_passed": True,
         "semantic_mapping_proven": True,
         "handedness_proven": True,
+        "top_rotation_proven": True,
+        "bottom_rotation_proven": True,
         "top_bottom_rotation_proven": True,
         "front_rear_direction_dot": -1.0,
         "left_right_direction_dot": -1.0,
         "top_bottom_direction_dot": -1.0,
+        "projection_half_span": 0.55,
+        "index_semantics": {
+            "0": "front", "1": "right", "2": "rear",
+            "3": "left", "4": "top", "5": "bottom",
+        },
+        "fixture_evidence": {"evidence": [{"index": i, "passed": True} for i in range(6)]},
     }))
     reference = tmp_path / "reference.png"
     image = np.full((20, 20, 4), (127, 127, 127, 0), np.uint8)
@@ -61,5 +69,27 @@ def test_direct_worker_rejects_sdxl_before_model_loading(tmp_path: Path) -> None
             tmp_path / "stable-diffusion-xl-base-1.0",
             tmp_path / "mvadapter_ig2mv_sd21.safetensors",
             tmp_path,
+            "sequential",
+        )
+
+
+def test_direct_worker_requires_sequential_offload(tmp_path: Path) -> None:
+    (tmp_path / "sd21").mkdir()
+    (tmp_path / "sd21" / "model_index.json").write_text("{}")
+    (tmp_path / "mvadapter_ig2mv_sd21.safetensors").write_bytes(b"")
+    with pytest.raises(RuntimeError, match="MUST_BE_SEQUENTIAL"):
+        load_sd21_pipeline(
+            tmp_path / "sd21",
+            tmp_path / "mvadapter_ig2mv_sd21.safetensors",
+            tmp_path,
             "model",
         )
+
+
+def test_direct_worker_rejects_text_conditioned_index_semantics(tmp_path: Path) -> None:
+    tensor, contract, reference = _inputs(tmp_path)
+    payload = json.loads(contract.read_text())
+    payload["index_semantics"]["4"] = "front"
+    contract.write_text(json.dumps(payload))
+    with pytest.raises(RuntimeError, match="TOP_BOTTOM_INDEX_INVALID"):
+        validate_inputs(tensor, contract, reference, 20)
