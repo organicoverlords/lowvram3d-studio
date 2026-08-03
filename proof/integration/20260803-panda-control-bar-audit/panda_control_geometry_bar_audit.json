@@ -1,8 +1,8 @@
 {
   "schema": "panda_control_geometry_bar_audit_v1",
-  "classification": "PANDA_CONTROL_GEOMETRY_CLEAN",
+  "classification": "PANDA_CONTROL_BAR_LOCALIZATION_PROVEN",
   "pre_repair_control_bundle_classification": "PANDA_CONTROL_GEOMETRY_REJECTED",
-  "repaired_control_bundle_classification": "PANDA_CONTROL_GEOMETRY_CLEAN",
+  "repaired_control_bundle_classification": "PANDA_REPAIRED_CONTROL_BUNDLE_BAR_ABSENT",
   "gpu_used": false,
   "control_bundle": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front",
   "target": {
@@ -561,5 +561,19 @@
     "fresh_import_existing": true,
     "no_new_boundary_growth": "NOT_PROVEN_BY_THIS_CONTROL_AUDIT",
     "result": "PROVEN_CONTROL_BUNDLE"
-  }
+  },
+  "superseded_classification": "PANDA_CONTROL_GEOMETRY_CLEAN",
+  "classification_correction": {
+    "reason": "PANDA_CONTROL_GEOMETRY_CLEAN was read as a statement about the production mesh. It was only ever a statement about one rendered control bundle, so it is split into separate claims.",
+    "superseded_on": "2026-08-03",
+    "separate_classifications": {
+      "PANDA_CONTROL_BAR_LOCALIZATION_PROVEN": "the 14 stretched faces are located and identified",
+      "PANDA_REPAIRED_CONTROL_BUNDLE_BAR_ABSENT": "the v7 control bundle shows no bar",
+      "PANDA_PRODUCTION_MESH_REPAIR_NOT_PROVEN": "superseded by the 20260803-panda-bar-repair proof",
+      "PANDA_OLD_MV_OUTPUTS_UNPROMOTED": "the 384x20 sequence and spike_repair_v3 stay unpromoted"
+    },
+    "evidence_retained": true,
+    "successor_proof": "proof/integration/20260803-panda-bar-repair"
+  },
+  "production_mesh_classification_at_time_of_audit": "PANDA_PRODUCTION_MESH_REPAIR_NOT_PROVEN"
 }

@@ -1,0 +1,154 @@
+{
+  "schema": "control_bundle_texture_render_v1",
+  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\tactical_red_panda_scout_bar_repaired.glb",
+  "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw",
+  "contact_sheet_raw_index": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\textured\\contact_sheet_a_raw_index.png",
+  "contact_sheet_semantic": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\textured\\contact_sheet_b_semantic.png",
+  "filenames_from_camera_contract": true,
+  "views": [
+    {
+      "raw_index": 0,
+      "bundle_prefix": "horizontal_0",
+      "declared_semantic": "front",
+      "azimuth_deg": -90.0,
+      "elevation_deg": 0.0,
+      "camera_position_control_space": [
+        1.1021821192326179e-16,
+        -1.8,
+        0.0
+      ],
+      "camera_direction_control_space": [
+        -6.123233995736766e-17,
+        1.0,
+        -0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "textured_render": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\textured\\raw0_horizontal_0_textured.png",
+      "foreground_pixels": 57819
+    },
+    {
+      "raw_index": 1,
+      "bundle_prefix": "horizontal_1",
+      "declared_semantic": "right",
+      "azimuth_deg": 0.0,
+      "elevation_deg": 0.0,
+      "camera_position_control_space": [
+        1.8,
+        0.0,
+        0.0
+      ],
+      "camera_direction_control_space": [
+        -1.0,
+        -0.0,
+        -0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "textured_render": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\textured\\raw1_horizontal_1_textured.png",
+      "foreground_pixels": 47956
+    },
+    {
+      "raw_index": 2,
+      "bundle_prefix": "horizontal_2",
+      "declared_semantic": "rear",
+      "azimuth_deg": 90.0,
+      "elevation_deg": 0.0,
+      "camera_position_control_space": [
+        1.1021821192326179e-16,
+        1.8,
+        0.0
+      ],
+      "camera_direction_control_space": [
+        -6.123233995736766e-17,
+        -1.0,
+        -0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        -0.0,
+        1.0
+      ],
+      "textured_render": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\textured\\raw2_horizontal_2_textured.png",
+      "foreground_pixels": 57819
+    },
+    {
+      "raw_index": 3,
+      "bundle_prefix": "horizontal_3",
+      "declared_semantic": "left",
+      "azimuth_deg": 180.0,
+      "elevation_deg": 0.0,
+      "camera_position_control_space": [
+        -1.8,
+        2.2043642384652358e-16,
+        0.0
+      ],
+      "camera_direction_control_space": [
+        1.0,
+        -1.2246467991473532e-16,
+        -0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "textured_render": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\textured\\raw3_horizontal_3_textured.png",
+      "foreground_pixels": 47956
+    },
+    {
+      "raw_index": 4,
+      "bundle_prefix": "top",
+      "declared_semantic": "top",
+      "azimuth_deg": 90.0,
+      "elevation_deg": 89.99,
+      "camera_position_control_space": [
+        1.923670683955952e-20,
+        0.00031415926376409693,
+        1.7999999725844325
+      ],
+      "camera_direction_control_space": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        -0.999999984769129
+      ],
+      "camera_up_control_space": [
+        -6.12323390247458e-17,
+        -0.9999999847691291,
+        0.0001745329243133872
+      ],
+      "textured_render": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\textured\\raw4_top_textured.png",
+      "foreground_pixels": 63676
+    },
+    {
+      "raw_index": 5,
+      "bundle_prefix": "bottom",
+      "declared_semantic": "bottom",
+      "azimuth_deg": 90.0,
+      "elevation_deg": -89.99,
+      "camera_position_control_space": [
+        1.923670683955952e-20,
+        0.00031415926376409693,
+        -1.7999999725844325
+      ],
+      "camera_direction_control_space": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        0.999999984769129
+      ],
+      "camera_up_control_space": [
+        6.12323390247458e-17,
+        0.9999999847691291,
+        0.0001745329243133872
+      ],
+      "textured_render": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw\\textured\\raw5_bottom_textured.png",
+      "foreground_pixels": 63675
+    }
+  ]
+}

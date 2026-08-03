@@ -1,0 +1,305 @@
+{
+  "schema": "bar_local_closure_repair_v1",
+  "classification": "PANDA_BAR_REMOVAL_REQUIRES_RECONSTRUCTION",
+  "input_glb": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\tactical_red_panda_scout_cpu_material_bound.glb",
+  "output_glb": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\candidate_a_closure_only.glb",
+  "input_glb_sha256": "3a0004e3188614cee258394db0ad39ef4f5c4edf7d4d10290b000a2678995931",
+  "output_glb_sha256": "30397a7ca95ad1193f68282e259b9da6e98f6cd264e00c4313a4882fd61db6b4",
+  "primitive": {
+    "mesh": 0,
+    "primitive": 1,
+    "material": 1,
+    "face_start": 92388,
+    "face_end_exclusive": 644412,
+    "vertex_start": 91332,
+    "vertex_end_exclusive": 462769,
+    "index_accessor": 15
+  },
+  "removed_face_ids": [
+    632321,
+    632326,
+    632330,
+    632332,
+    633141,
+    633147,
+    633157,
+    633957,
+    633963,
+    633973,
+    633975,
+    634897,
+    634900,
+    634902
+  ],
+  "removed_face_count": 14,
+  "dropped_orphan_face_ids": [],
+  "dropped_orphan_face_count": 0,
+  "orphan_fragments_exposed_by_removal": [
+    {
+      "component": 1,
+      "face_count": 50,
+      "face_ids": [
+        632318,
+        632319,
+        632320,
+        632322,
+        632323,
+        632324,
+        632325,
+        632327,
+        632328,
+        632329,
+        632331,
+        633138,
+        633139,
+        633140,
+        633142,
+        633143,
+        633144,
+        633145,
+        633146,
+        633148,
+        633149,
+        633150,
+        633151,
+        633152,
+        633153,
+        633154,
+        633155,
+        633156,
+        633954,
+        633955,
+        633956,
+        633958,
+        633959,
+        633960,
+        633961,
+        633962,
+        633964,
+        633965,
+        633966,
+        633967,
+        633968,
+        633969,
+        633970,
+        633971,
+        633972,
+        633974,
+        634896,
+        634898,
+        634899,
+        634901
+      ],
+      "bounds_min": [
+        0.6739360094070435,
+        -0.14162108302116394,
+        0.016729800030589104
+      ],
+      "bounds_max": [
+        0.6988255977630615,
+        -0.10903555154800415,
+        0.02750972844660282
+      ]
+    }
+  ],
+  "drop_orphaned_fragments": false,
+  "aspect_threshold": 24.751766786155954,
+  "aspect_threshold_source": "INPUT_MESH_P99_9",
+  "added_face_ids": [
+    644398,
+    644399,
+    644400,
+    644401,
+    644402,
+    644403,
+    644404,
+    644405,
+    644406,
+    644407,
+    644408,
+    644409
+  ],
+  "added_face_count": 12,
+  "added_faces": [
+    [
+      409501,
+      409500,
+      410027
+    ],
+    [
+      409507,
+      409014,
+      409013
+    ],
+    [
+      409507,
+      409013,
+      409009
+    ],
+    [
+      410033,
+      409507,
+      409009
+    ],
+    [
+      410033,
+      409009,
+      409006
+    ],
+    [
+      409501,
+      410027,
+      410030
+    ],
+    [
+      410564,
+      410565,
+      410034
+    ],
+    [
+      410033,
+      409006,
+      409005
+    ],
+    [
+      410030,
+      410564,
+      410034
+    ],
+    [
+      409501,
+      410030,
+      410034
+    ],
+    [
+      410034,
+      410033,
+      409005
+    ],
+    [
+      409501,
+      410034,
+      409005
+    ]
+  ],
+  "affected_vertex_ids": [
+    91337,
+    409005,
+    409006,
+    409009,
+    409013,
+    409014,
+    409500,
+    409501,
+    409507,
+    410027,
+    410030,
+    410033,
+    410034,
+    410564,
+    410565,
+    462652,
+    462653,
+    462654
+  ],
+  "orphaned_vertex_ids": [
+    91337,
+    462652,
+    462653,
+    462654
+  ],
+  "boundary_loops_before": [
+    3,
+    3
+  ],
+  "boundary_loops_before_vertices": [
+    [
+      91337,
+      409014,
+      409507
+    ],
+    [
+      462652,
+      462653,
+      462654
+    ]
+  ],
+  "boundary_loops_after_removal": [
+    14
+  ],
+  "boundary_loop_after_removal_vertices": [
+    409005,
+    409006,
+    409009,
+    409013,
+    409014,
+    409507,
+    410033,
+    410034,
+    410565,
+    410564,
+    410030,
+    410027,
+    409500,
+    409501
+  ],
+  "boundary_loops_after_closure": [],
+  "loop_plane_deviation": 0.0,
+  "local_material": 1,
+  "local_uv_handling": "REUSED_EXISTING_LOOP_VERTICES_NO_NEW_UVS",
+  "closure_aspect_ratio": {
+    "min": 1.6978751074681062,
+    "median": 2.561914876584446,
+    "max": 23.980420734783536
+  },
+  "removed_aspect_ratio": {
+    "min": 179.70657051914043,
+    "median": 204.2472795350203,
+    "max": 1394.8694285756278
+  },
+  "duplicated_directed_half_edges": [],
+  "topology_before": {
+    "vertices": 462769,
+    "triangles": 644412,
+    "components": 1,
+    "boundary_edges": 280618,
+    "non_manifold_edges": 0,
+    "unique_edges": 1106927,
+    "zero_area_faces": 0,
+    "duplicate_faces": 0
+  },
+  "topology_after": {
+    "vertices": 462769,
+    "triangles": 644410,
+    "components": 2,
+    "boundary_edges": 280612,
+    "non_manifold_edges": 0,
+    "unique_edges": 1106921,
+    "zero_area_faces": 0,
+    "duplicate_faces": 0
+  },
+  "gates": {
+    "boundary_edges_not_increased": true,
+    "non_manifold_edges_not_increased": true,
+    "components_not_increased": false,
+    "no_zero_area_faces": true,
+    "no_duplicate_faces": true,
+    "closure_aspect_within_threshold": true,
+    "local_boundary_closed": true,
+    "unaffected_faces_preserved_exactly": true,
+    "positions_unchanged": true,
+    "normals_unchanged": true,
+    "uv_unchanged": true,
+    "finite_geometry": true,
+    "orientation_locally_consistent": true,
+    "no_orphaned_fragment_left_behind": false
+  },
+  "attribute_digests": {
+    "positions_before": "c465f4484c06e5f6ea0f7f18dbedd0f79f9ed1a4c1fbf182acc900abdcdd9509",
+    "positions_after": "c465f4484c06e5f6ea0f7f18dbedd0f79f9ed1a4c1fbf182acc900abdcdd9509",
+    "normals_before": "45c0557442b8564c127bbdeb439863c839911a9480f1e8072db5b89344952dd7",
+    "normals_after": "45c0557442b8564c127bbdeb439863c839911a9480f1e8072db5b89344952dd7",
+    "uv_before": "eb52cfc34a5028fc25349c323660a0667ddb9c9012d260f3e095a03eeb1ec233",
+    "uv_after": "eb52cfc34a5028fc25349c323660a0667ddb9c9012d260f3e095a03eeb1ec233"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "schema": "bar_repair_visual_proof_v1",
+  "flat_opaque_material": true,
+  "orthographic": true,
+  "fresh_import": true,
+  "source": {
+    "tag": "source",
+    "glb": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\bundle\\tactical_red_panda_scout_5step_uv_chart_separated.glb",
+    "mesh": {
+      "objects": 1,
+      "vertices": 456131,
+      "faces": 644412,
+      "edges": 1106927,
+      "uv_layers": 1,
+      "materials": 1,
+      "armatures": 0,
+      "actions": 0,
+      "bounds_min": [
+        -0.860684871673584,
+        -0.7910826206207275,
+        -0.9988951683044434
+      ],
+      "bounds_max": [
+        0.8070874810218811,
+        0.7312211990356445,
+        0.95353764295578
+      ],
+      "finite_bounds": true
+    },
+    "centre": [
+      -0.02679869532585144,
+      -0.029930710792541504,
+      -0.022678762674331665
+    ],
+    "radius": 1.492553805782346,
+    "views": {
+      "front": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_front.png",
+      "right": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_right.png",
+      "rear": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_rear.png",
+      "left": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_left.png",
+      "top": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_top.png",
+      "bottom": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_bottom.png",
+      "front_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_front_three_quarter.png",
+      "rear_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_rear_three_quarter.png"
+    }
+  },
+  "candidate": {
+    "tag": "candidate",
+    "glb": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\tactical_red_panda_scout_bar_repaired.glb",
+    "mesh": {
+      "objects": 1,
+      "vertices": 456092,
+      "faces": 644348,
+      "edges": 1106825,
+      "uv_layers": 1,
+      "materials": 1,
+      "armatures": 0,
+      "actions": 0,
+      "bounds_min": [
+        -0.860684871673584,
+        -0.7910826206207275,
+        -0.9988951683044434
+      ],
+      "bounds_max": [
+        0.8070874810218811,
+        0.7312211990356445,
+        0.95353764295578
+      ],
+      "finite_bounds": true
+    },
+    "centre": [
+      -0.02679869532585144,
+      -0.029930710792541504,
+      -0.022678762674331665
+    ],
+    "radius": 1.492553805782346,
+    "views": {
+      "front": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_front.png",
+      "right": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_right.png",
+      "rear": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_rear.png",
+      "left": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_left.png",
+      "top": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_top.png",
+      "bottom": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_bottom.png",
+      "front_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_front_three_quarter.png",
+      "rear_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_rear_three_quarter.png"
+    }
+  },
+  "wireframe_source": {
+    "region_min_blender": [
+      0.550000011920929,
+      -0.11999999731779099,
+      -0.25
+    ],
+    "region_max_blender": [
+      0.800000011920929,
+      0.07999999821186066,
+      0.0
+    ],
+    "views": {
+      "wire_top": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_wire_top.png",
+      "wire_front": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_wire_front.png",
+      "wire_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\source_wire_three_quarter.png"
+    }
+  },
+  "wireframe_candidate": {
+    "region_min_blender": [
+      0.550000011920929,
+      -0.11999999731779099,
+      -0.25
+    ],
+    "region_max_blender": [
+      0.800000011920929,
+      0.07999999821186066,
+      0.0
+    ],
+    "views": {
+      "wire_top": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_wire_top.png",
+      "wire_front": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_wire_front.png",
+      "wire_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\visual_proof\\candidate_wire_three_quarter.png"
+    }
+  }
+}

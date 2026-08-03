@@ -1,0 +1,153 @@
+{
+  "schema": "camera_semantics_symmetry_v1",
+  "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v8_bar_repaired_raw",
+  "method": "bilateral silhouette symmetry about the vertical image axis",
+  "views": [
+    {
+      "raw_index": 0,
+      "bundle_prefix": "horizontal_0",
+      "declared_semantic": "front",
+      "azimuth_deg": -90.0,
+      "elevation_deg": 0.0,
+      "camera_direction_control_space": [
+        -6.123233995736766e-17,
+        1.0,
+        -0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "foreground_pixels": 57819,
+      "nearest_depth": -0.4303114325130012,
+      "vertical_axis_mirror_iou": 0.6864226338048709,
+      "horizontal_axis_mirror_iou": 0.7777333661296274
+    },
+    {
+      "raw_index": 1,
+      "bundle_prefix": "horizontal_1",
+      "declared_semantic": "right",
+      "azimuth_deg": 0.0,
+      "elevation_deg": 0.0,
+      "camera_direction_control_space": [
+        -1.0,
+        -0.0,
+        -0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "foreground_pixels": 47956,
+      "nearest_depth": -0.4999875862665977,
+      "vertical_axis_mirror_iou": 0.7823533784286033,
+      "horizontal_axis_mirror_iou": 0.7342060535927386
+    },
+    {
+      "raw_index": 2,
+      "bundle_prefix": "horizontal_2",
+      "declared_semantic": "rear",
+      "azimuth_deg": 90.0,
+      "elevation_deg": 0.0,
+      "camera_direction_control_space": [
+        -6.123233995736766e-17,
+        -1.0,
+        -0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        -0.0,
+        1.0
+      ],
+      "foreground_pixels": 57819,
+      "nearest_depth": -0.40317597131627825,
+      "vertical_axis_mirror_iou": 0.6841630013690251,
+      "horizontal_axis_mirror_iou": 0.7777333661296274
+    },
+    {
+      "raw_index": 3,
+      "bundle_prefix": "horizontal_3",
+      "declared_semantic": "left",
+      "azimuth_deg": 180.0,
+      "elevation_deg": 0.0,
+      "camera_direction_control_space": [
+        1.0,
+        -1.2246467991473532e-16,
+        -0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "foreground_pixels": 47956,
+      "nearest_depth": -0.47709953362180185,
+      "vertical_axis_mirror_iou": 0.7824858757062146,
+      "horizontal_axis_mirror_iou": 0.7342060535927386
+    },
+    {
+      "raw_index": 4,
+      "bundle_prefix": "top",
+      "declared_semantic": "top",
+      "azimuth_deg": 90.0,
+      "elevation_deg": 89.99,
+      "camera_direction_control_space": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        -0.999999984769129
+      ],
+      "camera_up_control_space": [
+        -6.12323390247458e-17,
+        -0.9999999847691291,
+        0.0001745329243133872
+      ],
+      "foreground_pixels": 63676,
+      "nearest_depth": -0.3959417550996059,
+      "vertical_axis_mirror_iou": 0.6455022353153991,
+      "horizontal_axis_mirror_iou": 0.6784226896515367
+    },
+    {
+      "raw_index": 5,
+      "bundle_prefix": "bottom",
+      "declared_semantic": "bottom",
+      "azimuth_deg": 90.0,
+      "elevation_deg": -89.99,
+      "camera_direction_control_space": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        0.999999984769129
+      ],
+      "camera_up_control_space": [
+        6.12323390247458e-17,
+        0.9999999847691291,
+        0.0001745329243133872
+      ],
+      "foreground_pixels": 63675,
+      "nearest_depth": -0.3660371058756274,
+      "vertical_axis_mirror_iou": 0.6454763935188774,
+      "horizontal_axis_mirror_iou": 0.6698135473212179
+    }
+  ],
+  "measured_facing_axis_raw_indices": [
+    1,
+    3
+  ],
+  "measured_facing_axis_direction": [
+    1.0,
+    -1.2246467991473532e-16,
+    -0.0
+  ],
+  "facing_pair_are_opposed": true,
+  "symmetry_margin_over_next_view": 0.09593074462373241,
+  "facing_axis_proven": true,
+  "declared_front_rear_raw_indices": [
+    0,
+    2
+  ],
+  "declared_contract_agrees_with_measurement": false,
+  "facing_sign_resolved": false,
+  "facing_sign_note": "Symmetry fixes the axis, not which end is the muzzle. Front vs rear needs a landmark call, which this worker deliberately does not guess.",
+  "classification": "PANDA_CAMERA_SEMANTICS_USER_REVIEW_REQUIRED"
+}
