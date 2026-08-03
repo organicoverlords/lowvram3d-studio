@@ -1,0 +1,26 @@
+name: Vision QA prework
+
+on:
+  pull_request:
+    paths:
+      - "src/lowvram3d/vision_qa/**"
+      - "workers/vision_qa/**"
+      - "tests/test_vision_qa_*.py"
+      - "configs/vision_qa/**"
+      - "schemas/vision_qa_*.json"
+      - "docs/VISION_QA_*.md"
+      - ".github/workflows/vision-qa-prework.yml"
+  workflow_dispatch:
+
+jobs:
+  cpu-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install pytest
+      - run: python -m compileall -q src/lowvram3d/vision_qa workers/vision_qa
+      - run: PYTHONPATH=src python -m pytest -q tests/test_vision_qa_contracts.py tests/test_vision_qa_policy.py tests/test_vision_qa_evidence.py tests/test_vision_qa_prompting.py tests/test_vision_qa_registry.py
