@@ -1,0 +1,8 @@
+run=1
+requested=2026-08-04T00:36:00+03:00
+mode=github-self-hosted-direct
+codex=false
+claude=false
+magicmusic=false
+panda_walk=true
+classification_required=JUNGLE_PANDA_PLAYABLE_PROVEN
