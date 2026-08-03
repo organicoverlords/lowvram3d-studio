@@ -319,8 +319,8 @@ def run_probe(
     reference_unet_dtype: str = "fp16",
     reference_only: bool = False,
 ) -> dict[str, Any]:
-    if resolution not in (64, 96) or resolution % 8:
-        raise ValueError("DIAGNOSTIC_RESOLUTION_MUST_BE_64_OR_96")
+    if resolution not in (64, 96, 384) or resolution % 8:
+        raise ValueError("DIAGNOSTIC_RESOLUTION_MUST_BE_64_96_OR_384")
     if output_dir.exists() and any(output_dir.iterdir()):
         raise RuntimeError(f"DIAGNOSTIC_OUTPUT_NOT_EMPTY:{output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
