@@ -85,6 +85,30 @@ $RigText = [regex]::Replace($RigText, $LegacyCurveLoopPattern, $LayeredCurveLoop
 Set-Content -LiteralPath $RigScript -Value $RigText -Encoding utf8
 Write-Host 'BLENDER_52_ACTION_CURVES_PATCH=PROVEN'
 
+# Unreal 5.8 rejects older target defaults when the generated editor target
+# shares build products with UnrealEditor. Upgrade every decoded target template
+# to the engine-requested V7 defaults before the project is materialized.
+$UnrealTargetFiles = @(
+    Get-ChildItem -LiteralPath $SourceRoot -Recurse -File -Filter '*.Target.cs' -ErrorAction Stop
+)
+if ($UnrealTargetFiles.Count -lt 2 -or $UnrealTargetFiles.Count -gt 4) {
+    throw "Unexpected decoded Unreal target count: $($UnrealTargetFiles.Count)"
+}
+$BuildSettingsPattern = 'DefaultBuildSettings\s*=\s*BuildSettingsVersion\.V\d+\s*;'
+$PatchedTargetCount = 0
+foreach ($TargetFile in $UnrealTargetFiles) {
+    $TargetText = Get-Content -LiteralPath $TargetFile.FullName -Raw
+    $TargetMatches = [regex]::Matches($TargetText, $BuildSettingsPattern)
+    if ($TargetMatches.Count -ne 1) {
+        throw "Could not prove unique build settings declaration in $($TargetFile.FullName); matches=$($TargetMatches.Count)"
+    }
+    $TargetText = [regex]::Replace($TargetText, $BuildSettingsPattern, 'DefaultBuildSettings = BuildSettingsVersion.V7;', 1)
+    Set-Content -LiteralPath $TargetFile.FullName -Value $TargetText -Encoding utf8
+    $PatchedTargetCount++
+}
+Write-Host 'UNREAL_58_BUILD_SETTINGS_PATCH=PROVEN'
+Write-Host "UNREAL_TARGETS_PATCHED=$PatchedTargetCount"
+
 # Windows PowerShell 5 turns native stderr into terminating error records under
 # ErrorActionPreference=Stop. Blender 5.2 emits benign warnings on stderr. Compile
 # a tiny native forwarder so PowerShell passes every argument—including the `--`
