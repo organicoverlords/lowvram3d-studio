@@ -1,0 +1,23 @@
+{
+  "schema_version": "scene_source_mesh_contract_v1",
+  "asset_id": "source_mesh_v2",
+  "semantic_class": "source_visible_shell",
+  "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb",
+  "sha256": "2ee23fd3816f44931a25628392fa5962b23a55dcc17e207540dd3d937e940011",
+  "vertices": 191847,
+  "triangles": 374959,
+  "connected_components": 9,
+  "boundary_edges": 6071,
+  "non_manifold_edges": 0,
+  "degenerate_triangles": 0,
+  "source_camera_coverage": 0.9962053094392928,
+  "transform": {
+    "translation_m": [0.0, 0.0, 0.0],
+    "rotation_deg_xyz": [0.0, 0.0, 0.0],
+    "scale_xyz": [1.0, 1.0, 1.0]
+  },
+  "collision": "none",
+  "navigation": "ignored",
+  "lod_policy": "nanite",
+  "material_policy": "unlit_projection"
+}
