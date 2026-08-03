@@ -20,6 +20,103 @@ COMPONENT_DTYPE = {5120: "<i1", 5121: "<u1", 5122: "<i2", 5123: "<u2", 5125: "<u
 TYPE_COUNT = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}
 
 
+def _node_local_matrix(node: dict) -> np.ndarray:
+    if "matrix" in node:
+        values = np.asarray(node["matrix"], dtype=np.float64)
+        if values.size != 16:
+            raise RuntimeError("GLTF_NODE_MATRIX_INVALID")
+        return values.reshape(4, 4).T
+    translation = np.asarray(node.get("translation", [0.0, 0.0, 0.0]), dtype=np.float64)
+    scale = np.asarray(node.get("scale", [1.0, 1.0, 1.0]), dtype=np.float64)
+    rotation = np.asarray(node.get("rotation", [0.0, 0.0, 0.0, 1.0]), dtype=np.float64)
+    if translation.shape != (3,) or scale.shape != (3,) or rotation.shape != (4,):
+        raise RuntimeError("GLTF_NODE_TRS_INVALID")
+    x, y, z, w = rotation
+    rotation_matrix = np.asarray(
+        [
+            [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+            [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+            [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
+        ], dtype=np.float64,
+    )
+    matrix = np.eye(4, dtype=np.float64)
+    matrix[:3, :3] = rotation_matrix @ np.diag(scale)
+    matrix[:3, 3] = translation
+    return matrix
+
+
+def _scene_mesh_transforms(meta: dict) -> tuple[dict[int, np.ndarray], dict]:
+    nodes = meta.get("nodes", [])
+    scenes = meta.get("scenes", [])
+    if meta.get("skins"):
+        raise RuntimeError("GLTF_SKINS_UNSUPPORTED")
+    if meta.get("animations"):
+        raise RuntimeError("GLTF_ANIMATIONS_UNSUPPORTED")
+    if not nodes:
+        meshes = meta.get("meshes", [])
+        transforms = {index: np.eye(4, dtype=np.float64) for index in range(len(meshes))}
+        return transforms, {"default_scene": None, "mesh_nodes": [], "transforms": [], "identity_all": True}
+    scene_index = int(meta.get("scene", 0))
+    if scene_index < 0 or scene_index >= len(scenes):
+        raise RuntimeError("GLTF_DEFAULT_SCENE_INVALID")
+    parents: dict[int, int] = {}
+    for parent_index, node in enumerate(nodes):
+        for child in node.get("children", []):
+            child_index = int(child)
+            if child_index < 0 or child_index >= len(nodes) or child_index in parents:
+                raise RuntimeError("GLTF_NODE_HIERARCHY_INVALID")
+            parents[child_index] = parent_index
+    transforms: dict[int, np.ndarray] = {}
+    mesh_nodes: list[dict] = []
+    visited: set[int] = set()
+
+    def visit(index: int, parent_global: np.ndarray) -> None:
+        if index in visited:
+            raise RuntimeError("GLTF_NODE_REUSED_OR_CYCLIC")
+        visited.add(index)
+        node = nodes[index]
+        global_matrix = parent_global @ _node_local_matrix(node)
+        if "mesh" in node:
+            mesh_index = int(node["mesh"])
+            if mesh_index in transforms:
+                raise RuntimeError("GLTF_MULTIPLE_MESH_INSTANCES_UNSUPPORTED")
+            transforms[mesh_index] = global_matrix
+            mesh_nodes.append({"node_index": index, "mesh_index": mesh_index, "global_matrix": global_matrix})
+        for child in node.get("children", []):
+            visit(int(child), global_matrix)
+
+    for root in scenes[scene_index].get("nodes", []):
+        visit(int(root), np.eye(4, dtype=np.float64))
+    if len(transforms) != len(meta.get("meshes", [])):
+        raise RuntimeError("GLTF_MESH_NOT_REACHABLE_FROM_DEFAULT_SCENE")
+    report_transforms: list[dict] = []
+    for record in mesh_nodes:
+        matrix = record["global_matrix"]
+        linear = matrix[:3, :3]
+        scales = np.linalg.norm(linear, axis=0)
+        if np.any(scales <= 1e-12) or not np.allclose(scales, scales[0], rtol=1e-5, atol=1e-7):
+            raise RuntimeError(f"GLTF_NON_UNIFORM_OR_ZERO_SCALE:{record['node_index']}:{scales.tolist()}")
+        normalized = linear / scales[0]
+        if not np.allclose(normalized.T @ normalized, np.eye(3), atol=1e-5):
+            raise RuntimeError(f"GLTF_SHEAR_UNSUPPORTED:{record['node_index']}")
+        determinant = float(np.linalg.det(linear))
+        if determinant < 0:
+            raise RuntimeError(f"GLTF_NEGATIVE_SCALE_UNSUPPORTED:{record['node_index']}:{determinant}")
+        report_transforms.append({
+            "node_index": int(record["node_index"]),
+            "mesh_index": int(record["mesh_index"]),
+            "global_matrix": matrix.tolist(),
+            "identity": bool(np.allclose(matrix, np.eye(4), atol=1e-7)),
+            "uniform_scale": float(scales[0]),
+            "determinant": determinant,
+        })
+    return transforms, {
+        "default_scene": scene_index,
+        "mesh_nodes": report_transforms,
+        "identity_all": all(item["identity"] for item in report_transforms),
+    }
+
+
 def _chunks(data: bytes):
     offset, meta, binary = 12, None, None
     while offset < len(data):
@@ -81,9 +178,10 @@ def triangle_components(positions: np.ndarray, tris: np.ndarray, weld: float = 4
     return labels[corners[:, 0]], welded
 
 
-def read_glb(path: Path, *, return_normal_source: bool = False):
+def read_glb(path: Path, *, return_normal_source: bool = False, return_scene_report: bool = False):
     """Return (positions, normals, uv, indices). normals and uv may be synthesised or None."""
     meta, binary = _chunks(Path(path).read_bytes())
+    mesh_transforms, scene_report = _scene_mesh_transforms(meta)
 
     def accessor(index):
         acc = meta["accessors"][index]
@@ -101,15 +199,23 @@ def read_glb(path: Path, *, return_normal_source: bool = False):
     has_normals = True
     has_uvs = True
     vertex_offset = 0
-    for mesh in meta["meshes"]:
+    for mesh_index, mesh in enumerate(meta["meshes"]):
+        transform = mesh_transforms.get(mesh_index, np.eye(4, dtype=np.float64))
+        linear = transform[:3, :3]
         for primitive in mesh["primitives"]:
             attributes = primitive["attributes"]
-            positions_part = accessor(attributes["POSITION"]).astype(np.float32)
+            positions_raw = accessor(attributes["POSITION"]).astype(np.float64)
+            homogeneous = np.concatenate([positions_raw, np.ones((len(positions_raw), 1))], axis=1)
+            positions_part = (homogeneous @ transform.T)[:, :3].astype(np.float32)
             position_parts.append(positions_part)
             indices_part = accessor(primitive["indices"]).reshape(-1, 3).astype(np.int64)
             index_parts.append(indices_part + vertex_offset)
             if "NORMAL" in attributes:
-                normal_parts.append(accessor(attributes["NORMAL"]).astype(np.float32))
+                normals_raw = accessor(attributes["NORMAL"]).astype(np.float64)
+                normal_matrix = np.linalg.inv(linear)
+                transformed_normals = normals_raw @ normal_matrix
+                transformed_normals /= np.maximum(np.linalg.norm(transformed_normals, axis=1, keepdims=True), 1e-12)
+                normal_parts.append(transformed_normals.astype(np.float32))
             else:
                 has_normals = False
             if "TEXCOORD_0" in attributes:
@@ -125,6 +231,10 @@ def read_glb(path: Path, *, return_normal_source: bool = False):
     normals = (np.concatenate(normal_parts, axis=0)
                if has_normals else vertex_normals(positions, tris))
     uv = np.concatenate(uv_parts, axis=0) if has_uvs else None
+    if return_normal_source and return_scene_report:
+        return positions, normals, uv, tris, normal_source, scene_report
+    if return_scene_report:
+        return positions, normals, uv, tris, scene_report
     if return_normal_source:
         return positions, normals, uv, tris, normal_source
     return positions, normals, uv, tris

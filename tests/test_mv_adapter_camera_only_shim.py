@@ -22,5 +22,12 @@ def test_camera_only_shim_satisfies_import_and_refuses_raster_calls(monkeypatch)
     assert mode == "camera_only_import_shim"
     import nvdiffrast.torch as dr
 
-    with pytest.raises(RuntimeError, match="camera-only MV-Adapter mode"):
-        _ = dr.rasterize
+    try:
+        with pytest.raises(RuntimeError, match="camera-only MV-Adapter mode"):
+            _ = dr.rasterize
+    finally:
+        # The shim is intentionally installed only for this test.  Do not let
+        # it contaminate later tests that prove the production route never
+        # imports nvdiffrast.
+        sys.modules.pop("nvdiffrast.torch", None)
+        sys.modules.pop("nvdiffrast", None)

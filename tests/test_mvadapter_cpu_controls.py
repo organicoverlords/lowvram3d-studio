@@ -7,12 +7,13 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "workers"))
 
 from build_mvadapter_cpu_controls import build_camera_contract, build_controls  # noqa: E402
-from mesh_io import read_glb, vertex_normals, write_glb  # noqa: E402
+from mesh_io import _scene_mesh_transforms, read_glb, vertex_normals, write_glb  # noqa: E402
 
 
 def _cube(path: Path) -> None:
@@ -78,6 +79,7 @@ def test_embedded_normals_are_preserved_and_canonical_contract_is_recorded(tmp_p
     assert report["control_space_recentered"] is False
     assert report["control_space_rescaled"] is True
     assert report["control_max_abs"] == 0.5
+    assert report["gltf_scene_transform"]["identity_all"] is True
     assert np.asarray(report["control_space_transform"]).tolist() == [
         [0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]
     ]
@@ -95,3 +97,22 @@ def test_missing_normal_fallback_is_area_weighted() -> None:
     expected /= np.linalg.norm(expected)
     assert not np.allclose(normals[0], equal_weight, atol=1e-5)
     assert np.allclose(normals[0], expected, atol=1e-5)
+
+
+def test_gltf_scene_transform_gate_rejects_instances_and_unsupported_scales() -> None:
+    identity = {"scene": 0, "scenes": [{"nodes": [0]}], "nodes": [{"mesh": 0}], "meshes": [{}]}
+    transforms, report = _scene_mesh_transforms(identity)
+    assert report["identity_all"] is True
+    assert np.allclose(transforms[0], np.eye(4))
+
+    multiple = {"scene": 0, "scenes": [{"nodes": [0, 1]}], "nodes": [{"mesh": 0}, {"mesh": 0}], "meshes": [{}]}
+    with pytest.raises(RuntimeError, match="MULTIPLE_MESH_INSTANCES"):
+        _scene_mesh_transforms(multiple)
+
+    non_uniform = {"scene": 0, "scenes": [{"nodes": [0]}], "nodes": [{"mesh": 0, "scale": [1, 2, 1]}], "meshes": [{}]}
+    with pytest.raises(RuntimeError, match="NON_UNIFORM"):
+        _scene_mesh_transforms(non_uniform)
+
+    negative = {"scene": 0, "scenes": [{"nodes": [0]}], "nodes": [{"mesh": 0, "scale": [-1, 1, 1]}], "meshes": [{}]}
+    with pytest.raises(RuntimeError, match="NEGATIVE_SCALE"):
+        _scene_mesh_transforms(negative)

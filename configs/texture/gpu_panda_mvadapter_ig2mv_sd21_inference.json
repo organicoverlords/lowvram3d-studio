@@ -41,10 +41,10 @@
     "xformers_required": false,
     "conditioning_reference": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\mvadapter_conditioning_v3\\conditioning_384.png",
     "conditioning_reference_sha256": "8e77e68845069430185cbdec8dd21260f79cee5e412222c5ff85d0ef9e39df08",
-    "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v3\\control_tensor.npy",
-    "control_tensor_sha256": "9fbf0f5dd4acf17516e11c4771556b55f7d8e96aa3489f5e4ef3294b10ff1283",
-    "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v3\\camera_contract.json"
-    ,"camera_contract_sha256": "fa64a40fb2dbc09be3be031a55aba08f66b58a7c0c6b12889d2b800725f25f58"
+    "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v5_official_scene\\control_tensor.npy",
+    "control_tensor_sha256": "a5ad52b2f8540c6773346bae48dc7a679934a68813b0321bda013ec7c1836f40",
+    "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v5_official_scene\\camera_contract.json",
+    "camera_contract_sha256": "0f3d49d43afd2531e1eca8d055fbe842947bfce0df21f76624ea04d06aa12b12"
   },
   "oom_fallback": {
     "allowed_retries": 1,
@@ -54,10 +54,10 @@
     "conditioning": "IMAGE_PLUS_GEOMETRY",
     "conditioning_reference": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\mvadapter_conditioning_v3\\conditioning_256.png",
     "conditioning_reference_sha256": "0fd5491bdf4dfcbcfccc49f6b9af85956fbb87970858a8c61129e1a4c4fe147d",
-    "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_256_v3\\control_tensor.npy",
-    "control_tensor_sha256": "e55c4f05341fd5af6abe69fd5c0d217d23cd18ab05c8877bceae066c81d1cead",
-    "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_256_v3\\camera_contract.json",
-    "camera_contract_sha256": "fa64a40fb2dbc09be3be031a55aba08f66b58a7c0c6b12889d2b800725f25f58",
+    "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_256_v5_official_scene\\control_tensor.npy",
+    "control_tensor_sha256": "efca119c9e56f2aafc1c9c32d21d959a1f73556875450ec87de8567417319e3d",
+    "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_256_v5_official_scene\\camera_contract.json",
+    "camera_contract_sha256": "0f3d49d43afd2531e1eca8d055fbe842947bfce0df21f76624ea04d06aa12b12",
     "policy": "384 image+geometry SD2.1 -> classified CUDA OOM -> full cleanup and VRAM recovery proof -> one 256 image+geometry SD2.1 retry",
     "adapter_switch_after_oom": "FORBIDDEN",
     "text_conditioned_fallback": "FORBIDDEN",

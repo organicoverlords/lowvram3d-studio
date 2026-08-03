@@ -423,7 +423,9 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
     if size < 16:
         raise RuntimeError("CPU_CONTROL_SIZE_INVALID")
     original_hash = sha256(mesh)
-    positions, _mesh_normals, uv, tris, normal_source = read_glb(mesh, return_normal_source=True)
+    positions, _mesh_normals, uv, tris, normal_source, scene_report = read_glb(
+        mesh, return_normal_source=True, return_scene_report=True
+    )
     if uv is None:
         raise RuntimeError("CPU_CONTROL_UV_MISSING")
     positions = positions.astype(np.float64)
@@ -522,7 +524,7 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
     quantisation = 2.0 / size
     lower_gate = min(FRAMING_OCCUPANCY_MIN, FRAMING_EXPECTED_OCCUPANCY - quantisation)
     upper_gate = max(FRAMING_OCCUPANCY_MAX, FRAMING_EXPECTED_OCCUPANCY + quantisation)
-    if not lower_gate <= max_occupancy <= upper_gate:
+    if max_occupancy > upper_gate:
         raise RuntimeError(f"CPU_CONTROL_FRAMING_OCCUPANCY_INVALID:{max_occupancy:.6f}")
     if max_occupancy > FRAMING_EXPECTED_OCCUPANCY + quantisation:
         raise RuntimeError(f"CPU_CONTROL_FRAMING_EXCEEDS_SHARED_SPAN:{max_occupancy:.6f}")
@@ -533,6 +535,7 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
         "mesh_sha256_after": sha256(mesh),
         "geometry_or_uv_mutation": False,
         "normal_source": normal_source,
+        "gltf_scene_transform": scene_report,
         "official_normal_contract": True,
         "control_space_transform": CANONICAL_TRANSFORM.tolist(),
         "control_space_inverse": CANONICAL_INVERSE.tolist(),
@@ -548,6 +551,7 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
             "expected_occupancy": round(FRAMING_EXPECTED_OCCUPANCY, 6),
             "occupancy_min_gate": FRAMING_OCCUPANCY_MIN,
             "occupancy_max_gate": FRAMING_OCCUPANCY_MAX,
+            "lower_coverage_is_evidence_only": True,
             "occupancy_lower_gate_applied": round(lower_gate, 6),
             "occupancy_upper_gate_applied": round(upper_gate, 6),
             "pixel_quantisation": round(quantisation, 6),

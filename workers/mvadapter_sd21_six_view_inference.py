@@ -56,10 +56,22 @@ def _nvidia_snapshot() -> dict[str, Any]:
             ["nvidia-smi", "--query-compute-apps=pid,process_name,used_memory", "--format=csv,noheader,nounits", "--id=0"],
             capture_output=True, text=True, timeout=10, check=True,
         )
+        ignored_graphics: list[dict[str, str]] = []
         for line in apps.stdout.splitlines():
             if line.strip():
                 parts = [part.strip() for part in line.split(",")]
-                result["active_processes"].append({"pid": parts[0], "name": parts[1], "used_mb": parts[2]})
+                record = {"pid": parts[0], "name": parts[1], "used_mb": parts[2]}
+                try:
+                    used_mb = float(parts[2])
+                except (ValueError, IndexError):
+                    # On Windows, nvidia-smi may expose ordinary desktop
+                    # graphics clients through this query with N/A memory.
+                    # They are not actionable CUDA compute jobs.
+                    ignored_graphics.append(record)
+                    continue
+                if used_mb > 0.0:
+                    result["active_processes"].append(record)
+        result["ignored_graphics_processes"] = ignored_graphics
     except (OSError, subprocess.SubprocessError, ValueError, IndexError):
         return result
     return result
@@ -88,6 +100,24 @@ def _torch_memory(torch: Any) -> dict[str, Any]:
         "max_memory_allocated_mb": round(torch.cuda.max_memory_allocated() / 2**20, 3),
         "max_memory_reserved_mb": round(torch.cuda.max_memory_reserved() / 2**20, 3),
     }
+
+
+def _sdpa_backend_report(torch: Any) -> dict[str, Any]:
+    cuda = getattr(torch.backends, "cuda", None)
+    return {
+        "api": "torch.nn.functional.scaled_dot_product_attention",
+        "flash_sdp_enabled": bool(cuda.flash_sdp_enabled()) if cuda is not None else None,
+        "mem_efficient_sdp_enabled": bool(cuda.mem_efficient_sdp_enabled()) if cuda is not None else None,
+        "math_sdp_enabled": bool(cuda.math_sdp_enabled()) if cuda is not None else None,
+        "attention_backend": "PYTORCH_SDPA",
+    }
+
+
+def _heartbeat(path: Path, receipt: dict[str, Any], phase: str, **fields: Any) -> None:
+    record = {"timestamp": time.time(), "pid": os.getpid(), "phase": phase, **fields}
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, default=str) + "\n")
+    receipt.setdefault("heartbeats", []).append(record)
 
 
 def _is_cuda_oom(exc: BaseException) -> bool:
@@ -369,6 +399,9 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
     preflight = validate_preflight(config_path, attempt, primary_receipt)
     selected = preflight["selected"]
     output_dir.mkdir(parents=True, exist_ok=True)
+    heartbeat_path = output_dir / "heartbeat.jsonl"
+    if heartbeat_path.exists():
+        raise RuntimeError(f"MVADAPTER_HEARTBEAT_PATH_ALREADY_EXISTS:{heartbeat_path}")
     receipt: dict[str, Any] = {
         "schema": "lowvram3d_mvadapter_sd21_six_view_inference_v1",
         "config": str(config_path),
@@ -393,6 +426,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         "denoising_steps_requested": int(selected["steps"]),
         "_started": time.time(),
     }
+    _heartbeat(heartbeat_path, receipt, "preflight_passed", resolution=int(selected["resolution"]))
     torch = None
     pipe = None
     original_unet_forward = None
@@ -405,6 +439,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         torch.cuda.empty_cache()
         torch.cuda.reset_peak_memory_stats()
         receipt["memory_before_model"] = {**preflight["gpu_before"], **_torch_memory(torch)}
+        _heartbeat(heartbeat_path, receipt, "model_construction_started", **receipt["memory_before_model"])
         upstream = Path(preflight["config"].get("mvadapter_source", r"C:\AI\mvadapter-upstream-inspection"))
         if not upstream.is_dir():
             raise RuntimeError(f"MVADAPTER_UPSTREAM_SOURCE_MISSING:{upstream}")
@@ -427,10 +462,15 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["adapter_report"] = adapter_report
         receipt["component_inventory"] = component_inventory(pipe)
         receipt["attention"] = attention_report(pipe)
+        receipt["sdpa_backend"] = _sdpa_backend_report(torch)
+        _heartbeat(heartbeat_path, receipt, "pipeline_constructed", processor=receipt["attention"].get("expected_processor"))
         receipt["offload"] = install_low_vram_offload(pipe, device="cuda")
         receipt["offload_hooks"] = offload_hook_report(pipe)
+        _heartbeat(heartbeat_path, receipt, "sequential_offload_installed")
         control = torch.from_numpy(np.ascontiguousarray(np.load(preflight["controls"], allow_pickle=False).astype(np.float32)))
+        _heartbeat(heartbeat_path, receipt, "controls_loaded", shape=list(control.shape), dtype=str(control.dtype))
         reference = Image.open(preflight["conditioning"]).convert("RGB")
+        _heartbeat(heartbeat_path, receipt, "conditioning_loaded", size=list(reference.size))
         state = {"unet_calls": 0, "reference_unet_calls": 0, "denoising_unet_calls": 0}
         original_unet_forward = pipe.unet.forward
         original_cond_forward = pipe.cond_encoder.forward
@@ -440,6 +480,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             if state["unet_calls"] == 1:
                 state["reference_unet_calls"] += 1
                 receipt["reference_unet_pass_started"] = True
+                _heartbeat(heartbeat_path, receipt, "reference_unet_started", call_count=state["reference_unet_calls"])
             else:
                 state["denoising_unet_calls"] += 1
                 receipt["denoising_started"] = True
@@ -447,6 +488,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
 
         def tracked_cond(*args: Any, **kwargs: Any):
             receipt["cond_encoder_executed"] = True
+            _heartbeat(heartbeat_path, receipt, "cond_encoder_executed")
             return original_cond_forward(*args, **kwargs)
 
         pipe.unet.forward = tracked_unet
@@ -454,6 +496,14 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
 
         def on_step_end(_pipe: Any, step: int, _timestep: Any, callback_kwargs: dict[str, Any]) -> dict[str, Any]:
             receipt["denoising_steps_completed"] = int(step) + 1
+            _heartbeat(
+                heartbeat_path,
+                receipt,
+                "denoising_step_completed",
+                step=int(step) + 1,
+                requested=int(selected["steps"]),
+                unet_call_count=state["denoising_unet_calls"],
+            )
             return callback_kwargs
 
         torch.cuda.reset_peak_memory_stats()
@@ -479,6 +529,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["denoising_unet_call_count"] = state["denoising_unet_calls"]
         images = list(result.images)
         receipt["vae_decode_completed"] = True
+        _heartbeat(heartbeat_path, receipt, "vae_decode_completed")
         receipt["gpu_sequence_consumed"] = True
         if len(images) != 6:
             raise RuntimeError(f"MVADAPTER_OUTPUT_COUNT_INVALID:{len(images)}")
@@ -489,6 +540,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             image.convert("RGB").save(path)
             receipt["output_images"].append({"index": index, "name": path.name, "path": str(path), "sha256": sha256(path)})
         _contact_sheet(images, output_dir / "six_view_contact_sheet.png", semantic_names)
+        _heartbeat(heartbeat_path, receipt, "outputs_written", output_count=len(images))
         receipt["contact_sheet"] = str(output_dir / "six_view_contact_sheet.png")
         receipt["qa"] = qa_outputs(images, Path(preflight["controls"]).parent, int(selected["resolution"]), semantic_names)
         receipt["status"] = "PROVEN" if receipt["qa"]["passed"] else "QA_REJECTED"
@@ -529,6 +581,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         if torch is not None and torch.cuda.is_available():
             torch.cuda.empty_cache()
             receipt["memory_after"] = {**_nvidia_snapshot(), **_torch_memory(torch)}
+        _heartbeat(heartbeat_path, receipt, "cleanup_complete", **receipt.get("memory_after", {}))
         receipt["system_after"] = _system_snapshot()
     receipt["output_count"] = len(receipt["output_images"])
     receipt["wall_seconds"] = round(time.time() - receipt.get("_started", time.time()), 3)
