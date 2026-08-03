@@ -1,0 +1,194 @@
+{
+  "schema": "multiview_texture_projection_v1",
+  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\tactical_red_panda_scout_bar_repaired.glb",
+  "mesh_sha256": "78c55133165e931bc8d6765610a679d1d18badcdc178820a69e31b7b32bcbfb8",
+  "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v9_upright_raw",
+  "views_receipt": "C:/AI/LowVRAM3D-benchmarks/miniturbo-3step-experiment-20260803/tactical_red_panda_scout/sd21_upright_384x20_20260803/inference_receipt.json",
+  "raw_to_semantic": {
+    "0": "left",
+    "1": "front",
+    "2": "right",
+    "3": "rear",
+    "4": "top",
+    "5": "bottom"
+  },
+  "canonical_basis": "y_up_z_front",
+  "control_space_transform": [
+    [
+      0.0,
+      0.0,
+      1.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      1.0,
+      0.0
+    ]
+  ],
+  "atlas": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\panda_multiview_basecolor.png",
+  "atlas_sha256": "e7cfd38e4e7e2327c1cb6ab99437bfbaf2546c633e392fc2b18a402116b94c59",
+  "atlas_size": 2048,
+  "output_glb": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\tactical_red_panda_scout_textured.glb",
+  "output_glb_sha256": "f5b82595815d67878a818697afc08d966e8fe5f3c5b1d5f67613526b5d6f7dc0",
+  "geometry_buffers_before": {
+    "position_bytes_sha256": "c465f4484c06e5f6ea0f7f18dbedd0f79f9ed1a4c1fbf182acc900abdcdd9509",
+    "normal_bytes_sha256": "5cbcc685d81757c2c398bdded57b9b707c86f42d07fadfcdd41dba71d9289faf",
+    "uv_bytes_sha256": "eb52cfc34a5028fc25349c323660a0667ddb9c9012d260f3e095a03eeb1ec233",
+    "index_bytes_sha256": "d24a6142c112a5cf916e3cbf9f233701339cbad6766efe58dc55946f7d33940b",
+    "geometry_uv_index_sha256": "fbd190e3ded87b1e200d888464f426b3598f779709dcb0d1c5dacdcc09283567"
+  },
+  "geometry_buffers_after": {
+    "position_bytes_sha256": "c465f4484c06e5f6ea0f7f18dbedd0f79f9ed1a4c1fbf182acc900abdcdd9509",
+    "normal_bytes_sha256": "5cbcc685d81757c2c398bdded57b9b707c86f42d07fadfcdd41dba71d9289faf",
+    "uv_bytes_sha256": "eb52cfc34a5028fc25349c323660a0667ddb9c9012d260f3e095a03eeb1ec233",
+    "index_bytes_sha256": "d24a6142c112a5cf916e3cbf9f233701339cbad6766efe58dc55946f7d33940b",
+    "geometry_uv_index_sha256": "fbd190e3ded87b1e200d888464f426b3598f779709dcb0d1c5dacdcc09283567"
+  },
+  "geometry_unchanged": true,
+  "coverage": {
+    "atlas_texels_with_geometry": 2692569,
+    "directly_observed_percent": 72.3028,
+    "multiview_observed_percent": 40.0718,
+    "blended_from_multiple_views_percent": 31.1761,
+    "synthesized_percent": 27.6972,
+    "unresolved_percent": 0.0,
+    "note": "synthesized and unresolved are reported separately and are NOT folded into the observed figure"
+  },
+  "gates": {
+    "depth_tolerance": 0.01,
+    "min_facing_cosine": 0.2,
+    "colour_compatibility": 60.0,
+    "edge_bleed_texels": 12,
+    "semantic_reliability": {
+      "front": 1.0,
+      "rear": 1.0,
+      "left": 1.0,
+      "right": 1.0,
+      "top": 0.85,
+      "bottom": 0.85
+    }
+  },
+  "per_view": [
+    {
+      "raw_index": 0,
+      "semantic_label": "left",
+      "source_image": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_upright_384x20_20260803\\view_0_left.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.8875269250437774
+      },
+      "texels_in_bounds": 2692569,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 17947,
+      "texels_rejected_by_depth": 2057841,
+      "texels_rejected_back_facing": 122805,
+      "texels_valid": 493976,
+      "mean_confidence_where_valid": 0.20339008054758909
+    },
+    {
+      "raw_index": 1,
+      "semantic_label": "front",
+      "source_image": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_upright_384x20_20260803\\view_1_front.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9804085681515236
+      },
+      "texels_in_bounds": 2692569,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 18510,
+      "texels_rejected_by_depth": 2161462,
+      "texels_rejected_back_facing": 65678,
+      "texels_valid": 446919,
+      "mean_confidence_where_valid": 0.28156915467618915
+    },
+    {
+      "raw_index": 2,
+      "semantic_label": "right",
+      "source_image": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_upright_384x20_20260803\\view_2_right.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9757786641772045
+      },
+      "texels_in_bounds": 2692569,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 36313,
+      "texels_rejected_by_depth": 1994333,
+      "texels_rejected_back_facing": 97425,
+      "texels_valid": 564498,
+      "mean_confidence_where_valid": 0.1994763450991575
+    },
+    {
+      "raw_index": 3,
+      "semantic_label": "rear",
+      "source_image": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_upright_384x20_20260803\\view_3_rear.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9815325504291513
+      },
+      "texels_in_bounds": 2692569,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 18834,
+      "texels_rejected_by_depth": 1585961,
+      "texels_rejected_back_facing": 28167,
+      "texels_valid": 1059607,
+      "mean_confidence_where_valid": 0.4398111800623245
+    },
+    {
+      "raw_index": 4,
+      "semantic_label": "top",
+      "source_image": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_upright_384x20_20260803\\view_4_top.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9655409365589442
+      },
+      "texels_in_bounds": 2692569,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 61982,
+      "texels_rejected_by_depth": 2114676,
+      "texels_rejected_back_facing": 93615,
+      "texels_valid": 422296,
+      "mean_confidence_where_valid": 0.16552514406718102
+    },
+    {
+      "raw_index": 5,
+      "semantic_label": "bottom",
+      "source_image": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_upright_384x20_20260803\\view_5_bottom.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9623234227113354
+      },
+      "texels_in_bounds": 2692569,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 47347,
+      "texels_rejected_by_depth": 2238543,
+      "texels_rejected_back_facing": 86775,
+      "texels_valid": 319904,
+      "mean_confidence_where_valid": 0.13791822535891993
+    }
+  ],
+  "maps": {
+    "ownership_map.png": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\ownership_map.png",
+    "observed_coverage_mask.png": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\observed_coverage_mask.png",
+    "synthesized_coverage_mask.png": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\synthesized_coverage_mask.png",
+    "confidence_map.png": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\confidence_map.png",
+    "seam_map.png": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\seam_map.png",
+    "multiview_coverage_mask.png": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\multiview_coverage_mask.png"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
-  "status": "PREPARED_NOT_EXECUTED",
+  "status": "EXECUTED_384_QA_PASSED",
   "asset": "tactical_red_panda_scout",
   "purpose": "384x20 on the upright canonical basis with the anchored camera permutation",
   "generator_family": "MVADAPTER_SD21",
@@ -103,7 +103,7 @@
   "classifier_free_guidance": false,
   "attempts_authorized": 1,
   "attempts_used": 0,
-  "gpu_sequence_consumed": false,
+  "gpu_sequence_consumed": true,
   "fallback_eligible": false,
   "next_action": "USER_REVIEW_REQUIRED",
   "twenty_step_authorization": "AUTHORIZED_AFTER_384X2_NUMERICAL_GATE",

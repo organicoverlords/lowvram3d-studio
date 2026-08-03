@@ -20,7 +20,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from build_mvadapter_cpu_controls import CANONICAL_TRANSFORM, PROJECTION_SPAN
+from build_mvadapter_cpu_controls import PROJECTION_SPAN
 from fast_texture_projection import bind_texture, immutable_buffer_hashes, rasterise_atlas
 from mesh_io import read_glb
 
@@ -61,7 +61,7 @@ def foreground_mask(array: np.ndarray) -> np.ndarray:
     return (distance > 12.0) | (saturation > 0.06)
 
 
-def distance_from_boundary(mask: np.ndarray, rounds: int = 12) -> np.ndarray:
+def distance_from_boundary(mask: np.ndarray, rounds: int = 24) -> np.ndarray:
     """Cheap inward chamfer: how many erosions a pixel survives, normalised to [0, 1]."""
     current = mask.copy()
     depth = np.zeros(mask.shape, np.float32)
@@ -114,6 +114,24 @@ def apply_registration(image: np.ndarray, fit: dict) -> np.ndarray:
     return np.asarray(canvas)
 
 
+def bilinear(image: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """Sample a view at fractional pixel coordinates.
+
+    Nearest-neighbour turns a 384px view into visible texel-scale mosaic once it is
+    resampled into a 2048 atlas, and the blocks read as noise rather than as detail.
+    """
+    height, width = image.shape[:2]
+    x = np.clip(x, 0, width - 1.001)
+    y = np.clip(y, 0, height - 1.001)
+    x0 = np.floor(x).astype(np.int64)
+    y0 = np.floor(y).astype(np.int64)
+    fx = (x - x0)[:, None]
+    fy = (y - y0)[:, None]
+    top = image[y0, x0] * (1 - fx) + image[y0, x0 + 1] * fx
+    bottom = image[y0 + 1, x0] * (1 - fx) + image[y0 + 1, x0 + 1] * fx
+    return top * (1 - fy) + bottom * fy
+
+
 def push_pull_fill(colour: np.ndarray, filled: np.ndarray, rounds: int = 256):
     """Grow observed colour outward one ring at a time; returns the synthesized mask."""
     synthesized = np.zeros(filled.shape, bool)
@@ -152,6 +170,9 @@ def main() -> int:
                         help="control-space units; a texel further than this behind the "
                              "view's own depth buffer is occluded")
     parser.add_argument("--min-facing-cosine", type=float, default=0.20)
+    parser.add_argument("--edge-bleed", type=int, default=12,
+                        help="texels of colour pushed past every chart edge; too few and "
+                             "bilinear sampling pulls the black gutter into every seam")
     parser.add_argument("--colour-compatibility", type=float, default=60.0,
                         help="max RGB distance from the leading observation before a "
                              "second view is treated as a different surface")
@@ -169,11 +190,17 @@ def main() -> int:
     if uv is None:
         raise RuntimeError("MULTIVIEW_PROJECTION_UV_MISSING")
 
-    # Reproduce the control builder's normalisation exactly.
-    canonical = positions.astype(np.float64) @ CANONICAL_TRANSFORM.T
+    # Reproduce the control builder's normalisation exactly. The basis comes from the
+    # bundle's own contract, never from this module's default: a bundle built on a
+    # different canonical basis would otherwise be sampled in the wrong frame and almost
+    # every texel would fail the depth test for a reason that looks like occlusion.
+    if "control_space_transform" not in contract:
+        raise RuntimeError("MULTIVIEW_PROJECTION_CONTRACT_HAS_NO_BASIS")
+    transform = np.asarray(contract["control_space_transform"], dtype=np.float64)
+    canonical = positions.astype(np.float64) @ transform.T
     scale = 0.5 / float(np.max(np.abs(canonical)))
     vertices = canonical * scale
-    vertex_normals = np.asarray(normals, np.float64) @ CANONICAL_TRANSFORM.T
+    vertex_normals = np.asarray(normals, np.float64) @ transform.T
     vertex_normals /= np.maximum(np.linalg.norm(vertex_normals, axis=1, keepdims=True), 1e-12)
 
     size = int(args.atlas_size)
@@ -235,15 +262,18 @@ def main() -> int:
         valid = in_bounds & in_mask & unoccluded & front_facing
 
         boundary = distance_from_boundary(control_mask)
+        # Cubed facing term: where two cameras both see a surface, the one looking at it
+        # squarely should dominate outright rather than tie, otherwise the per-texel
+        # leader flips between them and the atlas speckles.
         confidence = (
-            np.clip(facing, 0.0, 1.0) ** 1.5
+            np.clip(facing, 0.0, 1.0) ** 3.0
             * np.exp(-(depth_delta / max(args.depth_tolerance, 1e-9)) ** 2)
-            * (0.25 + 0.75 * boundary[cy, cx])
+            * (0.10 + 0.90 * boundary[cy, cx])
             * SEMANTIC_RELIABILITY.get(semantic, 1.0)
         )
         confidence = np.where(valid, confidence, 0.0)
 
-        samples.append(aligned[cy, cx].astype(np.float64))
+        samples.append(bilinear(aligned.astype(np.float64), pixel[:, 0], pixel[:, 1]))
         confidences.append(confidence)
         labels.append(semantic)
         diagnostics.append({
@@ -273,7 +303,9 @@ def main() -> int:
     compatible = (confidence_stack > 0) & (distance <= args.colour_compatibility)
     compatible[leader, np.arange(len(leader))] = confidence_stack[
         leader, np.arange(len(leader))] > 0
-    blend_weight = np.where(compatible, confidence_stack, 0.0)
+    # Cubing again at blend time keeps a clear winner from being diluted by a
+    # grazing second opinion while still letting comparable views average.
+    blend_weight = np.where(compatible, confidence_stack ** 3, 0.0)
     total = blend_weight.sum(axis=0)
     observed = total > 0
     blended = np.where(
@@ -303,7 +335,7 @@ def main() -> int:
 
     # A one-texel bleed past every chart edge stops bilinear sampling from pulling in the
     # gutter and darkening every seam.
-    bled, _bleed_mask, _ = push_pull_fill(atlas, resolved, rounds=3)
+    bled, _bleed_mask, _ = push_pull_fill(atlas, resolved, rounds=args.edge_bleed)
     atlas_image = Image.fromarray(np.clip(bled, 0, 255).astype(np.uint8))
     atlas_path = output_dir / "panda_multiview_basecolor.png"
     atlas_image.save(atlas_path)
@@ -348,6 +380,8 @@ def main() -> int:
         "bundle": str(bundle),
         "views_receipt": str(args.views_receipt),
         "raw_to_semantic": contract.get("raw_to_semantic"),
+        "canonical_basis": contract.get("canonical_basis"),
+        "control_space_transform": transform.tolist(),
         "atlas": str(atlas_path),
         "atlas_sha256": sha256_bytes(atlas_bytes),
         "atlas_size": size,
@@ -361,6 +395,7 @@ def main() -> int:
             "depth_tolerance": args.depth_tolerance,
             "min_facing_cosine": args.min_facing_cosine,
             "colour_compatibility": args.colour_compatibility,
+            "edge_bleed_texels": args.edge_bleed,
             "semantic_reliability": SEMANTIC_RELIABILITY,
         },
         "per_view": diagnostics,

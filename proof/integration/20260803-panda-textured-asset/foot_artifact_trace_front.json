@@ -1,0 +1,27 @@
+{
+  "schema": "view_artifact_trace_v1",
+  "mesh": "C:/AI/LowVRAM3D-benchmarks/miniturbo-3step-experiment-20260803/tactical_red_panda_scout/bar_local_closure_v1/tactical_red_panda_scout_bar_repaired.glb",
+  "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v9_upright_raw",
+  "semantic": "front",
+  "control_file_prefix": "horizontal_1",
+  "region_pixels_xyxy": [
+    76,
+    299,
+    326,
+    384
+  ],
+  "region_visible_pixels": 15084,
+  "main_component_id": 0,
+  "mesh_component_count": 1,
+  "geometry_artifact_pixels": 0,
+  "texture_artifact_pixels": 8018,
+  "detached_components_in_region": [],
+  "depth": {
+    "median": -0.12481735254833246,
+    "max_standoff_toward_camera": 0.2710883051170656,
+    "pixels_standing_off_over_5pct_of_span": 2961
+  },
+  "verdict": "TEXTURE_ONLY_ARTIFACT",
+  "action": "reject the dark texels during projection; the surface itself is sound",
+  "overlay": "C:/AI/LowVRAM3D-benchmarks/miniturbo-3step-experiment-20260803/tactical_red_panda_scout/sd21_cpu_controls_384_v9_upright_raw/foot_artifact_overlay_front.png"
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "textured_asset_qa_v1",
+  "glb": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\tactical_red_panda_scout_textured.glb",
+  "glb_bytes": 52978376,
+  "fresh_import": true,
+  "mesh": {
+    "objects": 1,
+    "vertices": 456092,
+    "faces": 644348,
+    "edges": 1106825,
+    "uv_layers": 1,
+    "materials": 2,
+    "armatures": 0,
+    "actions": 0,
+    "bounds_min": [
+      -0.860684871673584,
+      -0.7910826206207275,
+      -0.9988951683044434
+    ],
+    "bounds_max": [
+      0.8070874810218811,
+      0.7312211990356445,
+      0.95353764295578
+    ],
+    "finite_bounds": true
+  },
+  "textures": {
+    "materials": [
+      "RasterAtlas",
+      "RasterNeutralSynthesis"
+    ],
+    "images": [
+      {
+        "name": "basecolor",
+        "size": [
+          2048,
+          2048
+        ],
+        "has_data": true
+      }
+    ],
+    "base_colour_image_resolved": true
+  },
+  "render_engine": "CYCLES",
+  "samples": 24,
+  "resolution": 512,
+  "views": {
+    "front": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\front.png",
+    "right": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\right.png",
+    "rear": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\rear.png",
+    "left": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\left.png",
+    "top": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\top.png",
+    "bottom": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\bottom.png",
+    "front_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\front_three_quarter.png",
+    "rear_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\rear_three_quarter.png"
+  },
+  "closeups": {
+    "face": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\closeup_face.png",
+    "equipment": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\closeup_equipment.png",
+    "tail": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\closeup_tail.png",
+    "repaired_bar_region": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_multiview_texture_v4\\qa\\closeup_repaired_bar_region.png"
+  },
+  "bounds_min": [
+    -0.860684871673584,
+    -0.7910826206207275,
+    -0.9988951683044434
+  ],
+  "bounds_max": [
+    0.8070874810218811,
+    0.7312211990356445,
+    0.95353764295578
+  ]
+}

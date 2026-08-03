@@ -1,0 +1,247 @@
+{
+  "schema": "camera_permutation_applied_v1",
+  "classification": "PANDA_CAMERA_SEMANTICS_PROVEN_BY_USER_REVIEW_AND_CAMERA_VECTORS",
+  "superseded_classification": "PANDA_CAMERA_SEMANTICS_PREVIOUS_CONTRACT_REJECTED",
+  "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v9_upright_raw",
+  "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v9_upright_raw\\camera_contract.json",
+  "camera_contract_sha256": "b3216d048d0774c878c6224cb244c6cfba0b1ac011bdeb28aa7f0ee388ea85e0",
+  "camera_contract_pre_permutation": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v9_upright_raw\\camera_contract_pre_permutation.json",
+  "raw_to_semantic": {
+    "0": "left",
+    "1": "front",
+    "2": "right",
+    "3": "rear",
+    "4": "top",
+    "5": "bottom"
+  },
+  "semantic_to_raw": {
+    "left": 0,
+    "front": 1,
+    "right": 2,
+    "rear": 3,
+    "top": 4,
+    "bottom": 5
+  },
+  "superseded_index_semantics": {
+    "0": "front",
+    "1": "right",
+    "2": "rear",
+    "3": "left",
+    "4": "top",
+    "5": "bottom"
+  },
+  "opposition_checks": {
+    "front_rear_direction_dot": -1.0,
+    "left_right_direction_dot": -1.0,
+    "top_bottom_direction_dot": -0.9999999390765167
+  },
+  "raw_order_preserved": true,
+  "control_arrays_rewritten": false,
+  "semantic_mapping_source": "USER_VISION_ANCHOR_20260803_UPRIGHT_BASIS",
+  "views": [
+    {
+      "raw_index": 0,
+      "semantic_label": "left",
+      "superseded_semantic": "front",
+      "azimuth_deg": -90.0,
+      "elevation_deg": 0.0,
+      "camera_direction_control_space": [
+        -6.123233995736766e-17,
+        1.0,
+        -0.0
+      ],
+      "camera_direction_mesh_local": [
+        1.0,
+        6.123233995736766e-17,
+        0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "camera_up_mesh_local": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "control_file_prefix": "horizontal_0",
+      "control_position_filename": "horizontal_0_position.npy",
+      "control_normal_filename": "horizontal_0_normal.npy",
+      "control_depth_filename": "horizontal_0_depth.npy",
+      "control_mask_filename": "horizontal_0_mask.png",
+      "control_triangle_id_filename": "horizontal_0_triangle_ids.npy",
+      "control_barycentric_filename": "horizontal_0_barycentric.npy"
+    },
+    {
+      "raw_index": 1,
+      "semantic_label": "front",
+      "superseded_semantic": "right",
+      "azimuth_deg": 0.0,
+      "elevation_deg": 0.0,
+      "camera_direction_control_space": [
+        -1.0,
+        -0.0,
+        -0.0
+      ],
+      "camera_direction_mesh_local": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "camera_up_mesh_local": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "control_file_prefix": "horizontal_1",
+      "control_position_filename": "horizontal_1_position.npy",
+      "control_normal_filename": "horizontal_1_normal.npy",
+      "control_depth_filename": "horizontal_1_depth.npy",
+      "control_mask_filename": "horizontal_1_mask.png",
+      "control_triangle_id_filename": "horizontal_1_triangle_ids.npy",
+      "control_barycentric_filename": "horizontal_1_barycentric.npy"
+    },
+    {
+      "raw_index": 2,
+      "semantic_label": "right",
+      "superseded_semantic": "rear",
+      "azimuth_deg": 90.0,
+      "elevation_deg": 0.0,
+      "camera_direction_control_space": [
+        -6.123233995736766e-17,
+        -1.0,
+        -0.0
+      ],
+      "camera_direction_mesh_local": [
+        -1.0,
+        6.123233995736766e-17,
+        0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        -0.0,
+        1.0
+      ],
+      "camera_up_mesh_local": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "control_file_prefix": "horizontal_2",
+      "control_position_filename": "horizontal_2_position.npy",
+      "control_normal_filename": "horizontal_2_normal.npy",
+      "control_depth_filename": "horizontal_2_depth.npy",
+      "control_mask_filename": "horizontal_2_mask.png",
+      "control_triangle_id_filename": "horizontal_2_triangle_ids.npy",
+      "control_barycentric_filename": "horizontal_2_barycentric.npy"
+    },
+    {
+      "raw_index": 3,
+      "semantic_label": "rear",
+      "superseded_semantic": "left",
+      "azimuth_deg": 180.0,
+      "elevation_deg": 0.0,
+      "camera_direction_control_space": [
+        1.0,
+        -1.2246467991473532e-16,
+        -0.0
+      ],
+      "camera_direction_mesh_local": [
+        -1.2246467991473532e-16,
+        -1.0,
+        0.0
+      ],
+      "camera_up_control_space": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "camera_up_mesh_local": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "control_file_prefix": "horizontal_3",
+      "control_position_filename": "horizontal_3_position.npy",
+      "control_normal_filename": "horizontal_3_normal.npy",
+      "control_depth_filename": "horizontal_3_depth.npy",
+      "control_mask_filename": "horizontal_3_mask.png",
+      "control_triangle_id_filename": "horizontal_3_triangle_ids.npy",
+      "control_barycentric_filename": "horizontal_3_barycentric.npy"
+    },
+    {
+      "raw_index": 4,
+      "semantic_label": "top",
+      "superseded_semantic": "top",
+      "azimuth_deg": 90.0,
+      "elevation_deg": 89.99,
+      "camera_direction_control_space": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        -0.999999984769129
+      ],
+      "camera_direction_mesh_local": [
+        -0.00017453292431338717,
+        1.0687059355310842e-20,
+        -0.999999984769129
+      ],
+      "camera_up_control_space": [
+        -6.12323390247458e-17,
+        -0.9999999847691291,
+        0.0001745329243133872
+      ],
+      "camera_up_mesh_local": [
+        -0.9999999847691291,
+        6.12323390247458e-17,
+        0.0001745329243133872
+      ],
+      "control_file_prefix": "top",
+      "control_position_filename": "top_position.npy",
+      "control_normal_filename": "top_normal.npy",
+      "control_depth_filename": "top_depth.npy",
+      "control_mask_filename": "top_mask.png",
+      "control_triangle_id_filename": "top_triangle_ids.npy",
+      "control_barycentric_filename": "top_barycentric.npy"
+    },
+    {
+      "raw_index": 5,
+      "semantic_label": "bottom",
+      "superseded_semantic": "bottom",
+      "azimuth_deg": 90.0,
+      "elevation_deg": -89.99,
+      "camera_direction_control_space": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        0.999999984769129
+      ],
+      "camera_direction_mesh_local": [
+        -0.00017453292431338717,
+        1.0687059355310842e-20,
+        0.999999984769129
+      ],
+      "camera_up_control_space": [
+        6.12323390247458e-17,
+        0.9999999847691291,
+        0.0001745329243133872
+      ],
+      "camera_up_mesh_local": [
+        0.9999999847691291,
+        -6.12323390247458e-17,
+        0.0001745329243133872
+      ],
+      "control_file_prefix": "bottom",
+      "control_position_filename": "bottom_position.npy",
+      "control_normal_filename": "bottom_normal.npy",
+      "control_depth_filename": "bottom_depth.npy",
+      "control_mask_filename": "bottom_mask.png",
+      "control_triangle_id_filename": "bottom_triangle_ids.npy",
+      "control_barycentric_filename": "bottom_barycentric.npy"
+    }
+  ]
+}

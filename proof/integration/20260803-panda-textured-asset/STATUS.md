@@ -1,59 +1,107 @@
-# Panda textured asset — in progress (2026-08-03)
+# Panda textured asset — 2026-08-03
 
-Classification so far: **`PANDA_TEXTURED_ASSET_VISUAL_REPAIR_REQUIRED`** — a blocking
-orientation defect was found upstream of texturing. Not `PROVEN`, and not a hard blocker.
+Classification: **`PANDA_TEXTURED_ASSET_VISUAL_REPAIR_REQUIRED`**
 
-## What passed
+Not `PROVEN`: the front view of the finished GLB does not show a recognisable panda face,
+which is texture gate 1. Not a hard blocker either — the defect is isolated to the atlas
+fusion stage, and every stage before it now passes.
 
-The canonical 384x20 run on the bar-repaired mesh with the corrected permutation is
-numerically and structurally clean:
+## The coordinate defect, found and fixed
 
-* status `PROVEN`, 20/20 steps, six outputs, finite gate passed
-* structural gate passed — silhouette IoU against the controls 0.966–0.978 per view
-* colour gate and semantic gate passed; filenames follow the contract
-* front/rear correlation 0.046 direct, 0.249 mirrored — no rear-face duplication
-* first attempt died at step 4 with a CUDA illegal memory access; the retry, identical in
-  every respect, completed in 188 s. Transient device fault, recorded not hidden.
-
-## What blocks the textured asset
-
-**No generated view contains a recognisable panda face**, so texture gate 1 fails before any
-projection is attempted. The cause is upstream of the MV-Adapter.
-
-`CANONICAL_TRANSFORM` in `build_mvadapter_cpu_controls.py` maps mesh **Z** to the rig's up
-axis. The asset's up axis is mesh **+Y**:
+`build_mvadapter_cpu_controls` mapped mesh **Z** to the rig's up axis. This asset is
+standard glTF: up is mesh **+Y**, forward is mesh **+Z**.
 
 | evidence | value |
 | --- | --- |
-| longest mesh extent | Y, 1.952 (vs X 1.668, Z 1.522) |
-| first principal axis | (0.298, −0.955, 0.013) — essentially ∓Y |
-| orange tail centroid | (0.557, −0.572, −0.118), at 22% of the Y range |
-| axis render with up=+Y | character stands upright (`orientation_probe/up_pY`) |
+| longest mesh extent | Y, 1.952 (X 1.668, Z 1.522) |
+| first principal axis | (0.298, −0.955, 0.013) |
+| orange tail centroid | mesh (0.557, −0.572, −0.118), 22% along Y |
+| axis probe, up=+Y | camera on +Z renders the face, hood, scarf, rifle |
 
-So the whole six-view rig orbits the wrong axis. Every view renders the character lying on
-its side, and the camera that actually faces the head is handed the elevation +89.99
-embedding — it is told it is looking straight down, so it generates a top-down image
-instead of a face. That single error explains the sideways framing, the missing face, and
-why the earlier symmetry probe could not separate the facing axis.
+The rig therefore orbited the wrong axis: every view rendered the character on its side, and
+the camera actually facing the head was handed the elevation ±89.99 embedding, so it
+produced a top-down image instead of a face. That single error explains the sideways
+framing, the missing face and the earlier inability to resolve the facing axis.
 
-This supersedes the raw-index permutation question rather than answering it: with the up
-axis corrected the six cameras point elsewhere entirely, so the mapping must be re-derived,
-not patched.
+Fixed by adding `canonical_basis=y_up_z_front` (mesh +Y → rig up, mesh +Z → azimuth 0).
+The legacy basis remains the default so no earlier receipt or test changes.
 
-## Required next steps
+## Anchored camera permutation
 
-1. Re-express the mesh in canonical upright orientation (mesh +Y → rig up), or fix the rig's
-   canonical transform. Geometry must be rotated, not re-meshed.
-2. Rebuild the 384 controls from the reoriented mesh.
-3. Re-derive raw-to-semantic from the corrected rig and confirm against landmarks.
-4. Re-run 384x20.
-5. Only then run `multiview_texture_projection.py`, which is written and unit-clean but has
-   not been run on real views — feeding it face-less views would bake the defect into the
-   atlas.
+Anchored to the render the user named the visual front — camera on +Z, up +Y — which the
+rebuilt rig produces as raw1.
+
+```
+raw_to_semantic = {0: left, 1: front, 2: right, 3: rear, 4: top, 5: bottom}
+```
+
+Opposition dots: front·rear −1.0, left·right −1.0, top·bottom −0.99999994. raw2 sees the
+tail lobe, matching the tail centroid at mesh +X. Raw order and control arrays untouched;
+the previous mapping is retained as superseded.
+
+## Foot artifacts
+
+`TEXTURE_ONLY_ARTIFACT` — 0 detached-geometry pixels, 8018 dark-atlas pixels on sound
+surface. No mesh repair warranted; the marks lived in the legacy atlas that the fusion
+replaces, and they are absent from the new one.
+
+## 384x20 on the corrected rig
+
+`PROVEN`. 20/20 steps, finite gate passed, structural gate passed, colour and semantic gates
+passed. Per-view silhouette IoU: left 0.888, front 0.980, right 0.976, rear 0.982, top
+0.966, bottom 0.962. Front/rear correlation 0.259 direct, 0.562 mirrored.
+
+**The front view shows the face; the rear view does not.** That is the duplicated-face
+requirement satisfied at the source.
+
+## Multiview fusion
+
+Confidence-gated per texel: foreground-mask, depth, occlusion, bounds and back-facing gates,
+then a confidence product of viewing angle, depth agreement, distance from the silhouette
+boundary and semantic reliability, blended only among colour-compatible observations.
+
+| coverage | value |
+| --- | --- |
+| directly observed | 72.30% |
+| multiview observed (2+ views) | 40.07% |
+| blended from multiple views | 30.81% |
+| synthesized (push-pull fill) | 27.70% |
+| unresolved | 0.00% |
+
+Synthesized area is reported separately and is **not** folded into the observed figure.
+Geometry, UVs and index buffers are byte-identical before and after texture binding.
+
+## Gate results on the finished GLB
+
+Passing: upright orientation in all eight views; no protruding bar or tip blob; rifle
+preserved; tail colour and shape coherent; backpack and webbing recognisable; left/right
+consistent; top and bottom correspond to real upper and lower surfaces; no background colour
+on geometry; no checkerboard; no black outputs; no chart-edge darkening; fresh import
+resolves the 2048x2048 base colour.
+
+Failing: **no recognisable panda face in the front view**. The face reads as a flat cream
+muzzle without eye or nose markings, despite the generated front view containing a clean
+face. Colour distribution is also darker and muddier than the orange/black/cream reference.
+
+## Why it fails and what to do next
+
+The face is observed — the front view contributes 446,919 valid texels — so this is a
+fusion-weighting problem, not a coverage problem. Bilinear sampling and cubed confidence
+(v4) removed the texel-scale mosaic that v3 had, but did not restore facial contrast: the
+head is also seen at grazing angles by left, right and top, and those washed-out
+observations survive the 60-unit colour-compatibility test and average the small dark eye
+and nose markings away.
+
+Next: make high-confidence regions winner-take-all instead of blended — when the leading
+view's confidence exceeds the runner-up by a clear margin, take it alone, and reserve
+blending for genuinely comparable observations. Re-run fusion only; no new GPU pass is
+needed, because the six source views are already proven.
 
 ## Artifacts
 
-* run: `C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\sd21_repaired_384x20_retry_20260803`
-* orientation probe: `…\tactical_red_panda_scout\orientation_probe\up_pY`
+* textured GLB: `…\panda_multiview_texture_v4\tactical_red_panda_scout_textured.glb`
+* atlas: `…\panda_multiview_texture_v4\panda_multiview_basecolor.png` (2048x2048)
+* six source views: `…\sd21_upright_384x20_20260803\view_{0..5}_{semantic}.png`
+* eight-view QA: `…\panda_multiview_texture_v4\qa\`
 * repaired mesh: `…\bar_local_closure_v1\tactical_red_panda_scout_bar_repaired.glb`
   (sha256 `78c55133165e931bc8d6765610a679d1d18badcdc178820a69e31b7b32bcbfb8`)
