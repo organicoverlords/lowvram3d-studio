@@ -1,0 +1,64 @@
+{
+  "schema": "castlegrounds_source_mesh_v2_validation_v1",
+  "classification": "CASTLEGROUNDS_SOURCE_VISIBLE_MESH_REPAIR_PROVEN",
+  "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb",
+  "glb_sha256": "2ee23fd3816f44931a25628392fa5962b23a55dcc17e207540dd3d937e940011",
+  "glb_bytes": 11059576,
+  "mesh": {
+    "vertices": 191847,
+    "triangles": 374959,
+    "connected_components": 9,
+    "boundary_edges": 6071,
+    "non_manifold_edges": 0,
+    "degenerate_triangles": 0,
+    "bounds_min": [
+      -262.6045837402344,
+      -347.051025390625,
+      48.52790069580078
+    ],
+    "bounds_max": [
+      370.67572021484375,
+      28.97603416442871,
+      742.4088745117188
+    ]
+  },
+  "checks": {
+    "finite_positions": true,
+    "finite_normals": true,
+    "finite_uv": true,
+    "uv_in_bounds": true,
+    "vertex_positions_hash_equivalent": true,
+    "triangle_order_hash_equivalent": true,
+    "uv_hash_equivalent": true
+  },
+  "geometry_hash": "05de7363a9a7a69510c8845eed3bb40aa92f31c4d3fda6d3bc82533f358bde69",
+  "uv_hash": "1ddf05330776071b518cc0a0c2546a968256f688705f31f0f9ff728f1917003c",
+  "source_arrays_sha256": {
+    "points.npy": "b430ee4477ea75c6bcb07c0239a9c11e9a469252cd1eed304748f03f4a5a1130",
+    "depth.npy": "059814befc11e64e13c97564a04a52f148a12a38f40bc79e07e12cf1add89ec5",
+    "normal.npy": "281a59a1e459d1d95010d34c8159cb55a732e0a5d41ef353d9eb962f67bd471d",
+    "mask.npy": "408b83605376c96f6a216d54987c4e6746acb45f38bfe4d9dc7a561342e624a4",
+    "intrinsics.npy": "185b1ba4b88b15f31e4d16dd9ae2cff976aabfcbfbf5c8248cfac540c4b2cc5b"
+  },
+  "camera_contract": "M_RAW_MOGE_TO_GLB_IDENTITY_THEN_M_GLB_TO_BLENDER_AXIS_FIXTURE",
+  "source_comparison": {
+    "schema": "castlegrounds_exact_source_candidate_comparison_v1",
+    "prefix": "source_mesh_v2_exact",
+    "renders": {
+      "cull_off": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\source_mesh_v2_exact_cull_off.png",
+      "cull_on": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\source_mesh_v2_exact_cull_on.png"
+    },
+    "valid_mask_coverage": 0.9757843017578125,
+    "rendered_nonblack_coverage_inside_mask": 0.9962053094392928,
+    "cull_on_coverage_inside_mask": 0.9962053094392928,
+    "cull_on_cull_off_delta": 0.0,
+    "silhouette_iou_inside_mask": 0.9962053094392928,
+    "ssim_proxy_ncc": 0.9422855377197266,
+    "psnr_db": 16.495773166243545,
+    "mean_abs_colour_error": 32.816505432128906,
+    "edge_correlation": 0.40429115295410156,
+    "cull_on_within_one_percent": true
+  },
+  "selected_candidate": "adaptive_coverage_winding",
+  "selected_reason": "highest exact-source coverage among bounded CPU adaptive candidates while preserving local depth boundaries; VITB640 retained as strongest fresh-model diagnostic"
+}

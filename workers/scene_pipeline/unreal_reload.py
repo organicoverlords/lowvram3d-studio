@@ -11,6 +11,7 @@ import unreal
 
 ROOT = Path(r"C:\AI\ScenePipelineSmoke\20260803\castlegrounds")
 MAP = "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke"
+EXPECTED_MESH_PREFIX = "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/"
 
 
 def write_json(name: str, payload: dict) -> None:
@@ -51,14 +52,16 @@ def main() -> None:
     camera_component = source_camera.get_component_by_class(unreal.CameraComponent) if source_camera else None
     fov = camera_component.get_editor_property("field_of_view") if camera_component else None
     aspect_ratio = camera_component.get_editor_property("aspect_ratio") if camera_component else None
+    mesh_is_v2 = bool(mesh and mesh.get_path_name().startswith(EXPECTED_MESH_PREFIX))
     receipt = {
         "schema": "unreal_image_to_scene_reload_v1",
-        "classification": "SCENE_SAVE_RELOAD_PROVEN" if loaded and not missing and mesh else "SCENE_SAVE_RELOAD_REJECTED",
+        "classification": "SCENE_SAVE_RELOAD_PROVEN" if loaded and not missing and mesh and mesh_is_v2 else "SCENE_SAVE_RELOAD_REJECTED",
         "map": MAP,
         "map_loaded": bool(loaded),
         "missing_labels": missing,
         "mesh_asset_after_reload": mesh.get_path_name() if mesh else None,
         "mesh_present_after_reload": mesh is not None,
+        "mesh_v2_reference_after_reload": mesh_is_v2,
         "source_camera_fov": fov,
         "source_camera_aspect_ratio": aspect_ratio,
         "source_camera_location": vector3(source_camera.get_actor_location()) if source_camera else None,
@@ -68,7 +71,7 @@ def main() -> None:
         "source_plane_present": "SceneSmoke_ImageSurface" in labels,
     }
     write_json("map_reload_receipt.json", receipt)
-    if not loaded or missing or mesh is None:
+    if not loaded or missing or mesh is None or not mesh_is_v2:
         raise RuntimeError("UNREAL_IMAGE_TO_SCENE_RELOAD_FAILED")
     unreal.EditorLevelLibrary.set_level_viewport_camera_info(source_camera.get_actor_location(), source_camera.get_actor_rotation())
     unreal.SystemLibrary.execute_console_command(None, "HighResShot 1280x720")

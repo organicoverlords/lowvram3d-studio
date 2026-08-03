@@ -10,12 +10,15 @@ from pathlib import Path
 import unreal
 
 
-GLB = Path(r"C:\AI\ScenePipelineSmoke\20260803\castlegrounds\balanced_010.glb")
+GLB = Path(r"C:\AI\ScenePipelineSmoke\20260803\castlegrounds\castlegrounds_source_mesh_v2.glb")
 SOURCE = Path(r"C:\Users\Lauri\Downloads\benchmarkpics\castlegrounds.png")
 ROOT = Path(r"C:\AI\ScenePipelineSmoke\20260803\castlegrounds")
 CONTENT = "/Game/AgentProof/ImageToSceneSmoke_20260803"
 MAP = CONTENT + "/Maps/L_Castlegrounds_ImageToScene_Smoke"
-STATIC_MESH_ASSET = CONTENT + "/Geometry/balanced_010/StaticMeshes/balanced_010.balanced_010"
+STATIC_MESH_ASSETS = (
+    CONTENT + "/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2",
+    CONTENT + "/Geometry/CastlegroundsSourceMeshV2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2",
+)
 EXTERNAL = ROOT
 FOV = 66.5083847
 ASPECT_RATIO = 4.0 / 3.0
@@ -37,7 +40,7 @@ def sha256(path: Path) -> str:
 def import_glb() -> tuple[object, list[str]]:
     task = unreal.AssetImportTask()
     task.filename = str(GLB)
-    task.destination_path = CONTENT + "/Geometry"
+    task.destination_path = CONTENT + "/Geometry/CastlegroundsSourceMeshV2"
     task.automated = True
     task.save = True
     task.replace_existing = False
@@ -46,9 +49,10 @@ def import_glb() -> tuple[object, list[str]]:
     assets = [unreal.EditorAssetLibrary.load_asset(path) for path in paths]
     meshes = [asset for asset in assets if isinstance(asset, unreal.StaticMesh)]
     if not meshes:
-        existing = unreal.EditorAssetLibrary.load_asset(STATIC_MESH_ASSET)
-        if isinstance(existing, unreal.StaticMesh):
-            return existing, [STATIC_MESH_ASSET]
+        for asset_path in STATIC_MESH_ASSETS:
+            existing = unreal.EditorAssetLibrary.load_asset(asset_path)
+            if isinstance(existing, unreal.StaticMesh):
+                return existing, [asset_path]
     if not meshes:
         raise RuntimeError("UNREAL_INTERCHANGE_GLB_IMPORT_NO_STATIC_MESH:" + repr(paths))
     return meshes[0], paths
@@ -117,7 +121,7 @@ def main() -> None:
     mesh_actor = spawn("Castlegrounds_ReconstructedMesh", unreal.StaticMeshActor, unreal.Vector(0, 0, 0), unreal.Rotator(0, 0, 0))
     mesh_component = mesh_actor.get_component_by_class(unreal.StaticMeshComponent)
     mesh_component.set_editor_property("static_mesh", mesh)
-    mesh_actor.tags = ["ImageToSceneSmoke20260803", "MoGe2P2P5D"]
+    mesh_actor.tags = ["ImageToSceneSmoke20260803", "MoGe2P2P5D", "CastlegroundsSourceMeshV2"]
     lighting = configure_world()
     cameras = {
         "source": camera("Castlegrounds_Camera_Source", [0, 0, 0], [0, 20000, 0]),
@@ -143,6 +147,7 @@ def main() -> None:
         "materials_bound_by_importer": len(mesh.get_editor_property("static_materials")) if mesh else 0,
         "source_image": str(SOURCE),
         "interchange_route": "AssetImportTask_GLTF_INTERCHANGE",
+        "versioned_geometry": "CastlegroundsSourceMeshV2",
     })
     write_json("scene_build_receipt.json", {
         "schema": "unreal_image_to_scene_build_v1",

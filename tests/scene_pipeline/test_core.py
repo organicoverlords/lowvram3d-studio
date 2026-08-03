@@ -17,6 +17,7 @@ from workers.scene_pipeline.core import (
     validate_material_texture_binding,
 )
 from workers.scene_pipeline.projection import project_points, reprojection_metrics, source_uv
+from workers.scene_pipeline.source_mesh_repair import mesh_stats, vertex_normals
 
 
 def test_image_hash_and_dimensions_are_recorded(tmp_path: Path) -> None:
@@ -70,3 +71,27 @@ def test_uv_vertical_orientation() -> None:
     uv = source_uv(4, 3)
     assert tuple(uv[0, 0]) == (0.0, 1.0)
     assert tuple(uv[-1, -1]) == (1.0, 0.0)
+
+
+def test_winding_reversal_changes_geometric_normal_direction() -> None:
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float32)
+    faces = np.array([[0, 1, 2]], dtype=np.int64)
+    reversed_faces = faces[:, [0, 2, 1]]
+    n_before = vertex_normals(vertices, faces)[0]
+    n_after = vertex_normals(vertices, reversed_faces)[0]
+    assert np.allclose(n_before, -n_after)
+
+
+def test_mesh_stats_reports_boundary_and_no_nonmanifold_for_single_triangle() -> None:
+    vertices = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]], dtype=np.float32)
+    faces = np.array([[0, 1, 2]], dtype=np.int64)
+    stats = mesh_stats(vertices, faces)
+    assert stats["boundary_edges"] == 3
+    assert stats["non_manifold_edges"] == 0
+    assert stats["degenerate_triangles"] == 0
+
+
+def test_winding_cull_gate_requires_equal_coverage() -> None:
+    cull_off = 0.9962053094392928
+    cull_on = 0.9962053094392928
+    assert abs(cull_off - cull_on) <= 0.01

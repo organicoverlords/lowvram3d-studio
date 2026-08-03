@@ -1,0 +1,18 @@
+{
+  "schema": "castlegrounds_exact_source_candidate_comparison_v1",
+  "prefix": "official_moge_exact",
+  "renders": {
+    "cull_off": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\official_moge_exact_cull_off.png",
+    "cull_on": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\official_moge_exact_cull_on.png"
+  },
+  "valid_mask_coverage": 0.9757843017578125,
+  "rendered_nonblack_coverage_inside_mask": 0.9274161180524063,
+  "cull_on_coverage_inside_mask": 0.0,
+  "cull_on_cull_off_delta": 0.9274161180524063,
+  "silhouette_iou_inside_mask": 0.9274161180524063,
+  "ssim_proxy_ncc": 0.45857924222946167,
+  "psnr_db": 14.807919939559229,
+  "mean_abs_colour_error": 19.776721954345703,
+  "edge_correlation": 0.4459826946258545,
+  "cull_on_within_one_percent": false
+}

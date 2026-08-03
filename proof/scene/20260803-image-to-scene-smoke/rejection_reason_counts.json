@@ -1,0 +1,359 @@
+{
+  "schema": "castlegrounds_source_mesh_repair_v1",
+  "classification": "CPU_ONLY_SAVED_ARRAYS_REPAIR_CANDIDATES",
+  "arrays": {
+    "points.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\points.npy",
+    "depth.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\depth.npy",
+    "normal.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\normal.npy",
+    "mask.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\mask.npy",
+    "intrinsics.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\intrinsics.npy"
+  },
+  "valid_vertex_pixels": 191847,
+  "valid_2x2_cells": 190840,
+  "baseline_balanced": {
+    "accepted_faces": 250574,
+    "rasterized_source_pixels": 133132,
+    "source_face_coverage": 0.6939488238023008,
+    "cell_stats": {
+      "no_valid_cell": 4873,
+      "nonfinite_point": 0,
+      "both_triangles_rejected": 63415,
+      "one_triangle_rejected": 4276,
+      "two_triangles_accepted": 123149,
+      "one_triangle_accepted": 4276,
+      "invalid_mask_boundary": 4873,
+      "edge_threshold": 63415,
+      "degenerate": 0,
+      "adaptive_depth_boundary": 0
+    }
+  },
+  "candidates": {
+    "strict_005": {
+      "kind": "baseline",
+      "threshold": 0.005,
+      "reversed_faces": false,
+      "vertices": 191847,
+      "triangles": 182496,
+      "connected_components": 308,
+      "boundary_edges": 2330,
+      "non_manifold_edges": 94876,
+      "degenerate_triangles": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ],
+      "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\strict_005.glb",
+      "cell_stats": {
+        "no_valid_cell": 4873,
+        "nonfinite_point": 0,
+        "both_triangles_rejected": 97546,
+        "one_triangle_rejected": 4092,
+        "two_triangles_accepted": 89202,
+        "one_triangle_accepted": 4092,
+        "invalid_mask_boundary": 4873,
+        "edge_threshold": 97546,
+        "degenerate": 0,
+        "adaptive_depth_boundary": 0
+      }
+    },
+    "strict_005_winding": {
+      "kind": "baseline",
+      "threshold": 0.005,
+      "reversed_faces": true,
+      "vertices": 191847,
+      "triangles": 182496,
+      "connected_components": 308,
+      "boundary_edges": 2330,
+      "non_manifold_edges": 94876,
+      "degenerate_triangles": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ],
+      "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\strict_005_winding.glb",
+      "cell_stats": {
+        "no_valid_cell": 4873,
+        "nonfinite_point": 0,
+        "both_triangles_rejected": 97546,
+        "one_triangle_rejected": 4092,
+        "two_triangles_accepted": 89202,
+        "one_triangle_accepted": 4092,
+        "invalid_mask_boundary": 4873,
+        "edge_threshold": 97546,
+        "degenerate": 0,
+        "adaptive_depth_boundary": 0
+      }
+    },
+    "balanced_010": {
+      "kind": "baseline",
+      "threshold": 0.01,
+      "reversed_faces": false,
+      "vertices": 191847,
+      "triangles": 250574,
+      "connected_components": 345,
+      "boundary_edges": 2114,
+      "non_manifold_edges": 128470,
+      "degenerate_triangles": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ],
+      "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.glb",
+      "cell_stats": {
+        "no_valid_cell": 4873,
+        "nonfinite_point": 0,
+        "both_triangles_rejected": 63415,
+        "one_triangle_rejected": 4276,
+        "two_triangles_accepted": 123149,
+        "one_triangle_accepted": 4276,
+        "invalid_mask_boundary": 4873,
+        "edge_threshold": 63415,
+        "degenerate": 0,
+        "adaptive_depth_boundary": 0
+      }
+    },
+    "balanced_010_winding": {
+      "kind": "baseline",
+      "threshold": 0.01,
+      "reversed_faces": true,
+      "vertices": 191847,
+      "triangles": 250574,
+      "connected_components": 345,
+      "boundary_edges": 2114,
+      "non_manifold_edges": 128470,
+      "degenerate_triangles": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ],
+      "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010_winding.glb",
+      "cell_stats": {
+        "no_valid_cell": 4873,
+        "nonfinite_point": 0,
+        "both_triangles_rejected": 63415,
+        "one_triangle_rejected": 4276,
+        "two_triangles_accepted": 123149,
+        "one_triangle_accepted": 4276,
+        "invalid_mask_boundary": 4873,
+        "edge_threshold": 63415,
+        "degenerate": 0,
+        "adaptive_depth_boundary": 0
+      }
+    },
+    "permissive_020": {
+      "kind": "baseline",
+      "threshold": 0.02,
+      "reversed_faces": false,
+      "vertices": 191847,
+      "triangles": 305800,
+      "connected_components": 253,
+      "boundary_edges": 1681,
+      "non_manifold_edges": 155705,
+      "degenerate_triangles": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ],
+      "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\permissive_020.glb",
+      "cell_stats": {
+        "no_valid_cell": 4873,
+        "nonfinite_point": 0,
+        "both_triangles_rejected": 36032,
+        "one_triangle_rejected": 3816,
+        "two_triangles_accepted": 150992,
+        "one_triangle_accepted": 3816,
+        "invalid_mask_boundary": 4873,
+        "edge_threshold": 36032,
+        "degenerate": 0,
+        "adaptive_depth_boundary": 0
+      }
+    },
+    "permissive_020_winding": {
+      "kind": "baseline",
+      "threshold": 0.02,
+      "reversed_faces": true,
+      "vertices": 191847,
+      "triangles": 305800,
+      "connected_components": 253,
+      "boundary_edges": 1681,
+      "non_manifold_edges": 155705,
+      "degenerate_triangles": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ],
+      "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\permissive_020_winding.glb",
+      "cell_stats": {
+        "no_valid_cell": 4873,
+        "nonfinite_point": 0,
+        "both_triangles_rejected": 36032,
+        "one_triangle_rejected": 3816,
+        "two_triangles_accepted": 150992,
+        "one_triangle_accepted": 3816,
+        "invalid_mask_boundary": 4873,
+        "edge_threshold": 36032,
+        "degenerate": 0,
+        "adaptive_depth_boundary": 0
+      }
+    },
+    "adaptive_conservative": {
+      "kind": "adaptive",
+      "relative_depth_threshold": 0.015,
+      "vertices": 191847,
+      "triangles": 352755,
+      "connected_components": 130,
+      "boundary_edges": 1221,
+      "non_manifold_edges": 179823,
+      "degenerate_triangles": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ],
+      "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\adaptive_conservative.glb",
+      "cell_stats": {
+        "no_valid_cell": 4873,
+        "nonfinite_point": 0,
+        "both_triangles_rejected": 12302,
+        "one_triangle_rejected": 4321,
+        "two_triangles_accepted": 174217,
+        "one_triangle_accepted": 4321,
+        "invalid_mask_boundary": 4873,
+        "edge_threshold": 0,
+        "degenerate": 0,
+        "adaptive_depth_boundary": 28925
+      }
+    },
+    "adaptive_balanced": {
+      "kind": "adaptive",
+      "relative_depth_threshold": 0.03,
+      "vertices": 191847,
+      "triangles": 370332,
+      "connected_components": 18,
+      "boundary_edges": 428,
+      "non_manifold_edges": 187339,
+      "degenerate_triangles": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ],
+      "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\adaptive_balanced.glb",
+      "cell_stats": {
+        "no_valid_cell": 4873,
+        "nonfinite_point": 0,
+        "both_triangles_rejected": 4597,
+        "one_triangle_rejected": 2154,
+        "two_triangles_accepted": 184089,
+        "one_triangle_accepted": 2154,
+        "invalid_mask_boundary": 4873,
+        "edge_threshold": 0,
+        "degenerate": 0,
+        "adaptive_depth_boundary": 11348
+      }
+    },
+    "adaptive_coverage": {
+      "kind": "adaptive",
+      "relative_depth_threshold": 0.05,
+      "vertices": 191847,
+      "triangles": 374959,
+      "connected_components": 9,
+      "boundary_edges": 265,
+      "non_manifold_edges": 189192,
+      "degenerate_triangles": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ],
+      "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\adaptive_coverage.glb",
+      "cell_stats": {
+        "no_valid_cell": 4873,
+        "nonfinite_point": 0,
+        "both_triangles_rejected": 2619,
+        "one_triangle_rejected": 1483,
+        "two_triangles_accepted": 186738,
+        "one_triangle_accepted": 1483,
+        "invalid_mask_boundary": 4873,
+        "edge_threshold": 0,
+        "degenerate": 0,
+        "adaptive_depth_boundary": 6721
+      }
+    }
+  },
+  "artifacts": {
+    "accepted_face_count_per_cell.png": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\accepted_face_count_per_cell.png",
+    "rejected_cell_reason.png": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\rejected_cell_reason.png",
+    "source_face_coverage_mask.png": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\source_face_coverage_mask.png",
+    "blender_missing_pixel_overlay.png": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_missing_pixel_overlay.png"
+  },
+  "source_arrays_sha256": {
+    "points.npy": "b430ee4477ea75c6bcb07c0239a9c11e9a469252cd1eed304748f03f4a5a1130",
+    "depth.npy": "059814befc11e64e13c97564a04a52f148a12a38f40bc79e07e12cf1add89ec5",
+    "normal.npy": "281a59a1e459d1d95010d34c8159cb55a732e0a5d41ef353d9eb962f67bd471d",
+    "mask.npy": "408b83605376c96f6a216d54987c4e6746acb45f38bfe4d9dc7a561342e624a4",
+    "intrinsics.npy": "185b1ba4b88b15f31e4d16dd9ae2cff976aabfcbfbf5c8248cfac540c4b2cc5b"
+  },
+  "missing_cause_distribution": {
+    "valid_vertex_pixels": 191847,
+    "valid_pixels_without_rasterized_balanced_face": 58715,
+    "blender_cull_off_missing_pixels": 55107,
+    "blender_cull_on_missing_pixels": 191847,
+    "invalid_mask_boundary_cells": 4873,
+    "both_triangles_rejected_cells": 63415,
+    "one_triangle_rejected_cells": 4276,
+    "winding_culling": "ALL_SOURCE_FACES_REJECTED_WITH_CULL_ON",
+    "glb_rasterization_precision": "NOT_OBSERVED_AS_PRIMARY_CAUSE"
+  }
+}

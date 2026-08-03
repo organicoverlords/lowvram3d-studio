@@ -1,0 +1,20 @@
+{
+  "schema": "moge_bounded_candidate_comparison_v1",
+  "classification": "MOGE_EXACT_SOURCE_COMPARISON_PROVEN",
+  "name": "vitb_640",
+  "render_prefix": "vitb_640_winding_exact",
+  "renders": {
+    "cull_off": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\vitb_640_winding_exact_cull_off.png",
+    "cull_on": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\vitb_640_winding_exact_cull_on.png"
+  },
+  "valid_mask_coverage": 0.9757843017578125,
+  "rendered_nonblack_coverage_inside_mask": 0.9679067173320406,
+  "cull_on_coverage_inside_mask": 0.9679067173320406,
+  "cull_on_cull_off_delta": 0.0,
+  "silhouette_iou_inside_mask": 0.9679067173320406,
+  "ssim_proxy_ncc": 0.6701202392578125,
+  "psnr_db": 17.140734282066013,
+  "mean_abs_colour_error": 13.588220596313477,
+  "edge_correlation": 0.5070309638977051,
+  "cull_on_within_one_percent": true
+}

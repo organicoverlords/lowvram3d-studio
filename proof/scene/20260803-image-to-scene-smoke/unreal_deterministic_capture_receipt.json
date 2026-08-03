@@ -1,0 +1,17 @@
+{
+  "schema": "unreal_deterministic_scene_capture_v1",
+  "classification": "UNREAL_VISUAL_RENDER_BLOCKED",
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "mesh_v2_reference": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2",
+  "mesh_v2_reference_valid": true,
+  "resolution": [
+    1280,
+    960
+  ],
+  "route": "SceneCaptureComponent2D_TextureRenderTarget2D_RenderingLibrary.export_render_target",
+  "renders": [],
+  "errors": [
+    "CAPTURE:AttributeError:module 'unreal' has no attribute 'TextureRenderTarget2DFactoryNew'"
+  ],
+  "source_plane_present": false
+}

@@ -1,25 +1,21 @@
 {
-  "schema": "image_to_scene_render_manifest_v2",
+  "schema": "image_to_scene_render_manifest_v3",
   "classification": "UNREAL_VISUAL_RENDER_BLOCKED_HEADLESS_CAPTURE",
   "unreal_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
-  "unreal_views": ["source", "left", "right", "forward", "elevated", "wireframe"],
+  "unreal_v2_mesh_prefix": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/",
+  "unreal_views": ["source", "left", "right", "forward", "elevated", "depth", "normal"],
   "unreal_paths": [],
-  "blender_cpu_visual_views": [
-    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_source.png",
-    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_left.png",
-    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_right.png",
-    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_forward.png",
-    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_elevated.png",
-    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_rear.png"
+  "blender_exact_source_views": [
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\source_mesh_v2_exact_cull_off.png",
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\source_mesh_v2_exact_cull_on.png"
   ],
-  "contact_sheet": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\contact_sheet.png",
-  "exact_source_camera_renders": [
-    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_cull_off.png",
-    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_source_cull_on.png",
-    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_exact_wireframe.png"
+  "blender_offset_views": [
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\adaptive_coverage_offset_left.png",
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\adaptive_coverage_offset_right.png"
   ],
-  "exact_source_camera_classification": "BLENDER_EXACT_SOURCE_CAMERA_REJECTED_MESH_COVERAGE",
-  "external_blender_views_classification": "BLENDER_EXTERNAL_VIEW_DIAGNOSTIC_ONLY",
+  "contact_sheet": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\source_mesh_repair_contact_sheet.png",
   "source_plane_present": false,
-  "visual_camera_mode": "EXTERNALIZED_FOR_CPU_VISUAL_QA_NOT_UNREAL_SOURCE_CAMERA"
+  "exact_source_camera_classification": "BLENDER_EXACT_SOURCE_CAMERA_PROVEN",
+  "external_blender_views_classification": "DIAGNOSTIC_ONLY",
+  "deterministic_unreal_capture_classification": "UNREAL_VISUAL_RENDER_BLOCKED"
 }

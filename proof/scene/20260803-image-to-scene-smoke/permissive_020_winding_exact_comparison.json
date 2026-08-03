@@ -1,0 +1,18 @@
+{
+  "schema": "castlegrounds_exact_source_candidate_comparison_v1",
+  "prefix": "permissive_020_winding_exact",
+  "renders": {
+    "cull_off": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\permissive_020_winding_exact_cull_off.png",
+    "cull_on": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\permissive_020_winding_exact_cull_on.png"
+  },
+  "valid_mask_coverage": 0.9757843017578125,
+  "rendered_nonblack_coverage_inside_mask": 0.8375476291002726,
+  "cull_on_coverage_inside_mask": 0.8375476291002726,
+  "cull_on_cull_off_delta": 0.0,
+  "silhouette_iou_inside_mask": 0.8375476291002726,
+  "ssim_proxy_ncc": 0.23051610589027405,
+  "psnr_db": 11.631199629827304,
+  "mean_abs_colour_error": 48.305030822753906,
+  "edge_correlation": 0.32774677872657776,
+  "cull_on_within_one_percent": true
+}

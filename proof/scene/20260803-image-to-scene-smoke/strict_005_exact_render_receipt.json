@@ -1,0 +1,10 @@
+{
+  "schema": "blender_exact_candidate_render_v1",
+  "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\strict_005.glb",
+  "prefix": "strict_005_exact",
+  "renders": {
+    "cull_off": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\strict_005_exact_cull_off.png",
+    "cull_on": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\strict_005_exact_cull_on.png"
+  },
+  "camera_contract": "M_GLB_TO_BLENDER_AXIS_FIXTURE_EXACT_SOURCE"
+}

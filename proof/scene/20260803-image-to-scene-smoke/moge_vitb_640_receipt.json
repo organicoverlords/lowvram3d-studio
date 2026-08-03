@@ -1,0 +1,120 @@
+{
+  "schema": "moge_bounded_comparison_v1",
+  "classification": "MOGE_COMPARISON_PROVEN",
+  "name": "vitb_640",
+  "model": "Ruicheng/moge-2-vitb-normal",
+  "requested_max_dimension": 640,
+  "input_shape_rgb": [
+    480,
+    640,
+    3
+  ],
+  "source_sha256": "41109c2c02020edcbde5ab7d71e8c970af1dd70baa21dc43ec0aa6990f12dd0a",
+  "device": "cuda",
+  "dtype": "float16",
+  "load_seconds": 4.198278188705444,
+  "inference_seconds": 4.322852849960327,
+  "peak_allocated_bytes": 929412096,
+  "peak_reserved_bytes": 1348468736,
+  "arrays": {
+    "points": {
+      "shape": [
+        480,
+        640,
+        3
+      ],
+      "finite_fraction": 0.9719596354166666,
+      "min": -330.4916687011719,
+      "max": Infinity
+    },
+    "depth": {
+      "shape": [
+        480,
+        640
+      ],
+      "finite_fraction": 0.9719596354166666,
+      "min": 52.37335968017578,
+      "max": Infinity
+    },
+    "normal": {
+      "shape": [
+        480,
+        640,
+        3
+      ],
+      "finite_fraction": 1.0,
+      "min": -1.0,
+      "max": 0.99853515625
+    },
+    "mask": {
+      "shape": [
+        480,
+        640
+      ],
+      "coverage": 0.9719596354166666
+    },
+    "intrinsics": [
+      [
+        0.7583640217781067,
+        0.0,
+        0.5
+      ],
+      [
+        0.0,
+        1.0111520290374756,
+        0.5
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "camera": {
+    "fov_x_deg": 66.79484588048226,
+    "fov_y_deg": 52.62345444922489,
+    "resolution": [
+      640,
+      480
+    ]
+  },
+  "mesh": {
+    "threshold": 0.04,
+    "vertices": 298586,
+    "triangles": 558425,
+    "connected_components": 191,
+    "boundary_edges": 11981,
+    "non_manifold_edges": 0,
+    "zero_area_triangles": 0,
+    "triangle_aspect_ratio": {
+      "p50": 1.7060245275497437,
+      "p95": 4.0395188331604,
+      "max": 31.447187423706055
+    },
+    "discarded_depth_edge_triangles": 36135,
+    "valid_mask_coverage": 0.9719596354166666,
+    "source_valid_vertex_coverage": 1.0,
+    "sky_background_bridges": 0,
+    "tiny_component_count": 0,
+    "bounds_min": [
+      -250.3291473388672,
+      -330.4916687011719,
+      52.37335968017578
+    ],
+    "bounds_max": [
+      284.31256103515625,
+      30.722942352294922,
+      681.125732421875
+    ],
+    "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\official.glb"
+  },
+  "artifacts": {
+    "points.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\points.npy",
+    "depth.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\depth.npy",
+    "normal.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\normal.npy",
+    "mask.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\mask.npy",
+    "intrinsics.npy": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\intrinsics.npy",
+    "source_rgb.png": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\source_rgb.png"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "blender_exact_candidate_render_v1",
+  "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\official_winding.glb",
+  "prefix": "vitb_640_winding_exact",
+  "renders": {
+    "cull_off": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\vitb_640_winding_exact_cull_off.png",
+    "cull_on": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_comparison\\vitb_640\\vitb_640_winding_exact_cull_on.png"
+  },
+  "camera_contract": "M_GLB_TO_BLENDER_AXIS_FIXTURE_EXACT_SOURCE"
+}

@@ -1,13 +1,16 @@
 {
   "schema": "unreal_interchange_image_to_scene_import_v1",
   "classification": "SCENE_ASSET_IMPORT_PROVEN",
-  "source_glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.glb",
-  "source_glb_sha256": "3f9d5343afd86b315b959a2676def636ecef4ff9f8ed8cd2efdf2df660ca7f3d",
+  "source_glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb",
+  "source_glb_sha256": "2ee23fd3816f44931a25628392fa5962b23a55dcc17e207540dd3d937e940011",
   "imported_object_paths": [
-    "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/balanced_010/StaticMeshes/balanced_010.balanced_010"
+    "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/Textures/castlegrounds_source_mesh_v2_texture_0.castlegrounds_source_mesh_v2_texture_0",
+    "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/Materials/castlegrounds_source_mesh_v2_material_0.castlegrounds_source_mesh_v2_material_0",
+    "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2"
   ],
-  "static_mesh_asset": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/balanced_010/StaticMeshes/balanced_010.balanced_010",
+  "static_mesh_asset": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2",
   "materials_bound_by_importer": 1,
   "source_image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
-  "interchange_route": "AssetImportTask_GLTF_INTERCHANGE"
+  "interchange_route": "AssetImportTask_GLTF_INTERCHANGE",
+  "versioned_geometry": "CastlegroundsSourceMeshV2"
 }
