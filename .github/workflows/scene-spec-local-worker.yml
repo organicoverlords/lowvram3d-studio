@@ -10,9 +10,12 @@ on:
       - .github/workflows/scene-spec-local-worker.yml
       - schemas/scene_spec_v1.schema.json
       - configs/scene/castlegrounds_scene_spec_v1.json
+      - configs/scene/castlegrounds_source_mesh_v2.json
       - docs/SCENE_PIPELINE_V2_20260803.md
       - src/lowvram3d/scene_spec.py
+      - src/lowvram3d/scene_spec_legacy.py
       - tests/test_scene_spec.py
+      - tests/test_scene_spec_legacy.py
 
 permissions:
   contents: write
@@ -62,13 +65,17 @@ jobs:
       - name: Compile scene sources
         shell: powershell
         run: |
-          & $env:SCENE_PYTHON -m py_compile src\lowvram3d\scene_spec.py tests\test_scene_spec.py
+          & $env:SCENE_PYTHON -m py_compile `
+            src\lowvram3d\scene_spec.py `
+            src\lowvram3d\scene_spec_legacy.py `
+            tests\test_scene_spec.py `
+            tests\test_scene_spec_legacy.py
           if ($LASTEXITCODE -ne 0) { throw "Scene Python compile failed" }
 
-      - name: Parse schema and fixture
+      - name: Parse schema and fixtures
         shell: powershell
         run: |
-          & $env:SCENE_PYTHON -c "import json, pathlib; [json.loads(pathlib.Path(p).read_text(encoding='utf-8')) for p in ['schemas/scene_spec_v1.schema.json','configs/scene/castlegrounds_scene_spec_v1.json']]; print('SCENE_JSON_PARSE=PROVEN')"
+          & $env:SCENE_PYTHON -c "import json, pathlib; [json.loads(pathlib.Path(p).read_text(encoding='utf-8')) for p in ['schemas/scene_spec_v1.schema.json','configs/scene/castlegrounds_scene_spec_v1.json','configs/scene/castlegrounds_source_mesh_v2.json']]; print('SCENE_JSON_PARSE=PROVEN')"
           if ($LASTEXITCODE -ne 0) { throw "Scene JSON parse failed" }
 
       - name: Run SceneSpec tests
@@ -77,25 +84,43 @@ jobs:
           $env:PYTHONPATH = "$PWD\src;$PWD"
           & $env:SCENE_PYTHON -m pip install --disable-pip-version-check pytest
           if ($LASTEXITCODE -ne 0) { throw "Could not ensure pytest is installed" }
-          & $env:SCENE_PYTHON -m pytest tests\test_scene_spec.py -q
+          & $env:SCENE_PYTHON -m pytest tests\test_scene_spec.py tests\test_scene_spec_legacy.py -q
           if ($LASTEXITCODE -ne 0) { throw "SceneSpec tests failed" }
 
-      - name: Validate Castlegrounds SceneSpec
+      - name: Validate authored Castlegrounds SceneSpec
         shell: powershell
         run: |
           $env:PYTHONPATH = "$PWD\src;$PWD"
           $evidence = Join-Path $PWD "evidence\latest-scene-spec-local-worker"
+          if (Test-Path -LiteralPath $evidence) { Remove-Item -LiteralPath $evidence -Recurse -Force }
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
           & $env:SCENE_PYTHON -m lowvram3d.scene_spec `
             --scene-spec configs\scene\castlegrounds_scene_spec_v1.json `
             --report (Join-Path $evidence "scene_spec_validation.json")
-          if ($LASTEXITCODE -ne 0) { throw "Castlegrounds SceneSpec rejected" }
+          if ($LASTEXITCODE -ne 0) { throw "Authored Castlegrounds SceneSpec rejected" }
+
+      - name: Migrate preserved legacy evidence
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\src;$PWD"
+          $evidence = Join-Path $PWD "evidence\latest-scene-spec-local-worker"
+          & $env:SCENE_PYTHON -m lowvram3d.scene_spec_legacy `
+            --interpretation proof\scene\20260803-image-to-scene-smoke\scene_interpretation.json `
+            --geometry proof\scene\20260803-image-to-scene-smoke\geometry_spec.json `
+            --selected-asset proof\scene\20260803-image-to-scene-smoke\selected_asset.json `
+            --source-mesh configs\scene\castlegrounds_source_mesh_v2.json `
+            --output (Join-Path $evidence "migrated_scene_spec.json") `
+            --receipt (Join-Path $evidence "legacy_migration_receipt.json")
+          if ($LASTEXITCODE -ne 0) { throw "Legacy SceneSpec migration failed" }
+          & $env:SCENE_PYTHON -m lowvram3d.scene_spec `
+            --scene-spec (Join-Path $evidence "migrated_scene_spec.json") `
+            --report (Join-Path $evidence "migrated_scene_spec_validation.json")
+          if ($LASTEXITCODE -ne 0) { throw "Migrated SceneSpec rejected" }
 
       - name: Run negative fail-closed probes
         shell: powershell
         run: |
           $env:PYTHONPATH = "$PWD\src;$PWD"
-          $evidence = Join-Path $PWD "evidence\latest-scene-spec-local-worker"
           & $env:SCENE_PYTHON -c @'
           import copy
           import json
@@ -156,7 +181,10 @@ jobs:
             head_sha = "${{ github.sha }}"
             worker_head = $env:WORKER_HEAD
             gpu_work_started = $false
-            scope = "SCENE_SPEC_CPU_ONLY"
+            neural_work_started = $false
+            blender_work_started = $false
+            unreal_work_started = $false
+            scope = "SCENE_SPEC_AND_LEGACY_MIGRATION_CPU_ONLY"
             recorded_at = (Get-Date).ToUniversalTime().ToString("o")
           } | ConvertTo-Json | Set-Content (Join-Path $evidence "workflow_receipt.json") -Encoding utf8
 
