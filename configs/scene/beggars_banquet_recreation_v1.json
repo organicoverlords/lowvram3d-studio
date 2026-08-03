@@ -1,5 +1,5 @@
 {
-  "schema_version": "blender_photoreal_scene_recreation_v3",
+  "schema_version": "blender_photoreal_scene_recreation_v4",
   "scene_id": "beggars-banquet-meme-clip-match-20260804",
   "title": "Photoreal Blender recreation of the Somebody Get These Beggars Out of Here meme clip",
   "source_context": {
@@ -9,6 +9,7 @@
     "meme_line": "Somebody get these beggars out of here!",
     "reference_still_url": "https://i.kym-cdn.com/entries/icons/facebook/000/057/198/Somebody_Get_These_Beggars_Out_Of_Here_meme_banner_image.jpg",
     "reference_clip_candidates": [
+      "https://tenor.com/view/somebody-get-these-beggars-out-of-here-the-odyssey-robert-pattinson-meme-gif-8920526825983044412",
       "https://x.com/celestesangels/status/2079389139791741383",
       "https://www.youtube.com/shorts/iy7cgP-JDWU",
       "ytsearch1:Somebody get these beggars out of here Robert Pattinson The Odyssey"
