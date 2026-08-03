@@ -1,0 +1,32 @@
+{
+  "classification": "PROVEN_EXISTING_TYPED_TOOLS",
+  "endpoint": "http://127.0.0.1:8000/mcp",
+  "map": "/Game/AgentProof/MCP/L_MCP_Diagnostic",
+  "tools": [
+    "GetCameraTransform",
+    "SetCameraTransform",
+    "CaptureViewport",
+    "FocusOnActors",
+    "WorldPosToScreenCoords",
+    "ScreenCoordsToWorld",
+    "GetVisibleActors"
+  ],
+  "camera_readback": {
+    "location": {
+      "x": 1105.8564141081656,
+      "y": -2.4554945072695013e-13,
+      "z": 296.31333310506017
+    },
+    "rotation": {
+      "pitch": -14.999999999999973,
+      "yaw": -179.99999740717342,
+      "roll": -1.0319561994614688
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    }
+  },
+  "source_map_mutated": false
+}

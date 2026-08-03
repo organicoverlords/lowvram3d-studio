@@ -1,0 +1,21 @@
+{
+    "FileVersion": 3,
+    "Version": 1,
+    "VersionName": "1.0.0",
+    "FriendlyName": "Scene Pipeline Tools",
+    "Description": "Small allowlisted diagnostic map workflow for the existing Epic MCP server.",
+    "Category": "Editor",
+    "EnabledByDefault": false,
+    "CanContainContent": false,
+    "Plugins": [
+        { "Name": "ModelContextProtocol", "Enabled": true },
+        { "Name": "ToolsetRegistry", "Enabled": true }
+    ],
+    "Modules": [
+        {
+            "Name": "ScenePipelineTools",
+            "Type": "Editor",
+            "LoadingPhase": "PostEngineInit"
+        }
+    ]
+}
