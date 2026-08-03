@@ -366,12 +366,13 @@ def run_probe(
         if reference_unet_dtype not in {"fp16", "fp32"}:
             raise ValueError(f"REFERENCE_UNET_DTYPE_INVALID:{reference_unet_dtype}")
         reference_dtype = torch.float32 if reference_unet_dtype == "fp32" else torch.float16
-        if reference_dtype == torch.float32:
-            pipe.unet.to(dtype=torch.float32)
         receipt["component_inventory_before_offload"] = component_inventory(pipe)
         receipt["dtype_inventory_before_offload"] = component_dtype_inventory(pipe)
         receipt["rowcol_dtype_inventory"] = rowcol_dtype_inventory(pipe, torch.float16)
         receipt["attention"] = attention_report(pipe)
+        if reference_dtype == torch.float32:
+            pipe.unet.to(dtype=torch.float32)
+            receipt["reference_unet_dtype_after_isolation_cast"] = "float32"
         receipt["sdpa_backend"] = {
             "requested": backend, "actual_api": "torch.nn.functional.scaled_dot_product_attention",
             "math_enabled": bool(torch.backends.cuda.math_sdp_enabled()),
