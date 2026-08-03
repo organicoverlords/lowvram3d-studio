@@ -702,7 +702,14 @@ def reference_unet_dtype_smoke_test(
             device=target,
             add_noise=False,
         )
-        cached_reference_hidden_states: dict[str, torch.Tensor] = {}
+        class _ReferenceCache(dict[str, torch.Tensor]):
+            # Diffusers copies cross-attention kwargs while descending through
+            # transformer blocks.  Keep the smoke cache identity stable so the
+            # reference forward's writes remain observable to this receipt.
+            def copy(self):
+                return self
+
+        cached_reference_hidden_states: dict[str, torch.Tensor] = _ReferenceCache()
         pipe.unet(
             reference_latents,
             torch.zeros((), device=target, dtype=torch.long),
@@ -711,6 +718,7 @@ def reference_unet_dtype_smoke_test(
                 "cache_hidden_states": cached_reference_hidden_states,
                 "use_mv": False,
                 "use_ref": False,
+                "num_views": 1,
             },
             return_dict=False,
         )
