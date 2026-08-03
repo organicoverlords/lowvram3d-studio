@@ -702,11 +702,20 @@ def reference_unet_dtype_smoke_test(
             device=target,
             add_noise=False,
         )
+        cache_sink: dict[str, torch.Tensor] = {}
+
         class _ReferenceCache(dict[str, torch.Tensor]):
             # Diffusers copies cross-attention kwargs while descending through
-            # transformer blocks.  Keep the smoke cache identity stable so the
-            # reference forward's writes remain observable to this receipt.
+            # transformer blocks.  Keep a shared sink so writes remain
+            # observable even if a dependency materializes a plain copy.
+            def __setitem__(self, key: str, value: torch.Tensor):
+                cache_sink[key] = value
+                super().__setitem__(key, value)
+
             def copy(self):
+                return self
+
+            def __deepcopy__(self, _memo: dict[int, Any]):
                 return self
 
         cached_reference_hidden_states: dict[str, torch.Tensor] = _ReferenceCache()
@@ -723,11 +732,11 @@ def reference_unet_dtype_smoke_test(
             return_dict=False,
         )
         torch.cuda.synchronize(target)
-    if not cached_reference_hidden_states:
+    if not cache_sink:
         raise RuntimeError("MVADAPTER_REFERENCE_SMOKE_NO_CACHED_HIDDEN_STATES")
     hidden_records = [
         tensor_dtype_record(f"cached_reference_hidden_states.{name}", value)
-        for name, value in sorted(cached_reference_hidden_states.items())
+        for name, value in sorted(cache_sink.items())
     ]
     all_records = [
         tensor_dtype_record("prompt_embeddings", prompt_embeds),
@@ -749,7 +758,7 @@ def reference_unet_dtype_smoke_test(
         "output_images": 0,
         "gpu_sequence_consumed": False,
         "reference_cache_summary": tensor_group_record(
-            "reference_cache", list(cached_reference_hidden_states.values())
+            "reference_cache", list(cache_sink.values())
         ),
         "tensor_inventory": all_records,
     }
