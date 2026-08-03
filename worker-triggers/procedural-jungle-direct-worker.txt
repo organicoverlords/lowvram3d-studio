@@ -1,6 +1,6 @@
-run=1
-requested=2026-08-04T00:36:00+03:00
-mode=github-self-hosted-direct
+run=2
+requested=2026-08-04T01:21:00+03:00
+mode=github-self-hosted-direct-pr
 codex=false
 claude=false
 magicmusic=false
