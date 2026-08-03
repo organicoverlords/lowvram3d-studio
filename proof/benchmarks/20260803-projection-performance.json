@@ -1,0 +1,73 @@
+{
+  "schema": "projection_performance_receipt_v1",
+  "classification": "PROJECTION_HOT_PATH_REPLACED",
+  "date": "2026-08-03",
+  "old_path": {
+    "implementation": "blender/project_texture.py",
+    "hot_path": "Python loop over mesh.polygons with up to 4 scene.ray_cast calls each, then all atlas texels read through bpy Image.pixels",
+    "full_mesh_763850_triangles_4096_atlas": {
+      "elapsed_minutes": 189.82,
+      "cpu_seconds": 11199.4,
+      "completed": false,
+      "produced_glb": false,
+      "note": "terminated; wrote the atlas but never reached GLB export"
+    },
+    "bounded_subset_20000_triangles_2048_atlas": {
+      "elapsed_seconds": ">600",
+      "completed": false,
+      "note": "did not finish 2.6% of the production mesh within a 10 minute bound"
+    }
+  },
+  "new_path": {
+    "implementation": "workers/fast_texture_projection.py",
+    "backend": "numpy vectorised rasteriser",
+    "scene_ray_cast_calls": 0,
+    "bpy_pixel_accesses": 0,
+    "blender_used": false,
+    "architecture": [
+      "source image and mask into NumPy arrays",
+      "orthographic camera fitted once by silhouette search",
+      "batched transform of positions and normals",
+      "scatter-rasterised depth buffer for occlusion",
+      "scatter-rasterised UV ownership plus barycentric weights, in area tiers",
+      "barycentric interpolation for source coordinates",
+      "mask / front-facing / depth-consistency / bounds gates",
+      "PNG written with OpenCV, texture bound by GLB surgery afterwards"
+    ],
+    "bounded_subset_20000_triangles_2048_atlas": {
+      "elapsed_seconds": 8.1,
+      "completed": true
+    },
+    "full_mesh_737260_triangles_2048_atlas": {
+      "elapsed_seconds": 32.441,
+      "completed": true,
+      "stage_breakdown": {
+        "load": 0.141,
+        "camera_fit": 28.473,
+        "depth_buffer": 0.728,
+        "atlas_raster": 1.512,
+        "sampling": 0.799,
+        "fill": 0.284,
+        "write_and_bind": 0.294,
+        "total": 32.441
+      },
+      "projection_work_excluding_camera_fit_seconds": 3.968
+    }
+  },
+  "speedup": {
+    "bounded_subset_lower_bound": ">=74x",
+    "bounded_subset_note": "lower bound only: the old path never completed the subset, so its true time is unknown and the real ratio is larger",
+    "full_mesh": "old path did not complete in 190 minutes; new path completes in 32.441s on a mesh with 36x the subset's triangles"
+  },
+  "equivalence_checks": {
+    "geometry_changed": false,
+    "uv_changed": false,
+    "geometry_uv_index_preserved": true,
+    "uv_bytes_sha256_before": "217c8e8a07fdd26c43dea33a0a1aa3d03984aa0ab879d1f33e50bf35dead3a62",
+    "uv_bytes_sha256_after": "217c8e8a07fdd26c43dea33a0a1aa3d03984aa0ab879d1f33e50bf35dead3a62",
+    "mask_leakage": false,
+    "mask_leakage_evidence": "50978 texels were actively rejected by the matte gate instead of being painted",
+    "ownership_equivalence_vs_old_path": "NOT MEASURABLE - the old path produced no output on the bounded subset within the time bound, so there is nothing to diff against. Ownership was instead checked against the UV report: 36.94% of the atlas owned against 32.75% UV area, the difference being supersample spill at chart edges, not overlap.",
+    "no_python_loop_with_scene_ray_cast": true
+  }
+}
