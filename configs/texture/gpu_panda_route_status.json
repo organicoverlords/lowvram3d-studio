@@ -1,0 +1,8 @@
+{
+  "schema": "lowvram3d_texture_route_status_v1",
+  "legacy_route": "gpu_panda_mvadapter_ig2mv_api_workflow.json",
+  "status": "REJECTED_FOR_6GB_HARDWARE",
+  "reason": "SDXL_SIX_VIEW_MEMORY_REQUIREMENT_AND_NVDIFFRAST_DEPENDENCY",
+  "default_gtx1660_super_route": "mvadapter_sd21_direct_cpu_controls",
+  "gpu_sequence_consumed": false
+}
