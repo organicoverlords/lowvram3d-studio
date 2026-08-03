@@ -1,6 +1,6 @@
 {
   "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
-  "status": "BLOCKED_CUDA_ILLEGAL_MEMORY_ACCESS",
+  "status": "PRIMARY_384_READY_AFTER_TINY_GATE",
   "asset": "tactical_red_panda_scout",
   "generator_family": "MVADAPTER_SD21",
   "conditioning": "IMAGE_PLUS_GEOMETRY",
@@ -76,5 +76,5 @@
   "classifier_free_guidance": false,
   "gpu_sequence_consumed": false,
   "fallback_eligible": false,
-  "next_action": "CUDA_KERNEL_ISOLATION_PROBE"
+  "next_action": "FULL_384_PRODUCTION_RUN"
 }

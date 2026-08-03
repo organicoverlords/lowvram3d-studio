@@ -139,6 +139,8 @@ def _selected(config: dict[str, Any], attempt: str) -> tuple[dict[str, Any], str
     if config.get("schema") != "lowvram3d_mvadapter_ig2mv_sd21_inference_v1":
         raise RuntimeError("MVADAPTER_CONFIG_SCHEMA_INVALID")
     allowed_statuses = {"PREPARED_NOT_EXECUTED"}
+    if attempt == "primary":
+        allowed_statuses.add("PRIMARY_384_READY_AFTER_TINY_GATE")
     if attempt == "oom-fallback":
         allowed_statuses.add("PRIMARY_384_CUDA_OOM_FALLBACK_AUTHORIZED")
     if config.get("status") not in allowed_statuses:
