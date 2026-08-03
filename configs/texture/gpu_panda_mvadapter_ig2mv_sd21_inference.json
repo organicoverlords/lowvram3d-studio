@@ -42,7 +42,7 @@
     "conditioning_reference": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\mvadapter_conditioning_v3\\conditioning_384.png",
     "conditioning_reference_sha256": "8e77e68845069430185cbdec8dd21260f79cee5e412222c5ff85d0ef9e39df08",
     "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v3\\control_tensor.npy",
-    "control_tensor_sha256": "9fbf0f5dd4ac4f17516e11c4771556b55f7d8e96aa3489f5e4ef3294b10ff1283",
+    "control_tensor_sha256": "9fbf0f5dd4acf17516e11c4771556b55f7d8e96aa3489f5e4ef3294b10ff1283",
     "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v3\\camera_contract.json"
     ,"camera_contract_sha256": "fa64a40fb2dbc09be3be031a55aba08f66b58a7c0c6b12889d2b800725f25f58"
   },
