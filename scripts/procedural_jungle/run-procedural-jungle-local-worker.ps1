@@ -61,32 +61,95 @@ if ($UnrealProcesses.Count -gt 0) {
     Write-Host "UNRELATED_UNREAL_PID=$($UnrealProcesses.ProcessId -join ',')"
 }
 
-# Windows PowerShell 5 converts any native stderr line into a terminating
-# NativeCommandError under ErrorActionPreference=Stop. Blender 5.2 emits a benign
-# Python deprecation warning on stderr even when generation succeeds. Route only
-# Blender's stderr into stdout through cmd.exe while preserving Blender's exact
-# process exit code. Other native commands retain their original fail-closed path.
+# Windows PowerShell 5 turns native stderr into terminating error records under
+# ErrorActionPreference=Stop. Blender 5.2 emits benign warnings on stderr. Compile
+# a tiny native forwarder so PowerShell passes every argument—including the `--`
+# Python boundary—unchanged to Blender. The forwarder merges both streams into
+# stdout and exits with Blender's exact exit code.
 $BlenderExe = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
 if (-not (Test-Path -LiteralPath $BlenderExe)) { throw "Blender executable missing: $BlenderExe" }
-$BlenderWrapper = Join-Path $TempRoot 'blender-native-wrapper.cmd'
-@"
-@echo off
-"$BlenderExe" %* 2^>^&1
-exit /b %ERRORLEVEL%
-"@ | Set-Content -LiteralPath $BlenderWrapper -Encoding ascii
+$BlenderForwarder = Join-Path $TempRoot 'BlenderNativeForwarder.exe'
+$BlenderExeForCode = $BlenderExe.Replace('\', '\\').Replace('"', '\"')
+$ForwarderSource = @"
+using System;
+using System.Diagnostics;
+using System.Text;
+
+public static class BlenderNativeForwarder
+{
+    private static string Quote(string value)
+    {
+        if (value == null) return "\"\"";
+        if (value.Length > 0 && value.IndexOfAny(new[] { ' ', '\t', '\n', '\v', '\"' }) < 0)
+            return value;
+        var builder = new StringBuilder();
+        builder.Append('\"');
+        int slashes = 0;
+        foreach (char character in value)
+        {
+            if (character == '\\')
+            {
+                slashes++;
+            }
+            else if (character == '\"')
+            {
+                builder.Append('\\', slashes * 2 + 1);
+                builder.Append('\"');
+                slashes = 0;
+            }
+            else
+            {
+                builder.Append('\\', slashes);
+                slashes = 0;
+                builder.Append(character);
+            }
+        }
+        builder.Append('\\', slashes * 2);
+        builder.Append('\"');
+        return builder.ToString();
+    }
+
+    public static int Main(string[] args)
+    {
+        var arguments = new StringBuilder();
+        for (int index = 0; index < args.Length; index++)
+        {
+            if (index > 0) arguments.Append(' ');
+            arguments.Append(Quote(args[index]));
+        }
+        var info = new ProcessStartInfo
+        {
+            FileName = "$BlenderExeForCode",
+            Arguments = arguments.ToString(),
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        using (var process = new Process { StartInfo = info })
+        {
+            process.OutputDataReceived += (sender, eventArgs) => { if (eventArgs.Data != null) Console.Out.WriteLine(eventArgs.Data); };
+            process.ErrorDataReceived += (sender, eventArgs) => { if (eventArgs.Data != null) Console.Out.WriteLine(eventArgs.Data); };
+            if (!process.Start()) return 126;
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+            return process.ExitCode;
+        }
+    }
+}
+"@
+Add-Type -TypeDefinition $ForwarderSource -Language CSharp -OutputAssembly $BlenderForwarder -OutputType ConsoleApplication
+if (-not (Test-Path -LiteralPath $BlenderForwarder)) { throw 'Blender native forwarder compilation produced no executable' }
 $BlenderCallPattern = '&\s*\$Blender\b'
 $BlenderCallCount = [regex]::Matches($EntryText, $BlenderCallPattern).Count
 if ($BlenderCallCount -lt 2 -or $BlenderCallCount -gt 4) {
     throw "Unexpected decoded Blender invocation count: $BlenderCallCount"
 }
-$EscapedWrapper = $BlenderWrapper.Replace("'", "''")
-$EntryText = [regex]::Replace(
-    $EntryText,
-    $BlenderCallPattern,
-    "& '$EscapedWrapper'"
-)
+$EscapedForwarder = $BlenderForwarder.Replace("'", "''")
+$EntryText = [regex]::Replace($EntryText, $BlenderCallPattern, "& '$EscapedForwarder'")
 Set-Content -LiteralPath $Entry -Value $EntryText -Encoding utf8
-Write-Host "BLENDER_NATIVE_WRAPPER=PROVEN"
+Write-Host 'BLENDER_NATIVE_FORWARDER=PROVEN'
 Write-Host "BLENDER_CALLS_PATCHED=$BlenderCallCount"
 
 Write-Host "DIRECT_WORKER_BUNDLE_SHA256=$ActualSha"
