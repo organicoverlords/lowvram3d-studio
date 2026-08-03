@@ -1,0 +1,123 @@
+name: Build procedural jungle PR on local worker
+run-name: Jungle PR ${{ github.event.pull_request.number }} walking panda
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - agent/scene-pipeline-smoke-20260803
+    paths:
+      - worker-triggers/procedural-jungle-direct-worker.txt
+      - worker-tasks/procedural-jungle-playable-20260804.md
+      - scripts/procedural_jungle/**
+      - worker-bundles/procedural-jungle-direct-worker/**
+      - tests/scene_pipeline/**
+
+permissions:
+  contents: write
+
+concurrency:
+  group: procedural-jungle-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-prove:
+    if: >-
+      github.repository_owner == 'organicoverlords' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'feature/procedural-jungle-playable-20260804'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout exact jungle branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/procedural-jungle-playable-20260804
+          clean: true
+          fetch-depth: 0
+
+      - name: Verify trusted repository and branch
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $remote = (git config --get remote.origin.url).Trim()
+          $branch = (git branch --show-current).Trim()
+          $head = (git rev-parse HEAD).Trim()
+          $status = @(git status --short)
+          if ($remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $remote" }
+          if ($branch -ne 'feature/procedural-jungle-playable-20260804') { throw "Branch mismatch: $branch" }
+          if ($status.Count -ne 0) { throw "Checkout is dirty: $($status -join '; ')" }
+          git fetch origin $branch --quiet
+          $remoteHead = (git rev-parse "origin/$branch").Trim()
+          if ($head -ne $remoteHead) { throw "Checkout differs from remote: $head vs $remoteHead" }
+          if ($head -ne '${{ github.event.pull_request.head.sha }}') { throw "Checkout differs from PR head: $head" }
+          Write-Host "REPOSITORY=$remote"
+          Write-Host "BRANCH=$branch"
+          Write-Host "HEAD=$head"
+          Write-Host 'CODEX_INVOKED=NO'
+          Write-Host 'CLAUDE_INVOKED=NO'
+
+      - name: Run deterministic direct worker
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          powershell -NoProfile -ExecutionPolicy Bypass -File scripts\procedural_jungle\run-procedural-jungle-local-worker.ps1
+
+      - name: Gate acceptance evidence
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $acceptancePath = 'evidence\latest-procedural-jungle\acceptance.json'
+          $receiptPath = 'evidence\latest-procedural-jungle\workflow_receipt.json'
+          $reportPath = 'proof\scene\20260804-procedural-jungle\FINAL_REPORT.md'
+          foreach ($path in @($acceptancePath, $receiptPath, $reportPath)) {
+            if (-not (Test-Path -LiteralPath $path)) { throw "Required proof file missing: $path" }
+          }
+          $a = Get-Content -LiteralPath $acceptancePath -Raw | ConvertFrom-Json
+          if ($a.classification -ne 'JUNGLE_PANDA_PLAYABLE_PROVEN') { throw "Acceptance rejected: $($a.classification)" }
+          foreach ($key in @('project_exists','tests_passed')) {
+            if (-not $a.$key) { throw "Acceptance field false: $key" }
+          }
+          foreach ($key in @('map_save_reload','no_external_art_assets','terrain','river','waterfall','lower_pool','vegetation','wind','lighting_atmosphere','player_controls','collision_route','panda_skeletal_mesh','panda_walk_animation','panda_route_motion','standalone_launch','visual_capture','performance_1080p')) {
+            if ($a.$key -ne 'PROVEN') { throw "Acceptance field not PROVEN: $key=$($a.$key)" }
+          }
+          if ([double]$a.average_fps -lt 30) { throw "Average FPS below 30: $($a.average_fps)" }
+          if ([double]$a.minimum_fps -lt 20) { throw "Minimum FPS below 20: $($a.minimum_fps)" }
+          if ([double]$a.panda_travel_distance_cm -lt 300) { throw 'Panda travel proof too short' }
+          if ([int]$a.capture_count -lt 8) { throw 'Too few proof captures' }
+          if ([int]$a.generated_variant_count -lt 20) { throw 'Too few generated mesh variants' }
+          if ([int]$a.generated_instance_count -lt 800) { throw 'Too few jungle instances' }
+          if ([int]$a.panda_bone_count -lt 21) { throw 'Panda skeleton incomplete' }
+          if ([int]$a.forbidden_asset_reference_count -ne 0) { throw 'Forbidden external art references found' }
+          if ($a.codex_invoked -or $a.claude_invoked -or $a.magicmusic_invoked) { throw 'Unauthorized helper invoked' }
+          Write-Host ($a | ConvertTo-Json -Depth 20)
+
+      - name: Commit compact proof
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- evidence/latest-procedural-jungle/acceptance.json evidence/latest-procedural-jungle/workflow_receipt.json proof/scene/20260804-procedural-jungle/FINAL_REPORT.md
+          $changed = @(git status --porcelain -- evidence/latest-procedural-jungle proof/scene/20260804-procedural-jungle)
+          if ($changed.Count -eq 0) { throw 'No compact proof changes produced' }
+          git commit -m "proof(jungle): playable scene with walking panda ${{ github.run_id }}"
+          git push origin HEAD:feature/procedural-jungle-playable-20260804
+
+      - name: Upload proof artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: procedural-jungle-proof-${{ github.run_id }}
+          path: |
+            C:\AI\ProceduralJungle\20260804\acceptance.json
+            C:\AI\ProceduralJungle\20260804\preflight.json
+            C:\AI\ProceduralJungle\20260804\panda_source.json
+            C:\AI\ProceduralJungle\20260804\unreal_build_report.json
+            C:\AI\ProceduralJungle\20260804\map_reload_audit.json
+            C:\AI\ProceduralJungle\20260804\proof\*.json
+            C:\AI\ProceduralJungle\20260804\proof\*.png
+            C:\AI\ProceduralJungle\20260804\logs\*.log
+          if-no-files-found: warn
+          retention-days: 14
