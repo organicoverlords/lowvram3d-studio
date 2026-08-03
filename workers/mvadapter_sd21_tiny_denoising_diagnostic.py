@@ -392,7 +392,7 @@ def run_probe(
             requested_dtype=torch.float16,
         )
         originals = _install_sdpa_trace(torch, trace, target)
-        reference_prompt_embeds, _ = pipe.encode_prompt(PROMPT, target, 1, False, None)
+        reference_prompt_embeds, _ = pipe.encode_prompt(PROMPT, torch.device("cpu"), 1, False, None)
         reference_cache, receipt["reference_cache_fp32"] = prepare_reference_cache_fp32(
             pipe,
             reference_latents,

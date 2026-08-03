@@ -489,7 +489,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             requested_dtype=torch.float16,
         )
         reference_prompt_embeds, _ = pipe.encode_prompt(
-            receipt["prompt"], torch.device("cuda:0"), 1, False, None
+            receipt["prompt"], torch.device("cpu"), 1, False, None
         )
         reference_cache, receipt["reference_cache_fp32"] = prepare_reference_cache_fp32(
             pipe,
