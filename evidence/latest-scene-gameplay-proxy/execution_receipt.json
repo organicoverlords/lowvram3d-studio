@@ -1,0 +1,32 @@
+{
+  "schema_version": "castlegrounds_gameplay_proxy_execution_receipt_v1",
+  "classification": "BLOCKED",
+  "start_timestamp": "2026-08-04T00:58:00+03:00",
+  "finish_timestamp": "2026-08-04T01:02:18+03:00",
+  "editor_pid": 13228,
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "bridge_endpoint": "127.0.0.1:55557",
+  "execution_route": "ue-cli health_check and execute_python; no GitHub local worker",
+  "commands": [
+    "ue-cli health_check",
+    "ue-cli execute_python read-only source-map preflight",
+    "ue-cli execute_python bounded hybrid-map mutation request"
+  ],
+  "read_only_preflight": "PROVEN",
+  "mutation_command_result": "NO_RECEIPT_BRIDGE_DISCONNECTED",
+  "hybrid_map_created": false,
+  "source_map_save_called": false,
+  "source_mesh_imported": false,
+  "gpu_work_requested": false,
+  "pcg_work_started": false,
+  "neural_work_started": false,
+  "screenshots": [],
+  "files_written": [
+    "evidence/latest-scene-gameplay-proxy/gameplay_proxy_receipt.json",
+    "evidence/latest-scene-gameplay-proxy/execution_receipt.json"
+  ],
+  "tests": "35 focused tests and compileall were already PROVEN at c4d91db",
+  "exit_status": "BLOCKED",
+  "failure_reason": "Unreal Editor PID 13228 terminated and TCP bridge 55557 closed during the proxy mutation attempt; no hybrid map was found afterward.",
+  "next_action": "USER_REVIEW_REQUIRED_REOPEN_UNREAL_EDITOR"
+}
