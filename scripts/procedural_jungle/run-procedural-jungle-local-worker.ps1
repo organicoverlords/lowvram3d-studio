@@ -61,6 +61,30 @@ if ($UnrealProcesses.Count -gt 0) {
     Write-Host "UNRELATED_UNREAL_PID=$($UnrealProcesses.ProcessId -join ',')"
 }
 
+# Blender 5.2 stores keyed F-curves in layered Action channel bags instead of
+# exposing Action.fcurves directly. Preserve the existing generated walk keys and
+# only make the interpolation traversal compatible with both APIs.
+$RigScript = Join-Path $SourceRoot 'blender\procedural_jungle\rig_animate_panda.py'
+if (-not (Test-Path -LiteralPath $RigScript)) { throw "Decoded panda rig script missing: $RigScript" }
+$RigText = Get-Content -LiteralPath $RigScript -Raw
+$LegacyCurveLoopPattern = '(?m)^    for fcurve in action\.fcurves:\s*$'
+$LegacyCurveLoopMatches = [regex]::Matches($RigText, $LegacyCurveLoopPattern)
+if ($LegacyCurveLoopMatches.Count -ne 1) {
+    throw "Could not prove unique legacy Action.fcurves loop; matches=$($LegacyCurveLoopMatches.Count)"
+}
+$LayeredCurveLoop = @'
+    action_curves = list(getattr(action, "fcurves", []))
+    if not action_curves:
+        for layer in getattr(action, "layers", []):
+            for strip in getattr(layer, "strips", []):
+                for channelbag in getattr(strip, "channelbags", []):
+                    action_curves.extend(getattr(channelbag, "fcurves", []))
+    for fcurve in action_curves:
+'@
+$RigText = [regex]::Replace($RigText, $LegacyCurveLoopPattern, $LayeredCurveLoop, 1)
+Set-Content -LiteralPath $RigScript -Value $RigText -Encoding utf8
+Write-Host 'BLENDER_52_ACTION_CURVES_PATCH=PROVEN'
+
 # Windows PowerShell 5 turns native stderr into terminating error records under
 # ErrorActionPreference=Stop. Blender 5.2 emits benign warnings on stderr. Compile
 # a tiny native forwarder so PowerShell passes every argument—including the `--`
