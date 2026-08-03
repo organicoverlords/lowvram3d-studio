@@ -141,6 +141,7 @@ def _selected(config: dict[str, Any], attempt: str) -> tuple[dict[str, Any], str
     allowed_statuses = {"PREPARED_NOT_EXECUTED"}
     if attempt == "primary":
         allowed_statuses.add("PRIMARY_384_READY_AFTER_TINY_GATE")
+        allowed_statuses.add("PRIMARY_384_READY_AFTER_ABORT_GATE")
     if attempt == "oom-fallback":
         allowed_statuses.add("PRIMARY_384_CUDA_OOM_FALLBACK_AUTHORIZED")
     if config.get("status") not in allowed_statuses:
