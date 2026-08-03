@@ -40,6 +40,9 @@ def test_authoritative_camera_supersedes_legacy_estimate() -> None:
     assert contract["legacy_interpretation_fov_x_deg"] == 48.0
     assert contract["legacy_interpretation_superseded"] is True
     assert contract["basis_handedness_error"] <= 1e-5
+    assert bundle["source_view"]["field_of_view_deg"] == contract["fov_x_deg"]
+    assert bundle["source_view"]["position_m"] == contract["origin_m"]
+    assert bundle["receipt"]["legacy_interpretation_superseded"] is True
     assert bundle["receipt"]["basis_normalized"] is True
     assert bundle["receipt"]["basis_orthogonal"] is True
     assert bundle["receipt"]["basis_right_handed"] is True
