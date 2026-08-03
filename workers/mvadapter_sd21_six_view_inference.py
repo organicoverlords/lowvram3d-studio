@@ -696,12 +696,23 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
                 pipe.cond_encoder.forward = original_cond_forward
             except Exception:
                 pass
-        del pipe
+        try:
+            del pipe
+        except Exception as cleanup_exc:
+            receipt.setdefault("cleanup_errors", []).append(f"delete_pipeline: {type(cleanup_exc).__name__}: {cleanup_exc}")
         gc.collect()
-        if torch is not None and torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            receipt["memory_after"] = {**_nvidia_snapshot(), **_torch_memory(torch)}
-        _heartbeat(heartbeat_path, receipt, "cleanup_complete", **receipt.get("memory_after", {}))
+        try:
+            if torch is not None and torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                receipt["memory_after"] = {**_nvidia_snapshot(), **_torch_memory(torch)}
+        except Exception as cleanup_exc:
+            # A poisoned CUDA context must not replace the primary generation
+            # failure or erase the scheduler-step evidence already recorded.
+            receipt.setdefault("cleanup_errors", []).append(f"cuda_cleanup: {type(cleanup_exc).__name__}: {cleanup_exc}")
+        try:
+            _heartbeat(heartbeat_path, receipt, "cleanup_complete", **receipt.get("memory_after", {}))
+        except Exception as cleanup_exc:
+            receipt.setdefault("cleanup_errors", []).append(f"heartbeat_cleanup: {type(cleanup_exc).__name__}: {cleanup_exc}")
         receipt["system_after"] = _system_snapshot()
     receipt["output_count"] = len(receipt["output_images"])
     receipt["wall_seconds"] = round(time.time() - receipt.get("_started", time.time()), 3)
