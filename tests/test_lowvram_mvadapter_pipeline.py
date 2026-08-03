@@ -150,6 +150,20 @@ class RouteRestrictionTests(unittest.TestCase):
         self.assertEqual(report["minimum_finite_value"], -2.0)
         self.assertEqual(report["maximum_finite_value"], 3.0)
 
+    def test_condition_residual_helper_returns_finite_fp16_and_restores_encoder(self) -> None:
+        encoder = lowvram.torch.nn.Linear(2, 2).to(dtype=lowvram.torch.float16)
+        pipe = SimpleNamespace(cond_encoder=encoder)
+        feature = lowvram.torch.ones((1, 2), dtype=lowvram.torch.float16)
+        residuals, report = lowvram.prepare_condition_residuals_fp32(
+            pipe, feature, device="cpu", requested_dtype=lowvram.torch.float16
+        )
+        self.assertEqual(len(residuals), 1)
+        self.assertEqual(residuals[0].dtype, lowvram.torch.float16)
+        self.assertTrue(bool(lowvram.torch.isfinite(residuals[0]).all()))
+        self.assertEqual(report["output_dtype"], "float16")
+        self.assertEqual(report["encoder_restored_dtype"], "float16")
+        self.assertTrue(report["temporary_fp32_released"])
+
 
 @unittest.skipUnless(PREFLIGHT_RECEIPT.is_file(), "preflight receipt not produced on this machine")
 class PreflightReceiptTests(unittest.TestCase):

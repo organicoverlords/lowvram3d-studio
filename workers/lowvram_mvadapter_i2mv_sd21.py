@@ -505,6 +505,57 @@ def prepare_reference_cache_fp32(
     }
 
 
+def prepare_condition_residuals_fp32(
+    pipe: LowVRAMMVAdapterI2MVSDPipeline,
+    control_feature: torch.Tensor,
+    device: str = "cuda:0",
+    requested_dtype: torch.dtype = torch.float16,
+) -> tuple[list[torch.Tensor], dict[str, Any]]:
+    """Compute real condition residuals once in FP32, then return FP16 copies."""
+    if not isinstance(control_feature, torch.Tensor):
+        raise TypeError("MVADAPTER_CONTROL_FEATURE_NOT_TENSOR")
+    cond_encoder = pipe.cond_encoder
+    if cond_encoder is None:
+        raise RuntimeError("MVADAPTER_COND_ENCODER_ABSENT")
+    target = torch.device(device)
+    prior_dtype = next(cond_encoder.parameters()).dtype
+    report: dict[str, Any] = {
+        "mode": "FP32_COND_ENCODER_RESIDUALS_CAST_TO_FP16",
+        "requested_residual_dtype": str(requested_dtype).replace("torch.", ""),
+        "control_feature": _finite_numeric_record(control_feature, "control_feature"),
+    }
+    residuals_fp32: list[torch.Tensor] | None = None
+    residuals_fp16: list[torch.Tensor] = []
+    try:
+        cond_encoder.to(device=target, dtype=torch.float32)
+        with torch.no_grad():
+            residuals_fp32 = list(cond_encoder(control_feature.to(device=target, dtype=torch.float32)))
+            if target.type == "cuda":
+                torch.cuda.synchronize(target)
+        if not residuals_fp32:
+            raise RuntimeError("MVADAPTER_COND_ENCODER_RETURNED_NO_RESIDUALS")
+        entries: list[dict[str, Any]] = []
+        for index, value in enumerate(residuals_fp32):
+            fp32_record = assert_finite_reference_latents(value, f"condition_residual_fp32_{index}")
+            cast = value.to(device=target, dtype=requested_dtype)
+            fp16_record = assert_finite_reference_latents(cast, f"condition_residual_fp16_{index}")
+            residuals_fp16.append(cast)
+            entries.append({"index": index, "fp32": fp32_record, "fp16": fp16_record})
+        report["entries"] = entries
+        report["output_count"] = len(residuals_fp16)
+        report["output_dtype"] = str(requested_dtype).replace("torch.", "")
+        report["output_device"] = str(target)
+    finally:
+        if residuals_fp32 is not None:
+            del residuals_fp32
+        cond_encoder.to(device="cpu", dtype=prior_dtype)
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    report["encoder_restored_dtype"] = str(prior_dtype).replace("torch.", "")
+    report["temporary_fp32_released"] = True
+    return residuals_fp16, report
+
+
 # ----------------------------------------------------------------------
 # component inventory
 # ----------------------------------------------------------------------

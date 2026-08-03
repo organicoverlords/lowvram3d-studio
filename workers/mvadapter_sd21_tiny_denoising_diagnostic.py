@@ -346,6 +346,7 @@ def run_probe(
     offload: str,
     resolution: int,
     reference_unet_dtype: str = "fp16",
+    condition_encoder_dtype: str = "fp16",
     reference_only: bool = False,
 ) -> dict[str, Any]:
     if resolution not in (64, 96, 384) or resolution % 8:
@@ -359,6 +360,7 @@ def run_probe(
         "config": str(config_path), "backend_requested": backend, "offload": offload,
         "resolution": resolution, "views": 6, "steps_requested": 0,
         "reference_unet_dtype": reference_unet_dtype,
+        "condition_encoder_dtype": condition_encoder_dtype,
         "reference_only": reference_only,
         "vae_decode": False, "output_images": 0, "production_manifest_updated": False,
         "gpu_sequence_consumed": False, "started": time.time(),
@@ -386,6 +388,7 @@ def run_probe(
             attention_report, build_low_vram_pipeline, component_dtype_inventory,
             component_inventory, install_fp16_input_guards, install_low_vram_offload,
             offload_hook_report, prepare_reference_cache_fp32, prepare_reference_latents_fp32,
+            prepare_condition_residuals_fp32,
             rowcol_dtype_inventory,
             tensor_dtype_record, tensor_group_record,
         )
@@ -396,6 +399,8 @@ def run_probe(
         receipt["adapter_report"] = adapter_report
         if reference_unet_dtype not in {"fp16", "fp32"}:
             raise ValueError(f"REFERENCE_UNET_DTYPE_INVALID:{reference_unet_dtype}")
+        if condition_encoder_dtype not in {"fp16", "fp32"}:
+            raise ValueError(f"CONDITION_ENCODER_DTYPE_INVALID:{condition_encoder_dtype}")
         reference_dtype = torch.float32 if reference_unet_dtype == "fp32" else torch.float16
         receipt["component_inventory_before_offload"] = component_inventory(pipe)
         receipt["dtype_inventory_before_offload"] = component_dtype_inventory(pipe)
@@ -435,6 +440,17 @@ def run_probe(
             report=receipt["reference_vae_fp32"],
             memory=_memory(torch),
         )
+        control = torch.from_numpy(np.ascontiguousarray(np.load(inputs["control_path"], allow_pickle=False).astype(np.float32)))
+        control_feature = pipe.prepare_control_image(control, resolution, resolution, 6, 1, target, torch.float16, False)
+        control_feature = control_feature.to(target, dtype=torch.float16)
+        trace.write("condition_encoder_started", tensor=_tensor_record("control_after_preprocessing", control_feature), memory=_memory(torch))
+        if condition_encoder_dtype == "fp32":
+            condition_numeric_handles = _install_condition_numeric_hooks(torch, pipe, trace)
+            residuals, receipt["condition_encoder_fp32"] = prepare_condition_residuals_fp32(
+                pipe, control_feature, device="cuda:0", requested_dtype=torch.float16
+            )
+        else:
+            residuals = None
         if offload == "sequential":
             receipt["offload_report"] = install_low_vram_offload(pipe, "cuda")
             receipt["offload_hooks"] = offload_hook_report(pipe)
@@ -480,13 +496,10 @@ def run_probe(
             expanded_cache = {name: reference_cache[name].repeat_interleave(6, dim=0) for name in expected}
             if any(value.shape[0] != 6 for value in expanded_cache.values()):
                 raise RuntimeError("REFERENCE_CACHE_EXPANSION_INVALID")
-            control = torch.from_numpy(np.ascontiguousarray(np.load(inputs["control_path"], allow_pickle=False).astype(np.float32)))
-            control_feature = pipe.prepare_control_image(control, resolution, resolution, 6, 1, target, torch.float16, False)
-            control_feature = control_feature.to(target, dtype=torch.float16)
-            trace.write("condition_encoder_started", tensor=_tensor_record("control_after_preprocessing", control_feature), memory=_memory(torch))
-            condition_numeric_handles = _install_condition_numeric_hooks(torch, pipe, trace)
-            residuals = pipe.cond_encoder(control_feature)
-            torch.cuda.synchronize(target)
+            if residuals is None:
+                condition_numeric_handles = _install_condition_numeric_hooks(torch, pipe, trace)
+                residuals = pipe.cond_encoder(control_feature)
+                torch.cuda.synchronize(target)
             if not residuals:
                 raise RuntimeError("COND_RESIDUALS_EMPTY")
             residual_records = [
@@ -577,6 +590,7 @@ def main() -> int:
     parser.add_argument("--offload", choices=("sequential", "none"), default="sequential")
     parser.add_argument("--resolution", type=int, default=64)
     parser.add_argument("--reference-unet-dtype", choices=("fp16", "fp32"), default="fp16")
+    parser.add_argument("--condition-encoder-dtype", choices=("fp16", "fp32"), default="fp16")
     parser.add_argument("--reference-only", action="store_true")
     args = parser.parse_args()
     try:
@@ -593,6 +607,7 @@ def main() -> int:
                 args.offload,
                 args.resolution,
                 args.reference_unet_dtype,
+                args.condition_encoder_dtype,
                 args.reference_only,
             )
         print(json.dumps({"status": result["status"], "classification": result["classification"], "output_dir": str(args.output_dir)}))
