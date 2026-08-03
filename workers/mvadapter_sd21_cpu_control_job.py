@@ -56,12 +56,39 @@ def memory_snapshot() -> dict[str, Any]:
     return result
 
 
-def validate_inputs(control_tensor: Path, contract_path: Path, reference_image: Path, resolution: int) -> dict[str, Any]:
-    if not control_tensor.is_file() or not contract_path.is_file() or not reference_image.is_file():
+def validate_conditioning_image(path: Path, resolution: int) -> dict[str, Any]:
+    image = Image.open(path).convert("RGBA")
+    if image.size != (resolution, resolution):
+        raise RuntimeError(f"SD21_CONDITIONING_DIMENSIONS_INVALID:{image.size}")
+    array = np.asarray(image)
+    alpha = array[:, :, 3] > 32
+    if not alpha.any():
+        raise RuntimeError("SD21_CONDITIONING_ALPHA_EMPTY")
+    ys, xs = np.nonzero(alpha)
+    occupancy = max(int(xs.max() - xs.min() + 1), int(ys.max() - ys.min() + 1)) / float(resolution)
+    if not 0.88 <= occupancy <= 0.92:
+        raise RuntimeError(f"SD21_CONDITIONING_OCCUPANCY_INVALID:{occupancy:.6f}")
+    outside = array[~alpha, :3]
+    if outside.size and float(np.max(np.abs(outside.astype(np.int16) - 127))) > 1.0:
+        raise RuntimeError("SD21_CONDITIONING_BACKGROUND_INVALID")
+    centre_x = (float(xs.min()) + float(xs.max()) + 1.0) / 2.0 / resolution
+    centre_y = (float(ys.min()) + float(ys.max()) + 1.0) / 2.0 / resolution
+    if abs(centre_x - 0.5) > 0.04 or abs(centre_y - 0.5) > 0.04:
+        raise RuntimeError("SD21_CONDITIONING_SUBJECT_NOT_CENTERED")
+    return {
+        "conditioning_sha256": sha256(path),
+        "conditioning_dimensions": list(image.size),
+        "conditioning_occupancy": round(float(occupancy), 6),
+        "conditioning_foreground_pixels": int(alpha.sum()),
+        "conditioning_background_rgb": [127, 127, 127],
+    }
+
+
+def validate_inputs(control_tensor: Path, contract_path: Path, conditioning_image: Path, resolution: int) -> dict[str, Any]:
+    if not control_tensor.is_file() or not contract_path.is_file() or not conditioning_image.is_file():
         raise RuntimeError("SD21_PREFLIGHT_INPUT_MISSING")
     tensor = np.load(control_tensor, allow_pickle=False)
     contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    image = Image.open(reference_image)
     if tuple(tensor.shape) != (6, 6, resolution, resolution):
         raise RuntimeError(f"SD21_CONTROL_SHAPE_INVALID:{tuple(tensor.shape)}")
     if tensor.dtype not in (np.float16, np.float32):
@@ -72,18 +99,19 @@ def validate_inputs(control_tensor: Path, contract_path: Path, reference_image: 
         raise RuntimeError("SD21_CAMERA_CONTRACT_INVALID")
     if not contract.get("fixture_gate_passed"):
         raise RuntimeError("SD21_CAMERA_CONTRACT_UNPROVEN")
+    for proof_key in ("semantic_mapping_proven", "handedness_proven", "top_bottom_rotation_proven"):
+        if not contract.get(proof_key):
+            raise RuntimeError(f"SD21_CAMERA_{proof_key.upper()}_UNPROVEN")
     for key in ("front_rear_direction_dot", "left_right_direction_dot", "top_bottom_direction_dot"):
         if float(contract.get(key, 0.0)) > -0.999:
             raise RuntimeError(f"SD21_CAMERA_OPPOSITE_DOT_INVALID:{key}")
-    if image.size != (resolution, resolution):
-        raise RuntimeError(f"SD21_REFERENCE_DIMENSIONS_INVALID:{image.size}")
+    conditioning = validate_conditioning_image(conditioning_image, resolution)
     return {
         "control_sha256": sha256(control_tensor),
         "contract_sha256": sha256(contract_path),
-        "reference_sha256": sha256(reference_image),
+        **conditioning,
         "control_shape": list(tensor.shape),
         "control_dtype": str(tensor.dtype),
-        "reference_dimensions": list(image.size),
     }
 
 
@@ -167,7 +195,7 @@ def run_load_only(args: argparse.Namespace) -> dict[str, Any]:
         receipt["model_cache_paths"] = {"base_model": str(args.base_model), "adapter": str(args.adapter)}
         receipt["base_model_sha256"] = sha256(args.base_model / "model_index.json")
         receipt["adapter_sha256"] = sha256(args.adapter)
-        receipt["inputs"] = validate_inputs(args.control_tensor, args.camera_contract, args.reference_image, args.resolution)
+        receipt["inputs"] = validate_inputs(args.control_tensor, args.camera_contract, args.conditioning_image, args.resolution)
         loaded = load_sd21_pipeline(args.base_model, args.adapter, args.mvadapter_source, args.offload_mode)
         receipt["pipeline_constructed"] = True
         receipt["adapter_loaded"] = True
@@ -193,7 +221,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--control-tensor", type=Path, required=True)
     parser.add_argument("--camera-contract", type=Path, required=True)
-    parser.add_argument("--reference-image", type=Path, required=True)
+    parser.add_argument("--conditioning-image", "--reference-image", dest="conditioning_image", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--base-model", type=Path, default=DEFAULT_BASE)
     parser.add_argument("--adapter", type=Path, default=DEFAULT_ADAPTER)

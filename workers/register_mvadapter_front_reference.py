@@ -1,4 +1,4 @@
-"""Register the real panda source to the CPU front control silhouette.
+"""Register the real source for later exact CPU atlas projection.
 
 Only bounded similarity/affine box fitting is used.  No background-removal,
 mirroring, non-rigid warp, or learned image processing is allowed.
@@ -50,7 +50,8 @@ def register(source: Path, target_mask_path: Path, output: Path, report_path: Pa
     registered_mask = registered_alpha > 32
     if float(iou) < 0.85:
         failure_report = {
-            "schema": "lowvram3d_mvadapter_registered_reference_v1",
+            "schema": "lowvram3d_cpu_projection_front_reference_v1",
+            "purpose": "CPU_PROJECTION_FRONT_REFERENCE",
             "source": str(source),
             "source_sha256": sha256(source),
             "target_mask": str(target_mask_path),
@@ -60,6 +61,7 @@ def register(source: Path, target_mask_path: Path, output: Path, report_path: Pa
             "required_silhouette_iou": 0.85,
             "mirror_used": False,
             "non_rigid_warp_used": False,
+            "classification": "CPU_PROJECTION_FRONT_REFERENCE=REJECTED",
             "passed": False,
             "failure": "REGISTERED_REFERENCE_IOU_BELOW_THRESHOLD",
         }
@@ -74,7 +76,8 @@ def register(source: Path, target_mask_path: Path, output: Path, report_path: Pa
     if not cv2.imwrite(str(output), rgba):
         raise RuntimeError("REGISTERED_REFERENCE_WRITE_FAILED")
     report = {
-        "schema": "lowvram3d_mvadapter_registered_reference_v1",
+        "schema": "lowvram3d_cpu_projection_front_reference_v1",
+        "purpose": "CPU_PROJECTION_FRONT_REFERENCE",
         "source": str(source),
         "source_sha256": sha256(source),
         "registered": str(output),
@@ -90,6 +93,7 @@ def register(source: Path, target_mask_path: Path, output: Path, report_path: Pa
         "mirror_used": False,
         "non_rigid_warp_used": False,
         "background": "neutral_mid_gray_0.5_outside_registered_alpha",
+        "classification": "CPU_PROJECTION_FRONT_REFERENCE=PROVEN",
         "passed": True,
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)

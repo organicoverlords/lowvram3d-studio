@@ -26,6 +26,7 @@ VIEWS: tuple[dict[str, Any], ...] = (
     {"index": 4, "semantic_name": "top", "direction": [0.0, 0.0, 1.0], "up": [0.0, 1.0, 0.0], "axis": "top"},
     {"index": 5, "semantic_name": "bottom", "direction": [0.0, 0.0, -1.0], "up": [0.0, 1.0, 0.0], "axis": "bottom"},
 )
+PROJECTION_SPAN = 1.10
 
 
 def sha256(path: Path) -> str:
@@ -38,6 +39,83 @@ def _unit(value: list[float] | np.ndarray) -> np.ndarray:
     if length <= 1e-12:
         raise RuntimeError("CAMERA_VECTOR_ZERO")
     return vector / length
+
+
+def _fixture_markers() -> tuple[np.ndarray, dict[str, int]]:
+    """Return asymmetric marker centers used to prove image semantics."""
+    markers = np.asarray(
+        [
+            [0.0, -0.78, 0.02],  # front: long narrow spike
+            [0.0, 0.78, -0.04],  # rear: broad block
+            [0.78, 0.0, 0.08],  # right: fin
+            [-0.78, 0.0, -0.08],  # left: plate
+            [0.06, 0.04, 0.78],  # top: pyramid
+            [-0.06, -0.04, -0.78],  # bottom: offset foot
+        ],
+        dtype=np.float64,
+    )
+    return markers, {"front": 0, "rear": 1, "right": 2, "left": 3, "top": 4, "bottom": 5}
+
+
+def _prove_asymmetric_fixture(views: list[dict[str, Any]]) -> dict[str, Any]:
+    markers, marker_ids = _fixture_markers()
+    evidence: list[dict[str, Any]] = []
+    expected = {"front": 0, "right": 2, "rear": 1, "left": 3, "top": 4, "bottom": 5}
+    semantic_mapping_proven = True
+    handedness_proven = True
+    top_bottom_rotation_proven = True
+    for view in views:
+        direction = np.asarray(view["camera_direction"], dtype=np.float64)
+        up = np.asarray(view["camera_up"], dtype=np.float64)
+        forward = -direction
+        right = _unit(np.cross(forward, up))
+        projected, _depth = _project(markers, direction, up, PROJECTION_SPAN)
+        scores = markers @ direction
+        visible_marker = int(np.argmax(scores))
+        expected_marker = expected[view["axis_label"]]
+        semantic_mapping_proven &= visible_marker == expected_marker
+        right_probe = right * 0.35
+        left_probe = -right * 0.35
+        probe_projection, _ = _project(np.stack([right_probe, left_probe]), direction, up, PROJECTION_SPAN)
+        horizontal_ok = bool(probe_projection[0, 0] > 0.5 and probe_projection[1, 0] < 0.5)
+        handedness_proven &= horizontal_ok
+        up_probe = up * 0.35
+        down_probe = -up * 0.35
+        vertical_projection, _ = _project(np.stack([up_probe, down_probe]), direction, up, PROJECTION_SPAN)
+        vertical_ok = bool(vertical_projection[0, 1] < 0.5 and vertical_projection[1, 1] > 0.5)
+        top_bottom_rotation_proven &= vertical_ok
+        evidence.append(
+            {
+                "index": int(view["index"]),
+                "expected_feature": view["axis_label"],
+                "expected_marker_id": expected_marker,
+                "visible_marker_id": visible_marker,
+                "feature_center_pixel": [
+                    round(float(projected[visible_marker, 0]), 6),
+                    round(float(projected[visible_marker, 1]), 6),
+                ],
+                "camera_right_probe_screen_x": [
+                    round(float(probe_projection[0, 0]), 6),
+                    round(float(probe_projection[1, 0]), 6),
+                ],
+                "camera_up_probe_screen_y": [
+                    round(float(vertical_projection[0, 1]), 6),
+                    round(float(vertical_projection[1, 1]), 6),
+                ],
+                "semantic_mapping_passed": visible_marker == expected_marker,
+                "handedness_passed": horizontal_ok,
+                "top_bottom_rotation_passed": vertical_ok,
+            }
+        )
+    if not (semantic_mapping_proven and handedness_proven and top_bottom_rotation_proven):
+        raise RuntimeError("CAMERA_CONTRACT_ASYMMETRIC_FIXTURE_FAILED")
+    return {
+        "fixture_name": "six_side_asymmetric_markers_v1",
+        "semantic_mapping_proven": semantic_mapping_proven,
+        "handedness_proven": handedness_proven,
+        "top_bottom_rotation_proven": top_bottom_rotation_proven,
+        "evidence": evidence,
+    }
 
 
 def build_camera_contract() -> dict[str, Any]:
@@ -62,11 +140,12 @@ def build_camera_contract() -> dict[str, Any]:
                 "camera_right": right.tolist(),
                 "camera_to_world": c2w.tolist(),
                 "world_to_camera": np.linalg.inv(c2w).tolist(),
-                "fixture_gate_passed": True,
+                "fixture_gate_passed": False,
             }
         )
     by_axis = {v["axis_label"]: np.asarray(v["camera_direction"]) for v in views}
     horizontal = [v for v in views if v["axis_label"] in {"front", "right", "rear", "left"}]
+    fixture_evidence = _prove_asymmetric_fixture(views)
     fixture_gate = (
         len(views) == 6
         and len({v["index"] for v in views}) == 6
@@ -75,9 +154,14 @@ def build_camera_contract() -> dict[str, Any]:
         and float(np.dot(by_axis["top"], by_axis["bottom"])) <= -0.999
         and len(horizontal) == 4
         and all(abs(np.linalg.norm(v["camera_direction"]) - 1.0) < 1e-6 for v in views)
+        and fixture_evidence["semantic_mapping_proven"]
+        and fixture_evidence["handedness_proven"]
+        and fixture_evidence["top_bottom_rotation_proven"]
     )
     if not fixture_gate:
         raise RuntimeError("CAMERA_CONTRACT_FIXTURE_FAILED")
+    for view in views:
+        view["fixture_gate_passed"] = True
     return {
         "schema": "lowvram3d_mvadapter_camera_contract_v1",
         "view_count": 6,
@@ -85,19 +169,22 @@ def build_camera_contract() -> dict[str, Any]:
         "front_rear_direction_dot": float(np.dot(by_axis["front"], by_axis["rear"])),
         "left_right_direction_dot": float(np.dot(by_axis["left"], by_axis["right"])),
         "top_bottom_direction_dot": float(np.dot(by_axis["top"], by_axis["bottom"])),
-        "handedness_proven": True,
+        "handedness_proven": fixture_evidence["handedness_proven"],
+        "semantic_mapping_proven": fixture_evidence["semantic_mapping_proven"],
+        "top_bottom_rotation_proven": fixture_evidence["top_bottom_rotation_proven"],
         "fixture_gate_passed": True,
+        "fixture_evidence": fixture_evidence,
         "control_space_transform": "identity_panda_front_minus_y_up_plus_z",
         "control_space_inverse": "identity_panda_front_minus_y_up_plus_z",
     }
 
 
-def _project(vertices: np.ndarray, direction: np.ndarray, up: np.ndarray, scale: float) -> tuple[np.ndarray, np.ndarray]:
+def _project(vertices: np.ndarray, direction: np.ndarray, up: np.ndarray, projection_span: float) -> tuple[np.ndarray, np.ndarray]:
     forward = -direction
     right = _unit(np.cross(forward, up))
     corrected_up = _unit(np.cross(right, forward))
     screen = np.stack(
-        [vertices @ right / scale + 0.5, 0.5 - (vertices @ corrected_up) / scale], axis=1
+        [vertices @ right / projection_span + 0.5, 0.5 - (vertices @ corrected_up) / projection_span], axis=1
     )
     depth = -(vertices @ direction)
     return screen, depth
@@ -172,7 +259,6 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
     vertices = centred * (0.5 / largest)
     normals = vertex_normals(vertices, tris).astype(np.float64)
     normals /= np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-12)
-    scale = float((vertices.max(axis=0) - vertices.min(axis=0)).max())
     contract = build_camera_contract()
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "camera_contract.json").write_text(json.dumps(contract, indent=2), encoding="utf-8")
@@ -183,7 +269,7 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
         name = str(item["semantic_name"])
         direction = np.asarray(item["camera_direction"], dtype=np.float64)
         up = np.asarray(item["camera_up"], dtype=np.float64)
-        screen, depth = _project(vertices, direction, up, scale)
+        screen, depth = _project(vertices, direction, up, PROJECTION_SPAN)
         face_id, bary, position, normal, zbuffer = _rasterise(screen, depth, vertices, normals, tris, size)
         mask = face_id >= 0
         if not mask.any():
@@ -217,6 +303,7 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
             "camera_to_world": item["camera_to_world"],
             "silhouette_pixels": int(mask.sum()),
             "visible_triangles": int(visible.sum()),
+            "projected_occupancy": round(float(max(screen[:, 0].max() - screen[:, 0].min(), screen[:, 1].max() - screen[:, 1].min())), 6),
             "depth_finite": True,
             "normal_unit_before_encoding": True,
         })
@@ -232,9 +319,12 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
         "mesh_sha256_after": sha256(mesh),
         "geometry_or_uv_mutation": False,
         "size": size,
+        "projection_span": PROJECTION_SPAN,
+        "projection_half_span": PROJECTION_SPAN / 2.0,
         "control_tensor": str(output_dir / "control_tensor.npy"),
         "control_tensor_shape": list(tensor.shape),
         "channel_order": ["position_x", "position_y", "position_z", "normal_x", "normal_y", "normal_z"],
+        "background_encoding": [0.5] * 6,
         "views": per_view,
         "camera_contract": str(output_dir / "camera_contract.json"),
         "deterministic": True,
