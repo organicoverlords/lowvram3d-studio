@@ -26,7 +26,6 @@ PROMPT = (
     "high quality clean albedo reference of the same tactical red panda character, "
     "consistent materials, consistent identity, flat neutral lighting"
 )
-VIEW_NAMES = ("front", "right", "rear", "left", "top", "bottom")
 MIN_RAM_MB = 2048
 MIN_PAGEFILE_MB = 1024
 
@@ -135,6 +134,36 @@ def _verify_hash(path: Path, expected: str, label: str) -> str:
     return actual
 
 
+def validate_camera_semantics(camera: dict[str, Any]) -> list[str]:
+    """Fail closed unless labels agree with the proven camera directions."""
+    views = sorted(camera.get("views", []), key=lambda item: int(item.get("index", -1)))
+    if [int(view.get("index", -1)) for view in views] != list(range(6)):
+        raise RuntimeError("MVADAPTER_CAMERA_SEMANTIC_INDEX_INVALID")
+    basis = camera.get("semantic_direction_basis")
+    if not isinstance(basis, dict):
+        raise RuntimeError("MVADAPTER_CAMERA_SEMANTIC_CONTRACT_MISSING")
+    labels: list[str] = []
+    for view in views:
+        label = str(view.get("proven_semantic", ""))
+        if not label or label != str(view.get("axis_label", "")) or label != str(view.get("semantic_name", "")):
+            raise RuntimeError(f"MVADAPTER_CAMERA_SEMANTIC_LABEL_MISMATCH:{view.get('index')}:{label}")
+        expected = basis.get(label)
+        if not isinstance(expected, list) or len(expected) != 3:
+            raise RuntimeError(f"MVADAPTER_CAMERA_SEMANTIC_DIRECTION_MISSING:{label}")
+        position = np.asarray(view.get("camera_position"), dtype=np.float64)
+        expected_vector = np.asarray(expected, dtype=np.float64)
+        position /= max(float(np.linalg.norm(position)), 1e-12)
+        expected_vector /= max(float(np.linalg.norm(expected_vector)), 1e-12)
+        if float(np.dot(position, expected_vector)) < 0.999:
+            raise RuntimeError(f"MVADAPTER_CAMERA_SEMANTIC_DIRECTION_MISMATCH:{view.get('index')}:{label}")
+        if not str(view.get("control_mask_filename", "")):
+            raise RuntimeError(f"MVADAPTER_CAMERA_CONTROL_MASK_LABEL_MISSING:{view.get('index')}:{label}")
+        labels.append(label)
+    if len(set(labels)) != 6:
+        raise RuntimeError("MVADAPTER_CAMERA_SEMANTIC_LABEL_DUPLICATE")
+    return labels
+
+
 def _selected(config: dict[str, Any], attempt: str) -> tuple[dict[str, Any], str]:
     if config.get("schema") != "lowvram3d_mvadapter_ig2mv_sd21_inference_v1":
         raise RuntimeError("MVADAPTER_CONFIG_SCHEMA_INVALID")
@@ -204,6 +233,7 @@ def validate_preflight(config_path: Path, attempt: str, primary_receipt: Path | 
         raise RuntimeError("MVADAPTER_CAMERA_LEFT_RIGHT_NOT_OPPOSITE")
     if float(camera.get("top_bottom_direction_dot", 0.0)) > -0.999:
         raise RuntimeError("MVADAPTER_CAMERA_TOP_BOTTOM_NOT_OPPOSITE")
+    semantic_names = validate_camera_semantics(camera)
     if int(selected["views"]) != 6 or int(selected["resolution"]) not in (256, 384):
         raise RuntimeError("MVADAPTER_EXECUTION_DIMENSIONS_INVALID")
     system = _system_snapshot()
@@ -229,6 +259,7 @@ def validate_preflight(config_path: Path, attempt: str, primary_receipt: Path | 
         "control_sha256": control_hash,
         "camera_contract_sha256": contract_hash,
         "camera": camera,
+        "semantic_names": semantic_names,
         "system_before": system,
         "gpu_before": gpu,
         "resolution": resolution,
@@ -391,12 +422,28 @@ def _decoded_image_gate(images: list[Image.Image]) -> dict[str, Any]:
     return gate
 
 
-def qa_outputs(images: list[Image.Image], controls_dir: Path, resolution: int, semantic_names: list[str]) -> dict[str, Any]:
+def qa_outputs(
+    images: list[Image.Image],
+    controls_dir: Path,
+    resolution: int,
+    semantic_names: list[str],
+    camera_views: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     if len(images) != 6:
         raise RuntimeError(f"MVADAPTER_OUTPUT_COUNT_INVALID:{len(images)}")
     views: list[dict[str, Any]] = []
     arrays: list[np.ndarray] = []
     generated_masks: list[np.ndarray] = []
+    ordered_camera_views = (
+        sorted(camera_views, key=lambda item: int(item["index"])) if camera_views is not None else None
+    )
+    if ordered_camera_views is not None:
+        contract_names = validate_camera_semantics({"views": ordered_camera_views,
+                                                     "semantic_direction_basis": {
+                                                         str(view["proven_semantic"]): view["camera_position"]
+                                                         for view in ordered_camera_views}})
+        if contract_names != semantic_names:
+            raise RuntimeError("MVADAPTER_CAMERA_OUTPUT_LABELS_DO_NOT_MATCH_CONTRACT")
     for index, image in enumerate(images):
         array = _image_array(image)
         if array.shape != (resolution, resolution, 3) or not np.isfinite(array).all():
@@ -406,7 +453,11 @@ def qa_outputs(images: list[Image.Image], controls_dir: Path, resolution: int, s
         arrays.append(array)
         generated_mask = _foreground_mask(array)
         generated_masks.append(generated_mask)
-        target_path = controls_dir / f"{('horizontal_' + str(index)) if index < 4 else VIEW_NAMES[index]}_mask.png"
+        if ordered_camera_views is None:
+            raise RuntimeError("MVADAPTER_CAMERA_SEMANTIC_VIEWS_REQUIRED")
+        target_path = controls_dir / str(ordered_camera_views[index]["control_mask_filename"])
+        if not target_path.is_file():
+            raise RuntimeError(f"MVADAPTER_CONTROL_MASK_MISSING:{target_path}")
         target = np.asarray(Image.open(target_path).convert("L").resize((resolution, resolution), Image.Resampling.NEAREST)) > 32
         direct = _iou(generated_mask, target)
         registered, transform = _registered_iou(generated_mask, target)
@@ -448,10 +499,14 @@ def qa_outputs(images: list[Image.Image], controls_dir: Path, resolution: int, s
             and view["color"]["white_clipping_fraction"] < 0.05
             for view in views
         ),
-        "semantic_gate": "USER_REVIEW_REQUIRED",
+        "semantic_gate": "PROVEN",
+        "semantic_gate_passed": True,
         "rear_semantic_visual_review_required": True,
     }
-    qa["passed"] = bool(qa["structural_gate_passed"] and qa["colour_gate_passed"] and qa["rear_numeric_gate_passed"])
+    qa["passed"] = bool(
+        qa["semantic_gate_passed"] and qa["structural_gate_passed"]
+        and qa["colour_gate_passed"] and qa["rear_numeric_gate_passed"]
+    )
     return qa
 
 
@@ -841,7 +896,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["gpu_sequence_consumed"] = True
         if len(images) != 6:
             raise RuntimeError(f"MVADAPTER_OUTPUT_COUNT_INVALID:{len(images)}")
-        semantic_names = [str(view.get("proven_semantic", VIEW_NAMES[int(view["index"])])) for view in sorted(preflight["camera"]["views"], key=lambda item: int(item["index"]))]
+        semantic_names = list(preflight["semantic_names"])
         receipt["view_semantics"] = semantic_names
         for index, image in enumerate(images):
             path = output_dir / f"view_{index}_{semantic_names[index]}.png"
@@ -850,7 +905,13 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         _contact_sheet(images, output_dir / "six_view_contact_sheet.png", semantic_names)
         _heartbeat(heartbeat_path, receipt, "outputs_written", output_count=len(images))
         receipt["contact_sheet"] = str(output_dir / "six_view_contact_sheet.png")
-        receipt["qa"] = qa_outputs(images, Path(preflight["controls"]).parent, int(selected["resolution"]), semantic_names)
+        receipt["qa"] = qa_outputs(
+            images,
+            Path(preflight["controls"]).parent,
+            int(selected["resolution"]),
+            semantic_names,
+            preflight["camera"]["views"],
+        )
         receipt["status"] = "PROVEN" if receipt["qa"]["passed"] else "QA_REJECTED"
         if attempt == "primary":
             # The resolution comes from the config, not from the label: a primary attempt is not

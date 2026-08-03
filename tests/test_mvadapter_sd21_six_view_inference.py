@@ -64,9 +64,23 @@ def test_bounded_registration_reports_a_similarity_transform() -> None:
 
 def test_six_view_qa_requires_six_outputs_and_records_rear_numeric_gate(tmp_path: Path) -> None:
     images = _images_and_masks(tmp_path)
-    report = qa_outputs(images, tmp_path, 32, ["front", "right", "rear", "left", "top", "bottom"])
+    labels = ["front", "right", "rear", "left", "top", "bottom"]
+    positions = [[0, -1, 0], [1, 0, 0], [0, 1, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]]
+    mask_names = ["horizontal_0", "horizontal_1", "horizontal_2", "horizontal_3", "top", "bottom"]
+    camera_views = [
+        {
+            "index": index,
+            "proven_semantic": label,
+            "axis_label": label,
+            "semantic_name": label,
+            "camera_position": position,
+            "control_mask_filename": f"{mask_name}_mask.png",
+        }
+        for index, (label, position, mask_name) in enumerate(zip(labels, positions, mask_names))
+    ]
+    report = qa_outputs(images, tmp_path, 32, labels, camera_views)
     assert len(report["views"]) == 6
     assert report["structural_gate_passed"]
     assert report["colour_gate_passed"]
-    assert report["semantic_gate"] == "USER_REVIEW_REQUIRED"
+    assert report["semantic_gate"] == "PROVEN"
     assert report["rear_numeric_gate_passed"]
