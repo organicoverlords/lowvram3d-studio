@@ -1,0 +1,56 @@
+{
+  "assets": [
+    {
+      "action": "import_gltf",
+      "asset_id": "source_mesh_v2",
+      "collection": "SCENE_VISUAL_SHELL",
+      "expected_triangles": 374959,
+      "imported_object_count": 2,
+      "mesh_edit_operations": 0,
+      "mesh_object_count": 1,
+      "root_object": "SCENE_ASSET_source_mesh_v2",
+      "source_sha256": "2ee23fd3816f44931a25628392fa5962b23a55dcc17e207540dd3d937e940011",
+      "source_uri": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb",
+      "triangle_contract_preserved": true,
+      "triangles": 374959,
+      "vertices": 190432
+    }
+  ],
+  "blend": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\scene_camera_v1\\castlegrounds_source_locked_v1_prepared.blend",
+  "camera": {
+    "camera_id": "source",
+    "far_m": 500.0,
+    "field_of_view_deg": 66.50838470458984,
+    "look_at_m": [
+      -6.798699363224801e-17,
+      -1.0,
+      -5.551115123125783e-17
+    ],
+    "near_m": 0.1,
+    "object": "SCENE_SOURCE_CAMERA",
+    "position_m": [
+      -1.4999749120901782e-16,
+      2.7755575615628914e-17,
+      -2.220446049250313e-16
+    ],
+    "projection": "perspective"
+  },
+  "classification": "PROVEN",
+  "collections": [
+    "SCENE_EDITABLE",
+    "SCENE_GAMEPLAY_PROXY",
+    "SCENE_PROCEDURAL_MODULES",
+    "SCENE_REFERENCE_ONLY",
+    "SCENE_VISUAL_SHELL"
+  ],
+  "errors": [],
+  "gpu_work_started": false,
+  "mesh_edit_operations": 0,
+  "mesh_geometry_generated": false,
+  "neural_work_started": false,
+  "placeholder_assets_are_not_promoted": true,
+  "scene_spec": "C:\\actions-runner-lowvram3d\\_work\\lowvram3d-studio\\lowvram3d-studio\\evidence\\latest-scene-camera-local-worker\\authoritative_scene_spec.json",
+  "schema_version": "blender_scene_preparation_receipt_v1",
+  "splines": [],
+  "unreal_work_started": false
+}

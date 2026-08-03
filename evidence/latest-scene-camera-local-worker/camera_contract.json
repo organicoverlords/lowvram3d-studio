@@ -1,0 +1,70 @@
+{
+  "basis_handedness_error": 1.7431527984210495e-32,
+  "basis_norms": {
+    "forward": 1.0,
+    "right": 1.0,
+    "up": 1.0
+  },
+  "basis_orthogonality": {
+    "forward_right": -1.3657491400604317e-32,
+    "forward_up": 0.0,
+    "up_right": -1.232595164407831e-32
+  },
+  "camera_id": "source",
+  "classification": "PROVEN",
+  "far_m": 500.0,
+  "forward": [
+    8.201049757676981e-17,
+    -1.0,
+    1.6653345369377348e-16
+  ],
+  "fov_x_deg": 66.50838470458984,
+  "fov_y_deg": 52.37591552734375,
+  "intrinsics": [
+    [
+      0.762505054473877,
+      0.0,
+      0.5
+    ],
+    [
+      0.0,
+      1.0166734457015991,
+      0.5
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "legacy_interpretation_fov_x_deg": 48.0,
+  "legacy_interpretation_superseded": true,
+  "lens_mm": 24.400161743164062,
+  "near_m": 0.1,
+  "origin_m": [
+    -1.4999749120901782e-16,
+    2.7755575615628914e-17,
+    -2.220446049250313e-16
+  ],
+  "principal_point_normalized": [
+    0.5,
+    0.5
+  ],
+  "resolution_px": [
+    512,
+    384
+  ],
+  "right": [
+    1.0,
+    8.201049757676981e-17,
+    -8.201049757676981e-17
+  ],
+  "schema_version": "scene_camera_contract_v1",
+  "source_frame": "MOGE_POINT_MAP_CAMERA_ORIGIN_PLUS_Z_FORWARD",
+  "target_frame": "BLENDER_RIGHT_HANDED_Z_UP_CAMERA_MINUS_Z_FORWARD",
+  "up": [
+    -8.201049757676981e-17,
+    -1.6653345369377348e-16,
+    -1.0
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "after": {
+    "far_m": 500.0,
+    "forward": [
+      8.201049757676981e-17,
+      -1.0,
+      1.6653345369377348e-16
+    ],
+    "fov_x_deg": 66.50838647691971,
+    "fov_y_deg": 47.22562522347691,
+    "near_m": 0.10000000149011612,
+    "origin_m": [
+      -1.4999749120901782e-16,
+      2.7755575615628914e-17,
+      -2.220446049250313e-16
+    ],
+    "right": [
+      1.0,
+      8.201049757676981e-17,
+      -8.201049757676981e-17
+    ],
+    "shift_x": 0.0,
+    "shift_y": 0.0,
+    "up": [
+      -8.201049757676981e-17,
+      -1.6653345369377348e-16,
+      -1.0
+    ]
+  },
+  "before": {
+    "far_m": 500.0,
+    "forward": [
+      -1.1399865765455465e-14,
+      -1.0,
+      7.549790126404332e-08
+    ],
+    "fov_x_deg": 66.50838647691971,
+    "fov_y_deg": 47.22562522347691,
+    "near_m": 0.10000000149011612,
+    "origin_m": [
+      -1.4999749120901782e-16,
+      2.7755575615628914e-17,
+      -2.220446049250313e-16
+    ],
+    "right": [
+      -1.0,
+      0.0,
+      -1.5099580252808664e-07
+    ],
+    "shift_x": 0.0,
+    "shift_y": 0.0,
+    "up": [
+      -1.5099580252808664e-07,
+      7.549790126404332e-08,
+      1.0
+    ]
+  },
+  "blend": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\scene_camera_v1\\castlegrounds_source_locked_v1_prepared.blend",
+  "camera_contract": "C:\\actions-runner-lowvram3d\\_work\\lowvram3d-studio\\lowvram3d-studio\\evidence\\latest-scene-camera-local-worker\\camera_contract.json",
+  "camera_contract_sha256": "92e3adce80aa5323369a87e43f2f07cfbfc2d4af1e3844632ce07e4fa2c9899f",
+  "classification": "PROVEN",
+  "contract_error": {
+    "forward": 0.0,
+    "fov_x_deg": 1.7723298668670395e-06,
+    "origin": 0.0,
+    "right": 0.0,
+    "up": 0.0
+  },
+  "errors": [],
+  "gpu_work_started": false,
+  "legacy_camera_superseded": true,
+  "mesh_edit_operations": 0,
+  "neural_work_started": false,
+  "schema_version": "blender_scene_camera_application_receipt_v1",
+  "unreal_work_started": false
+}

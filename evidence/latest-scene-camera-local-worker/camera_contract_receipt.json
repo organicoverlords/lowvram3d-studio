@@ -1,0 +1,17 @@
+{
+  "authoritative_fov_x_deg": 66.50838470458984,
+  "authoritative_fov_y_deg": 52.37591552734375,
+  "basis_normalized": true,
+  "basis_orthogonal": true,
+  "basis_right_handed": true,
+  "blender_render_started": false,
+  "classification": "PROVEN",
+  "contract_sha256": "92e3adce80aa5323369a87e43f2f07cfbfc2d4af1e3844632ce07e4fa2c9899f",
+  "gpu_work_started": false,
+  "legacy_fov_x_deg": 48.0,
+  "legacy_interpretation_superseded": true,
+  "neural_work_started": false,
+  "schema_version": "scene_camera_contract_receipt_v1",
+  "source_view_sha256": "8fdf92c52ff4fa5e0ef945a2c2f513485d44c04cd576716875326a6bfe0ffbb9",
+  "unreal_work_started": false
+}

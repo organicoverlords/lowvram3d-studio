@@ -1,0 +1,13 @@
+﻿{
+    "classification":  "PROVEN",
+    "workflow_run_id":  "30853947441",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30853947441",
+    "head_sha":  "b42e18955ae0952d3f102cf6e758ec8a4d192b15",
+    "worker_head":  "b42e18955ae0952d3f102cf6e758ec8a4d192b15",
+    "gpu_work_started":  false,
+    "neural_work_started":  false,
+    "unreal_work_started":  false,
+    "scope":  "AUTHORITATIVE_SCENE_CAMERA_AND_BLEND_PREPARATION_CPU_ONLY",
+    "output_root":  "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\scene_camera_v1",
+    "recorded_at":  "2026-08-03T21:17:38.8654380Z"
+}
