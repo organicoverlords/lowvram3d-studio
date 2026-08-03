@@ -30,6 +30,7 @@ $SourceRoot = Join-Path $TempRoot 'source'
 Expand-Archive -LiteralPath $ZipPath -DestinationPath $SourceRoot -Force
 $Entry = Join-Path $SourceRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
 if (-not (Test-Path -LiteralPath $Entry)) { throw "Decoded worker entrypoint is missing: $Entry" }
+$EntryText = Get-Content -LiteralPath $Entry -Raw
 
 # A separate Unreal project may already be open interactively. Never close it or
 # touch its files. Permit coexistence only when no running process references the
@@ -49,7 +50,6 @@ if ($TargetProcesses.Count -gt 0) {
     throw "Target ProceduralJungle58 project is already open; refusing concurrent mutation. PID(s): $($TargetProcesses.ProcessId -join ',')"
 }
 if ($UnrealProcesses.Count -gt 0) {
-    $EntryText = Get-Content -LiteralPath $Entry -Raw
     $Pattern = '(?ms)^\s*if\s*\(\$[A-Za-z_][A-Za-z0-9_]*\.Count\s*-gt\s*0\)\s*\{\s*throw\s*"Unreal Editor is already running; refusing to interfere with PID\(s\):[^\"]*"\s*\}\s*'
     $Matches = [regex]::Matches($EntryText, $Pattern)
     if ($Matches.Count -ne 1) {
@@ -57,33 +57,49 @@ if ($UnrealProcesses.Count -gt 0) {
     }
     $Replacement = "Write-Warning 'Unrelated Unreal Editor process detected; continuing only with the isolated ProceduralJungle58 project.'`r`n"
     $EntryText = [regex]::Replace($EntryText, $Pattern, $Replacement, 1)
-    Set-Content -LiteralPath $Entry -Value $EntryText -Encoding utf8
     Write-Host "UNRELATED_UNREAL_COEXISTENCE=AUTHORIZED"
     Write-Host "UNRELATED_UNREAL_PID=$($UnrealProcesses.ProcessId -join ',')"
 }
+
+# Windows PowerShell 5 converts any native stderr line into a terminating
+# NativeCommandError under ErrorActionPreference=Stop. Blender 5.2 emits a benign
+# Python deprecation warning on stderr even when generation succeeds. Route only
+# Blender's stderr into stdout through cmd.exe while preserving Blender's exact
+# process exit code. Other native commands retain their original fail-closed path.
+$BlenderExe = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
+if (-not (Test-Path -LiteralPath $BlenderExe)) { throw "Blender executable missing: $BlenderExe" }
+$BlenderWrapper = Join-Path $TempRoot 'blender-native-wrapper.cmd'
+@"
+@echo off
+"$BlenderExe" %* 2^>^&1
+exit /b %ERRORLEVEL%
+"@ | Set-Content -LiteralPath $BlenderWrapper -Encoding ascii
+$BlenderCallPattern = '&\s*\$Blender\b'
+$BlenderCallCount = [regex]::Matches($EntryText, $BlenderCallPattern).Count
+if ($BlenderCallCount -lt 2 -or $BlenderCallCount -gt 4) {
+    throw "Unexpected decoded Blender invocation count: $BlenderCallCount"
+}
+$InjectionPattern = "(?m)^(\s*\$ErrorActionPreference\s*=\s*'Stop'\s*)$"
+$InjectionMatches = [regex]::Matches($EntryText, $InjectionPattern)
+if ($InjectionMatches.Count -ne 1) {
+    throw "Could not prove unique decoded ErrorActionPreference declaration; matches=$($InjectionMatches.Count)"
+}
+$EscapedWrapper = $BlenderWrapper.Replace("'", "''")
+$EntryText = [regex]::Replace(
+    $EntryText,
+    $InjectionPattern,
+    "`$1`r`n`$BlenderNativeWrapper = '$EscapedWrapper'",
+    1
+)
+$EntryText = [regex]::Replace($EntryText, $BlenderCallPattern, '& $BlenderNativeWrapper')
+Set-Content -LiteralPath $Entry -Value $EntryText -Encoding utf8
+Write-Host "BLENDER_NATIVE_WRAPPER=PROVEN"
+Write-Host "BLENDER_CALLS_PATCHED=$BlenderCallCount"
 
 Write-Host "DIRECT_WORKER_BUNDLE_SHA256=$ActualSha"
 Write-Host 'CODEX_INVOKED=NO'
 Write-Host 'CLAUDE_INVOKED=NO'
 Write-Host 'MAGICMUSIC_INVOKED=NO'
-
-# Blender 5.2 currently emits a use_nodes DeprecationWarning on stderr. Windows
-# PowerShell 5 converts native stderr into a terminating NativeCommandError when
-# the worker uses ErrorActionPreference=Stop, even when Blender itself succeeds.
-# Suppress only Python DeprecationWarning output; genuine Blender failures still
-# return a non-zero process exit and remain fatal.
-$PreviousPythonWarnings = $env:PYTHONWARNINGS
-$env:PYTHONWARNINGS = 'ignore::DeprecationWarning'
-try {
-    & $Entry -ExpectedBranch $ExpectedBranch -SourceRoot $SourceRoot
-    $WorkerExit = $LASTEXITCODE
-}
-finally {
-    if ($null -eq $PreviousPythonWarnings) {
-        Remove-Item Env:PYTHONWARNINGS -ErrorAction SilentlyContinue
-    }
-    else {
-        $env:PYTHONWARNINGS = $PreviousPythonWarnings
-    }
-}
+& $Entry -ExpectedBranch $ExpectedBranch -SourceRoot $SourceRoot
+$WorkerExit = $LASTEXITCODE
 if ($WorkerExit -ne 0) { throw "Direct worker entrypoint failed with exit code $WorkerExit" }
