@@ -1,0 +1,69 @@
+{
+  "schema_version": "blender_cinematic_recreation_v1",
+  "scene_id": "beggars-banquet-recreation-20260804",
+  "title": "Somebody Get These Beggars Out of Here - original Blender recreation",
+  "source_context": {
+    "film": "The Odyssey (2026)",
+    "scene": "Antinous rejects the disguised Odysseus during a banquet",
+    "reference_urls": [
+      "https://i.kym-cdn.com/entries/icons/facebook/000/057/198/Somebody_Get_These_Beggars_Out_Of_Here_meme_banner_image.jpg",
+      "https://www.youtube.com/shorts/iy7cgP-JDWU"
+    ],
+    "copyright_policy": "Use public references only for composition study. Build original geometry, materials, animation, lighting and voice. Do not redistribute source footage or audio."
+  },
+  "creative_target": {
+    "fidelity_goal": "Recognizable cinematic recreation of the composition and dramatic beat, not a pixel-identical copy or actor scan.",
+    "shot": "warm shallow-focus medium close-up of Antinous at a crowded feast",
+    "duration_frames": 144,
+    "fps": 24,
+    "resolution": [1280, 720],
+    "camera_lens_mm": 85,
+    "hero_character": "dark-haired arrogant young suitor in a black ancient tunic",
+    "foreground_character": "hooded older beggar seen as a soft silhouette from behind",
+    "background": "Ithacan palace banquet hall with columns, firelight, long table and blurred suitors",
+    "performance": [
+      "hero glances toward the beggar",
+      "hero leans forward with a contemptuous half-smile",
+      "jaw and mouth animate across the line",
+      "hero relaxes into a brief amused grin"
+    ],
+    "dialogue": "Somebody get these beggars out of here!",
+    "voice_policy": "Generic local synthetic voice only; do not imitate a real performer."
+  },
+  "deliverables": [
+    "beggars_banquet_recreation.blend",
+    "beggars_banquet_recreation.mp4",
+    "hero_closeup.png",
+    "wide_context.png",
+    "contact_sheet.png",
+    "scene_receipt.json"
+  ],
+  "acceptance": {
+    "required_objects": [
+      "CAM_Hero",
+      "CAM_Wide",
+      "CHAR_Antinous",
+      "CHAR_Beggar",
+      "SET_BanquetHall",
+      "PROP_FeastTable"
+    ],
+    "minimum_background_suitors": 4,
+    "must_use_depth_of_field": true,
+    "must_have_animation": true,
+    "must_save_reload_validate": true,
+    "must_render_stills": true,
+    "must_render_mp4": true,
+    "fail_closed_on_missing_deliverable": true
+  },
+  "worker_policy": {
+    "branch": "agent/blender-beggars-scene-20260804",
+    "base_head": "e6fd5edbfc2816fcf3f535d68b7aade3963f0372",
+    "blender_path": "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe",
+    "runner_labels": ["self-hosted", "Windows", "X64"],
+    "gpu_memory_abort_threshold_mib": 4800,
+    "timeout_minutes": 45,
+    "source_of_truth": "this branch at github.sha",
+    "commit_large_binary_outputs": false,
+    "upload_outputs_as_artifact": true
+  }
+}
