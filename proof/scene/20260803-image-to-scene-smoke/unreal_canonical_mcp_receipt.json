@@ -1,0 +1,35 @@
+{
+  "schema": "unreal_canonical_mcp_probe_v1",
+  "lockfile": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\Saved\\UE_MCP_Bridge\\port.json",
+  "classification": "PROVEN",
+  "port": 55557,
+  "initialize": {
+    "protocolVersion": "2025-11-25",
+    "capabilities": {
+      "tools": {
+        "listChanged": false
+      }
+    },
+    "serverInfo": {
+      "name": "LowVRAM3D-UnrealEditorBridge",
+      "version": "1.0.0"
+    }
+  },
+  "tool_count": 713,
+  "health": {
+    "healthy": true,
+    "editorReady": true,
+    "transport": "jsonrpc_2.0"
+  },
+  "read_only_tools_call": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\r\n\t\"value\":\r\n\t{\r\n\t\t\"success\": true,\r\n\t\t\"result\": \"None\",\r\n\t\t\"log_output\": [],\r\n\t\t\"output\": \"\"\r\n\t}\r\n}"
+      }
+    ],
+    "isError": false
+  },
+  "framing": "uint32_be_length_prefixed_utf8_json",
+  "mcp_message_model": "jsonrpc_2.0"
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "unreal_mcp_protocol_build_receipt_v1",
+  "classification": "PROVEN",
+  "editor_engine": "UE_5.8",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "plugin": "UE_MCP_Bridge",
+  "build_command": "Build.bat UnrealAITest58Editor Win64 Development -Project=<project> -WaitMutex",
+  "build_result": "Succeeded",
+  "canonical_protocol": {
+    "message_model": "JSON-RPC 2.0 / MCP initialize, tools/list, tools/call",
+    "framing": "uint32 big-endian length + UTF-8 JSON",
+    "bind_address": "127.0.0.1",
+    "max_frame_bytes": 104857600,
+    "response_id_correlation": true,
+    "invalid_frame_fail_closed": true
+  },
+  "compatibility_adapters": [
+    "legacy length-prefixed {type, params}",
+    "existing WebSocket JSON-RPC ue-cli route"
+  ],
+  "live_probe": "proof/scene/20260803-image-to-scene-smoke/unreal_canonical_mcp_receipt.json",
+  "scene_render_status": "BLOCKED",
+  "scene_render_claim": "unchanged; protocol proof does not promote Unreal visual rendering"
+}
