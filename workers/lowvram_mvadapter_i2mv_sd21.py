@@ -93,6 +93,14 @@ class LowVRAMMVAdapterI2MVSDPipeline(MVAdapterI2MVSDPipeline):
     def clear_reference_latents_override(self) -> None:
         self._lowvram_reference_latents_override = None
 
+    def set_reference_cache_override(self, cache: dict[str, torch.Tensor]) -> None:
+        if not isinstance(cache, dict) or not cache:
+            raise RuntimeError("MVADAPTER_REFERENCE_CACHE_OVERRIDE_EMPTY")
+        self._lowvram_reference_cache_override = cache
+
+    def clear_reference_cache_override(self) -> None:
+        self._lowvram_reference_cache_override = None
+
     def prepare_image_latents(self, *args: Any, **kwargs: Any) -> torch.Tensor:
         override = getattr(self, "_lowvram_reference_latents_override", None)
         if override is not None:
@@ -435,6 +443,66 @@ def prepare_reference_latents_fp32(
     report["vae_restored_dtype"] = str(prior_dtype).replace("torch.", "")
     report["temporary_fp32_released"] = True
     return latents_fp16, report
+
+
+def prepare_reference_cache_fp32(
+    pipe: LowVRAMMVAdapterI2MVSDPipeline,
+    reference_latents: torch.Tensor,
+    prompt_embeds: torch.Tensor,
+    device: str = "cuda:0",
+) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
+    """Build the reference cache once in FP32 and return finite FP16 tensors."""
+    target = torch.device(device)
+    prior_dtype = next(pipe.unet.parameters()).dtype
+    expected = sorted(
+        name
+        for name, processor in pipe.unet.attn_processors.items()
+        if type(processor).__name__ == ROWCOL_PROCESSOR_NAME
+    )
+    cache_fp32: dict[str, torch.Tensor] = {}
+    pipe.unet.to(device=target, dtype=torch.float32)
+    try:
+        with torch.no_grad():
+            pipe.unet(
+                reference_latents.to(device=target, dtype=torch.float32),
+                torch.zeros((), device=target, dtype=torch.long),
+                encoder_hidden_states=prompt_embeds.to(device=target, dtype=torch.float32),
+                cross_attention_kwargs={
+                    "cache_hidden_states": cache_fp32,
+                    "use_mv": False,
+                    "use_ref": False,
+                    "num_views": 6,
+                },
+                return_dict=False,
+            )
+            torch.cuda.synchronize(target)
+        actual = sorted(cache_fp32)
+        if actual != expected:
+            raise RuntimeError(f"MVADAPTER_REFERENCE_CACHE_KEYSET_MISMATCH:{actual}:{expected}")
+        fp16_cache: dict[str, torch.Tensor] = {}
+        entries: list[dict[str, Any]] = []
+        for name in expected:
+            value = cache_fp32[name]
+            fp32_record = assert_finite_reference_latents(value, f"reference_cache_fp32_{name.replace('.', '_')}")
+            cast = value.to(device=target, dtype=torch.float16)
+            fp16_record = assert_finite_reference_latents(cast, f"reference_cache_fp16_{name.replace('.', '_')}")
+            fp16_cache[name] = cast
+            entries.append({"key": name, "fp32": fp32_record, "fp16": fp16_record})
+    finally:
+        del cache_fp32
+        pipe.unet.to(device="cpu", dtype=prior_dtype)
+        torch.cuda.empty_cache()
+    pipe.set_reference_cache_override(fp16_cache)
+    return fp16_cache, {
+        "mode": "FP32_REFERENCE_UNET_CACHE_CAST_TO_FP16",
+        "expected_key_count": len(expected),
+        "actual_key_count": len(fp16_cache),
+        "batch_before_expansion": 1,
+        "dtype_before_cast": "float32",
+        "dtype_after_cast": "float16",
+        "entries": entries,
+        "temporary_fp32_released": True,
+    }
 
 
 # ----------------------------------------------------------------------

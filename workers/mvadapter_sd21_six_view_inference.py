@@ -455,6 +455,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             install_fp16_input_guards,
             install_low_vram_offload,
             offload_hook_report,
+            prepare_reference_cache_fp32,
             prepare_reference_latents_fp32,
             reference_unet_dtype_smoke_test,
             rowcol_dtype_inventory,
@@ -487,6 +488,18 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             device="cuda:0",
             requested_dtype=torch.float16,
         )
+        reference_prompt_embeds, _ = pipe.encode_prompt(
+            receipt["prompt"], torch.device("cuda:0"), 1, False, None
+        )
+        reference_cache, receipt["reference_cache_fp32"] = prepare_reference_cache_fp32(
+            pipe,
+            reference_latents,
+            reference_prompt_embeds,
+            device="cuda:0",
+        )
+        receipt["reference_unet_pass_started"] = True
+        receipt["reference_unet_call_count"] = 1
+        _heartbeat(heartbeat_path, receipt, "reference_unet_fp32_cache_completed", cache_entries=len(reference_cache))
         _heartbeat(
             heartbeat_path,
             receipt,
@@ -530,6 +543,21 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
                 state["reference_unet_calls"] += 1
                 receipt["reference_unet_pass_started"] = True
                 _heartbeat(heartbeat_path, receipt, "reference_unet_started", call_count=state["reference_unet_calls"])
+                cross_attention_kwargs = kwargs.get("cross_attention_kwargs")
+                override = getattr(pipe, "_lowvram_reference_cache_override", None)
+                if isinstance(cross_attention_kwargs, dict) and override is not None:
+                    sink = cross_attention_kwargs.get("cache_hidden_states")
+                    if isinstance(sink, dict):
+                        sink.update(override)
+                        _heartbeat(
+                            heartbeat_path,
+                            receipt,
+                            "reference_cache_injected_explicit_owner",
+                            cache_entries=len(override),
+                        )
+                        sample = args[0] if args and isinstance(args[0], torch.Tensor) else kwargs.get("sample")
+                        if isinstance(sample, torch.Tensor):
+                            return (torch.zeros_like(sample),)
             else:
                 state["denoising_unet_calls"] += 1
                 receipt["denoising_started"] = True
@@ -634,6 +662,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         if pipe is not None:
             try:
                 pipe.clear_reference_latents_override()
+                pipe.clear_reference_cache_override()
                 pipe.unet.forward = original_unet_forward
                 pipe.cond_encoder.forward = original_cond_forward
             except Exception:

@@ -355,7 +355,8 @@ def run_probe(
         from lowvram_mvadapter_i2mv_sd21 import (
             attention_report, build_low_vram_pipeline, component_dtype_inventory,
             component_inventory, install_fp16_input_guards, install_low_vram_offload,
-            offload_hook_report, prepare_reference_latents_fp32, rowcol_dtype_inventory,
+            offload_hook_report, prepare_reference_cache_fp32, prepare_reference_latents_fp32,
+            rowcol_dtype_inventory,
             tensor_dtype_record, tensor_group_record,
         )
         adapter_state = safetensors.torch.load_file(str(Path(inputs["config"]["adapter"])), device="cpu")
@@ -390,6 +391,14 @@ def run_probe(
             device="cuda:0",
             requested_dtype=torch.float16,
         )
+        originals = _install_sdpa_trace(torch, trace, target)
+        reference_prompt_embeds, _ = pipe.encode_prompt(PROMPT, target, 1, False, None)
+        reference_cache, receipt["reference_cache_fp32"] = prepare_reference_cache_fp32(
+            pipe,
+            reference_latents,
+            reference_prompt_embeds,
+            device="cuda:0",
+        )
         pipe.clear_reference_latents_override()
         trace.write(
             "reference_latents_fp32_validated",
@@ -403,43 +412,29 @@ def run_probe(
             pipe.to(device=target, dtype=torch.float16)
             receipt["offload_report"] = {"offload_mode": "DISABLED", "device": str(target)}
             receipt["component_devices_resident"] = component_inventory(pipe)
-        pipe.set_reference_latents_override(reference_latents)
+        pipe.set_reference_cache_override(reference_cache)
         guard_handles = install_fp16_input_guards(pipe)
-        originals = _install_sdpa_trace(torch, trace, target)
         with torch.no_grad():
             prompt_embeds, _ = pipe.encode_prompt(PROMPT, target, 1, False, None)
-            prompt_embeds = prompt_embeds.to(target, dtype=reference_dtype)
+            prompt_embeds = prompt_embeds.to(target, dtype=torch.float16)
             trace.write("prompt_ready", tensor=_tensor_record("prompt_embeddings", prompt_embeds), memory=_memory(torch))
             trace.write("reference_inputs_ready", latents=_tensor_record("reference_latents", reference_latents), memory=_memory(torch))
-            reference_latents_for_unet = reference_latents.to(device=target, dtype=reference_dtype)
-            trace.write("reference_latents_cast_for_unet", tensor=_tensor_record("reference_latents_for_unet", reference_latents_for_unet), memory=_memory(torch))
-            cache_sink: dict[str, Any] = {}
-
-            class ReferenceCache(dict[str, Any]):
-                def __setitem__(self, key: str, value: Any) -> None:
-                    cache_sink[key] = value
-                    super().__setitem__(key, value)
-                def copy(self):
-                    return self
-                def __deepcopy__(self, _memo: dict[int, Any]):
-                    return self
-
-            ref_cache = ReferenceCache()
-            reference_numeric_handles = _install_reference_numeric_hooks(torch, pipe, trace)
-            trace.write("reference_unet_started", use_mv=False, use_ref=False, cache_hidden_states=True, memory=_memory(torch))
-            pipe.unet(reference_latents_for_unet, torch.zeros((), device=target, dtype=torch.long), encoder_hidden_states=prompt_embeds, cross_attention_kwargs={"cache_hidden_states": ref_cache, "use_mv": False, "use_ref": False, "num_views": 6}, return_dict=False)
-            torch.cuda.synchronize(target)
-            trace.write("reference_unet_completed", memory=_memory(torch), cache_entries=len(cache_sink))
+            trace.write("reference_unet_completed", memory=_memory(torch), cache_entries=len(reference_cache), cache_owner="explicit_pipeline_cache")
             if reference_only:
                 raise ReferenceOnlyComplete()
             expected = sorted(name for name, proc in pipe.unet.attn_processors.items() if type(proc).__name__ == ROWCOL_NAME and getattr(proc, "use_ref", False))
-            ownership = _cache_ownership(pipe, cache_sink, expected)
-            receipt["reference_cache_ownership"] = {k: v for k, v in ownership.items() if k != "entries"}
+            receipt["reference_cache_ownership"] = {
+                "owner": "explicit_pipeline_cache",
+                "expected_keys": expected,
+                "actual_keys": sorted(reference_cache),
+                "missing_keys": sorted(set(expected) - set(reference_cache)),
+                "unexpected_keys": sorted(set(reference_cache) - set(expected)),
+            }
             cache_records = []
             for name in expected:
-                if name not in ownership["entries"]:
+                if name not in reference_cache:
                     raise RuntimeError(f"REFERENCE_CACHE_KEY_MISSING:{name}")
-                value = ownership["entries"][name]["tensor"]
+                value = reference_cache[name]
                 contract = {**_tensor_record(name, value), **_finite_stats(value)}
                 receipt.setdefault("reference_cache_contract_checks", []).append(contract)
                 if value.shape[0] != 1 or value.dtype != torch.float16 or value.device != target or not contract.get("finite", False):
@@ -450,9 +445,9 @@ def run_probe(
             receipt["reference_cache"] = {
                 "batch_before_expansion": 1,
                 "summary": tensor_group_record("reference_cache", cache_records),
-                "entries": [_tensor_record(f"reference_cache.{name}", ownership["entries"][name]["tensor"]) for name in expected],
+                "entries": [_tensor_record(f"reference_cache.{name}", reference_cache[name]) for name in expected],
             }
-            expanded_cache = {name: ownership["entries"][name]["tensor"].repeat_interleave(6, dim=0) for name in expected}
+            expanded_cache = {name: reference_cache[name].repeat_interleave(6, dim=0) for name in expected}
             if any(value.shape[0] != 6 for value in expanded_cache.values()):
                 raise RuntimeError("REFERENCE_CACHE_EXPANSION_INVALID")
             control = torch.from_numpy(np.ascontiguousarray(np.load(inputs["control_path"], allow_pickle=False).astype(np.float32)))
@@ -504,6 +499,11 @@ def run_probe(
         for handle in reference_numeric_handles:
             try:
                 handle.remove()
+            except Exception:
+                pass
+        if pipe is not None:
+            try:
+                pipe.clear_reference_cache_override()
             except Exception:
                 pass
         trace.write("cleanup", memory=_safe_memory(__import__("torch")) if "torch" in sys.modules and getattr(__import__("torch"), "cuda", None) and __import__("torch").cuda.is_available() else {})
