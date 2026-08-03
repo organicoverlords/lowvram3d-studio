@@ -1,0 +1,77 @@
+{
+  "schema": "sf3d_remesh_receipt_v1",
+  "classification": [
+    "SF3D_TRIANGLE_REMESH_USEFUL",
+    "SF3D_QUAD_REMESH_USEFUL"
+  ],
+  "date": "2026-08-03",
+  "inference_rerun": false,
+  "method": "SF3D's remesh normally only runs inside run_image, which would re-run the network and bake a texture. Mesh.triangle_remesh and Mesh.quad_remesh are pure geometry operations, so the existing GLB was wrapped back into an SF3D Mesh and remeshed with no second inference pass.",
+  "input": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ab_sf3d_cleaned\\candidate.glb",
+  "input_sha256": "caa1ecd96340a6aeb2c8087fe8c4cc6986a97c57dae716901ccb45733a82b7f8",
+  "original": {
+    "vertices": 14776,
+    "triangles": 29548,
+    "degenerate_triangles": 0,
+    "extreme_aspect_triangles": 246,
+    "max_triangle_aspect": 704.6,
+    "median_edge_length": 0.012743,
+    "surface_area": 1.735052,
+    "extent": [
+      0.693521,
+      0.889464,
+      0.731509
+    ]
+  },
+  "variants": {
+    "triangle_remesh": {
+      "requested_target_vertex_count": 8865,
+      "success": true,
+      "seconds": 1.5,
+      "output": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\sf3d_remesh\\sf3d_triangle_remesh.glb",
+      "output_sha256": "a619f59a076b3ad8fea6e070a822fa96749441de191a778cf3545e6a50b706dc",
+      "after": {
+        "vertices": 7741,
+        "triangles": 15478,
+        "degenerate_triangles": 0,
+        "extreme_aspect_triangles": 0,
+        "max_triangle_aspect": 1.7,
+        "median_edge_length": 0.015877,
+        "surface_area": 1.69065,
+        "extent": [
+          0.692352,
+          0.87989,
+          0.647664
+        ]
+      }
+    },
+    "quad_remesh": {
+      "requested_target_vertex_count": 8865,
+      "success": true,
+      "seconds": 0.4,
+      "output": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\sf3d_remesh\\sf3d_quad_remesh.glb",
+      "output_sha256": "415ee23b28603230113bee8651d13f5647b8f25a8e6c6ec8b6a81d041205753f",
+      "after": {
+        "vertices": 8542,
+        "triangles": 17080,
+        "degenerate_triangles": 0,
+        "extreme_aspect_triangles": 0,
+        "max_triangle_aspect": 2.7,
+        "median_edge_length": 0.01464,
+        "surface_area": 1.697025,
+        "extent": [
+          0.691547,
+          0.880994,
+          0.656348
+        ]
+      }
+    }
+  },
+  "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\sf3d_remesh\\sf3d_remesh_sheet.png",
+  "comparison": {
+    "vs_raw_sf3d": "Both remeshes are a large topology win: max triangle aspect 704.6 -> 1.7 (triangle) and -> 2.7 (quad), extreme-aspect triangles 246 -> 0, with roughly half the triangles. The 11% Z-extent loss is the spikes being trimmed, not hull damage; the silhouette is otherwise unchanged.",
+    "vs_mini_turbo_candidate_2": "SF3D remeshed topology is far cleaner than Mini Turbo's (max aspect 1.7 vs 132916, 0 vs 6780 extreme-aspect triangles), but Mini Turbo is the only one of the two that is actually the ship. Clean topology on a collapsed pod does not beat usable geometry.",
+    "vs_pymeshlab_cleanup": "PyMeshLab cleanup is conservative repair and leaves the triangle distribution alone; SF3D remeshing rebuilds it isotropically and gets a far better aspect profile. They are not interchangeable: remeshing needs an SF3D Mesh, cleanup works on any GLB."
+  },
+  "usability_verdict": "Remeshing is proven useful as a technique and would be the right post-step if SF3D ever reconstructs this subject. It does not change SF3D's HARD_REJECT on the ship."
+}

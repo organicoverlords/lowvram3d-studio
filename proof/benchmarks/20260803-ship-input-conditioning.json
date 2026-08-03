@@ -1,0 +1,258 @@
+{
+  "schema": "ship_input_conditioning_benchmark_receipt_v1",
+  "classification": "BEST_CLEANED_VARIANT_SELECTED",
+  "date": "2026-08-03",
+  "source": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\baatti.jpg",
+  "source_sha256": "5a6d39c08efa9c4177fe77a19060c494c724a023acbccfec48444d8009706152",
+  "source_dimensions": [
+    659,
+    484
+  ],
+  "plate_finding": "The delivered plate is a JPEG with a transparency-checkerboard baked in as pixels, so the background is a light grey check at RGB ~248, not black. There is also a faint ground shadow under the hull and one small detached speck below it. Border-colour estimation keys the plate cleanly, which the deterministic reference relies on.",
+  "estimated_plate_background_rgb": [
+    248.0,
+    248.0,
+    248.0
+  ],
+  "reference_thin_structures": 29,
+  "matting_backend": "ZhengPeng7/BiRefNet via transformers (trust_remote_code)",
+  "backend_install_note": "BiRefNet needs kornia, which was installed into the SF3D venv with --no-deps so nothing else moved. torch stayed at 2.5.1+cu124 and SF3D still imports and generates.",
+  "sam_status": "NOT_INSTALLED_ANYWHERE; not introduced, to avoid destabilising existing environments",
+  "variant_D_method": "classical colour-guided refinement of the BiRefNet soft alpha, not a promptable segmenter",
+  "variants": {
+    "A_ORIGINAL": {
+      "note": "unchanged plate; alpha is fully opaque so the generator sees the baked checkerboard background and the ground shadow",
+      "classification": "STRUCTURE_PRESERVED",
+      "core_structure_coverage": 1.0,
+      "fail_closed": false,
+      "foreground_occupancy": 1.0,
+      "component_count": 1,
+      "components_under_0_1_percent": 0,
+      "components_under_0_5_percent": 0,
+      "components_under_1_percent": 0,
+      "holes_inside_foreground": 0,
+      "hole_pixels": 0,
+      "edge_halo_score": 0.864372,
+      "remaining_shadow_pixels": 1348,
+      "thin_feature_components": 0,
+      "crop_bounds_x0y0x1y1": [
+        0,
+        0,
+        658,
+        483
+      ],
+      "alignment_iou_vs_reference_key": 0.550452,
+      "thin_features": {
+        "reference_structures": 29,
+        "preserved": 0,
+        "thickened": 29,
+        "removed_as_likely_background_noise": 0,
+        "largest_removed": []
+      },
+      "artifacts": {
+        "transparent_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\A_ORIGINAL\\a_original_transparent.png",
+        "bg_lightgray_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\A_ORIGINAL\\a_original_bg_lightgray.png",
+        "bg_white_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\A_ORIGINAL\\a_original_bg_white.png",
+        "alpha_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\A_ORIGINAL\\a_original_alpha.png",
+        "edge_visualisation_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\A_ORIGINAL\\a_original_edges.png",
+        "component_visualisation_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\A_ORIGINAL\\a_original_components.png"
+      }
+    },
+    "B_BIREFNET_SOFT_ALPHA": {
+      "note": "BiRefNet (ZhengPeng7/BiRefNet) soft alpha, antialiased edges kept",
+      "classification": "STRUCTURE_PRESERVED",
+      "core_structure_coverage": 0.988004,
+      "fail_closed": false,
+      "foreground_occupancy": 0.529274,
+      "component_count": 2,
+      "components_under_0_1_percent": 1,
+      "components_under_0_5_percent": 1,
+      "components_under_1_percent": 1,
+      "holes_inside_foreground": 63,
+      "hole_pixels": 1718,
+      "edge_halo_score": 0.013508,
+      "remaining_shadow_pixels": 65,
+      "thin_feature_components": 81,
+      "crop_bounds_x0y0x1y1": [
+        15,
+        8,
+        604,
+        459
+      ],
+      "alignment_iou_vs_reference_key": 0.961525,
+      "thin_features": {
+        "reference_structures": 29,
+        "preserved": 24,
+        "thickened": 0,
+        "removed_as_likely_background_noise": 5,
+        "largest_removed": [
+          {
+            "pixels": 11,
+            "bbox": [
+              558,
+              454,
+              561,
+              456
+            ]
+          },
+          {
+            "pixels": 10,
+            "bbox": [
+              11,
+              442,
+              13,
+              445
+            ]
+          },
+          {
+            "pixels": 3,
+            "bbox": [
+              80,
+              219,
+              82,
+              219
+            ]
+          },
+          {
+            "pixels": 3,
+            "bbox": [
+              586,
+              394,
+              586,
+              396
+            ]
+          }
+        ]
+      },
+      "artifacts": {
+        "transparent_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\B_BIREFNET_SOFT_ALPHA\\b_birefnet_soft_alpha_transparent.png",
+        "bg_lightgray_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\B_BIREFNET_SOFT_ALPHA\\b_birefnet_soft_alpha_bg_lightgray.png",
+        "bg_white_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\B_BIREFNET_SOFT_ALPHA\\b_birefnet_soft_alpha_bg_white.png",
+        "alpha_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\B_BIREFNET_SOFT_ALPHA\\b_birefnet_soft_alpha_alpha.png",
+        "edge_visualisation_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\B_BIREFNET_SOFT_ALPHA\\b_birefnet_soft_alpha_edges.png",
+        "component_visualisation_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\B_BIREFNET_SOFT_ALPHA\\b_birefnet_soft_alpha_components.png"
+      }
+    },
+    "C_BIREFNET_HARD_MASK": {
+      "note": "binary silhouette from the BiRefNet prediction, single largest component, internal pinholes filled, dark edge fringe shaved",
+      "classification": "STRUCTURE_PRESERVED",
+      "core_structure_coverage": 0.997913,
+      "fail_closed": false,
+      "foreground_occupancy": 0.532628,
+      "component_count": 2,
+      "components_under_0_1_percent": 1,
+      "components_under_0_5_percent": 1,
+      "components_under_1_percent": 1,
+      "holes_inside_foreground": 0,
+      "hole_pixels": 0,
+      "edge_halo_score": 0.003507,
+      "remaining_shadow_pixels": 152,
+      "thin_feature_components": 58,
+      "crop_bounds_x0y0x1y1": [
+        15,
+        8,
+        604,
+        459
+      ],
+      "alignment_iou_vs_reference_key": 0.96762,
+      "thin_features": {
+        "reference_structures": 29,
+        "preserved": 20,
+        "thickened": 0,
+        "removed_as_likely_background_noise": 9,
+        "largest_removed": [
+          {
+            "pixels": 11,
+            "bbox": [
+              558,
+              454,
+              561,
+              456
+            ]
+          },
+          {
+            "pixels": 10,
+            "bbox": [
+              11,
+              442,
+              13,
+              445
+            ]
+          },
+          {
+            "pixels": 4,
+            "bbox": [
+              219,
+              10,
+              219,
+              13
+            ]
+          },
+          {
+            "pixels": 3,
+            "bbox": [
+              190,
+              91,
+              190,
+              93
+            ]
+          }
+        ]
+      },
+      "artifacts": {
+        "transparent_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\C_BIREFNET_HARD_MASK\\c_birefnet_hard_mask_transparent.png",
+        "bg_lightgray_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\C_BIREFNET_HARD_MASK\\c_birefnet_hard_mask_bg_lightgray.png",
+        "bg_white_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\C_BIREFNET_HARD_MASK\\c_birefnet_hard_mask_bg_white.png",
+        "alpha_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\C_BIREFNET_HARD_MASK\\c_birefnet_hard_mask_alpha.png",
+        "edge_visualisation_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\C_BIREFNET_HARD_MASK\\c_birefnet_hard_mask_edges.png",
+        "component_visualisation_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\C_BIREFNET_HARD_MASK\\c_birefnet_hard_mask_components.png"
+      }
+    },
+    "D_REFINED_MASK": {
+      "note": "classical colour-guided refinement of the BiRefNet soft alpha (SAM/SAM2 not installed; not introduced to avoid destabilising the existing environments), pinholes filled, sub-0.05% specks dropped",
+      "classification": "STRUCTURE_PRESERVED",
+      "core_structure_coverage": 0.992637,
+      "fail_closed": false,
+      "foreground_occupancy": 0.535977,
+      "component_count": 6,
+      "components_under_0_1_percent": 5,
+      "components_under_0_5_percent": 5,
+      "components_under_1_percent": 5,
+      "holes_inside_foreground": 88,
+      "hole_pixels": 1036,
+      "edge_halo_score": 0.02138,
+      "remaining_shadow_pixels": 608,
+      "thin_feature_components": 126,
+      "crop_bounds_x0y0x1y1": [
+        11,
+        7,
+        604,
+        460
+      ],
+      "alignment_iou_vs_reference_key": 0.973703,
+      "thin_features": {
+        "reference_structures": 29,
+        "preserved": 29,
+        "thickened": 0,
+        "removed_as_likely_background_noise": 0,
+        "largest_removed": []
+      },
+      "artifacts": {
+        "transparent_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\D_REFINED_MASK\\d_refined_mask_transparent.png",
+        "bg_lightgray_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\D_REFINED_MASK\\d_refined_mask_bg_lightgray.png",
+        "bg_white_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\D_REFINED_MASK\\d_refined_mask_bg_white.png",
+        "alpha_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\D_REFINED_MASK\\d_refined_mask_alpha.png",
+        "edge_visualisation_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\D_REFINED_MASK\\d_refined_mask_edges.png",
+        "component_visualisation_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\D_REFINED_MASK\\d_refined_mask_components.png"
+      }
+    }
+  },
+  "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_variants\\conditioning_variants_sheet.png",
+  "selection": {
+    "best_cleaned_variant": "C_BIREFNET_HARD_MASK",
+    "reason": "Lowest edge halo (0.0035 vs 0.8644 for the untouched plate), highest core-structure coverage of the four (0.9979), zero interior holes, and only one sub-0.1% speck. B keeps softer edges but carries 63 pinholes; D preserves all 29 thin structures but re-admits plate-like pixels, giving 6 components, 88 holes and 4x the residual shadow.",
+    "accepted_cost": "C drops 9 of 29 reference thin structures. The largest are 11, 10 and 4 pixels, which is plate-speckle scale; the flag, mast, railings, paddle wheel and gangway all survive and are visible in the alpha and edge visualisations.",
+    "runner_up": "B_BIREFNET_SOFT_ALPHA"
+  },
+  "no_variant_removed_major_structure": true
+}

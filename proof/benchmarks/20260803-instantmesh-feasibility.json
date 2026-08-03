@@ -1,0 +1,40 @@
+{
+  "schema": "instantmesh_feasibility_audit_v1",
+  "classification": "INSTANTMESH_REQUIRES_MORE_THAN_6GB",
+  "action": "INSTANTMESH_DEFERRED",
+  "date": "2026-08-03",
+  "audit_type": "read_only; nothing installed, nothing downloaded",
+  "source": "https://github.com/TencentARC/InstantMesh README",
+  "requirements": {
+    "python": ">=3.10 (conda env, 3.10 recommended)",
+    "pytorch": ">=2.1.0 (2.1.0 recommended)",
+    "cuda": ">=12.1 (12.1.0 recommended)",
+    "xformers": "0.0.22.post7, pinned to torch 2.1.0",
+    "build_tools": "Ninja required",
+    "checkpoints": "four sparse-view reconstruction variants plus a customised Zero123++ UNet; default instant-mesh-large. Sizes are not published in the README; the Zero123++ diffusion weights dominate and are the multi-GB component."
+  },
+  "vram": {
+    "official_minimum_reported": "~10 GB for inference",
+    "low_vram_mode": "none in the official repo; the only memory relief offered is splitting across two GPUs, which does not apply here",
+    "cpu_offload": "not provided officially",
+    "this_machine": "GTX 1660 SUPER, 6144 MiB total",
+    "verdict": "6 GB is below the stated minimum"
+  },
+  "masked_input_support": "YES - the inference script takes --no_rembg and accepts pre-masked alpha input, so the BiRefNet variants from Phase 2 would feed it directly",
+  "environment_conflict": {
+    "existing_envs": {
+      "SF3D venv": "Python 3.11.15, torch 2.5.1+cu124",
+      "TripoSR env": "Python 3.10.20, torch 2.2.2+cu121",
+      "HY3D2 standalone": "Python 3.12.11, torch 2.8.0+cu126"
+    },
+    "assessment": "InstantMesh's torch 2.1.0 + xformers 0.0.22.post7 pin matches none of them, so it would need its own isolated environment. That is achievable, but see disk.",
+    "disk_free_gb": 16.1,
+    "disk_assessment": "a torch 2.1 environment plus checkpoints would consume a large share of the remaining 16.1 GB"
+  },
+  "decision": "Not installed and no smoke test attempted. The stated 10 GB inference floor is 1.7x this card, there is no official low-VRAM path, and the environment would have to be built from scratch on limited disk. Per the bounded scope this lane is deferred rather than allowed to consume the ship deliverable's budget.",
+  "reconsider_if": [
+    "a low-VRAM or sequential-offload fork is validated",
+    "a larger card becomes available",
+    "disk headroom materially increases"
+  ]
+}
