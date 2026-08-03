@@ -1,0 +1,301 @@
+{
+  "schema": "ship_generator_geometry_comparison_v1",
+  "classification": "SHIP_GEOMETRY_WINNER_SELECTED",
+  "asset_id": "lucky_drown_casino_boat",
+  "date": "2026-08-03",
+  "repo_branch": "integration/unified-pipeline-v2-20260802",
+  "scope": "geometry_only_no_uv_no_texture_no_mvadapter",
+  "input": {
+    "source_original": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\baatti.jpg",
+    "source_sha256": "5a6d39c08efa9c4177fe77a19060c494c724a023acbccfec48444d8009706152",
+    "workspace_copy": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\baatti.jpg",
+    "workspace_copy_sha256": "5a6d39c08efa9c4177fe77a19060c494c724a023acbccfec48444d8009706152",
+    "sha256_equal": true,
+    "file_size_bytes": 110661,
+    "dimensions": [
+      659,
+      484
+    ],
+    "colour_mode": "RGB",
+    "format": "JPEG",
+    "shared_conditioning": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning_normalized.png",
+    "shared_conditioning_sha256": "7cb5c18447ea2182719328d5446ebe8e2b8a53c163dc3a6d4ff87de752cfa62e",
+    "shared_conditioning_provenance": "reused unmodified from the Mini Turbo ship benchmark (PROVEN_CPU_CONDITIONING) so all three lanes see identical input"
+  },
+  "harness": {
+    "blender": "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe",
+    "eight_view_script": "blender/ship_flat_eight_view_qa.py",
+    "metrics_script": "workers/ship_candidate_metrics.py",
+    "silhouette_match_script": "blender/ship_source_silhouette_match.py",
+    "sf3d_worker": "workers/route_c_sf3d_geometry_only.py",
+    "triposr_worker": "workers/route_d_triposr_geometry_only.py",
+    "fresh_process_per_generator": true,
+    "identical_camera_rig_and_flat_material": true
+  },
+  "candidates": [
+    {
+      "label": "Mini Turbo c2",
+      "generator": "hunyuan3d_2mini_turbo",
+      "glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\miniturbo_c2\\candidate.glb",
+      "glb_sha256": "789a3cca41b6a756bff1551b127678445f0319241492dae2c1fe617a077bcd75",
+      "vertices": 381434,
+      "triangles": 763850,
+      "components": 26,
+      "detached_islands": 25,
+      "largest_component_triangles": 759132,
+      "largest_component_share_percent": 99.382,
+      "boundary_edges": 20,
+      "non_manifold_edges": 11018,
+      "degenerate_triangles": 19,
+      "extreme_aspect_triangles": 6780,
+      "max_triangle_aspect": 132916.3,
+      "bounds_min": [
+        -0.6653,
+        -0.85411,
+        -1.01
+      ],
+      "bounds_max": [
+        0.62698,
+        0.82297,
+        0.96204
+      ],
+      "extent": [
+        1.29228,
+        1.67708,
+        1.97204
+      ],
+      "silhouette_occupancy": {
+        "bottom": 0.196,
+        "front": 0.1406,
+        "front_three_quarter": 0.1919,
+        "left": 0.187,
+        "rear": 0.1406,
+        "rear_three_quarter": 0.196,
+        "right": 0.187,
+        "top": 0.2
+      },
+      "fresh_import": "PROVEN",
+      "flat_eight_view_render": "PROVEN",
+      "flat_eight_views_dir": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\miniturbo_c2\\flat_eight_views",
+      "source_silhouette_best_iou": 0.8766,
+      "source_silhouette_best_view": {
+        "yaw": 300.0,
+        "pitch": 15.0,
+        "iou": 0.8766
+      },
+      "source_silhouette_views_probed": 60,
+      "visual_verdict": "ACCEPTED_WITH_METRIC_WARNINGS",
+      "visual_reason": "Unmistakably the source vessel: four separated deck tiers with railings, the arched bow pediment matching the source sign, a reconstructed paddle wheel, hull with gunwale, and the mast. Detached islands are all inside the hull bounding box and do not break the silhouette.",
+      "python": "C:\\AI\\HY3D2\\python_standalone\\python.exe (prior run)",
+      "model_path": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct",
+      "scope": "geometry_only",
+      "uv_generated": false,
+      "texture_baked": false,
+      "wall_seconds": 195.873,
+      "peak_vram_mb": 4772,
+      "settings": {
+        "steps": 3,
+        "octree_resolution": 256,
+        "num_chunks": 1500,
+        "seed": 777
+      },
+      "source_run": "proof/benchmarks/20260803-lucky-drown-ship-geometry.json",
+      "reused_glb_sha256_matches_prior_proof": true
+    },
+    {
+      "label": "SF3D c1",
+      "generator": "stable-fast-3d",
+      "glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\sf3d_c1\\candidate.glb",
+      "glb_sha256": "184e8f0527ab335ed9d6b29b0fd5f94b284fd4ba64b57d21748ac149d8afdc23",
+      "vertices": 14152,
+      "triangles": 28296,
+      "components": 2,
+      "detached_islands": 1,
+      "largest_component_triangles": 28272,
+      "largest_component_share_percent": 99.915,
+      "boundary_edges": 0,
+      "non_manifold_edges": 332,
+      "degenerate_triangles": 5,
+      "extreme_aspect_triangles": 300,
+      "max_triangle_aspect": 28792.0,
+      "bounds_min": [
+        -0.26896,
+        -0.46609,
+        -0.37765
+      ],
+      "bounds_max": [
+        0.37484,
+        0.42327,
+        0.37504
+      ],
+      "extent": [
+        0.6438,
+        0.88936,
+        0.75269
+      ],
+      "silhouette_occupancy": {
+        "bottom": 0.158,
+        "front": 0.1561,
+        "front_three_quarter": 0.1799,
+        "left": 0.1736,
+        "rear": 0.1561,
+        "rear_three_quarter": 0.1867,
+        "right": 0.1737,
+        "top": 0.1545
+      },
+      "fresh_import": "PROVEN",
+      "flat_eight_view_render": "PROVEN",
+      "flat_eight_views_dir": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\sf3d_c1\\flat_eight_views",
+      "source_silhouette_best_iou": 0.7842,
+      "source_silhouette_best_view": {
+        "yaw": 120.0,
+        "pitch": -30.0,
+        "iou": 0.7842
+      },
+      "source_silhouette_views_probed": 60,
+      "visual_verdict": "HARD_REJECT",
+      "visual_reason": "Collapsed hull. A smooth rounded pod with faint horizontal ridging and no decks, no superstructure, no paddle wheel and no bow. Major ship structures are missing from every one of the 60 probed viewing directions, so this is a form failure and not a pose one.",
+      "generate_report": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\sf3d_c1\\generate_report.json",
+      "python": "3.11.15",
+      "torch": "2.5.1+cu124",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "compute_capability": [
+        7,
+        5
+      ],
+      "model_path": "C:\\AI\\StableFast3D\\models\\stable-fast-3d",
+      "scope": "geometry_only",
+      "uv_generated": false,
+      "texture_baked": false,
+      "wall_seconds": 24.5,
+      "peak_vram_mb": 6072.2,
+      "settings": {
+        "foreground_ratio": 0.85,
+        "isosurface_resolution": 160,
+        "cond_image_size": 512,
+        "autocast_dtype": "float16"
+      }
+    },
+    {
+      "label": "TripoSR c1",
+      "generator": "triposr",
+      "glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\triposr_c1\\candidate.glb",
+      "glb_sha256": "4ff49aa9daae277f1cf61b7b864a81adb5c89c04550dd384453ed74dab8ec793",
+      "vertices": 92156,
+      "triangles": 184080,
+      "components": 94,
+      "detached_islands": 93,
+      "largest_component_triangles": 177844,
+      "largest_component_share_percent": 96.612,
+      "boundary_edges": 0,
+      "non_manifold_edges": 4233,
+      "degenerate_triangles": 8,
+      "extreme_aspect_triangles": 2178,
+      "max_triangle_aspect": 115872.8,
+      "bounds_min": [
+        -0.42249,
+        -0.54249,
+        -0.4049
+      ],
+      "bounds_max": [
+        0.42499,
+        0.49436,
+        0.52581
+      ],
+      "extent": [
+        0.84748,
+        1.03684,
+        0.93072
+      ],
+      "silhouette_occupancy": {
+        "bottom": 0.1311,
+        "front": 0.1491,
+        "front_three_quarter": 0.1383,
+        "left": 0.1498,
+        "rear": 0.1491,
+        "rear_three_quarter": 0.144,
+        "right": 0.1498,
+        "top": 0.1077
+      },
+      "fresh_import": "PROVEN",
+      "flat_eight_view_render": "PROVEN",
+      "flat_eight_views_dir": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\triposr_c1\\flat_eight_views",
+      "source_silhouette_best_iou": 0.7811,
+      "source_silhouette_best_view": {
+        "yaw": 150.0,
+        "pitch": 30.0,
+        "iou": 0.7811
+      },
+      "source_silhouette_views_probed": 60,
+      "visual_verdict": "HARD_REJECT",
+      "visual_reason": "No coherent hull. A boxy mass carrying the facade's window lattice as surface relief but without separated decks, bow, or paddle wheel, with a ragged lower boundary and 93 detached islands. Best view over 60 directions still reads as a block, not a vessel.",
+      "generate_report": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\triposr_c1\\generate_report.json",
+      "python": "3.10.20",
+      "torch": "2.2.2+cu121",
+      "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+      "compute_capability": [
+        7,
+        5
+      ],
+      "model_path": "stabilityai/TripoSR",
+      "scope": "geometry_only",
+      "uv_generated": false,
+      "texture_baked": false,
+      "wall_seconds": 6.4,
+      "peak_vram_mb": 2506.5,
+      "settings": {
+        "foreground_ratio": 0.85,
+        "mc_resolution": 256,
+        "chunk_size": 8192
+      }
+    }
+  ],
+  "comparison_sheets": {
+    "eight_view_grid": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ship_generator_comparison_contact_sheet.png",
+    "zoom_three_view": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ship_generator_zoom_sheet.png",
+    "best_view_vs_source": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ship_best_view_vs_source.png",
+    "metrics": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ship_generator_metrics.json"
+  },
+  "decision_rule": {
+    "levels": [
+      "METRIC_WARNING",
+      "HARD_REJECT"
+    ],
+    "hard_reject_only_for": [
+      "long spikes",
+      "stretched bridge triangles causing visible protrusions",
+      "detached floating debris that visibly breaks silhouette",
+      "collapsed or unusable hull",
+      "catastrophic holes",
+      "missing major ship structures",
+      "broken import"
+    ],
+    "note": "Thin-triangle counts alone do not reject a visually coherent model. Silhouette IoU alone does not accept one either: SF3D scores 0.784 while being a featureless pod, because a filled blob matches a filled silhouette. The visual read is decisive and the metrics are the warning channel."
+  },
+  "selection": {
+    "geometry_winner_selected": true,
+    "winner": "Mini Turbo c2 (candidate_02_seed777)",
+    "winner_glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\miniturbo_c2\\candidate.glb",
+    "winner_glb_sha256": "789a3cca41b6a756bff1551b127678445f0319241492dae2c1fe617a077bcd75",
+    "ranking": [
+      "1st: Mini Turbo c2",
+      "2nd: TripoSR c1",
+      "3rd: SF3D c1"
+    ],
+    "ranking_reason": "TripoSR is placed above SF3D because it retains real subject structure (window lattice, boxy massing) while SF3D collapsed to a smooth pod; neither is usable, the ordering records which is closer to salvageable.",
+    "metric_warnings_on_winner": [
+      "25 detached islands, 4718 triangles total (0.62% of the mesh)",
+      "6780 extreme-aspect triangles (aspect >= 50), max aspect 132916",
+      "11018 non-manifold edges",
+      "20 boundary edges"
+    ],
+    "warnings_cleared_because": "every detached island is at most 5.22% of the hull diagonal and all lie inside the main body bounding box (max protrusion 0.08% of the diagonal), so none breaks the silhouette",
+    "supersedes": "proof/benchmarks/20260803-lucky-drown-ship-geometry.json classified ALL_SHIP_GEOMETRY_CANDIDATES_REJECTED under a single-level clean-geometry gate. Under the two-level METRIC_WARNING / HARD_REJECT rule, and with two further generators now benchmarked as comparators, candidate 2 is selected."
+  },
+  "preservation": {
+    "panda_artifacts_modified": false,
+    "prior_ship_benchmark_artifacts_modified": false,
+    "prior_proof_receipts_modified": false,
+    "mini_turbo_c2_reused_by_copy_not_move": true
+  }
+}
