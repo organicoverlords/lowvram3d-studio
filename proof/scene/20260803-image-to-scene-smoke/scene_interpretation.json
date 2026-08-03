@@ -1,0 +1,77 @@
+{
+  "schema": "castlegrounds_scene_interpretation_v1",
+  "classification": "IMAGE_ANALYSIS_PROVEN_BOUNDED_GEOMETRIC_FALLBACK",
+  "source": {
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
+    "sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+    "bytes": 4064411,
+    "dimensions": [
+      1448,
+      1086
+    ],
+    "mode": "RGB",
+    "finite_dimensions": true
+  },
+  "depth_route": {
+    "neural_route": "NOT_AVAILABLE_LOCALLY",
+    "fallback": "STRUCTURED_PERSPECTIVE_LAYOUT"
+  },
+  "horizon": {
+    "row_px": 280,
+    "normalized": 0.257827,
+    "confidence": 0.72
+  },
+  "camera_estimate": {
+    "projection": "perspective",
+    "field_of_view_deg": 48.0,
+    "principal_point": [
+      0.5,
+      0.5
+    ],
+    "camera_position": [
+      0.0,
+      -110.0,
+      18.0
+    ],
+    "look_at": [
+      0.0,
+      38.0,
+      12.0
+    ],
+    "near_plane": 0.1,
+    "far_plane": 500.0,
+    "landmark_calibration_error_px_estimate": 38.0
+  },
+  "regions": {
+    "foreground": "lower terrain, rocks and near shoreline",
+    "midground": "castle island, lighthouse base, bridges and nearby water",
+    "background": "distant cliffs, islands and towers",
+    "sky": "upper cloud and sky region",
+    "walkable_surface": "foreground terrain and castle island; approximate in smoke geometry"
+  },
+  "major_masses": [
+    "lighthouse tower",
+    "castle walls",
+    "bridge network",
+    "foreground cliffs",
+    "distant spires",
+    "water channels"
+  ],
+  "occlusion_order": [
+    "foreground terrain/cliffs",
+    "castle and bridge",
+    "water channels",
+    "distant cliffs/spires",
+    "sky"
+  ],
+  "uncertainties": [
+    "individual vegetation instances",
+    "far shoreline depth",
+    "unseen backs of architecture"
+  ],
+  "preview_paths": {
+    "segmentation": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\segmentation_preview.png",
+    "depth": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\depth_preview.png",
+    "layout": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\layout_overlay.png"
+  }
+}

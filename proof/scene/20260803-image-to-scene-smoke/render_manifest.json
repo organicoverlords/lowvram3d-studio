@@ -1,0 +1,18 @@
+{
+  "schema": "image_to_scene_render_manifest_v2",
+  "classification": "UNREAL_VISUAL_RENDER_BLOCKED_HEADLESS_CAPTURE",
+  "unreal_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "unreal_views": ["source", "left", "right", "forward", "elevated", "wireframe"],
+  "unreal_paths": [],
+  "blender_cpu_visual_views": [
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_source.png",
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_left.png",
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_right.png",
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_forward.png",
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_elevated.png",
+    "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_rear.png"
+  ],
+  "contact_sheet": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\contact_sheet.png",
+  "source_plane_present": false,
+  "visual_camera_mode": "EXTERNALIZED_FOR_CPU_VISUAL_QA_NOT_UNREAL_SOURCE_CAMERA"
+}

@@ -1,0 +1,161 @@
+{
+  "schema": "castlegrounds_structured_reconstruction_v1",
+  "method": "BOUNDED_STRUCTURED_PROCEDURAL_HYBRID",
+  "source_visible_projection": true,
+  "depth_ranges": {
+    "foreground": 12.0,
+    "castle": 26.0,
+    "water": 46.0,
+    "background": 68.0
+  },
+  "parts": [
+    {
+      "name": "terrain",
+      "kind": "grid",
+      "centre": [
+        0,
+        38,
+        0
+      ],
+      "size": [
+        76,
+        92
+      ],
+      "segments": [
+        18,
+        22
+      ],
+      "depth_range": "foreground"
+    },
+    {
+      "name": "water",
+      "kind": "grid",
+      "centre": [
+        0,
+        56,
+        0.35
+      ],
+      "size": [
+        72,
+        62
+      ],
+      "segments": [
+        12,
+        12
+      ],
+      "depth_range": "water"
+    },
+    {
+      "name": "castle_base",
+      "kind": "box_cluster",
+      "centre": [
+        10,
+        28,
+        4
+      ],
+      "size": [
+        28,
+        18,
+        8
+      ],
+      "count": 7,
+      "depth_range": "castle"
+    },
+    {
+      "name": "lighthouse_tower",
+      "kind": "tower",
+      "centre": [
+        12,
+        25,
+        0
+      ],
+      "radius": 7.0,
+      "height": 38.0,
+      "rings": 6,
+      "segments": 20,
+      "depth_range": "castle"
+    },
+    {
+      "name": "lighthouse_roof",
+      "kind": "cone",
+      "centre": [
+        12,
+        25,
+        39
+      ],
+      "radius": 8.5,
+      "height": 10.0,
+      "segments": 20,
+      "depth_range": "castle"
+    },
+    {
+      "name": "bridge",
+      "kind": "bridge",
+      "centre": [
+        -1,
+        31,
+        4
+      ],
+      "length": 20.0,
+      "width": 3.0,
+      "height": 1.2,
+      "depth_range": "castle"
+    },
+    {
+      "name": "foreground_cliffs",
+      "kind": "cliff_cluster",
+      "centre": [
+        -22,
+        31,
+        0
+      ],
+      "count": 9,
+      "depth_range": "foreground"
+    },
+    {
+      "name": "background_spires",
+      "kind": "spire_cluster",
+      "centre": [
+        -4,
+        66,
+        0
+      ],
+      "count": 11,
+      "depth_range": "background"
+    }
+  ],
+  "landmarks": [
+    {
+      "name": "lighthouse_top",
+      "world": [
+        12,
+        25,
+        49
+      ]
+    },
+    {
+      "name": "castle_base",
+      "world": [
+        10,
+        28,
+        5
+      ]
+    },
+    {
+      "name": "foreground_cliff",
+      "world": [
+        -22,
+        31,
+        16
+      ]
+    },
+    {
+      "name": "background_spire",
+      "world": [
+        -4,
+        66,
+        18
+      ]
+    }
+  ]
+}

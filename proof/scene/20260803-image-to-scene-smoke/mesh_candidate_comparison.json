@@ -1,0 +1,94 @@
+{
+  "schema": "moge_mesh_candidate_comparison_v1",
+  "candidates": {
+    "strict_005": {
+      "threshold": 0.005,
+      "vertices": 191847,
+      "triangles": 182496,
+      "connected_components": 308,
+      "boundary_edges": 17760,
+      "non_manifold_edges": 0,
+      "zero_area_triangles": 0,
+      "triangle_aspect_ratio": {
+        "p50": 1.4681891202926636,
+        "p95": 2.1635231971740723,
+        "max": 4.2212042808532715
+      },
+      "discarded_depth_edge_triangles": 199184,
+      "valid_mask_coverage": 0.9757843017578125,
+      "source_valid_vertex_coverage": 1.0,
+      "sky_background_bridges": 0,
+      "tiny_component_count": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ]
+    },
+    "balanced_010": {
+      "threshold": 0.01,
+      "vertices": 191847,
+      "triangles": 250574,
+      "connected_components": 345,
+      "boundary_edges": 15592,
+      "non_manifold_edges": 0,
+      "zero_area_triangles": 0,
+      "triangle_aspect_ratio": {
+        "p50": 1.5435900688171387,
+        "p95": 2.70723295211792,
+        "max": 7.865081787109375
+      },
+      "discarded_depth_edge_triangles": 131106,
+      "valid_mask_coverage": 0.9757843017578125,
+      "source_valid_vertex_coverage": 1.0,
+      "sky_background_bridges": 0,
+      "tiny_component_count": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ]
+    },
+    "permissive_020": {
+      "threshold": 0.02,
+      "vertices": 191847,
+      "triangles": 305800,
+      "connected_components": 253,
+      "boundary_edges": 13154,
+      "non_manifold_edges": 0,
+      "zero_area_triangles": 0,
+      "triangle_aspect_ratio": {
+        "p50": 1.6397876739501953,
+        "p95": 3.378973960876465,
+        "max": 13.64243221282959
+      },
+      "discarded_depth_edge_triangles": 75880,
+      "valid_mask_coverage": 0.9757843017578125,
+      "source_valid_vertex_coverage": 1.0,
+      "sky_background_bridges": 0,
+      "tiny_component_count": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ]
+    }
+  },
+  "selected": "balanced_010",
+  "selection_reason": "balanced threshold is the locked preference and is retained for objective comparison; promotion remains gated by Unreal/parallax QA"
+}

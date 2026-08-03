@@ -1,0 +1,13 @@
+{
+  "schema": "moge_camera_calibration_v1",
+  "classification": "CAMERA_CALIBRATION_PROVEN",
+  "source_frame": "MOGE_POINT_MAP_CAMERA_ORIGIN_PLUS_Z_FORWARD",
+  "intrinsics": [[0.762505054473877, 0.0, 0.5], [0.0, 1.0166734457015991, 0.5], [0.0, 0.0, 1.0]],
+  "fov_x_deg": 66.50838470458984,
+  "fov_y_deg": 52.37591552734375,
+  "principal_point_normalized": [0.5, 0.5],
+  "input_resolution": [512, 384],
+  "unreal_camera_direction": [0.0, 0.0, 1.0],
+  "unreal_camera_contract": "MOGE_POINT_MAP_PLUS_Z_AWAY_FROM_SOURCE_CAMERA",
+  "walkable_ground": "NOT_PROVEN"
+}

@@ -1,0 +1,113 @@
+{
+  "schema": "scene_parallax_receipt_v1",
+  "classification": "PARALLAX_PROVEN",
+  "source_resolution": [
+    512,
+    384
+  ],
+  "median_valid_depth": 95.2073745727539,
+  "lateral_baseline": 1.9041474914550782,
+  "forward_baseline": 0.9520737457275391,
+  "landmark_bands": {
+    "left": {
+      "camera_displacement": [
+        -1.9041474914550782,
+        0.0,
+        0.0
+      ],
+      "bands": {
+        "near": {
+          "count": 9592,
+          "median_pixels": 14.237949373080003,
+          "p95_pixels": 14.806690514091603
+        },
+        "middle": {
+          "count": 9592,
+          "median_pixels": 8.323080978844548,
+          "p95_pixels": 8.720424318489327
+        },
+        "far": {
+          "count": 9592,
+          "median_pixels": 1.8681225611066876,
+          "p95_pixels": 2.005365626778387
+        }
+      }
+    },
+    "right": {
+      "camera_displacement": [
+        1.9041474914550782,
+        0.0,
+        0.0
+      ],
+      "bands": {
+        "near": {
+          "count": 9592,
+          "median_pixels": 13.238611753865476,
+          "p95_pixels": 13.807294240971162
+        },
+        "middle": {
+          "count": 9592,
+          "median_pixels": 7.325131955049793,
+          "p95_pixels": 7.7222790562441626
+        },
+        "far": {
+          "count": 9592,
+          "median_pixels": 0.9433768904406573,
+          "p95_pixels": 1.0665034931180815
+        }
+      }
+    },
+    "forward": {
+      "camera_displacement": [
+        0.0,
+        0.0,
+        -0.9520737457275391
+      ],
+      "bands": {
+        "near": {
+          "count": 9592,
+          "median_pixels": 3.8819018244667753,
+          "p95_pixels": 5.310642851378634
+        },
+        "middle": {
+          "count": 9592,
+          "median_pixels": 1.44248682116443,
+          "p95_pixels": 2.5965085386944837
+        },
+        "far": {
+          "count": 9592,
+          "median_pixels": 0.9332149867569044,
+          "p95_pixels": 1.1243529458395682
+        }
+      }
+    },
+    "elevated": {
+      "camera_displacement": [
+        0.0,
+        -1.9041474914550782,
+        1.9041474914550782
+      ],
+      "bands": {
+        "near": {
+          "count": 9592,
+          "median_pixels": 21.958112279542092,
+          "p95_pixels": 24.046941955102206
+        },
+        "middle": {
+          "count": 9592,
+          "median_pixels": 9.456544639816936,
+          "p95_pixels": 10.866554209222285
+        },
+        "far": {
+          "count": 9592,
+          "median_pixels": 1.3637468657782859,
+          "p95_pixels": 1.8193475713316472
+        }
+      }
+    }
+  },
+  "near_median_lateral_displacement_px": 13.738280563472738,
+  "far_median_lateral_displacement_px": 1.4057497257736724,
+  "near_far_displacement_ratio": 9.772920678260634,
+  "newly_revealed_geometry": "REQUIRES_RENDER_OCCLUSION_COMPARISON"
+}

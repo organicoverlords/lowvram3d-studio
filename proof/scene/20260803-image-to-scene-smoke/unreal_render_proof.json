@@ -1,0 +1,42 @@
+{
+  "schema": "unreal_image_to_scene_render_proof_v1",
+  "classification": "UNREAL_VISUAL_RENDER_REJECTED",
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "resolution": [
+    1280,
+    720
+  ],
+  "renders": [
+    {
+      "name": "source",
+      "path": "",
+      "camera_label": "Castlegrounds_Camera_Source"
+    },
+    {
+      "name": "left",
+      "path": "",
+      "camera_label": "Castlegrounds_Camera_Left"
+    },
+    {
+      "name": "right",
+      "path": "",
+      "camera_label": "Castlegrounds_Camera_Right"
+    },
+    {
+      "name": "forward",
+      "path": "",
+      "camera_label": "Castlegrounds_Camera_Forward"
+    },
+    {
+      "name": "elevated",
+      "path": "",
+      "camera_label": "Castlegrounds_Camera_Elevated"
+    },
+    {
+      "name": "wireframe",
+      "path": "",
+      "camera_label": "Castlegrounds_Camera_Source"
+    }
+  ],
+  "source_plane_present": false
+}

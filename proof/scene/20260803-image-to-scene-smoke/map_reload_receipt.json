@@ -1,0 +1,12 @@
+{
+  "schema": "unreal_image_to_scene_reload_v1",
+  "classification": "SCENE_SAVE_RELOAD_PROVEN",
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "map_loaded": true,
+  "missing_labels": [],
+  "mesh_asset_after_reload": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/balanced_010/StaticMeshes/balanced_010.balanced_010",
+  "mesh_present_after_reload": true,
+  "source_camera_fov": 66.50838470458984,
+  "actor_count": 11,
+  "source_plane_present": false
+}

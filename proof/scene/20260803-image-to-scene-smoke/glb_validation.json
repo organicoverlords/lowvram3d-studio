@@ -1,0 +1,27 @@
+{
+  "schema": "scene_selected_glb_validation_v1",
+  "classification": "GLB_VALIDATION_PROVEN",
+  "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.glb",
+  "glb_sha256": "3f9d5343afd86b315b959a2676def636ecef4ff9f8ed8cd2efdf2df660ca7f3d",
+  "ply": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.ply",
+  "glb_bytes": 9566912,
+  "mesh_count": 1,
+  "vertices": 191847,
+  "triangles": 250574,
+  "uv_values": 191847,
+  "finite_geometry": true,
+  "uv_finite_in_bounds": true,
+  "bounds_min": [
+    -179.62083435058594,
+    -134.04359436035156,
+    48.52790069580078
+  ],
+  "bounds_max": [
+    183.95266723632812,
+    28.97603416442871,
+    313.8658752441406
+  ],
+  "material_count": 1,
+  "source_projection": "DIRECT_UV_u=x/(width-1),v=1-y/(height-1)",
+  "unobserved_surface_material": "UNOBSERVED_SYNTHESIZED_NOT_PRESENT_IN_SOURCE_VISIBLE_MESH"
+}

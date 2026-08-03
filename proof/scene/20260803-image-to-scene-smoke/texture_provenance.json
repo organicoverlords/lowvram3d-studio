@@ -1,0 +1,8 @@
+{
+  "schema": "scene_texture_provenance_v1",
+  "directly_observed_surface_area_fraction": 1.0,
+  "synthesized_surface_area_fraction": 0.0,
+  "unresolved_surface_area_fraction": 0.0,
+  "uv_policy": "DIRECT_SOURCE_PIXEL_UV",
+  "occlusion_gate": "EDGE_AWARE_MASK_AND_DEPTH_DISCONTINUITY"
+}

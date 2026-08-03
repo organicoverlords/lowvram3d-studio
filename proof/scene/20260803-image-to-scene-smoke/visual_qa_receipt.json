@@ -1,0 +1,13 @@
+{
+  "schema": "image_to_scene_visual_qa_v1",
+  "classification": "VISUAL_QA_PARTIAL_UNREAL_CAPTURE_BLOCKED",
+  "source_image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
+  "cpu_blender_import": "PROVEN",
+  "cpu_visual_contact_sheet": "PROVEN",
+  "source_facing_geometry": "VISIBLE_WITH_DEPTH",
+  "side_rear_geometry": "FRAGMENTED_2P5D_UNSEEN_REGIONS",
+  "unreal_viewport_capture": "BLOCKED_NO_LIVE_MCP_OR_WORKING_HEADLESS_VIEWPORT",
+  "geometry_regeneration": "NOT_RUN",
+  "texture_regeneration": "NOT_RUN",
+  "contact_sheet": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\contact_sheet.png"
+}

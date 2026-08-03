@@ -1,0 +1,206 @@
+{
+  "schema": "moge2_vits_normal_inference_v1",
+  "classification": "MOGE_INFERENCE_PROVEN",
+  "model": "Ruicheng/moge-2-vits-normal",
+  "package": "moge-2.0.0",
+  "device": "cuda",
+  "dtype": "float16",
+  "input_shape_rgb": [
+    384,
+    512,
+    3
+  ],
+  "load_seconds": 2.728,
+  "inference_seconds": 3.293,
+  "peak_allocated_bytes": 772156416,
+  "peak_reserved_bytes": 1075838976,
+  "output_keys": [
+    "depth",
+    "intrinsics",
+    "mask",
+    "normal",
+    "points"
+  ],
+  "points": {
+    "shape": [
+      384,
+      512,
+      3
+    ],
+    "finite_fraction": 0.9757843017578125,
+    "min": -347.051025390625,
+    "max": Infinity
+  },
+  "depth": {
+    "shape": [
+      384,
+      512
+    ],
+    "finite_fraction": 0.9757843017578125,
+    "min": 48.52790069580078,
+    "max": Infinity,
+    "positive_fraction_on_mask": 1.0
+  },
+  "normal": {
+    "shape": [
+      384,
+      512,
+      3
+    ],
+    "finite_fraction": 1.0,
+    "min": -1.0,
+    "max": 0.98095703125,
+    "unit_fraction": 0.9757843017578125
+  },
+  "mask": {
+    "shape": [
+      384,
+      512
+    ],
+    "coverage": 0.9757843017578125,
+    "valid_points_fraction": 0.9757843017578125
+  },
+  "intrinsics": [
+    [
+      0.762505054473877,
+      0.0,
+      0.5
+    ],
+    [
+      0.0,
+      1.0166734457015991,
+      0.5
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "fov_x_deg": 66.50838470458984,
+  "fov_y_deg": 52.37591552734375,
+  "official_baseline": {
+    "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_official_baseline.glb",
+    "ply": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\moge_official_baseline.ply",
+    "stats": {
+      "threshold": 0.04,
+      "vertices": 191847,
+      "triangles": 340679,
+      "connected_components": 134,
+      "boundary_edges": 10285,
+      "non_manifold_edges": 0,
+      "zero_area_triangles": 0,
+      "triangle_aspect_ratio": {
+        "p50": 1.7200642824172974,
+        "p95": 3.9328365325927734,
+        "max": 28.466514587402344
+      },
+      "discarded_depth_edge_triangles": 41001,
+      "valid_mask_coverage": 0.9757843017578125,
+      "source_valid_vertex_coverage": 1.0,
+      "sky_background_bridges": 0,
+      "tiny_component_count": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ]
+    }
+  },
+  "candidates": {
+    "strict_005": {
+      "threshold": 0.005,
+      "vertices": 191847,
+      "triangles": 182496,
+      "connected_components": 308,
+      "boundary_edges": 17760,
+      "non_manifold_edges": 0,
+      "zero_area_triangles": 0,
+      "triangle_aspect_ratio": {
+        "p50": 1.4681891202926636,
+        "p95": 2.1635231971740723,
+        "max": 4.2212042808532715
+      },
+      "discarded_depth_edge_triangles": 199184,
+      "valid_mask_coverage": 0.9757843017578125,
+      "source_valid_vertex_coverage": 1.0,
+      "sky_background_bridges": 0,
+      "tiny_component_count": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ]
+    },
+    "balanced_010": {
+      "threshold": 0.01,
+      "vertices": 191847,
+      "triangles": 250574,
+      "connected_components": 345,
+      "boundary_edges": 15592,
+      "non_manifold_edges": 0,
+      "zero_area_triangles": 0,
+      "triangle_aspect_ratio": {
+        "p50": 1.5435900688171387,
+        "p95": 2.70723295211792,
+        "max": 7.865081787109375
+      },
+      "discarded_depth_edge_triangles": 131106,
+      "valid_mask_coverage": 0.9757843017578125,
+      "source_valid_vertex_coverage": 1.0,
+      "sky_background_bridges": 0,
+      "tiny_component_count": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ]
+    },
+    "permissive_020": {
+      "threshold": 0.02,
+      "vertices": 191847,
+      "triangles": 305800,
+      "connected_components": 253,
+      "boundary_edges": 13154,
+      "non_manifold_edges": 0,
+      "zero_area_triangles": 0,
+      "triangle_aspect_ratio": {
+        "p50": 1.6397876739501953,
+        "p95": 3.378973960876465,
+        "max": 13.64243221282959
+      },
+      "discarded_depth_edge_triangles": 75880,
+      "valid_mask_coverage": 0.9757843017578125,
+      "source_valid_vertex_coverage": 1.0,
+      "sky_background_bridges": 0,
+      "tiny_component_count": 0,
+      "bounds_min": [
+        -262.6045837402344,
+        -347.051025390625,
+        48.52790069580078
+      ],
+      "bounds_max": [
+        370.67572021484375,
+        28.97603416442871,
+        742.4088745117188
+      ]
+    }
+  },
+  "selected_candidate": "balanced_010",
+  "selection_reason": "balanced threshold is the locked preference and is retained for objective comparison; promotion remains gated by Unreal/parallax QA"
+}

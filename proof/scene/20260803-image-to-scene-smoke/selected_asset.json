@@ -1,0 +1,19 @@
+{
+  "schema": "image_to_scene_selected_source_v2",
+  "classification": "SCENE_TEST_IMAGE_SELECTED",
+  "source": {
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
+    "sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+    "bytes": 4064411,
+    "dimensions": [
+      1448,
+      1086
+    ],
+    "mode": "RGBA",
+    "finite_dimensions": true
+  },
+  "selection_reason": "user-specified image-to-scene smoke input; no 3D model required",
+  "model_asset": {
+    "applicability": "NOT_APPLICABLE_IMAGE_TO_SCENE"
+  }
+}

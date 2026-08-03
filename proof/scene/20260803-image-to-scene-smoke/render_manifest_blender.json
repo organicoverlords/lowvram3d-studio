@@ -1,0 +1,79 @@
+{
+  "schema": "blender_cpu_visual_proof_v1",
+  "classification": "BLENDER_CPU_RENDER_PROVEN",
+  "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.glb",
+  "target": [
+    2.1659164428710938,
+    -181.19688415527344,
+    -52.53377914428711
+  ],
+  "world_bounds_min": [
+    -179.62083435058594,
+    -313.8658752441406,
+    -134.04359436035156
+  ],
+  "world_bounds_max": [
+    183.95266723632812,
+    -48.52790069580078,
+    28.97603416442871
+  ],
+  "mesh_objects": [
+    {
+      "name": "geometry_0",
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        363.573486328125,
+        265.3379821777344,
+        163.01962280273438
+      ]
+    }
+  ],
+  "camera_fov_deg": 66.5083847,
+  "visual_camera_mode": "EXTERNALIZED_FOR_CPU_VISUAL_QA_NOT_UNREAL_SOURCE_CAMERA",
+  "views": [
+    {
+      "name": "source",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_source.png"
+    },
+    {
+      "name": "left",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_left.png"
+    },
+    {
+      "name": "right",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_right.png"
+    },
+    {
+      "name": "forward",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_forward.png"
+    },
+    {
+      "name": "elevated",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_elevated.png"
+    },
+    {
+      "name": "rear",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_rear.png"
+    },
+    {
+      "name": "debug_negative_far",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_debug_negative_far.png"
+    },
+    {
+      "name": "debug_positive_near",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_debug_positive_near.png"
+    },
+    {
+      "name": "debug_source_plus_z",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_debug_source_plus_z.png"
+    },
+    {
+      "name": "debug_source_minus_z",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\blender_debug_source_minus_z.png"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "schema": "unreal_image_to_scene_build_v1",
+  "classification": "SCENE_BUILD_PROVEN",
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "mesh_actor": "StaticMeshActor_1",
+  "mesh_asset": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/balanced_010/StaticMeshes/balanced_010.balanced_010",
+  "camera_fov_horizontal_deg": 66.5083847,
+  "cameras": {
+    "source": "CameraActor_5",
+    "left": "CameraActor_6",
+    "right": "CameraActor_7",
+    "forward": "CameraActor_8",
+    "elevated": "CameraActor_9"
+  },
+  "lighting": {
+    "sun": "DirectionalLight_1",
+    "sky_light": "SkyLight_1",
+    "sky_atmosphere": "SkyAtmosphere_1",
+    "fog": "ExponentialHeightFog_1",
+    "post_process": "PostProcessVolume_1"
+  },
+  "source_plane_present": false,
+  "representation": "SOURCE_VISIBLE_EDGE_AWARE_2P5D_MESH",
+  "camera_convention": "MOGE_POINT_MAP_PLUS_Z_AWAY_FROM_SOURCE_CAMERA",
+  "camera_target_direction": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "collision": "NOT_PROVEN_NO_GROUND_PLANE_CONFIRMED",
+  "spatial_depth_ranges": 3,
+  "renders": [
+    {
+      "name": "source",
+      "path": "",
+      "camera": "CameraActor_5"
+    },
+    {
+      "name": "left",
+      "path": "",
+      "camera": "CameraActor_6"
+    },
+    {
+      "name": "right",
+      "path": "",
+      "camera": "CameraActor_7"
+    },
+    {
+      "name": "forward",
+      "path": "",
+      "camera": "CameraActor_8"
+    },
+    {
+      "name": "elevated",
+      "path": "",
+      "camera": "CameraActor_9"
+    },
+    {
+      "name": "wireframe",
+      "path": "",
+      "camera": "CameraActor_5"
+    },
+    {
+      "name": "depth_diagnostic",
+      "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\depth_vis.png",
+      "camera": "CPU_MoGe_depth_map"
+    }
+  ]
+}

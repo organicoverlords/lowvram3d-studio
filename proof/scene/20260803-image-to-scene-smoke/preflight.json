@@ -1,0 +1,68 @@
+{
+  "schema": "image_to_scene_preflight_v2",
+  "classification": "SCENE_PREFLIGHT_PROVEN",
+  "repository": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803",
+  "branch": "agent/scene-pipeline-smoke-20260803",
+  "base_sha": "ca9f1cdcb6713ba19acc054dc98aa399a5d08042",
+  "current_head": "ca9f1cdcb6713ba19acc054dc98aa399a5d08042",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "project_exists": true,
+  "windows": {
+    "version": "Windows-10-10.0.26200-SP0",
+    "release": "10",
+    "version_string": "10.0.26200"
+  },
+  "unreal": {
+    "version": "5.8",
+    "editor": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor.exe",
+    "editor_cmd": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe",
+    "editor_exists": true,
+    "editor_cmd_exists": true,
+    "automation_route": "UnrealEditor-Cmd_pythonscript_commandlet"
+  },
+  "plugins_from_uproject": {
+    "PythonScriptPlugin": true,
+    "EditorScriptingUtilities": true,
+    "PCG": true,
+    "ProceduralMeshComponent": true,
+    "UE_MCP_Bridge": true
+  },
+  "automation": {
+    "python_editor_script_plugin": "ENABLED_IN_UPROJECT",
+    "editor_scripting_utilities": "ENABLED_IN_UPROJECT",
+    "mcp_existing": "PRESENT_BUT_NOT_PRIMARY_ROUTE",
+    "previous_missing_console_function": "NOT_REQUIRED"
+  },
+  "processes": {
+    "unreal_editor_running_at_preflight": false
+  },
+  "resources": {
+    "free_disk_bytes_c": 15218831360,
+    "ram_gb_observed": 15.34,
+    "pagefile": "C:\\pagefile.sys"
+  },
+  "gpu": {
+    "available": true,
+    "stdout": "NVIDIA GeForce GTX 1660 SUPER, 976, 6144",
+    "stderr": ""
+  },
+  "image_to_scene_scope": {
+    "source_image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
+    "source_receipt": {
+      "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
+      "sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+      "bytes": 4064411,
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "mode": "RGBA",
+      "finite_dimensions": true
+    },
+    "source_sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+    "model_required": false,
+    "mode": "IMAGE_TO_SCENE_SOURCE_VISIBLE_2P5D_MESH",
+    "external_proof_root": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds",
+    "repository_proof_root": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\proof\\scene\\20260803-image-to-scene-smoke"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "moge_environment_v1",
+  "python": "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\image-world-moge\\Scripts\\python.exe",
+  "load_only": "PROVEN",
+  "model": "Ruicheng/moge-2-vits-normal",
+  "torch": "2.8.0+cu128",
+  "cuda_available": true,
+  "device": "cuda",
+  "package": "moge-2.0.0",
+  "checkpoint_cached": true,
+  "vitb_checkpoint_available": false,
+  "inference_route": "moge-2-vits-normal_only"
+}

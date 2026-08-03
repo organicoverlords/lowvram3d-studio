@@ -1,0 +1,43 @@
+{
+  "schema": "scene_source_normalization_v1",
+  "original": {
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
+    "sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+    "bytes": 4064411,
+    "dimensions": [
+      1448,
+      1086
+    ],
+    "mode": "RGBA",
+    "finite_dimensions": true
+  },
+  "normalized": {
+    "path": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\source_rgb.png",
+    "sha256": "c5c5589717bd744f1d486566433fe11d018e0c4f063e505c69bf971155e66cf2",
+    "bytes": 3099745,
+    "dimensions": [
+      1448,
+      1086
+    ],
+    "mode": "RGB",
+    "finite_dimensions": true
+  },
+  "operations": [
+    "EXIF_ORIENTATION_APPLIED",
+    "CONVERTED_TO_RGB",
+    "ALPHA_REMOVED",
+    "PNG_METADATA_REWRITTEN"
+  ],
+  "pillow_reopen": true,
+  "opencv_reopen": {
+    "valid": true,
+    "shape": [
+      1086,
+      1448,
+      3
+    ],
+    "dtype": "uint8"
+  },
+  "original_alpha_present": true,
+  "original_unchanged_hash_recorded": true
+}

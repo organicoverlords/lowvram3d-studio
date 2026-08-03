@@ -1,0 +1,12 @@
+{
+  "schema": "moge_selected_mesh_v1",
+  "candidate": "balanced_010",
+  "glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.glb",
+  "ply": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\balanced_010.ply",
+  "classification": "SELECTED_MESH_NOT_PROMOTED_UNREAL_VISUAL_QA_BLOCKED",
+  "vertices": 191847,
+  "triangles": 250574,
+  "threshold": 0.01,
+  "glb_sha256": "3f9d5343afd86b315b959a2676def636ecef4ff9f8ed8cd2efdf2df660ca7f3d",
+  "selection_gate": "BALANCED_PREFERENCE_PENDING_UNREAL_SOURCE_AND_OFFSET_RENDER_QA"
+}
