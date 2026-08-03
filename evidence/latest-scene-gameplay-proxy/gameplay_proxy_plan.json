@@ -1,0 +1,74 @@
+{
+  "actor_center_cm": [
+    1000.0,
+    2800.0,
+    1270.158827411077
+  ],
+  "actor_center_m": [
+    10.0,
+    28.0,
+    12.70158827411077
+  ],
+  "asset_id": "castle_proxy",
+  "authoritative_camera": {
+    "horizontal_fov_deg": 66.50838470458984,
+    "id": "source",
+    "look_at_m": [
+      -6.798699363224801e-17,
+      -1.0,
+      -5.551115123125783e-17
+    ],
+    "position_m": [
+      -1.4999749120901782e-16,
+      2.7755575615628914e-17,
+      -2.220446049250313e-16
+    ],
+    "source_aspect": 1.3333333333333333
+  },
+  "base_anchor_m": [
+    10.0,
+    28.0,
+    5.0
+  ],
+  "classification": "PROVEN",
+  "collision": "blocking/simple",
+  "depth_band_id": "castle",
+  "deterministic_seed": 20260803,
+  "dimensions_cm": {
+    "depth_cm": 725.0,
+    "height_cm": 1540.317654822154,
+    "width_cm": 1293.10617935687
+  },
+  "dimensions_m": {
+    "depth_m": 7.25,
+    "height_m": 15.403176548221541,
+    "width_m": 12.931061793568698
+  },
+  "formula": "depth_mid=(near_m+far_m)/2; frame_width=2*depth_mid*tan(horizontal_fov/2); frame_height=frame_width/source_aspect; width=bbox_width*frame_width; height=bbox_height*frame_height; depth=clamp(depth_mid*0.25,2,12)",
+  "landmark_id": "castle_base",
+  "navigation": "walkable intent",
+  "primitive_type": "engine_cube",
+  "promotion": false,
+  "region_id": "castle_core",
+  "rotation_deg_xyz": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "schema_version": "gameplay_proxy_plan_v1",
+  "source_mesh_collision": false,
+  "source_scene_spec_path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-scene-hybrid\\authoritative_hybrid_scene_spec.json",
+  "source_scene_spec_sha256": "83eda7f2dc4240a24622606834a7fe3ee1a38af7a43ef7fdbefaab99764fc73c",
+  "tags": [
+    "gameplay_proxy",
+    "replaceable",
+    "unpromoted",
+    "scene_spec_generated",
+    "castle_proxy"
+  ],
+  "unreal_unit_conversion": {
+    "cm_per_m": 100.0,
+    "source_units": "meters",
+    "unreal_units": "centimetres"
+  }
+}

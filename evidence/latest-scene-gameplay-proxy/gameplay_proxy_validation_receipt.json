@@ -1,0 +1,29 @@
+{
+  "blocked_at": "MCP preflight initialize for relevant ObjectTools description",
+  "classification": "BLOCKED",
+  "gates": {
+    "EXISTING_MCP_TOOLSETS_ENUMERATED": "PROVEN",
+    "GAMEPLAY_PROXY_COLLISION_PRESENT": "NOT_PROVEN",
+    "GAMEPLAY_PROXY_CREATED": "NOT_PROVEN",
+    "GAMEPLAY_PROXY_NAVIGATION_INTENT_WALKABLE": "PROVEN_IN_PLAN_ONLY",
+    "GAMEPLAY_PROXY_NOT_PROMOTED": "PROVEN_IN_PLAN",
+    "GAMEPLAY_PROXY_PERSISTENCE_PROVEN": "NOT_PROVEN",
+    "GAMEPLAY_PROXY_PLAN_DERIVED_FROM_SCENE_SPEC": "PROVEN",
+    "GAMEPLAY_PROXY_PLAN_PROVEN": "PROVEN",
+    "HYBRID_MAP_CREATED": "BLOCKED_EDITOR_TERMINATED_BEFORE_MUTATION",
+    "MAP_SAVE_RELOAD_PROVEN": "NOT_PROVEN",
+    "MCP_CONNECTION_SURVIVED_MUTATIONS": "NOT_APPLICABLE_NO_MUTATION_STARTED",
+    "NO_COLLATERAL_CHANGE_PROVEN": "PROVEN_NO_MUTATION_CALLS",
+    "SOURCE_CAMERA_CONTRACT_PRESERVED": "PROVEN_BY_READ_ONLY_AUDIT",
+    "SOURCE_MAP_UNMODIFIED": "PROVEN",
+    "SOURCE_MESH_REFERENCE_PRESERVED": "PROVEN_BY_READ_ONLY_AUDIT",
+    "SOURCE_MESH_REMAINS_VISUAL_ONLY": "PROVEN_BY_SCENE_SPEC",
+    "UNREAL_MCP_CONNECTION_PROVEN": "PROVEN_BEFORE_FAILURE"
+  },
+  "last_successful_tool": "editor_toolset.toolsets.scene.SceneTools.get_current_level",
+  "overall_scene_classification": "IMAGE_TO_SCENE_PARTIAL",
+  "planned_copy_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "proxy_label": "SP_GameplayProxy_Castle_V1",
+  "schema_version": "gameplay_proxy_validation_receipt_v1",
+  "source_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke"
+}

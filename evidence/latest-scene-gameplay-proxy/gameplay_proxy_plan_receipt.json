@@ -1,0 +1,37 @@
+{
+  "authoritative_camera_fov_deg": 66.50838470458984,
+  "classification": "PROVEN",
+  "depth_mid_m": 29.0,
+  "derived_from_scene_spec": true,
+  "formula": "depth_mid=(near_m+far_m)/2; frame_width=2*depth_mid*tan(horizontal_fov/2); frame_height=frame_width/source_aspect; width=bbox_width*frame_width; height=bbox_height*frame_height; depth=clamp(depth_mid*0.25,2,12)",
+  "navigation_proof": "intent_only_not_full_navigation_proof",
+  "plan_path": "evidence/latest-scene-gameplay-proxy/gameplay_proxy_plan.json",
+  "promotion": false,
+  "scene_spec_validation": {
+    "classification": "PROVEN",
+    "counts": {
+      "assets": 4,
+      "camera_views": 3,
+      "depth_bands": 4,
+      "pcg_layers": 4,
+      "populations": 1,
+      "regions": 5,
+      "splines": 2
+    },
+    "error_count": 0,
+    "errors": [],
+    "scene_id": "castlegrounds_hybrid_authoritative_v1",
+    "scene_spec_valid": true,
+    "schema_version": "scene_spec_v1",
+    "warning_count": 0,
+    "warnings": []
+  },
+  "schema_version": "gameplay_proxy_plan_receipt_v1",
+  "selected_asset": "castle_proxy",
+  "selected_depth_band": "castle",
+  "selected_landmark": "castle_base",
+  "selected_region": "castle_core",
+  "source_aspect": 1.3333333333333333,
+  "source_mesh_requested_as_collision": false,
+  "source_scene_spec_sha256": "83eda7f2dc4240a24622606834a7fe3ee1a38af7a43ef7fdbefaab99764fc73c"
+}

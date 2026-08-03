@@ -1,0 +1,44 @@
+{
+  "branch": "agent/scene-pipeline-smoke-20260803",
+  "classification": "BLOCKED_EDITOR_TERMINATED_BEFORE_MUTATION",
+  "editor_alive_after_failure": false,
+  "editor_pid_before_failure": 10060,
+  "editor_project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "failed_mcp_request": {
+    "error": "connection refused",
+    "method": "initialize",
+    "params": {
+      "capabilities": {},
+      "clientInfo": {
+        "name": "scene-preflight",
+        "version": "1"
+      },
+      "protocolVersion": "2025-11-25"
+    }
+  },
+  "gpu_work_requested": false,
+  "hybrid_map_created": false,
+  "last_successful_mcp_tool": {
+    "arguments": {},
+    "result": "/Game/AgentProof/MCP/L_MCP_Diagnostic",
+    "tool": "get_current_level",
+    "toolset": "editor_toolset.toolsets.scene.SceneTools"
+  },
+  "log_evidence": "No new Unreal project log or crash directory was created for PID 10060; existing Saved/Logs contains only AutoSDKInfo metadata.",
+  "mcp_endpoint": "http://127.0.0.1:8000/mcp",
+  "mutation_started": false,
+  "next_action": "USER_REVIEW_REQUIRED_RELAUNCH_EDITOR",
+  "overall_scene_classification": "IMAGE_TO_SCENE_PARTIAL",
+  "pcg_work_started": false,
+  "planner_commit_base": "f08f3f61a961fefacc2a4fb7ece4b435ec273d28",
+  "proxy_actor_created": false,
+  "reload_called": false,
+  "repo_path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803",
+  "save_called": false,
+  "schema_version": "gameplay_proxy_execution_receipt_v1",
+  "source_camera_modified": false,
+  "source_map_modified": false,
+  "source_mesh_modified": false,
+  "starting_commit": "d15c3b7f8ac2cf85bab1325714ff0619056b812d",
+  "tests": "11 passed: test_scene_gameplay_proxy.py and test_scene_hybrid.py"
+}
