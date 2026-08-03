@@ -70,6 +70,27 @@ def _tensor_record(name: str, tensor: Any) -> dict[str, Any]:
     }
 
 
+def _finite_stats(tensor: Any) -> dict[str, Any]:
+    """Diagnostic-only value scan for cache-contract failures."""
+    finite = torch_isfinite = None
+    try:
+        import torch
+        finite_mask = torch.isfinite(tensor)
+        finite = bool(finite_mask.all())
+        record: dict[str, Any] = {
+            "finite": finite,
+            "finite_count": int(finite_mask.sum().item()),
+            "nan_count": int(torch.isnan(tensor).sum().item()),
+            "inf_count": int(torch.isinf(tensor).sum().item()),
+        }
+        if tensor.numel():
+            record["min"] = float(torch.nan_to_num(tensor, nan=0.0, posinf=0.0, neginf=0.0).min().item())
+            record["max"] = float(torch.nan_to_num(tensor, nan=0.0, posinf=0.0, neginf=0.0).max().item())
+        return record
+    except BaseException as exc:
+        return {"finite": finite, "stats_error": f"{type(exc).__name__}: {exc}"}
+
+
 class IncrementalTrace:
     """Append-and-flush evidence so a destroyed CUDA context leaves a trace."""
 
@@ -321,8 +342,10 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
                 if name not in ownership["entries"]:
                     raise RuntimeError(f"REFERENCE_CACHE_KEY_MISSING:{name}")
                 value = ownership["entries"][name]["tensor"]
-                if value.shape[0] != 1 or value.dtype != torch.float16 or value.device != target or not bool(torch.isfinite(value).all()):
-                    raise RuntimeError(f"REFERENCE_CACHE_CONTRACT_INVALID:{name}:{_tensor_record(name, value)}")
+                contract = {**_tensor_record(name, value), **_finite_stats(value)}
+                receipt.setdefault("reference_cache_contract_checks", []).append(contract)
+                if value.shape[0] != 1 or value.dtype != torch.float16 or value.device != target or not contract.get("finite", False):
+                    raise RuntimeError(f"REFERENCE_CACHE_CONTRACT_INVALID:{name}:{contract}")
                 cache_records.append(value)
             if sorted(ownership["actual_keys"]) != expected:
                 raise RuntimeError(f"REFERENCE_CACHE_KEYSET_MISMATCH:{ownership['actual_keys']}:{expected}")
