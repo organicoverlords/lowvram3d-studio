@@ -1,0 +1,50 @@
+name: Beggars self-hosted runner status probe
+run-name: Probe beggars runner ${{ github.run_id }}
+
+on:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - .github/workflows/beggars-runner-status-probe.yml
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  probe-runner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout dedicated branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/blender-beggars-scene-20260804
+          fetch-depth: 0
+
+      - name: Record Windows runner state
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          response="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runners?per_page=100")"
+          runner="$(printf '%s' "$response" | jq -c '[.runners[] | select(([.labels[].name] | index("self-hosted")) and ([.labels[].name] | index("Windows")) and ([.labels[].name] | index("X64")))] | first // empty')"
+          if [[ -z "$runner" ]]; then
+            runner='null'
+          fi
+          evidence='evidence/latest-beggars-scene-v2'
+          mkdir -p "$evidence"
+          printf '%s' "$runner" | jq --arg observed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{
+            classification: (if . == null then "RUNNER_NOT_REGISTERED" elif .status == "online" then "RUNNER_ONLINE" else "RUNNER_OFFLINE" end),
+            runner: ., 
+            observed_at: $observed_at
+          }' > "$evidence/runner-status.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$evidence/runner-status.json"
+          git commit -m "evidence(scene): record beggars runner status ${GITHUB_RUN_ID}"
+          git pull --rebase origin agent/blender-beggars-scene-20260804
+          git push origin HEAD:agent/blender-beggars-scene-20260804
