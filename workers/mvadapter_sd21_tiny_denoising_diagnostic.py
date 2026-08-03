@@ -34,6 +34,10 @@ class FirstReferenceNonFinite(RuntimeError):
     pass
 
 
+class ReferenceOnlyComplete(RuntimeError):
+    pass
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -306,7 +310,15 @@ def _cache_ownership(pipe: Any, cache: dict[str, Any], expected: list[str]) -> d
     return {"expected_keys": sorted(expected), "actual_keys": sorted(entries), "missing_keys": missing, "unexpected_keys": unexpected, "entries": entries}
 
 
-def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, resolution: int) -> dict[str, Any]:
+def run_probe(
+    config_path: Path,
+    output_dir: Path,
+    backend: str,
+    offload: str,
+    resolution: int,
+    reference_unet_dtype: str = "fp16",
+    reference_only: bool = False,
+) -> dict[str, Any]:
     if resolution not in (64, 96) or resolution % 8:
         raise ValueError("DIAGNOSTIC_RESOLUTION_MUST_BE_64_OR_96")
     if output_dir.exists() and any(output_dir.iterdir()):
@@ -317,6 +329,8 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
         "schema": "lowvram3d_mvadapter_tiny_real_denoising_probe_v1",
         "config": str(config_path), "backend_requested": backend, "offload": offload,
         "resolution": resolution, "views": 6, "steps_requested": 0,
+        "reference_unet_dtype": reference_unet_dtype,
+        "reference_only": reference_only,
         "vae_decode": False, "output_images": 0, "production_manifest_updated": False,
         "gpu_sequence_consumed": False, "started": time.time(),
     }
@@ -349,6 +363,11 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
             inputs["config"]["base_model"], adapter_state, Path(inputs["config"]["adapter"]).name, num_views=6, dtype=torch.float16
         )
         receipt["adapter_report"] = adapter_report
+        if reference_unet_dtype not in {"fp16", "fp32"}:
+            raise ValueError(f"REFERENCE_UNET_DTYPE_INVALID:{reference_unet_dtype}")
+        reference_dtype = torch.float32 if reference_unet_dtype == "fp32" else torch.float16
+        if reference_dtype == torch.float32:
+            pipe.unet.to(dtype=torch.float32)
         receipt["component_inventory_before_offload"] = component_inventory(pipe)
         receipt["dtype_inventory_before_offload"] = component_dtype_inventory(pipe)
         receipt["rowcol_dtype_inventory"] = rowcol_dtype_inventory(pipe, torch.float16)
@@ -388,9 +407,11 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
         originals = _install_sdpa_trace(torch, trace, target)
         with torch.no_grad():
             prompt_embeds, _ = pipe.encode_prompt(PROMPT, target, 1, False, None)
-            prompt_embeds = prompt_embeds.to(target, dtype=torch.float16)
+            prompt_embeds = prompt_embeds.to(target, dtype=reference_dtype)
             trace.write("prompt_ready", tensor=_tensor_record("prompt_embeddings", prompt_embeds), memory=_memory(torch))
             trace.write("reference_inputs_ready", latents=_tensor_record("reference_latents", reference_latents), memory=_memory(torch))
+            reference_latents_for_unet = reference_latents.to(device=target, dtype=reference_dtype)
+            trace.write("reference_latents_cast_for_unet", tensor=_tensor_record("reference_latents_for_unet", reference_latents_for_unet), memory=_memory(torch))
             cache_sink: dict[str, Any] = {}
 
             class ReferenceCache(dict[str, Any]):
@@ -405,9 +426,11 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
             ref_cache = ReferenceCache()
             reference_numeric_handles = _install_reference_numeric_hooks(torch, pipe, trace)
             trace.write("reference_unet_started", use_mv=False, use_ref=False, cache_hidden_states=True, memory=_memory(torch))
-            pipe.unet(reference_latents, torch.zeros((), device=target, dtype=torch.long), encoder_hidden_states=prompt_embeds, cross_attention_kwargs={"cache_hidden_states": ref_cache, "use_mv": False, "use_ref": False, "num_views": 6}, return_dict=False)
+            pipe.unet(reference_latents_for_unet, torch.zeros((), device=target, dtype=torch.long), encoder_hidden_states=prompt_embeds, cross_attention_kwargs={"cache_hidden_states": ref_cache, "use_mv": False, "use_ref": False, "num_views": 6}, return_dict=False)
             torch.cuda.synchronize(target)
             trace.write("reference_unet_completed", memory=_memory(torch), cache_entries=len(cache_sink))
+            if reference_only:
+                raise ReferenceOnlyComplete()
             expected = sorted(name for name, proc in pipe.unet.attn_processors.items() if type(proc).__name__ == ROWCOL_NAME and getattr(proc, "use_ref", False))
             ownership = _cache_ownership(pipe, cache_sink, expected)
             receipt["reference_cache_ownership"] = {k: v for k, v in ownership.items() if k != "entries"}
@@ -455,11 +478,16 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
         receipt["status"] = "PROVEN"
         receipt["classification"] = "TINY_REAL_DENOISING_FORWARD=PROVEN"
     except BaseException as exc:
-        receipt["status"] = "REJECTED"
-        receipt["classification"] = f"{type(exc).__name__}: {exc}"
-        receipt["error"] = receipt["classification"]
-        trace.write("probe_failed", error=receipt["classification"], memory=_safe_memory(__import__("torch")) if "torch" in sys.modules and getattr(__import__("torch"), "cuda", None) and __import__("torch").cuda.is_available() else {})
-        pending_exc = exc
+        if isinstance(exc, ReferenceOnlyComplete):
+            receipt["status"] = "PROVEN"
+            receipt["classification"] = "REFERENCE_UNET_FORWARD_COMPLETED"
+            trace.write("reference_only_completed", memory=_safe_memory(__import__("torch")))
+        else:
+            receipt["status"] = "REJECTED"
+            receipt["classification"] = f"{type(exc).__name__}: {exc}"
+            receipt["error"] = receipt["classification"]
+            trace.write("probe_failed", error=receipt["classification"], memory=_safe_memory(__import__("torch")) if "torch" in sys.modules and getattr(__import__("torch"), "cuda", None) and __import__("torch").cuda.is_available() else {})
+            pending_exc = exc
     finally:
         if originals is not None:
             try:
@@ -504,6 +532,8 @@ def main() -> int:
     parser.add_argument("--backend", choices=("math", "auto"), required=True)
     parser.add_argument("--offload", choices=("sequential", "none"), default="sequential")
     parser.add_argument("--resolution", type=int, default=64)
+    parser.add_argument("--reference-unet-dtype", choices=("fp16", "fp32"), default="fp16")
+    parser.add_argument("--reference-only", action="store_true")
     args = parser.parse_args()
     try:
         import torch
@@ -512,7 +542,15 @@ def main() -> int:
             from torch.nn.attention import SDPBackend, sdpa_kernel
             context = sdpa_kernel(SDPBackend.MATH)
         with context:
-            result = run_probe(args.config, args.output_dir, args.backend, args.offload, args.resolution)
+            result = run_probe(
+                args.config,
+                args.output_dir,
+                args.backend,
+                args.offload,
+                args.resolution,
+                args.reference_unet_dtype,
+                args.reference_only,
+            )
         print(json.dumps({"status": result["status"], "classification": result["classification"], "output_dir": str(args.output_dir)}))
         return 0
     except BaseException as exc:
