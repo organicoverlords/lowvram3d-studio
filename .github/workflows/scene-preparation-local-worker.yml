@@ -1,0 +1,195 @@
+name: Scene preparation on local PC
+run-name: Scene preparation proof ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/scene-pipeline-smoke-20260803
+    paths:
+      - .github/workflows/scene-preparation-local-worker.yml
+      - configs/scene/castlegrounds_source_mesh_v2.json
+      - src/lowvram3d/scene_spec.py
+      - src/lowvram3d/scene_spec_legacy.py
+      - src/lowvram3d/scene_preparation.py
+      - blender/prepare_scene_from_spec.py
+      - tests/test_scene_spec.py
+      - tests/test_scene_spec_legacy.py
+      - tests/test_scene_preparation.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scene-preparation-local-worker
+  cancel-in-progress: true
+
+jobs:
+  prepare-scene:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact scene branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify trusted ref and clean checkout
+        shell: powershell
+        run: |
+          if ("${{ github.ref }}" -ne "refs/heads/agent/scene-pipeline-smoke-20260803") {
+            throw "Ref is not the dedicated scene branch"
+          }
+          if (@(git status --short).Count -gt 0) { throw "Checkout is dirty before validation" }
+          "WORKER_HEAD=$(git rev-parse HEAD)" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Resolve CPU Python and Blender
+        shell: powershell
+        run: |
+          $pythonCandidates = @(
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $python = $null
+          foreach ($candidate in $pythonCandidates) {
+            & $candidate -c "import sys; assert sys.version_info >= (3, 11); print(sys.executable)" 2>$null
+            if ($LASTEXITCODE -eq 0) { $python = $candidate; break }
+          }
+          if (-not $python) { throw "No Python 3.11+ executable found" }
+
+          $blenderCandidates = @(
+            "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe",
+            (Get-Command blender.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $blender = $blenderCandidates | Select-Object -First 1
+          if (-not $blender) { throw "Blender executable not found" }
+
+          "SCENE_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "SCENE_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "SCENE_OUTPUT=C:\AI\ScenePipelineSmoke\20260803\castlegrounds\scene_spec_v1" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "Scene Python: $python"
+          Write-Host "Scene Blender: $blender"
+
+      - name: Compile and test preparation sources
+        shell: powershell
+        run: |
+          & $env:SCENE_PYTHON -m py_compile `
+            src\lowvram3d\scene_spec.py `
+            src\lowvram3d\scene_spec_legacy.py `
+            src\lowvram3d\scene_preparation.py `
+            blender\prepare_scene_from_spec.py `
+            tests\test_scene_spec.py `
+            tests\test_scene_spec_legacy.py `
+            tests\test_scene_preparation.py
+          if ($LASTEXITCODE -ne 0) { throw "Scene preparation compile failed" }
+          $env:PYTHONPATH = "$PWD\src;$PWD"
+          & $env:SCENE_PYTHON -m pip install --disable-pip-version-check pytest
+          if ($LASTEXITCODE -ne 0) { throw "Could not ensure pytest is installed" }
+          & $env:SCENE_PYTHON -m pytest `
+            tests\test_scene_spec.py `
+            tests\test_scene_spec_legacy.py `
+            tests\test_scene_preparation.py -q
+          if ($LASTEXITCODE -ne 0) { throw "Scene preparation tests failed" }
+
+      - name: Generate migrated spec and preparation plan
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\src;$PWD"
+          $evidence = Join-Path $PWD "evidence\latest-scene-preparation-local-worker"
+          if (Test-Path -LiteralPath $evidence) { Remove-Item -LiteralPath $evidence -Recurse -Force }
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          & $env:SCENE_PYTHON -m lowvram3d.scene_spec_legacy `
+            --interpretation proof\scene\20260803-image-to-scene-smoke\scene_interpretation.json `
+            --geometry proof\scene\20260803-image-to-scene-smoke\geometry_spec.json `
+            --selected-asset proof\scene\20260803-image-to-scene-smoke\selected_asset.json `
+            --source-mesh configs\scene\castlegrounds_source_mesh_v2.json `
+            --output (Join-Path $evidence "migrated_scene_spec.json") `
+            --receipt (Join-Path $evidence "legacy_migration_receipt.json")
+          if ($LASTEXITCODE -ne 0) { throw "Legacy SceneSpec migration failed" }
+          & $env:SCENE_PYTHON -m lowvram3d.scene_preparation `
+            --scene-spec (Join-Path $evidence "migrated_scene_spec.json") `
+            --output (Join-Path $evidence "scene_preparation_plan.json")
+          if ($LASTEXITCODE -ne 0) { throw "Scene preparation plan rejected" }
+
+      - name: Run headless Blender preparation
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\src;$PWD\blender;$PWD"
+          $evidence = Join-Path $PWD "evidence\latest-scene-preparation-local-worker"
+          New-Item -ItemType Directory -Path $env:SCENE_OUTPUT -Force | Out-Null
+          & $env:SCENE_BLENDER -b --factory-startup `
+            --python blender\prepare_scene_from_spec.py -- `
+            --scene-spec (Join-Path $evidence "migrated_scene_spec.json") `
+            --output-dir $env:SCENE_OUTPUT `
+            --report (Join-Path $evidence "blender_scene_preparation_receipt.json")
+          if ($LASTEXITCODE -ne 0) { throw "Headless Blender preparation failed" }
+
+      - name: Verify Blender preparation receipt
+        shell: powershell
+        run: |
+          $receiptPath = Join-Path $PWD "evidence\latest-scene-preparation-local-worker\blender_scene_preparation_receipt.json"
+          if (-not (Test-Path -LiteralPath $receiptPath)) { throw "Blender preparation wrote no receipt" }
+          $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
+          if ($receipt.classification -ne "PROVEN") { throw "Blender preparation rejected: $($receipt.errors | ConvertTo-Json -Compress)" }
+          $required = @(
+            "SCENE_VISUAL_SHELL",
+            "SCENE_EDITABLE",
+            "SCENE_GAMEPLAY_PROXY",
+            "SCENE_PROCEDURAL_MODULES",
+            "SCENE_REFERENCE_ONLY"
+          )
+          foreach ($name in $required) {
+            if ($name -notin $receipt.collections) { throw "Missing required collection $name" }
+          }
+          $source = @($receipt.assets | Where-Object { $_.asset_id -eq "source_mesh_v2" })
+          if ($source.Count -ne 1) { throw "Expected one source_mesh_v2 receipt" }
+          if (-not $source[0].triangle_contract_preserved) { throw "Source triangle contract changed" }
+          if ($source[0].mesh_edit_operations -ne 0) { throw "Unexpected mesh edit operation" }
+          if (-not $receipt.placeholder_assets_are_not_promoted) { throw "Placeholders were promoted" }
+          if ($receipt.mesh_geometry_generated) { throw "Unexpected mesh geometry generation" }
+          Write-Host ($receipt | ConvertTo-Json -Depth 10)
+
+      - name: Publish compact preparation receipts
+        if: always()
+        shell: powershell
+        run: |
+          $evidence = Join-Path $PWD "evidence\latest-scene-preparation-local-worker"
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          [ordered]@{
+            classification = if ("${{ job.status }}" -eq "success") { "PROVEN" } else { "REJECTED" }
+            workflow_run_id = "${{ github.run_id }}"
+            workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            worker_head = $env:WORKER_HEAD
+            gpu_work_started = $false
+            neural_work_started = $false
+            unreal_work_started = $false
+            scope = "SCENE_PREPARATION_HEADLESS_BLENDER_CPU_ONLY"
+            output_root = $env:SCENE_OUTPUT
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json | Set-Content (Join-Path $evidence "workflow_receipt.json") -Encoding utf8
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- evidence/latest-scene-preparation-local-worker
+          if (@(git status --porcelain -- evidence/latest-scene-preparation-local-worker).Count -gt 0) {
+            git commit -m "evidence(scene): record Blender preparation run ${{ github.run_id }}"
+            if ($LASTEXITCODE -ne 0) { throw "Could not commit preparation evidence" }
+            git push origin HEAD:agent/scene-pipeline-smoke-20260803
+            if ($LASTEXITCODE -ne 0) { throw "Could not push preparation evidence" }
+          }
+
+      - name: Upload preparation evidence and blend
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scene-preparation-proof-${{ github.run_id }}
+          path: |
+            evidence/latest-scene-preparation-local-worker/*.json
+            C:\AI\ScenePipelineSmoke\20260803\castlegrounds\scene_spec_v1\*.blend
+          if-no-files-found: warn
+          retention-days: 14
