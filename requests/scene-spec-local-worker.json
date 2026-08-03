@@ -1,0 +1,17 @@
+{
+  "schema_version": "scene_spec_worker_request_v1",
+  "request_id": "scene-spec-20260803T2345EEST-80abddb",
+  "repository": "organicoverlords/lowvram3d-studio",
+  "scene_branch": "agent/scene-pipeline-smoke-20260803",
+  "scene_head": "80abddb17d060a6cb1504c4ce7b3f6d244461d21",
+  "mode": "SCENE_SPEC_CPU_ONLY",
+  "requested_checks": [
+    "python_compile",
+    "json_parse",
+    "scene_spec_unit_tests",
+    "positive_fixture_validation",
+    "negative_fail_closed_probes"
+  ],
+  "gpu_work_authorized": false,
+  "notes": "Do not rerun MoGe, Blender, Unreal, or any neural workload. Validate only the reusable SceneSpec contract and publish compact receipts if the scene branch is unchanged."
+}
