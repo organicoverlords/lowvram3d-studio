@@ -99,7 +99,7 @@ import shutil
 import subprocess
 import sys
 '@
-$importPatched = [regex]::Replace($content, $importPattern, $importReplacement, 1)
+$importPatched = [regex]::Replace($content, $importPattern, ($importReplacement + "`n"), 1)
 if ($importPatched -eq $content) {
     if ($content.Contains('import subprocess') -and $content.Contains('import shutil')) {
         Write-Host 'BLENDER_EXTERNAL_FFMPEG_IMPORTS=ALREADY_APPLIED'
@@ -180,6 +180,16 @@ Write-Host 'BLENDER_INTERNAL_FFMPEG_ASSIGNMENTS_REMAINING=0'
     $content,
     [System.Text.UTF8Encoding]::new($false)
 )
+
+$controlPython = "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe"
+if (-not (Test-Path -LiteralPath $controlPython)) {
+    throw "Control Python is missing for compatibility compile validation: $controlPython"
+}
+& $controlPython -m py_compile $path
+if ($LASTEXITCODE -ne 0) {
+    throw 'Patched Blender Python failed compile validation.'
+}
+Write-Host 'BLENDER_RUNTIME_PATCH_COMPILE=PROVEN'
 
 & git update-index --assume-unchanged -- $path
 if ($LASTEXITCODE -ne 0) {
