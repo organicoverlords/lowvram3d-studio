@@ -1,0 +1,207 @@
+name: Requested SceneSpec validation on local PC
+run-name: Requested SceneSpec proof ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - infra/windows-self-hosted-runner-20260731
+    paths:
+      - .github/workflows/scene-spec-requested-local-worker.yml
+      - requests/scene-spec-local-worker.json
+
+permissions:
+  contents: write
+
+concurrency:
+  group: requested-scene-spec-local-worker
+  cancel-in-progress: true
+
+jobs:
+  validate-requested-scene-spec:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout trusted control branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+          path: control
+
+      - name: Verify trusted ref and read request
+        id: request
+        shell: powershell
+        run: |
+          if ("${{ github.ref }}" -ne "refs/heads/infra/windows-self-hosted-runner-20260731") {
+            throw "Ref is not the dedicated trusted worker branch"
+          }
+          if (@(git -C control status --short).Count -gt 0) { throw "Control checkout is dirty" }
+          $requestPath = Join-Path $PWD "control\requests\scene-spec-local-worker.json"
+          if (-not (Test-Path -LiteralPath $requestPath)) { throw "SceneSpec request is missing" }
+          $request = Get-Content -LiteralPath $requestPath -Raw | ConvertFrom-Json
+          if ($request.schema_version -ne "scene_spec_worker_request_v1") { throw "Unsupported request schema" }
+          if ($request.repository -ne "organicoverlords/lowvram3d-studio") { throw "Repository identity mismatch" }
+          if ($request.scene_branch -ne "agent/scene-pipeline-smoke-20260803") { throw "Untrusted scene branch" }
+          if ($request.scene_head -notmatch '^[a-f0-9]{40}$') { throw "Invalid requested scene HEAD" }
+          if ($request.mode -ne "SCENE_SPEC_CPU_ONLY") { throw "Unsupported worker mode" }
+          "branch=$($request.scene_branch)" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
+          "head=$($request.scene_head)" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
+          "request_id=$($request.request_id)" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
+          Write-Host "REQUEST_ID=$($request.request_id)"
+          Write-Host "SCENE_HEAD=$($request.scene_head)"
+
+      - name: Checkout exact requested scene commit
+        uses: actions/checkout@v4
+        with:
+          repository: organicoverlords/lowvram3d-studio
+          ref: ${{ steps.request.outputs.head }}
+          clean: true
+          fetch-depth: 1
+          path: scene
+
+      - name: Verify exact scene checkout
+        shell: powershell
+        run: |
+          $actual = git -C scene rev-parse HEAD
+          if ($actual -ne "${{ steps.request.outputs.head }}") { throw "Scene checkout HEAD mismatch" }
+          if (@(git -C scene status --short).Count -gt 0) { throw "Scene checkout is dirty" }
+
+      - name: Resolve CPU Python
+        shell: powershell
+        run: |
+          $candidates = @(
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $selected = $null
+          foreach ($candidate in $candidates) {
+            & $candidate -c "import sys; assert sys.version_info >= (3, 11); print(sys.executable)" 2>$null
+            if ($LASTEXITCODE -eq 0) { $selected = $candidate; break }
+          }
+          if (-not $selected) { throw "No Python 3.11+ executable found" }
+          "SCENE_PYTHON=$selected" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "Scene Python: $selected"
+
+      - name: Compile and parse SceneSpec inputs
+        shell: powershell
+        working-directory: scene
+        run: |
+          & $env:SCENE_PYTHON -m py_compile src\lowvram3d\scene_spec.py tests\test_scene_spec.py
+          if ($LASTEXITCODE -ne 0) { throw "Scene Python compile failed" }
+          & $env:SCENE_PYTHON -c "import json, pathlib; [json.loads(pathlib.Path(p).read_text(encoding='utf-8')) for p in ['schemas/scene_spec_v1.schema.json','configs/scene/castlegrounds_scene_spec_v1.json']]; print('SCENE_JSON_PARSE=PROVEN')"
+          if ($LASTEXITCODE -ne 0) { throw "Scene JSON parse failed" }
+
+      - name: Run SceneSpec tests and positive validation
+        shell: powershell
+        working-directory: scene
+        run: |
+          $env:PYTHONPATH = "$PWD\src;$PWD"
+          & $env:SCENE_PYTHON -m pip install --disable-pip-version-check pytest
+          if ($LASTEXITCODE -ne 0) { throw "Could not ensure pytest is installed" }
+          & $env:SCENE_PYTHON -m pytest tests\test_scene_spec.py -q
+          if ($LASTEXITCODE -ne 0) { throw "SceneSpec tests failed" }
+          $evidence = Join-Path $PWD "evidence\latest-scene-spec-local-worker"
+          if (Test-Path -LiteralPath $evidence) { Remove-Item -LiteralPath $evidence -Recurse -Force }
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          & $env:SCENE_PYTHON -m lowvram3d.scene_spec `
+            --scene-spec configs\scene\castlegrounds_scene_spec_v1.json `
+            --report (Join-Path $evidence "scene_spec_validation.json")
+          if ($LASTEXITCODE -ne 0) { throw "Castlegrounds SceneSpec rejected" }
+
+      - name: Run negative fail-closed probes
+        shell: powershell
+        working-directory: scene
+        run: |
+          $env:PYTHONPATH = "$PWD\src;$PWD"
+          & $env:SCENE_PYTHON -c @'
+          import copy
+          import json
+          from pathlib import Path
+          from lowvram3d.scene_spec import validate_scene_spec
+
+          source = json.loads(Path('configs/scene/castlegrounds_scene_spec_v1.json').read_text(encoding='utf-8'))
+          probes = {}
+
+          spec = copy.deepcopy(source)
+          spec['populations'][0]['requires_collision'] = True
+          probes['gpu_collision'] = validate_scene_spec(spec)
+
+          spec = copy.deepcopy(source)
+          spec['assets'][1]['collision'] = 'none'
+          probes['gameplay_no_collision'] = validate_scene_spec(spec)
+
+          spec = copy.deepcopy(source)
+          spec['pcg']['layers'][-1]['outputs'] = ['gameplay_collision']
+          probes['gpu_gameplay_output'] = validate_scene_spec(spec)
+
+          spec = copy.deepcopy(source)
+          spec['budgets']['allow_concurrent_neural_and_unreal_gpu'] = True
+          probes['gpu_concurrency'] = validate_scene_spec(spec)
+
+          required_codes = {
+              'gpu_collision': 'UNSAFE_GPU_PCG',
+              'gameplay_no_collision': 'UNSAFE_GAMEPLAY_PROXY',
+              'gpu_gameplay_output': 'GPU_GAMEPLAY_OUTPUT',
+              'gpu_concurrency': 'UNSAFE_GPU_CONCURRENCY',
+          }
+          summary = {}
+          for name, report in probes.items():
+              codes = {item['code'] for item in report['errors']}
+              expected = required_codes[name]
+              if report['scene_spec_valid'] or expected not in codes:
+                  raise SystemExit(f'{name} did not fail closed with {expected}: {report}')
+              summary[name] = {'classification': report['classification'], 'expected_code': expected, 'codes': sorted(codes)}
+
+          Path('evidence/latest-scene-spec-local-worker/fail_closed_probes.json').write_text(
+              json.dumps({'classification': 'PROVEN', 'probes': summary}, indent=2, sort_keys=True),
+              encoding='utf-8',
+          )
+          print('SCENE_FAIL_CLOSED_PROBES=PROVEN')
+          '@
+          if ($LASTEXITCODE -ne 0) { throw "Fail-closed probes failed" }
+
+      - name: Publish receipts to unchanged scene branch
+        if: always()
+        shell: powershell
+        working-directory: scene
+        run: |
+          $evidence = Join-Path $PWD "evidence\latest-scene-spec-local-worker"
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          [ordered]@{
+            classification = if ("${{ job.status }}" -eq "success") { "PROVEN" } else { "REJECTED" }
+            request_id = "${{ steps.request.outputs.request_id }}"
+            workflow_run_id = "${{ github.run_id }}"
+            workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            requested_scene_head = "${{ steps.request.outputs.head }}"
+            tested_scene_head = (git rev-parse HEAD)
+            gpu_work_started = $false
+            scope = "SCENE_SPEC_CPU_ONLY"
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json | Set-Content (Join-Path $evidence "workflow_receipt.json") -Encoding utf8
+
+          $remoteHead = (git ls-remote origin "refs/heads/${{ steps.request.outputs.branch }}").Split("`t")[0]
+          if ($remoteHead -ne "${{ steps.request.outputs.head }}") {
+            throw "Scene branch moved from requested HEAD; refusing to publish stale evidence"
+          }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "${{ steps.request.outputs.branch }}" "${{ steps.request.outputs.head }}"
+          git add -- evidence/latest-scene-spec-local-worker
+          if (@(git status --porcelain -- evidence/latest-scene-spec-local-worker).Count -gt 0) {
+            git commit -m "evidence(scene): record requested SceneSpec run ${{ github.run_id }}"
+            if ($LASTEXITCODE -ne 0) { throw "Could not commit SceneSpec evidence" }
+            git push origin HEAD:"${{ steps.request.outputs.branch }}"
+            if ($LASTEXITCODE -ne 0) { throw "Could not push SceneSpec evidence" }
+          }
+
+      - name: Upload SceneSpec evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: requested-scene-spec-proof-${{ github.run_id }}
+          path: scene/evidence/latest-scene-spec-local-worker/*.json
+          if-no-files-found: warn
+          retention-days: 14
