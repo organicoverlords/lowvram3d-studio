@@ -2,14 +2,36 @@
     "classification":  "PROVEN_LOCAL_RUNS_DISCOVERED",
     "repository":  "organicoverlords/lowvram3d-studio",
     "branch":  "agent/blender-beggars-scene-20260804",
-    "diagnostic_head":  "225f5bc4a60e8a2697ca2aaa5e8e662fbef671d5",
+    "diagnostic_head":  "e2ab65e63dea18efcd9899cd5ac582546f9e5dac",
     "worker_name":  "LOWVRAM3D-KONE",
     "worker_os":  "Windows",
     "worker_arch":  "X64",
-    "diagnostic_workflow_run_id":  "30856535812",
+    "diagnostic_workflow_run_id":  "30857544379",
     "inspected_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene",
-    "run_count":  2,
+    "run_count":  3,
     "runs":  [
+                 {
+                     "run_directory":  "run-30857544375",
+                     "modified_utc":  "2026-08-03T22:09:25.1837513Z",
+                     "final_receipt":  {
+                                           "classification":  "REJECTED",
+                                           "job_status":  "failure",
+                                           "workflow_run_id":  "30857544375",
+                                           "head_sha":  "e2ab65e63dea18efcd9899cd5ac582546f9e5dac",
+                                           "branch":  "agent/blender-beggars-scene-20260804",
+                                           "reference_media_upload_scope":  "EXCLUDED",
+                                           "recorded_at":  "2026-08-03T22:09:31.2993011Z"
+                                       },
+                     "worker_receipt":  null,
+                     "artifact_files":  [
+                                            {
+                                                "name":  "workflow_final_receipt.json",
+                                                "bytes":  336,
+                                                "modified_utc":  "2026-08-03T22:09:31.4549108Z"
+                                            }
+                                        ],
+                     "private_reference_content_listed":  false
+                 },
                  {
                      "run_directory":  "run-30856355184",
                      "modified_utc":  "2026-08-03T21:51:49.5872849Z",
@@ -57,5 +79,5 @@
              ],
     "source_media_read":  false,
     "source_media_uploaded":  false,
-    "recorded_at":  "2026-08-03T21:55:48.6350605Z"
+    "recorded_at":  "2026-08-03T22:09:57.7985416Z"
 }
