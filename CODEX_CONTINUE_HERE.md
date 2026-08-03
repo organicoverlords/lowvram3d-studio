@@ -1,270 +1,363 @@
-# Codex: continue here
+# Codex: continue the Castlegrounds scene pipeline here
 
-Work only on branch `integration/unified-pipeline-v2-20260802`.
+Date: 2026-08-03  
+Repository: `organicoverlords/lowvram3d-studio`  
+Required branch: `agent/scene-pipeline-smoke-20260803`  
+Execution owner: **Codex, not the GitHub local worker**
 
-Before editing, verify repository origin, branch, local HEAD, remote HEAD, and a clean worktree. Never work on `main`, merge, force-push, or overwrite preserved artifacts.
+The previous panda texture task is deferred. Work on the Castlegrounds image-to-scene pipeline until this handoff is explicitly replaced.
 
-## Immediate task: hybrid 6 GB GPU texture repair
+## Operating rules
 
-The current chart-separated panda proves the face-on-back defect can be removed, but its texture is still pale and fragmented. Stop CPU-only color boosting. Use the GTX 1660 SUPER for the image-generation work while retaining CPU geometry/UV/projection correctness.
+Before editing or running anything:
 
-New shared workers on this branch:
+1. Verify repository origin, branch, local HEAD, remote HEAD, and clean worktree.
+2. Work only on `agent/scene-pipeline-smoke-20260803`.
+3. Do not work on `main`, merge, force-push, or rewrite preserved proof.
+4. Do not trigger or depend on the GitHub self-hosted worker for this task.
+5. Use the existing local repository and applications directly.
+6. Do not kill or restart an already-running Unreal Editor unless the user explicitly authorizes it.
+7. Do not rerun MoGe. The selected visual-shell mesh is already proven and must be reused.
+8. Do not alter the source mesh, UVs, texture, triangle count, source hash, or imported Unreal asset unless a new failing proof demonstrates that the source asset itself is wrong.
+9. Run one bounded GPU-capable process at a time. No neural workload is currently required.
+10. Emit compact JSON receipts before promotion. Classify claims as `PROVEN`, `PARTIAL`, `BLOCKED`, or `REJECTED`.
 
-- `workers/comfyui_gpu_texture_job.py`
-- `workers/gpu_texture_repair_sequence.py`
-- `workers/surface_albedo_completion.py` — deterministic fallback only
-- `workers/material_aware_color_recovery.py` — deterministic fallback only
-- `tests/test_comfyui_gpu_texture_job.py`
-- `tests/test_gpu_texture_repair_sequence.py`
-
-The GPU workers do not mutate geometry, UVs, atlases, or GLBs. They generate candidate 2-D texture references only. The existing CPU face-ID/depth projector remains the only route allowed to write those references into the atlas.
-
-### Immutable inputs
-
-Preserve all existing 4-step, 5-step, sanitized, projection-repaired, chart-separated, and rejected postprocess artifacts.
-
-Use the exact chart-separated panda from the latest bounded repair as the mesh/UV input. Verify its source and output hashes from the existing receipt rather than guessing a path.
-
-Do not run:
-
-- Mini Turbo geometry generation;
-- LOD generation;
-- xatlas;
-- general UV unwrap;
-- orientation postprocessing;
-- global saturation recovery;
-- parallel GPU jobs.
-
-### Research-backed execution model
-
-The local 6 GB texture-projection workflow studied from PixelArtistry uses generated front/side/back views, an albedo-conditioning route, 1024 output for low-VRAM operation, and retexturing of existing GLBs. Its weak points are projection defects, top/bottom gaps, custom-rasterizer failures, OOMs, and front-looking rear generations. Therefore:
-
-1. use its exported ComfyUI API workflow only as a **2-D reference generator**;
-2. do not use its rasterizer, UV, mesh, or export nodes;
-3. reject a generated rear before projection when it resembles the front;
-4. project accepted pixels through our proven depth/normal/face-ID route;
-5. keep accepted source texels immutable;
-6. fill remaining unseen triangles by bounded material-local surface propagation.
-
-### ComfyUI compatibility and VRAM policy
-
-Use the existing installed ComfyUI environment. Do not install another Trellis stack or replace the current environment.
-
-Prefer an already installed AeroX/PixelArtistry-style texture-projection or equivalent geometry-conditioned image workflow. Export it with `File -> Export (API)` and create a small binding JSON for `workers/comfyui_gpu_texture_job.py`.
-
-Required binding keys:
-
-- `source`
-- `width`
-- `height`
-- `seed`
-
-Bind these when the workflow exposes them:
-
-- `depth`
-- `normal`
-- `mask`
-- `prompt`
-- `negative_prompt`
-- `view` or `view_name`
-- `resolution`
-- `output_prefix`
-
-The config also lists exactly one final output node under `output_nodes`; intermediate previews must not be mistaken for the accepted image.
-
-Launch ComfyUI with the already proven Turing-compatible path:
+Likely local repository from the preserved preflight:
 
 ```text
-DTYPE=FP16
-BF16=DISABLED
-FLASH_ATTENTION_2=DISABLED
-ATTENTION=PYTORCH_SDPA_OR_CURRENT_PROVEN_DEFAULT
-BATCH_SIZE=1
-PARALLEL_GPU_JOBS=1
+C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803
 ```
 
-Do not use a launcher that requires Ampere-only FlashAttention. Do not keep geometry-generation models loaded during texturing.
-
-GPU job defaults:
+Unreal project:
 
 ```text
-initial_resolution=512
-fallback_resolution=384
-timeout_seconds=300
-minimum_free_mb=1200
-oom_retries=1
-unload_models_after_attempt=true
+C:\Users\Lauri\Desktop\UnrealAITest58\UnrealAITest58.uproject
 ```
 
-`workers/comfyui_gpu_texture_job.py` already:
-
-- acquires an exclusive GPU lock;
-- verifies ComfyUI and free VRAM;
-- uploads source/normal/depth/mask inputs;
-- queues one API workflow;
-- interrupts and removes it on timeout;
-- retries once at lower resolution only after an OOM;
-- calls `/free` to unload models;
-- preserves attempt receipts and hashes.
-
-### Required condition renders
-
-From the immutable chart-separated GLB, render matched square condition images for:
-
-1. front;
-2. left side;
-3. right side;
-4. true rear.
-
-For every view save:
-
-- normal;
-- depth;
-- alpha/silhouette mask;
-- camera transform and normalized direction;
-- visible triangle IDs.
-
-Front and rear camera directions must have dot product `<= -0.999`.
-
-Do not generate side/rear views from prompt alone. The workflow must receive geometry conditions where supported.
-
-### GPU sequence
-
-Create a repo-local manifest for `workers/gpu_texture_repair_sequence.py` with these serial jobs:
-
-1. `front_albedo`
-   - source: registered original panda image;
-   - mask: registered source alpha;
-   - purpose: remove baked lighting and recover true unlit color;
-   - do not change silhouette or identity.
-
-2. `left_reference`
-   - source/reference: accepted front albedo;
-   - left normal/depth/mask;
-   - explicit prompt for the tactical red panda scout from the left side.
-
-3. `right_reference`
-   - source/reference: accepted front albedo;
-   - right normal/depth/mask;
-   - explicit right-side prompt.
-
-4. `rear_reference`
-   - source/reference: accepted front albedo;
-   - true rear normal/depth/mask;
-   - explicit true-back prompt: backpack, rear ghillie suit, rear tail; no face, eyes, muzzle, front chest, or mirrored front view.
-
-Every job runs separately. Models must be unloaded between jobs.
-
-### Pre-projection image QA
-
-`workers/gpu_texture_repair_sequence.py` must pass each required output before any atlas write:
-
-- non-empty foreground;
-- output saturation above the configured floor;
-- silhouette-mask IoU at least `0.55`;
-- one and only one final output image;
-- true rear direct and mirrored correlation with the front both below `0.82`.
-
-A rejected rear is not projected and is not repaired by color grading. Preserve it as diagnostic evidence and stop the sequence.
-
-### CPU projection and ownership
-
-After all GPU references pass:
-
-1. generate/verify depth visibility and face-ID buffers for each accepted view;
-2. project a sample only when all are true:
-   - depth-visible triangle;
-   - front-facing normal;
-   - valid foreground pixel;
-   - rendered face-ID match;
-   - confidence at or above threshold;
-3. record per-triangle winning view, confidence, visibility, face-ID status, and fallback mode;
-4. reject any rear-dominant triangle receiving front facial provenance;
-5. never mirror, wrap, or copy front facial content to an unseen triangle;
-6. preserve observed source texels exactly after projection.
-
-The existing targeted chart separation remains authoritative. Do not change UV ownership unless a new exact conflict is proven.
-
-### Remaining unseen areas
-
-Use `workers/surface_albedo_completion.py` or the material-aware recovery worker only after strict multiview projection.
-
-Rules:
-
-- operate on unobserved triangles only;
-- use welded surface adjacency/geodesic propagation;
-- prune propagation across sharp normal/geometry boundaries;
-- keep fur, clothing, rifle, backpack, and tail color families separate where evidence permits;
-- never allow face-region donors to fill rear-head triangles;
-- do not apply global HSV recovery.
-
-### Final QA and promotion
-
-Fresh-import the new GLB in Blender and render:
-
-- front;
-- three-quarter;
-- side;
-- true rear;
-- rear provenance overlay.
-
-Promote only when all are true:
+Blender:
 
 ```text
-GEOMETRY_REUSED=PROVEN
-UV_CHART_SEPARATION_PRESERVED=PROVEN
-GPU_REFERENCE_GENERATION=PROVEN
-GPU_JOBS_SERIAL=PROVEN
-PROJECTION_GATING=PROVEN
-TRIANGLE_PROVENANCE=PROVEN
-REAR_FACE_PROJECTION=PROVEN_ABSENT
-TEXTURE_COLOR_QA=PROVEN
-FRESH_IMPORT=PROVEN
-PANDA_BASIC_TEXTURED_MODEL=PROVEN
+C:\Program Files\Blender Foundation\Blender 5.2\blender.exe
 ```
 
-Visual requirements:
-
-- no face on the back;
-- substantially less gray/pale than the current chart-separated candidate;
-- recognizable red-panda face, ghillie/tactical clothing, rifle, backpack, and tail;
-- no large black holes or transparent gaps;
-- rear may remain less detailed than front but must have plausible material color.
-
-Maximum budget:
-
-- one complete four-job GPU sequence;
-- one lower-resolution retry per job only on OOM;
-- no seed sweep;
-- no unchanged retry;
-- no full geometry/UV rerun.
-
-Stop with `USER_REVIEW_REQUIRED` once the new contact sheet is ready. Do not continue to unrelated refinements before visual review.
-
-## Repository validation before local GPU run
-
-Run first:
+Unreal Engine 5.8:
 
 ```text
-python -m compileall -q workers tests
+C:\Program Files\Epic Games\UE_5.8
+```
+
+## Current proven state
+
+### Phase A — reusable SceneSpec contract: PROVEN
+
+Implemented:
+
+- `schemas/scene_spec_v1.schema.json`
+- `src/lowvram3d/scene_spec.py`
+- `tests/test_scene_spec.py`
+- `configs/scene/castlegrounds_scene_spec_v1.json`
+- `docs/SCENE_PIPELINE_V2_20260803.md`
+
+Proof:
+
+- `evidence/latest-scene-spec-local-worker/scene_spec_validation.json`
+- classification `PROVEN`
+- 0 validation errors
+- 0 warnings
+- unsafe gameplay proxy, GPU collision, GPU gameplay output, and GPU concurrency cases correctly fail closed
+
+### Phase B — legacy evidence migration: PROVEN
+
+Implemented:
+
+- `src/lowvram3d/scene_spec_legacy.py`
+- `tests/test_scene_spec_legacy.py`
+- `configs/scene/castlegrounds_source_mesh_v2.json`
+
+Proof:
+
+- `evidence/latest-scene-spec-local-worker/legacy_migration_receipt.json`
+- `evidence/latest-scene-spec-local-worker/migrated_scene_spec.json`
+- `evidence/latest-scene-spec-local-worker/migrated_scene_spec_validation.json`
+
+Preserved exactly:
+
+- source image SHA-256 and dimensions
+- legacy camera payload
+- landmarks
+- selected mesh identity
+- mesh transform contract
+
+No neural, Blender, Unreal, or GPU work was started by the migration.
+
+### Phase C — deterministic Blender preparation: PROVEN
+
+Implemented:
+
+- `src/lowvram3d/scene_preparation.py`
+- `tests/test_scene_preparation.py`
+- `blender/prepare_scene_from_spec.py`
+
+Proof:
+
+- `evidence/latest-scene-preparation-local-worker/blender_scene_preparation_receipt.json`
+
+Proven asset contract:
+
+```text
+GLB: C:\AI\ScenePipelineSmoke\20260803\castlegrounds\castlegrounds_source_mesh_v2.glb
+SHA-256: 2ee23fd3816f44931a25628392fa5962b23a55dcc17e207540dd3d937e940011
+Triangles: 374,959
+Vertices after fresh Blender import: 190,432
+Mesh edits: 0
+Generated mesh operations: 0
+```
+
+Required collections exist:
+
+```text
+SCENE_VISUAL_SHELL
+SCENE_EDITABLE
+SCENE_GAMEPLAY_PROXY
+SCENE_PROCEDURAL_MODULES
+SCENE_REFERENCE_ONLY
+```
+
+Prepared blend:
+
+```text
+C:\AI\ScenePipelineSmoke\20260803\castlegrounds\scene_camera_v1\castlegrounds_source_locked_v1_prepared.blend
+```
+
+### Authoritative CameraContract: PROVEN
+
+Important correction: `scene_interpretation.json` contained a stale 48-degree estimate. It is superseded by the proven MoGe calibration and exact Blender camera receipt.
+
+Implemented:
+
+- `src/lowvram3d/scene_camera.py`
+- `tests/test_scene_camera.py`
+- `blender/apply_scene_camera_contract.py`
+
+Proof:
+
+- `evidence/latest-scene-camera-local-worker/camera_contract.json`
+- `evidence/latest-scene-camera-local-worker/camera_contract_receipt.json`
+- `evidence/latest-scene-camera-local-worker/blender_camera_application_receipt.json`
+- `evidence/latest-scene-camera-local-worker/authoritative_scene_spec.json`
+
+Authoritative camera:
+
+```text
+Horizontal FOV: 66.50838470458984 degrees
+Vertical FOV: 52.37591552734375 degrees
+Principal point: [0.5, 0.5]
+Basis: normalized, orthogonal, right-handed
+Legacy 48-degree estimate: superseded
+Mesh edits while applying camera: 0
+```
+
+Exact Blender basis:
+
+```text
+origin  = [-1.4999749120901782e-16, 2.7755575615628914e-17, -2.220446049250313e-16]
+forward = [ 8.201049757676981e-17, -1.0,  1.6653345369377348e-16]
+right   = [ 1.0,  8.201049757676981e-17, -8.201049757676981e-17]
+up      = [-8.201049757676981e-17, -1.6653345369377348e-16, -1.0]
+```
+
+### Existing Unreal scene: previously proven, current re-audit blocked
+
+Preserved proof:
+
+- `proof/scene/20260803-image-to-scene-smoke/scene_build_receipt.json`
+- `proof/scene/20260803-image-to-scene-smoke/map_reload_receipt.json`
+
+Existing map:
+
+```text
+/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke
+```
+
+Existing imported source mesh:
+
+```text
+/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2
+```
+
+Existing source camera actor from the proven receipt:
+
+```text
+CameraActor_5
+```
+
+Implemented read-only audit:
+
+- `unreal/audit_scene_contract.py`
+- `.github/workflows/scene-unreal-audit-local-worker.yml`
+
+Latest audit result:
+
+```text
+REJECTED / NOT RUN
+Reason: Unreal Editor PID 10044 was already running.
+The worker refused to interfere before launching UnrealEditor-Cmd.
+No Unreal commandlet, mutation, render, GPU workload, import, or save occurred.
+```
+
+This is an execution-route blocker, not a scene-content failure.
+
+## Immediate Codex task
+
+Continue through the already-running local Unreal Editor instead of the GitHub worker.
+
+### Step 1 — inspect the live Unreal process safely
+
+1. Confirm whether PID `10044` is still the intended `UnrealAITest58` editor.
+2. Do not terminate it.
+3. Prefer the already-enabled Unreal MCP / Python Editor Script route to inspect the live editor.
+4. If MCP is unavailable, create a user-invoked editor Python script that runs inside the existing editor. Do not launch a second editor process.
+5. Reuse the read-only logic in `unreal/audit_scene_contract.py` rather than rewriting the contract from scratch.
+
+Required receipt:
+
+```text
+evidence/latest-scene-unreal-live-audit/unreal_scene_contract_audit.json
+```
+
+The audit must prove or reject:
+
+- the exact map is loaded or loadable in the existing editor;
+- the exact imported static mesh asset exists;
+- exactly one actor references that source mesh;
+- source camera exists;
+- source camera horizontal FOV matches 66.50838470458984 within 0.0001 degrees;
+- source camera forward direction matches the preserved Unreal camera convention;
+- no actor, asset, import, save, or render mutation was performed during audit.
+
+Do not classify the audit as proven merely because the old receipt exists. Inspect the live project.
+
+### Step 2 — finish authoritative hybrid composition
+
+Current implementation:
+
+- `src/lowvram3d/scene_hybrid.py`
+
+Add focused tests in:
+
+```text
+tests/test_scene_hybrid.py
+```
+
+Generate:
+
+```text
+evidence/latest-scene-hybrid/authoritative_hybrid_scene_spec.json
+evidence/latest-scene-hybrid/hybrid_composition_receipt.json
+```
+
+Composition rules:
+
+- start from `configs/scene/castlegrounds_scene_spec_v1.json`;
+- replace all source and offset camera values from `camera_contract.json`;
+- offsets must be parallel translations along the proven camera right vector;
+- never hard-code 48 degrees again;
+- preserve the proven Unreal map and imported mesh paths;
+- mark castle proxy, bridge tile, grass cluster, PCG placement, collision, and navigation as `not_promoted` / unproven until independent evidence exists;
+- SceneSpec validation must pass with 0 errors.
+
+### Step 3 — only after the live read-only audit is PROVEN
+
+Build the smallest independently useful gameplay layer in the existing map:
+
+1. one simple walkable gameplay proxy;
+2. one blocking castle proxy;
+3. no PCG yet;
+4. no GPU population yet;
+5. no source-shell modification;
+6. no source-camera change;
+7. save to a new map or deterministic bounded layer so the proven source-only map remains recoverable.
+
+Suggested new map:
+
+```text
+/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1
+```
+
+Required proof:
+
+```text
+GAMEPLAY_PROXY_CREATED=PROVEN
+SOURCE_MESH_REFERENCE_PRESERVED=PROVEN
+SOURCE_CAMERA_CONTRACT_PRESERVED=PROVEN
+COLLISION_PROBE=PROVEN
+NAVIGATION_PROBE=PROVEN
+MAP_SAVE_RELOAD=PROVEN
+NO_COLLATERAL_CHANGE=PROVEN
+```
+
+Do not proceed to bridge grammar, river spline, grass, GPU PCG, or visual rendering until this bounded gameplay layer is proven.
+
+## Tests to run before Unreal mutation
+
+```text
+python -m compileall -q src tests unreal blender
 python -m pytest -q \
-  tests/test_comfyui_gpu_texture_job.py \
-  tests/test_gpu_texture_repair_sequence.py \
-  tests/test_projection_repair.py
+  tests/test_scene_spec.py \
+  tests/test_scene_spec_legacy.py \
+  tests/test_scene_preparation.py \
+  tests/test_scene_camera.py \
+  tests/test_scene_hybrid.py
 ```
 
-Create the exported API workflow and binding config only after these focused tests pass. Commit shared code/config/tests before the expensive run. Preserve generated images and GLBs outside Git; commit only compact receipts, hashes, configuration, and contact-sheet proof.
+Existing focused suite before the new hybrid tests: 20 tests should pass.
 
-## Six-model milestone remains authoritative
+## Promotion gates
 
-After the panda is accepted, continue with usable static textured models in this order:
+Current classification remains:
 
-1. antlered bird shaman — reuse canonical clean geometry; no sleeve/rig loop;
-2. wind-bent barn and trees — reuse best verified geometry; no long regeneration;
-3. Lucky Drown casino boat — one bounded sanitized generation if needed;
-4. mossy mountain titan — one bounded sanitized generation if needed;
-5. frog salvage diver — one higher-step sanitized candidate at most; no destructive deletion loop.
+```text
+IMAGE_TO_SCENE_PARTIAL
+```
 
-For every asset, reuse existing geometry and UVs first, keep LOD optional, keep xatlas opt-in only, cap texture attempts at two, and package the first visually usable fresh-importable GLB.
+Already proven:
 
-Commit and push validated integration-branch changes. Verify local equals remote and leave the worktree clean. Do not merge branches yet.
+```text
+SCENE_SPEC_VALID
+LEGACY_EVIDENCE_MIGRATION
+SOURCE_MESH_IDENTITY
+SOURCE_MESH_TRIANGLE_CONTRACT
+BLENDER_PREPARATION
+AUTHORITATIVE_CAMERA_CONTRACT
+AUTHORITATIVE_CAMERA_APPLIED_IN_BLENDER
+UNREAL_INTERCHANGE_IMPORT (preserved prior proof)
+UNREAL_SAVE_RELOAD (preserved prior proof)
+```
+
+Not yet proven under the current authoritative pipeline:
+
+```text
+UNREAL_LIVE_READ_ONLY_AUDIT
+GAMEPLAY_PROXY
+COLLISION
+NAVIGATION
+PCG_REFERENCE_GRAPH
+UNREAL_SOURCE_RENDER
+UNREAL_PARALLAX
+GPU_BUDGET
+```
+
+Do not promote the overall scene until every required gate has direct evidence.
+
+## Commit policy
+
+Commit and push only validated changes on `agent/scene-pipeline-smoke-20260803`.
+
+Before finishing:
+
+- verify focused tests;
+- verify local HEAD equals remote HEAD;
+- leave the worktree clean;
+- report exact commit SHA;
+- report which claims are `PROVEN`, `REJECTED`, `BLOCKED`, or still `NOT_PROVEN`;
+- stop at `USER_REVIEW_REQUIRED` if a live Unreal action needs the user to click or approve something.
