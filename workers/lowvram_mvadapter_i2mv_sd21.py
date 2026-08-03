@@ -304,6 +304,220 @@ def install_rowcol_reference_cache_compatibility() -> None:
     processor_class._lowvram_cache_compatibility = True
 
 
+# ----------------------------------------------------------------------
+# convolution backend self-test
+# ----------------------------------------------------------------------
+#: Shape of ``down_blocks.0.resnets.0.conv1`` in the SD2.1 UNet -- the first module observed to turn
+#: finite inputs into a 21.9% NaN output. The self-test reproduces exactly that convolution rather
+#: than a generic one, so a pass here means the failing operation itself is now safe.
+CONVOLUTION_PROBE_CHANNELS = 320
+CONVOLUTION_PROBE_SPATIAL = 32
+CONVOLUTION_PROBE_INPUT_SCALE = 3.82
+CONVOLUTION_PROBE_SEED = 12345
+#: Maximum tolerated absolute deviation between the FP16/no-cuDNN result and the FP32 reference.
+#: FP16 has about three decimal digits, and a 320-channel 3x3 accumulation over inputs of magnitude
+#: ~4 lands well inside this; the observed defect is not a rounding difference but whole tiles of
+#: NaN, so this threshold only has to separate "arithmetic" from "corrupt".
+CONVOLUTION_MAX_ERROR_TOLERANCE = 0.25
+
+_CONVOLUTION_SELF_TEST: dict[str, Any] | None = None
+
+
+def _backend_versions() -> dict[str, Any]:
+    """Identify the exact runtime this verdict belongs to.
+
+    The defect is a property of one GPU plus one PyTorch/CUDA/cuDNN build, not of Turing or of FP16
+    convolution in general. Recording the stack is what keeps the finding falsifiable when any part
+    of it is upgraded.
+    """
+    record: dict[str, Any] = {
+        "torch_version": torch.__version__,
+        "cuda_version": getattr(torch.version, "cuda", None),
+        "cudnn_version": None,
+        "cudnn_available": False,
+        "gpu_name": None,
+        "compute_capability": None,
+        "cuda_available": bool(torch.cuda.is_available()),
+    }
+    backend = getattr(torch.backends, "cudnn", None)
+    if backend is not None:
+        record["cudnn_available"] = bool(backend.is_available())
+        try:
+            record["cudnn_version"] = backend.version()
+        except (RuntimeError, AttributeError):
+            record["cudnn_version"] = None
+    if record["cuda_available"]:
+        record["gpu_name"] = torch.cuda.get_device_name(0)
+        major, minor = torch.cuda.get_device_capability(0)
+        record["compute_capability"] = f"{major}.{minor}"
+    return record
+
+
+def _cudnn_flags(enabled: bool):
+    """``cudnn.flags`` with every unrelated setting left where it was.
+
+    ``torch.backends.cudnn.flags`` has defaults for benchmark, determinism and TF32, so calling it
+    with ``enabled`` alone would silently reset those too.
+    """
+    backend = torch.backends.cudnn
+    return backend.flags(
+        enabled=enabled,
+        benchmark=backend.benchmark,
+        deterministic=backend.deterministic,
+        allow_tf32=backend.allow_tf32,
+    )
+
+
+def _finite_fraction(tensor: torch.Tensor) -> float:
+    return round(float(torch.isfinite(tensor.float()).float().mean().item()), 8)
+
+
+def convolution_self_test(device: str = "cuda:0", force: bool = False) -> dict[str, Any]:
+    """Run one convolution three ways and decide whether cuDNN can be trusted in FP16 here.
+
+    On this GTX 1660 SUPER the FP16 cuDNN path returns a partly non-finite tensor from inputs that
+    are entirely finite, while the same convolution with cuDNN disabled agrees with the FP32
+    reference. The three measurements are recorded rather than asserted so a receipt shows what was
+    actually observed, and the verdict is derived from them.
+    """
+    global _CONVOLUTION_SELF_TEST
+    if _CONVOLUTION_SELF_TEST is not None and not force:
+        return _CONVOLUTION_SELF_TEST
+
+    record: dict[str, Any] = {
+        "schema": "mvadapter_convolution_self_test_v1",
+        "probe": {
+            "module": "down_blocks.0.resnets.0.conv1",
+            "channels": CONVOLUTION_PROBE_CHANNELS,
+            "spatial": CONVOLUTION_PROBE_SPATIAL,
+            "kernel": 3,
+            "padding": 1,
+            "input_abs_max_target": CONVOLUTION_PROBE_INPUT_SCALE,
+            "seed": CONVOLUTION_PROBE_SEED,
+        },
+        **_backend_versions(),
+    }
+    if not record["cuda_available"]:
+        record.update({
+            "executed": False,
+            "reason": "CUDA_UNAVAILABLE",
+            "fp16_cudnn_finite_fraction": None,
+            "fp16_no_cudnn_finite_fraction": None,
+            "fp32_cudnn_finite_fraction": None,
+            "max_error_fp16_no_cudnn_vs_fp32": None,
+            "cudnn_fp16_convolution_safe": None,
+            "unet_cudnn_disabled": False,
+        })
+        _CONVOLUTION_SELF_TEST = record
+        return record
+
+    target = torch.device(device)
+    generator = torch.Generator(device=target).manual_seed(CONVOLUTION_PROBE_SEED)
+    shape = (1, CONVOLUTION_PROBE_CHANNELS, CONVOLUTION_PROBE_SPATIAL, CONVOLUTION_PROBE_SPATIAL)
+    sample_fp32 = torch.randn(shape, generator=generator, device=target, dtype=torch.float32)
+    sample_fp32 = sample_fp32 / sample_fp32.abs().max() * CONVOLUTION_PROBE_INPUT_SCALE
+    convolution = torch.nn.Conv2d(
+        CONVOLUTION_PROBE_CHANNELS, CONVOLUTION_PROBE_CHANNELS, 3, padding=1
+    ).to(device=target, dtype=torch.float32)
+    sample_fp16 = sample_fp32.to(torch.float16)
+    convolution_fp16 = convolution.to(dtype=torch.float16)
+    try:
+        with torch.no_grad():
+            with _cudnn_flags(True):
+                fp16_cudnn = convolution_fp16(sample_fp16)
+            with _cudnn_flags(False):
+                fp16_no_cudnn = convolution_fp16(sample_fp16)
+            convolution_fp32 = convolution.to(dtype=torch.float32)
+            with _cudnn_flags(True):
+                fp32_cudnn = convolution_fp32(sample_fp32)
+            torch.cuda.synchronize(target)
+
+        record["fp16_cudnn_finite_fraction"] = _finite_fraction(fp16_cudnn)
+        record["fp16_no_cudnn_finite_fraction"] = _finite_fraction(fp16_no_cudnn)
+        record["fp32_cudnn_finite_fraction"] = _finite_fraction(fp32_cudnn)
+        difference = (fp16_no_cudnn.float() - fp32_cudnn).abs()
+        finite_difference = difference[torch.isfinite(difference)]
+        record["max_error_fp16_no_cudnn_vs_fp32"] = (
+            float(finite_difference.max().item()) if finite_difference.numel() else None
+        )
+        cudnn_difference = (fp16_cudnn.float() - fp32_cudnn).abs()
+        finite_cudnn_difference = cudnn_difference[torch.isfinite(cudnn_difference)]
+        record["max_error_fp16_cudnn_vs_fp32"] = (
+            float(finite_cudnn_difference.max().item()) if finite_cudnn_difference.numel() else None
+        )
+        record["executed"] = True
+    finally:
+        del convolution, sample_fp32, sample_fp16
+        torch.cuda.empty_cache()
+
+    cudnn_error = record["max_error_fp16_cudnn_vs_fp32"]
+    non_finite = record["fp16_cudnn_finite_fraction"] != 1.0
+    inconsistent = cudnn_error is None or cudnn_error > CONVOLUTION_MAX_ERROR_TOLERANCE
+    record["cudnn_fp16_convolution_safe"] = not (non_finite or inconsistent)
+    record["unet_cudnn_disabled"] = bool(non_finite or inconsistent)
+    record["verdict_reason"] = (
+        "FP16_CUDNN_NON_FINITE" if non_finite
+        else "FP16_CUDNN_INCONSISTENT_WITH_FP32" if inconsistent
+        else "FP16_CUDNN_CONSISTENT"
+    )
+    # The workaround is only usable if the fallback it selects is itself sound.
+    if record["unet_cudnn_disabled"]:
+        fallback_error = record["max_error_fp16_no_cudnn_vs_fp32"]
+        if record["fp16_no_cudnn_finite_fraction"] != 1.0:
+            raise RuntimeError(
+                "MVADAPTER_FP16_CONVOLUTION_NONFINITE_WITHOUT_CUDNN:"
+                f"{record['fp16_no_cudnn_finite_fraction']}"
+            )
+        if fallback_error is None or fallback_error > CONVOLUTION_MAX_ERROR_TOLERANCE:
+            raise RuntimeError(
+                f"MVADAPTER_FP16_CONVOLUTION_FALLBACK_INCONSISTENT:{fallback_error}"
+            )
+    _CONVOLUTION_SELF_TEST = record
+    return record
+
+
+def require_finite_fp16_convolution(device: str = "cuda:0", force: bool = False) -> dict[str, Any]:
+    """Startup gate: measure the convolution backends and report the verdict."""
+    return convolution_self_test(device=device, force=force)
+
+
+def install_unet_cudnn_guard(
+    pipe: LowVRAMMVAdapterI2MVSDPipeline,
+    self_test: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Run every UNet forward with cuDNN disabled, and nothing else.
+
+    Wrapping ``unet.forward`` covers both the reference-image pass and every denoising pass, because
+    both reach the UNet through the same attribute. The VAE and the condition encoder keep cuDNN:
+    they run in FP32, where the defect does not appear, and disabling it for them would cost speed
+    for no reason.
+    """
+    record = self_test if self_test is not None else convolution_self_test()
+    if not record.get("unet_cudnn_disabled"):
+        return {"installed": False, "reason": record.get("verdict_reason"), "self_test": record}
+    if getattr(pipe.unet, "_lowvram_cudnn_guard_installed", False):
+        return {"installed": True, "already_installed": True, "self_test": record}
+
+    original_forward = pipe.unet.forward
+
+    @wraps(original_forward)
+    def guarded_forward(*args: Any, **kwargs: Any):
+        with _cudnn_flags(False):
+            return original_forward(*args, **kwargs)
+
+    pipe.unet.forward = guarded_forward
+    pipe.unet._lowvram_cudnn_guard_installed = True
+    pipe.unet._lowvram_cudnn_guard_original_forward = original_forward
+    return {
+        "installed": True,
+        "scope": "unet.forward",
+        "covers": ["reference_unet_pass", "denoising_unet_pass"],
+        "cudnn_left_enabled_for": ["vae", "cond_encoder", "text_encoder"],
+        "reason": record.get("verdict_reason"),
+        "self_test": record,
+    }
+
+
 def build_low_vram_pipeline(
     base_model: str,
     adapter_state: dict[str, torch.Tensor],
@@ -328,6 +542,7 @@ def build_low_vram_pipeline(
     assert_image_geometry_adapter(adapter_name)
     if "xl" in str(base_model).lower():
         raise RuntimeError(f"MVADAPTER_SDXL_BASE_REJECTED:{base_model}")
+    convolution_report = require_finite_fp16_convolution()
 
     pipe = LowVRAMMVAdapterI2MVSDPipeline.from_pretrained(
         base_model,
@@ -357,6 +572,8 @@ def build_low_vram_pipeline(
     if unet_dtypes != {dtype}:
         raise RuntimeError(f"MVADAPTER_UNET_DTYPE_INVALID:{sorted(str(value) for value in unet_dtypes)}")
     rowcol_dtype_inventory(pipe, required_dtype=dtype)
+    # Installed before any UNet forward can happen, so the reference-cache pass is covered too.
+    load_report["unet_cudnn_guard"] = install_unet_cudnn_guard(pipe, convolution_report)
     if vae_dtype is not None and vae_dtype != dtype:
         # Applied after the pipeline-wide cast so it is not undone by it.
         pipe.vae.to(dtype=vae_dtype)
@@ -522,10 +739,11 @@ def prepare_reference_cache_fp32(
         if type(processor).__name__ == ROWCOL_PROCESSOR_NAME
     )
     cache_fp32: dict[str, torch.Tensor] = {}
+    reference_output_record: dict[str, Any] | None = None
     pipe.unet.to(device=target, dtype=torch.float32)
     try:
         with torch.no_grad():
-            pipe.unet(
+            reference_output = pipe.unet(
                 reference_latents.to(device=target, dtype=torch.float32),
                 torch.zeros((), device=target, dtype=torch.long),
                 encoder_hidden_states=prompt_embeds.to(device=target, dtype=torch.float32),
@@ -538,6 +756,14 @@ def prepare_reference_cache_fp32(
                 return_dict=False,
             )
             torch.cuda.synchronize(target)
+        # The cache is what this pass exists to produce, but the forward's own output is the
+        # cheapest direct evidence that the reference UNet pass itself is numerically sound.
+        sample = reference_output[0] if isinstance(reference_output, tuple) else reference_output
+        if isinstance(sample, torch.Tensor):
+            reference_output_record = assert_finite_reference_latents(
+                sample, "reference_unet_output"
+            )
+            del sample, reference_output
         actual = sorted(cache_fp32)
         if actual != expected:
             raise RuntimeError(f"MVADAPTER_REFERENCE_CACHE_KEYSET_MISMATCH:{actual}:{expected}")
@@ -562,6 +788,10 @@ def prepare_reference_cache_fp32(
         "batch_before_expansion": 1,
         "dtype_before_cast": "float32",
         "dtype_after_cast": "float16",
+        "reference_unet_output": reference_output_record,
+        "reference_unet_output_finite": bool(
+            reference_output_record is not None and reference_output_record["finite"]
+        ),
         "entries": entries,
         "temporary_fp32_released": True,
     }

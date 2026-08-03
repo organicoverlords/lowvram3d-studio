@@ -312,6 +312,44 @@ def _color_qa(array: np.ndarray, mask: np.ndarray) -> dict[str, Any]:
     }
 
 
+def _decoded_image_gate(images: list[Image.Image]) -> dict[str, Any]:
+    """Are the decoded PNGs finite, non-black, non-flat and not six copies of one another?
+
+    This is deliberately weaker than ``qa_outputs``: it asks whether the pipeline produced *content*
+    at all, which is the question a numerical repair has to answer, and says nothing about whether
+    that content is a usable texture.
+    """
+    views: list[dict[str, Any]] = []
+    digests: list[str] = []
+    for index, image in enumerate(images):
+        array = _image_array(image).astype(np.float32)
+        digests.append(hashlib.sha256(np.ascontiguousarray(array).tobytes()).hexdigest())
+        views.append({
+            "index": index,
+            "finite": bool(np.isfinite(array).all()),
+            "mean": round(float(array.mean()), 6),
+            "std": round(float(array.std()), 6),
+            "non_black": bool(float(array.mean()) >= 2.0),
+            "non_flat": bool(float(array.std()) >= 2.0),
+        })
+    identical = len(set(digests)) == 1
+    gate = {
+        "schema": "lowvram3d_mvadapter_decoded_image_gate_v1",
+        "image_count": len(images),
+        "views": views,
+        "distinct_image_hashes": len(set(digests)),
+        "all_views_identical": bool(identical),
+        "vae_output_finite": all(view["finite"] for view in views),
+        "all_non_black": all(view["non_black"] for view in views),
+        "all_non_flat": all(view["non_flat"] for view in views),
+    }
+    gate["passed"] = bool(
+        len(images) == 6 and gate["vae_output_finite"] and gate["all_non_black"]
+        and gate["all_non_flat"] and not identical
+    )
+    return gate
+
+
 def qa_outputs(images: list[Image.Image], controls_dir: Path, resolution: int, semantic_names: list[str]) -> dict[str, Any]:
     if len(images) != 6:
         raise RuntimeError(f"MVADAPTER_OUTPUT_COUNT_INVALID:{len(images)}")
@@ -397,7 +435,8 @@ def _update_config(config_path: Path, status: str, consumed: bool = True) -> Non
     config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
 
-def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: Path | None = None) -> dict[str, Any]:
+def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: Path | None = None,
+            step_split_probe: bool = False, finite_gate: bool = False) -> dict[str, Any]:
     preflight = validate_preflight(config_path, attempt, primary_receipt)
     selected = preflight["selected"]
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -481,6 +520,16 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["vae_dtype"] = "float32"
         receipt["vae_dtype_reason"] = "float16 VAE is all-NaN on this GPU; proven by decode-boundary diagnostic"
         receipt["adapter_report"] = adapter_report
+        # The FP16 convolution verdict for this exact GPU/torch/CUDA/cuDNN stack, and whether the
+        # UNet is consequently running with cuDNN disabled.
+        receipt["unet_cudnn_guard"] = adapter_report.get("unet_cudnn_guard")
+        receipt["convolution_self_test"] = (adapter_report.get("unet_cudnn_guard") or {}).get("self_test")
+        _heartbeat(heartbeat_path, receipt, "convolution_self_test_completed",
+                   **{key: (receipt["convolution_self_test"] or {}).get(key) for key in (
+                       "gpu_name", "compute_capability", "torch_version", "cuda_version",
+                       "cudnn_version", "fp16_cudnn_finite_fraction",
+                       "fp16_no_cudnn_finite_fraction", "fp32_cudnn_finite_fraction",
+                       "max_error_fp16_no_cudnn_vs_fp32", "unet_cudnn_disabled")})
         receipt["component_inventory"] = component_inventory(pipe)
         receipt["attention"] = attention_report(pipe)
         receipt["dtype_inventory"] = {
@@ -634,6 +683,30 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             )
             return callback_kwargs
 
+        probe = None
+        if step_split_probe and finite_gate:
+            raise RuntimeError("MVADAPTER_STEP_SPLIT_PROBE_AND_FINITE_GATE_MUTUALLY_EXCLUSIVE")
+        if step_split_probe:
+            from mvadapter_step_split_probe import StepSplitProbe, UNetModuleProbe
+
+            probe = StepSplitProbe(output_dir / "step_split", target_step=1)
+            probe.install(pipe)
+            module_probe = UNetModuleProbe()
+            module_probe.install(pipe.unet)
+            probe.module_probe = module_probe
+            receipt["step_split_probe"] = {"installed": True,
+                                           "dir": str(output_dir / "step_split")}
+        elif finite_gate:
+            # Whole-run recording: every step is instrumented, nothing aborts, and the module-level
+            # probe stays off because a per-module finite check on every step is far more expensive
+            # than the gate is worth once the failing module is already known.
+            from mvadapter_step_split_probe import StepSplitProbe
+
+            probe = StepSplitProbe(output_dir / "finite_gate", target_step=None,
+                                   save_scheduler_inputs=False, abort_on_first_failure=False)
+            probe.install(pipe)
+            receipt["finite_gate_dir"] = str(output_dir / "finite_gate")
+
         torch.cuda.reset_peak_memory_stats()
         receipt["memory_before_denoising"] = {**_nvidia_snapshot(), **_torch_memory(torch)}
         result = pipe(
@@ -654,6 +727,18 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         )
         receipt["reference_unet_call_count"] = state["reference_unet_calls"]
         receipt["denoising_unet_call_count"] = state["denoising_unet_calls"]
+        if probe is not None:
+            probe.uninstall()
+            if finite_gate:
+                receipt["finite_gate"] = {
+                    **probe.finite_gate(expected_steps=int(selected["steps"])),
+                    "report": str(probe.write()),
+                }
+                _heartbeat(heartbeat_path, receipt, "finite_gate_recorded",
+                           passed=receipt["finite_gate"]["passed"],
+                           failed=receipt["finite_gate"]["failed_checks"])
+            else:
+                receipt["step_split_probe"] = {**probe.summary(), "report": str(probe.write())}
         images = list(result.images)
         receipt["vae_decode_completed"] = True
         # Final post-processed image tensor, as the last telemetry checkpoint. This is the stage
@@ -665,6 +750,11 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
                           for image in images])
             )
             telemetry.record("final_postprocessed_image_tensor", stacked, save=True)
+            # Recorded before the production QA gate, which raises on a blank image. The repair
+            # proof needs the measured numbers either way, not just the exception.
+            receipt["decoded_image_gate"] = _decoded_image_gate(images)
+            _heartbeat(heartbeat_path, receipt, "decoded_image_gate_recorded",
+                       passed=receipt["decoded_image_gate"]["passed"])
         receipt["latent_telemetry"] = telemetry.summary()
         telemetry.write()
         _heartbeat(heartbeat_path, receipt, "vae_decode_completed")
@@ -683,11 +773,27 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["qa"] = qa_outputs(images, Path(preflight["controls"]).parent, int(selected["resolution"]), semantic_names)
         receipt["status"] = "PROVEN" if receipt["qa"]["passed"] else "QA_REJECTED"
         if attempt == "primary":
-            config_status = "EXECUTED_384_QA_PASSED" if receipt["qa"]["passed"] else "EXECUTED_384_QA_REJECTED"
+            # The resolution comes from the config, not from the label: a primary attempt is not
+            # necessarily 384, and a consumed 256 config that claims "EXECUTED_384" is a false
+            # receipt.
+            verdict = "PASSED" if receipt["qa"]["passed"] else "REJECTED"
+            config_status = f"EXECUTED_{int(selected['resolution'])}_QA_{verdict}"
         else:
             config_status = "EXECUTED_256_OOM_FALLBACK_QA_PASSED" if receipt["qa"]["passed"] else "EXECUTED_256_OOM_FALLBACK_QA_REJECTED"
         _update_config(config_path, config_status)
     except Exception as exc:
+        # The step-split probe deliberately aborts the pipeline at the first non-finite checkpoint,
+        # so its findings must be written from the failure path, not only the success path.
+        if "probe" in locals() and probe is not None:
+            probe.uninstall()
+            if finite_gate:
+                receipt["finite_gate"] = {
+                    **probe.finite_gate(expected_steps=int(selected["steps"])),
+                    "report": str(probe.write()),
+                }
+            else:
+                receipt["step_split_probe"] = {**probe.summary(), "report": str(probe.write())}
+            receipt["classification"] = probe.classification()
         receipt["reference_unet_call_count"] = state.get("reference_unet_calls", 0) if "state" in locals() else 0
         receipt["denoising_unet_call_count"] = state.get("denoising_unet_calls", 0) if "state" in locals() else 0
         genuine_oom = _is_cuda_oom(exc)
@@ -757,10 +863,17 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--attempt", choices=("primary", "oom-fallback"), required=True)
     parser.add_argument("--primary-receipt", type=Path, default=None)
+    parser.add_argument("--step-split-probe", action="store_true",
+                        help="split step 1 into its individual operations and stop at the "
+                             "first non-finite checkpoint; diagnostic only")
+    parser.add_argument("--finite-gate", action="store_true",
+                        help="record every step's scaled input, raw UNet output and scheduler "
+                             "output without aborting, and report named finite verdicts")
     args = parser.parse_args()
     started = time.time()
     try:
-        receipt = execute(args.config, args.output_dir, args.attempt, args.primary_receipt)
+        receipt = execute(args.config, args.output_dir, args.attempt, args.primary_receipt,
+                          step_split_probe=args.step_split_probe, finite_gate=args.finite_gate)
     except Exception as exc:
         receipt = {
             "schema": "lowvram3d_mvadapter_sd21_six_view_inference_v1",

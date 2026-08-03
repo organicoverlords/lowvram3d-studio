@@ -54,9 +54,17 @@ def tensor_stats(name: str, tensor: torch.Tensor) -> dict[str, Any]:
             "near_zero_fraction": round(float((values.abs() < NEAR_ZERO).float().mean().item()), 8),
         })
     else:
+        # No finite values at all. Reporting zero_fraction 1.0 here previously made an all-NaN
+        # tensor also read as ALL_ZERO, which is a different defect with a different fix.
         payload.update({"min": None, "max": None, "mean": None, "std": None,
                         "l1_norm": None, "l2_norm": None,
-                        "zero_fraction": 1.0, "near_zero_fraction": 1.0})
+                        "zero_fraction": None, "near_zero_fraction": None})
+    payload.update({
+        "nan_count": int(torch.isnan(as_float).sum().item()),
+        "posinf_count": int(torch.isposinf(as_float).sum().item()),
+        "neginf_count": int(torch.isneginf(as_float).sum().item()),
+        "abs_max": float(values.abs().max().item()) if values.numel() else None,
+    })
     payload["sha256"] = hashlib.sha256(
         np.ascontiguousarray(as_float.cpu().numpy()).tobytes()).hexdigest()
     return payload
@@ -69,6 +77,12 @@ def per_view_stats(name: str, tensor: torch.Tensor) -> list[dict[str, Any]]:
 
 
 def failures_for(stats: dict[str, Any], expect_variation: bool = True) -> list[str]:
+    """Failure labels for one tensor.
+
+    A non-finite tensor is reported only as non-finite. It is deliberately not also labelled
+    ALL_ZERO or NEAR_ZERO_STD: those describe a tensor whose values collapsed, which is a different
+    defect with a different fix, and conflating them sent the first diagnosis at the wrong stage.
+    """
     failures: list[str] = []
     if stats["has_nan"]:
         failures.append("NAN")
@@ -76,16 +90,32 @@ def failures_for(stats: dict[str, Any], expect_variation: bool = True) -> list[s
         failures.append("INF")
     if stats["finite_fraction"] < 1.0:
         failures.append("NON_FINITE_PRESENT")
-    if stats.get("zero_fraction") is not None and stats["zero_fraction"] >= 0.999:
-        failures.append("ALL_ZERO")
-    if expect_variation and stats.get("std") is not None and stats["std"] < FLAT_STD:
-        failures.append("NEAR_ZERO_STD")
+        return failures
+    # Index-like tensors -- timesteps, step counters -- are integer and often scalar, and zero is a
+    # legitimate value for them. Only floating-point tensors with real spatial extent can be
+    # "collapsed to zero" in the sense this check is looking for.
+    index_like = stats["dtype"].startswith(("int", "uint", "bool")) or not stats["shape"]
+    if not index_like:
+        if stats.get("zero_fraction") is not None and stats["zero_fraction"] >= 0.999:
+            failures.append("ALL_ZERO")
+        if expect_variation and stats.get("std") is not None and stats["std"] < FLAT_STD:
+            failures.append("NEAR_ZERO_STD")
     return failures
 
 
-def views_identical(view_records: Iterable[dict[str, Any]]) -> bool:
-    hashes = {record["sha256"] for record in view_records}
-    return len(hashes) == 1
+def views_identical(view_records: Iterable[dict[str, Any]]) -> bool | None:
+    """Whether every view hashes the same, or None when the comparison is not meaningful.
+
+    Two all-NaN views hash identically because their bytes are identical, which says nothing about
+    whether the model produced the same content. Equality is only reported when every view is
+    finite.
+    """
+    records = list(view_records)
+    if not records:
+        return None
+    if any(record["finite_fraction"] < 1.0 for record in records):
+        return None
+    return len({record["sha256"] for record in records}) == 1
 
 
 class LatentTelemetry:
@@ -100,6 +130,14 @@ class LatentTelemetry:
         self.checkpoints: list[dict[str, Any]] = []
         self.steps: list[dict[str, Any]] = []
         self.violations: list[dict[str, Any]] = []
+        # Checkpoints and steps interleave in real time, so ordering has to come from a single
+        # counter. Scanning checkpoints before steps previously reported the final blank image as
+        # the first failure when the latents had already died at step 1.
+        self._sequence = 0
+
+    def _next_sequence(self) -> int:
+        self._sequence += 1
+        return self._sequence
 
     # ---------------------------------------------------------------- recording
     def record(self, label: str, tensor: torch.Tensor, *, expect_variation: bool = True,
@@ -107,13 +145,14 @@ class LatentTelemetry:
         stats = tensor_stats(label, tensor)
         views = per_view_stats(label, tensor)
         entry: dict[str, Any] = {
+            "sequence": self._next_sequence(),
             "checkpoint": label,
             "aggregate": stats,
             "per_view": views,
             "all_views_identical": views_identical(views) if views else None,
             "failures": failures_for(stats, expect_variation),
         }
-        if entry["all_views_identical"] and expect_variation and len(views) > 1:
+        if entry["all_views_identical"] is True and expect_variation and len(views) > 1:
             entry["failures"].append("ALL_VIEWS_IDENTICAL")
         if extra:
             entry.update(extra)
@@ -130,6 +169,7 @@ class LatentTelemetry:
                     scheduler: Any = None, noise_pred: torch.Tensor | None = None,
                     condition_residuals: Any = None) -> dict[str, Any]:
         entry: dict[str, Any] = {
+            "sequence": self._next_sequence(),
             "step": int(step),
             "timestep": _scalar(timestep),
             "scheduler_class": type(scheduler).__name__ if scheduler is not None else None,
@@ -139,7 +179,7 @@ class LatentTelemetry:
         entry["per_view"] = per_view_stats(f"step{step:02d}_latents", latents)
         entry["all_views_identical"] = views_identical(entry["per_view"]) if entry["per_view"] else None
         entry["failures"] = failures_for(entry["scheduler_output_latents"])
-        if entry["all_views_identical"]:
+        if entry["all_views_identical"] is True:
             entry["failures"].append("ALL_VIEWS_IDENTICAL")
         if noise_pred is not None:
             entry["unet_noise_prediction"] = tensor_stats(f"step{step:02d}_noise_pred", noise_pred)
@@ -156,13 +196,19 @@ class LatentTelemetry:
 
     # ---------------------------------------------------------------- output
     def first_failure(self) -> dict[str, Any] | None:
-        for entry in self.checkpoints:
-            if entry["failures"]:
-                return {"kind": "checkpoint", "at": entry["checkpoint"], "failures": entry["failures"]}
-        for entry in self.steps:
-            if entry["failures"]:
-                return {"kind": "step", "at": entry["step"], "failures": entry["failures"]}
-        return None
+        """Earliest failing record in real time, across both checkpoints and steps."""
+        candidates = [
+            {"kind": "checkpoint", "at": entry["checkpoint"],
+             "sequence": entry["sequence"], "failures": entry["failures"]}
+            for entry in self.checkpoints if entry["failures"]
+        ] + [
+            {"kind": "step", "at": entry["step"],
+             "sequence": entry["sequence"], "failures": entry["failures"]}
+            for entry in self.steps if entry["failures"]
+        ]
+        if not candidates:
+            return None
+        return min(candidates, key=lambda entry: entry["sequence"])
 
     def summary(self) -> dict[str, Any]:
         hashes = [entry["scheduler_output_latents"]["sha256"] for entry in self.steps]
