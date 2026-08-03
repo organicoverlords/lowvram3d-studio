@@ -38,11 +38,35 @@ def glb_json_and_bin(path: Path) -> tuple[dict, bytes]:
 
 
 def base_colour_image(path: Path) -> Image.Image:
+    """Resolve the image a primitive's material actually samples.
+
+    Taking images[0] silently reads a stale atlas whenever a GLB carries more than one -
+    which is exactly what happens after a re-texture appends the new one, and it made a
+    replaced texture look like it had kept detail it never had.
+    """
     meta, binary = glb_json_and_bin(path)
     images = meta.get("images")
     if not images:
         raise RuntimeError("GLB_HAS_NO_IMAGE")
-    image = images[0]
+    index = 0
+    bound = []
+    for mesh in meta.get("meshes", []):
+        for primitive in mesh.get("primitives", []):
+            material_index = primitive.get("material")
+            if material_index is None:
+                continue
+            pbr = meta["materials"][material_index].get("pbrMetallicRoughness", {})
+            texture = pbr.get("baseColorTexture")
+            if texture is None:
+                continue
+            source = meta["textures"][int(texture["index"])].get("source")
+            if source is not None:
+                bound.append(int(source))
+    if bound:
+        if len(set(bound)) > 1:
+            raise RuntimeError(f"GLB_MULTIPLE_BASE_COLOUR_IMAGES:{sorted(set(bound))}")
+        index = bound[0]
+    image = images[index]
     if "bufferView" in image:
         view = meta["bufferViews"][image["bufferView"]]
         start = view.get("byteOffset", 0)

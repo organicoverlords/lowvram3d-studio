@@ -1,0 +1,20 @@
+{
+  "schema": "lowvram3d_protected_region_v1",
+  "asset": "tactical_red_panda_scout",
+  "description": "Face region of the proven front MV-Adapter view: eyes, eye-mask markings, nose, mouth, cream muzzle, and the inner hood opening immediately around them.",
+  "source_view_semantic": "front",
+  "source_image_size": 384,
+  "regions": [
+    {
+      "name": "face",
+      "owner_semantic": "front",
+      "forbidden_owner_semantics": ["rear"],
+      "priority": 1.0,
+      "feather_fraction": 0.06,
+      "shape": "ellipse",
+      "centre_normalised": [0.400, 0.283],
+      "radii_normalised": [0.170, 0.130]
+    }
+  ],
+  "notes": "Normalised to the source image's own resolution, so nothing here is a pixel constant in fusion code. Fusion transfers this to atlas texels through the front camera; it never reads asset coordinates directly."
+}

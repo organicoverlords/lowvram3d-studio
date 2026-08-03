@@ -57,6 +57,34 @@ def texture_report(objects) -> dict:
     }
 
 
+def make_unlit(objects) -> int:
+    """Rewire every material to emit its own base-colour texture.
+
+    A recessed feature - a face inside a ghillie hood - can be invisible under lights and
+    still be present in the atlas. Emission removes shading from the question entirely.
+    """
+    converted = 0
+    for obj in objects:
+        for slot in obj.material_slots:
+            material = slot.material
+            if material is None or not material.use_nodes:
+                continue
+            nodes = material.node_tree.nodes
+            links = material.node_tree.links
+            source = next((n for n in nodes if n.type == "TEX_IMAGE" and n.image is not None),
+                          None)
+            output = next((n for n in nodes if n.type == "OUTPUT_MATERIAL"), None)
+            if output is None:
+                continue
+            emission = nodes.new("ShaderNodeEmission")
+            emission.inputs["Strength"].default_value = 1.0
+            if source is not None:
+                links.new(source.outputs["Color"], emission.inputs["Color"])
+            links.new(emission.outputs["Emission"], output.inputs["Surface"])
+            converted += 1
+    return converted
+
+
 def setup(resolution: int, samples: int):
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
@@ -116,6 +144,8 @@ def main() -> None:
     parser.add_argument("--report", required=True)
     parser.add_argument("--resolution", type=int, default=512)
     parser.add_argument("--samples", type=int, default=24)
+    parser.add_argument("--unlit", action="store_true",
+                        help="render base colour as emission, with no lights")
     args = parser.parse_args(argv_after_double_dash())
 
     glb = Path(args.glb)
@@ -133,7 +163,11 @@ def main() -> None:
     height = maximum.z - minimum.z
 
     scene = setup(args.resolution, args.samples)
-    add_lights(centre, radius)
+    unlit_materials = make_unlit(objects) if args.unlit else 0
+    if not args.unlit:
+        add_lights(centre, radius)
+    else:
+        scene.world.node_tree.nodes["Background"].inputs[1].default_value = 0.0
     camera = orthographic_camera()
 
     views = {}
@@ -164,6 +198,8 @@ def main() -> None:
         "textures": textures,
         "render_engine": scene.render.engine,
         "samples": args.samples,
+        "unlit": bool(args.unlit),
+        "unlit_materials_converted": unlit_materials,
         "resolution": args.resolution,
         "views": views,
         "closeups": closeups,
