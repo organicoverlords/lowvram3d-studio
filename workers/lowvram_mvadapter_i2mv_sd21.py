@@ -90,7 +90,14 @@ class LowVRAMMVAdapterI2MVSDPipeline(MVAdapterI2MVSDPipeline):
         The upstream implementation is called unchanged so the adapter
         architecture and the attention-processor wiring stay bit-identical.
         """
+        unet_dtype = self.unet.dtype
         super()._init_custom_adapter(*args, **kwargs)
+        # The upstream processor factory creates its new MV/ref projections in
+        # torch's default FP32.  The packaged SD2.1 route is FP16; leaving these
+        # 160 parameters in FP32 produces a matmul dtype error on the first
+        # denoising call.  Cast only the newly assembled UNet modules to the
+        # already-proven UNet dtype; no model or generation setting changes.
+        self.unet.to(dtype=unet_dtype)
         cond_encoder = getattr(self, "cond_encoder", None)
         if cond_encoder is None:
             raise RuntimeError("MVADAPTER_COND_ENCODER_NOT_CONSTRUCTED")
@@ -228,6 +235,9 @@ def build_low_vram_pipeline(
         num_views=num_views, self_attn_processor=DecoupledMVRowColSelfAttnProcessor2_0
     )
     load_report = pipe._load_custom_adapter(adapter_state)
+    unet_dtypes = {parameter.dtype for parameter in pipe.unet.parameters()}
+    if unet_dtypes != {dtype}:
+        raise RuntimeError(f"MVADAPTER_UNET_DTYPE_INVALID:{sorted(str(value) for value in unet_dtypes)}")
     return pipe, load_report
 
 

@@ -73,6 +73,7 @@ class RouteRestrictionTests(unittest.TestCase):
     def test_loader_passes_local_safety_checker_contract(self) -> None:
         fake_pipe = SimpleNamespace(
             scheduler=object(),
+            unet=lowvram.torch.nn.Linear(1, 1).to(dtype=lowvram.torch.float16),
             init_custom_adapter=lambda **_kwargs: None,
             _load_custom_adapter=lambda _state: {"adapter_loaded_key_count": 0},
         )
