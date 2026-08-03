@@ -5,6 +5,7 @@ import sys
 
 import numpy as np
 from PIL import Image
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "workers"))
@@ -18,7 +19,7 @@ from mv_adapter_i2mv_camera_runtime import (  # noqa: E402
 
 
 def test_camera_and_control_images_are_finite_without_optional_raster_stack() -> None:
-    import torch
+    torch = pytest.importorskip("torch", reason="camera tensor runtime requires optional torch")
 
     c2w = build_camera_to_world(len(AZIMUTHS), "cpu")
     controls = build_orthographic_control_images(len(AZIMUTHS), 16, "cpu")
