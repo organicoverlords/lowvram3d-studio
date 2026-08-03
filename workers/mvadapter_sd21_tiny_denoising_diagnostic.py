@@ -30,6 +30,10 @@ PROMPT = (
 )
 
 
+class FirstReferenceNonFinite(RuntimeError):
+    pass
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -89,6 +93,51 @@ def _finite_stats(tensor: Any) -> dict[str, Any]:
         return record
     except BaseException as exc:
         return {"finite": finite, "stats_error": f"{type(exc).__name__}: {exc}"}
+
+
+def _first_tensor(torch: Any, value: Any) -> Any:
+    if isinstance(value, torch.Tensor):
+        return value
+    if isinstance(value, (tuple, list)):
+        for item in value:
+            found = _first_tensor(torch, item)
+            if found is not None:
+                return found
+    if isinstance(value, dict):
+        for item in value.values():
+            found = _first_tensor(torch, item)
+            if found is not None:
+                return found
+    return None
+
+
+def _install_reference_numeric_hooks(torch: Any, pipe: Any, trace: IncrementalTrace) -> list[Any]:
+    handles: list[Any] = []
+
+    def hook(name: str):
+        def record(_module: Any, inputs: Any, output: Any) -> None:
+            value = _first_tensor(torch, output)
+            if value is None:
+                return
+            output_stats = {**_tensor_record(f"{name}.output", value), **_finite_stats(value)}
+            input_value = _first_tensor(torch, inputs)
+            input_stats = (
+                {**_tensor_record(f"{name}.input", input_value), **_finite_stats(input_value)}
+                if input_value is not None else None
+            )
+            trace.write("reference_module_output", module=name, input=input_stats, output=output_stats)
+            if output_stats.get("finite") is not True:
+                raise FirstReferenceNonFinite(
+                    f"FIRST_NONFINITE_MODULE={name};INPUT_ABS_MAX={input_stats.get('absolute_maximum') if input_stats else None};"
+                    f"OUTPUT_ABS_MAX={output_stats.get('absolute_maximum')};INPUT_DTYPE={input_stats.get('dtype') if input_stats else None};"
+                    f"OUTPUT_DTYPE={output_stats.get('dtype')}"
+                )
+        return record
+
+    for name, module in pipe.unet.named_modules():
+        if name:
+            handles.append(module.register_forward_hook(hook(name)))
+    return handles
 
 
 class IncrementalTrace:
@@ -175,6 +224,18 @@ def _install_sdpa_trace(torch: Any, trace: IncrementalTrace, device: Any) -> tup
         if use_ref:
             branches.append("reference")
         state = {"processor": getattr(self, "name", "unknown"), "branches": branches, "ordinal": 0}
+        cache_hidden_states = kwargs.get("cache_hidden_states")
+        if cache_hidden_states is not None:
+            hidden_states = kwargs.get("hidden_states")
+            if hidden_states is None and args:
+                hidden_states = args[1] if len(args) > 1 else None
+            if hidden_states is not None:
+                cache_stats = {**_tensor_record("reference_cache_write", hidden_states), **_finite_stats(hidden_states)}
+                trace.write("reference_cache_write", processor=state["processor"], stats=cache_stats)
+                if cache_stats.get("finite") is not True:
+                    raise FirstReferenceNonFinite(
+                        f"FIRST_NONFINITE_CACHE_KEY={state['processor']};OUTPUT_ABS_MAX={cache_stats.get('absolute_maximum')}"
+                    )
         token = _sdpa_context.set({"processor": state["processor"], "branches": branches, "branch": branches[0], "ordinal": 0})
         try:
             # The SDPA wrapper advances the ordinal after each call.  The
@@ -262,6 +323,7 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
     pipe = None
     originals = None
     guard_handles: list[Any] = []
+    reference_numeric_handles: list[Any] = []
     pending_exc: BaseException | None = None
     try:
         inputs = _validate_inputs(config_path)
@@ -341,6 +403,7 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
                     return self
 
             ref_cache = ReferenceCache()
+            reference_numeric_handles = _install_reference_numeric_hooks(torch, pipe, trace)
             trace.write("reference_unet_started", use_mv=False, use_ref=False, cache_hidden_states=True, memory=_memory(torch))
             pipe.unet(reference_latents, torch.zeros((), device=target, dtype=torch.long), encoder_hidden_states=prompt_embeds, cross_attention_kwargs={"cache_hidden_states": ref_cache, "use_mv": False, "use_ref": False, "num_views": 6}, return_dict=False)
             torch.cuda.synchronize(target)
@@ -405,6 +468,11 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
             except Exception:
                 pass
         for handle in guard_handles:
+            try:
+                handle.remove()
+            except Exception:
+                pass
+        for handle in reference_numeric_handles:
             try:
                 handle.remove()
             except Exception:
