@@ -1,0 +1,59 @@
+name: Beggars meme Blender recreation v2
+run-name: Beggars meme recreation v2 ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - .github/workflows/beggars-scene-local-worker-v2.yml
+      - scripts/run-beggars-scene-v2.ps1
+      - configs/scene/beggars_banquet_recreation_v1.json
+      - tools/beggars_scene/prepare_reference_sequence.py
+      - tools/beggars_scene/package_results.py
+      - blender/build_beggars_meme_scene.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-meme-local-worker-v2
+  cancel-in-progress: true
+
+jobs:
+  build-photoreal-meme-recreation-v2:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout exact dedicated branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+
+      - name: Run memory-bounded reconstruction and Blender build
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\run-beggars-scene-v2.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Beggars scene v2 failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Upload Blender recreation artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-meme-blender-v2-${{ github.run_id }}
+          path: |
+            ${{ env.BEGGARS_V2_OUTPUT }}/beggars_photoreal_recreation.blend
+            ${{ env.BEGGARS_V2_OUTPUT }}/beggars_photoreal_recreation.mp4
+            ${{ env.BEGGARS_V2_OUTPUT }}/hero_clean_render.png
+            ${{ env.BEGGARS_V2_OUTPUT }}/wide_scene_proof.png
+            ${{ env.BEGGARS_V2_OUTPUT }}/proof_frame_*.png
+            ${{ env.BEGGARS_V2_OUTPUT }}/contact_sheet.png
+            ${{ env.BEGGARS_V2_OUTPUT }}/*.json
+          if-no-files-found: warn
+          retention-days: 14
