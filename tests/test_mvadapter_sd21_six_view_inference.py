@@ -44,14 +44,14 @@ def test_real_cuda_oom_is_distinguished_from_other_failures() -> None:
     assert not _is_cuda_oom(RuntimeError("attention shape mismatch"))
 
 
-def test_oom_fallback_requires_a_classified_primary_receipt() -> None:
+def test_illegal_memory_access_blocks_oom_fallback() -> None:
     config = ROOT / "configs" / "texture" / "gpu_panda_mvadapter_ig2mv_sd21_inference.json"
     try:
         validate_preflight(config, "oom-fallback")
     except RuntimeError as exc:
-        assert "PRIMARY_RECEIPT_REQUIRED" in str(exc)
+        assert "CONFIG_STATUS_INVALID" in str(exc)
     else:  # pragma: no cover - defensive assertion
-        raise AssertionError("fallback was accepted without a primary OOM receipt")
+        raise AssertionError("illegal-memory-access manifest authorized an OOM fallback")
 
 
 def test_bounded_registration_reports_a_similarity_transform() -> None:

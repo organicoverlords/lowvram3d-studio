@@ -1,6 +1,6 @@
 {
   "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
-  "status": "RUNTIME_REJECTED_SEQUENCE_CONSUMED",
+  "status": "BLOCKED_CUDA_ILLEGAL_MEMORY_ACCESS",
   "asset": "tactical_red_panda_scout",
   "generator_family": "MVADAPTER_SD21",
   "conditioning": "IMAGE_PLUS_GEOMETRY",
@@ -74,6 +74,7 @@
   "prompt": "high quality clean albedo reference of the same tactical red panda character, consistent materials, consistent identity, flat neutral lighting",
   "negative_prompt": null,
   "classifier_free_guidance": false,
-  "gpu_sequence_consumed": true,
-  "next_action": "USER_REVIEW_REQUIRED"
+  "gpu_sequence_consumed": false,
+  "fallback_eligible": false,
+  "next_action": "CUDA_KERNEL_ISOLATION_PROBE"
 }
