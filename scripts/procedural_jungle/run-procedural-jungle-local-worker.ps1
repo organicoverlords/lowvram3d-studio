@@ -66,5 +66,24 @@ Write-Host "DIRECT_WORKER_BUNDLE_SHA256=$ActualSha"
 Write-Host 'CODEX_INVOKED=NO'
 Write-Host 'CLAUDE_INVOKED=NO'
 Write-Host 'MAGICMUSIC_INVOKED=NO'
-& $Entry -ExpectedBranch $ExpectedBranch -SourceRoot $SourceRoot
-if ($LASTEXITCODE -ne 0) { throw "Direct worker entrypoint failed with exit code $LASTEXITCODE" }
+
+# Blender 5.2 currently emits a use_nodes DeprecationWarning on stderr. Windows
+# PowerShell 5 converts native stderr into a terminating NativeCommandError when
+# the worker uses ErrorActionPreference=Stop, even when Blender itself succeeds.
+# Suppress only Python DeprecationWarning output; genuine Blender failures still
+# return a non-zero process exit and remain fatal.
+$PreviousPythonWarnings = $env:PYTHONWARNINGS
+$env:PYTHONWARNINGS = 'ignore::DeprecationWarning'
+try {
+    & $Entry -ExpectedBranch $ExpectedBranch -SourceRoot $SourceRoot
+    $WorkerExit = $LASTEXITCODE
+}
+finally {
+    if ($null -eq $PreviousPythonWarnings) {
+        Remove-Item Env:PYTHONWARNINGS -ErrorAction SilentlyContinue
+    }
+    else {
+        $env:PYTHONWARNINGS = $PreviousPythonWarnings
+    }
+}
+if ($WorkerExit -ne 0) { throw "Direct worker entrypoint failed with exit code $WorkerExit" }
