@@ -1,0 +1,14 @@
+﻿{
+    "classification":  "REJECTED",
+    "workflow_run_id":  "30854319475",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30854319475",
+    "head_sha":  "330ccf8a3e51632be27d99a600fe6d7bd8c53959",
+    "worker_head":  "330ccf8a3e51632be27d99a600fe6d7bd8c53959",
+    "scope":  "UNREAL_SAVED_SCENE_READ_ONLY_AUDIT",
+    "gpu_work_started":  false,
+    "neural_work_started":  false,
+    "blender_work_started":  false,
+    "unreal_render_started":  false,
+    "unreal_mutation_authorized":  false,
+    "recorded_at":  "2026-08-03T21:22:26.0365604Z"
+}
