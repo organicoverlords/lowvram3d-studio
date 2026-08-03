@@ -79,19 +79,12 @@ $BlenderCallCount = [regex]::Matches($EntryText, $BlenderCallPattern).Count
 if ($BlenderCallCount -lt 2 -or $BlenderCallCount -gt 4) {
     throw "Unexpected decoded Blender invocation count: $BlenderCallCount"
 }
-$InjectionPattern = "(?m)^(\s*\$ErrorActionPreference\s*=\s*'Stop'\s*)$"
-$InjectionMatches = [regex]::Matches($EntryText, $InjectionPattern)
-if ($InjectionMatches.Count -ne 1) {
-    throw "Could not prove unique decoded ErrorActionPreference declaration; matches=$($InjectionMatches.Count)"
-}
 $EscapedWrapper = $BlenderWrapper.Replace("'", "''")
 $EntryText = [regex]::Replace(
     $EntryText,
-    $InjectionPattern,
-    "`$1`r`n`$BlenderNativeWrapper = '$EscapedWrapper'",
-    1
+    $BlenderCallPattern,
+    "& '$EscapedWrapper'"
 )
-$EntryText = [regex]::Replace($EntryText, $BlenderCallPattern, '& $BlenderNativeWrapper')
 Set-Content -LiteralPath $Entry -Value $EntryText -Encoding utf8
 Write-Host "BLENDER_NATIVE_WRAPPER=PROVEN"
 Write-Host "BLENDER_CALLS_PATCHED=$BlenderCallCount"
