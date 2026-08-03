@@ -1,6 +1,6 @@
 {
   "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
-  "status": "PRIMARY_384_READY_AFTER_ABORT_GATE",
+  "status": "EXECUTED_384_QA_PASSED",
   "asset": "tactical_red_panda_scout",
   "generator_family": "MVADAPTER_SD21",
   "conditioning": "IMAGE_PLUS_GEOMETRY",
@@ -62,10 +62,10 @@
   "negative_prompt": null,
   "classifier_free_guidance": false,
   "attempts_authorized": 1,
-  "attempts_used": 0,
-  "gpu_sequence_consumed": false,
+  "attempts_used": 1,
+  "gpu_sequence_consumed": true,
   "fallback_eligible": false,
-  "next_action": "LAUNCH_ONE_384X20",
+  "next_action": "USER_REVIEW_REQUIRED",
   "abort_gate_receipts": {
     "256": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_abort_gate_256_20260803\\inference_receipt.json",
     "384": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_abort_gate_384_20260803\\inference_receipt.json",
@@ -76,5 +76,13 @@
     "vae_fp32": "proof/benchmarks/20260803-mvadapter-vae-fp16-nan-root-cause.json",
     "cudnn_guard": "proof/benchmarks/20260803-mvadapter-cudnn-convolution-guard.json",
     "reference_zero_sentinel": "CACHE_SIDE_EFFECT_WITH_ZERO_SENTINEL"
+  },
+  "production_result": {
+    "classification": "MVADAPTER_FULL_RUN_PROVEN",
+    "numerical_qa": "PROVEN",
+    "visual_qa": "PROVEN",
+    "receipt": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_production_384x20_20260803\\inference_receipt.json",
+    "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_production_384x20_20260803\\six_view_contact_sheet.png",
+    "rear_face_visual_check": "ABSENT"
   }
 }
