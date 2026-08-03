@@ -465,13 +465,21 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             tensor_dtype_record,
         )
         adapter_state = __import__("safetensors.torch", fromlist=["load_file"]).load_file(str(preflight["adapter"]), device="cpu")
+        # The SD2.1 VAE in float16 returns 100% NaN from both encode and decode on this card, even
+        # from a verified-finite latent. NaN survives clamp and casts to 0, which is why the
+        # previous attempt completed twenty steps and a decode and still wrote six black PNGs.
+        # Promoting the VAE alone to float32 restores finite output; see
+        # proof/benchmarks/20260803-mvadapter-vae-fp16-nan-root-cause.json.
         pipe, adapter_report = build_low_vram_pipeline(
             str(preflight["config"]["base_model"]),
             adapter_state,
             preflight["adapter"].name,
             num_views=6,
             dtype=torch.float16,
+            vae_dtype=torch.float32,
         )
+        receipt["vae_dtype"] = "float32"
+        receipt["vae_dtype_reason"] = "float16 VAE is all-NaN on this GPU; proven by decode-boundary diagnostic"
         receipt["adapter_report"] = adapter_report
         receipt["component_inventory"] = component_inventory(pipe)
         receipt["attention"] = attention_report(pipe)
@@ -600,12 +608,22 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         pipe.unet.forward = tracked_unet
         pipe.cond_encoder.forward = tracked_cond
 
-        def on_step_end(_pipe: Any, step: int, _timestep: Any, callback_kwargs: dict[str, Any]) -> dict[str, Any]:
+        from mvadapter_latent_telemetry import LatentTelemetry
+
+        telemetry = LatentTelemetry(output_dir / "latent_telemetry",
+                                    snapshot_steps=(1, 5, 10, 15, 18, 19, 20))
+        receipt["latent_telemetry_dir"] = str(output_dir / "latent_telemetry")
+
+        def on_step_end(_pipe: Any, step: int, timestep: Any, callback_kwargs: dict[str, Any]) -> dict[str, Any]:
             receipt["denoising_steps_completed"] = int(step) + 1
-            if int(step) == 0 and isinstance(callback_kwargs.get("latents"), torch.Tensor):
+            latents = callback_kwargs.get("latents")
+            if int(step) == 0 and isinstance(latents, torch.Tensor):
                 receipt["dtype_inventory"]["diffusion_latents"] = tensor_dtype_record(
-                    "diffusion_latents", callback_kwargs["latents"]
+                    "diffusion_latents", latents
                 )
+            if isinstance(latents, torch.Tensor):
+                telemetry.record_step(int(step) + 1, timestep, latents,
+                                      scheduler=getattr(_pipe, "scheduler", None))
             _heartbeat(
                 heartbeat_path,
                 receipt,
@@ -638,6 +656,17 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["denoising_unet_call_count"] = state["denoising_unet_calls"]
         images = list(result.images)
         receipt["vae_decode_completed"] = True
+        # Final post-processed image tensor, as the last telemetry checkpoint. This is the stage
+        # that previously read as six identical blacks, so it is checked explicitly rather than
+        # inferred from the fact that files were written.
+        if images:
+            stacked = torch.from_numpy(
+                np.stack([np.asarray(image.convert("RGB"), dtype=np.float32) / 255.0
+                          for image in images])
+            )
+            telemetry.record("final_postprocessed_image_tensor", stacked, save=True)
+        receipt["latent_telemetry"] = telemetry.summary()
+        telemetry.write()
         _heartbeat(heartbeat_path, receipt, "vae_decode_completed")
         receipt["gpu_sequence_consumed"] = True
         if len(images) != 6:

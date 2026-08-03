@@ -310,8 +310,17 @@ def build_low_vram_pipeline(
     adapter_name: str,
     num_views: int = 6,
     dtype: torch.dtype = torch.float16,
+    vae_dtype: torch.dtype | None = None,
 ) -> tuple[LowVRAMMVAdapterI2MVSDPipeline, dict[str, Any]]:
-    """Construct the pipeline, install the adapter and register ``cond_encoder``."""
+    """Construct the pipeline, install the adapter and register ``cond_encoder``.
+
+    ``vae_dtype`` overrides the dtype of the VAE alone. On this GTX 1660 SUPER the SD2.1 VAE in
+    float16 returns 100% NaN from both ``encode`` and ``decode`` even when handed a perfectly
+    finite latent, which is why a run could complete twenty denoising steps and a decode and still
+    write six black PNGs: NaN survives ``clamp`` and casts to 0. Passing ``torch.float32`` here
+    restores finite output (std 0.749 against 0% finite in float16) and costs about 160 MB, which
+    is affordable given the measured 737 MB peak. The rest of the pipeline stays in float16.
+    """
     from diffusers import DDPMScheduler
 
     from mvadapter.schedulers.scheduling_shift_snr import ShiftSNRScheduler
@@ -348,7 +357,60 @@ def build_low_vram_pipeline(
     if unet_dtypes != {dtype}:
         raise RuntimeError(f"MVADAPTER_UNET_DTYPE_INVALID:{sorted(str(value) for value in unet_dtypes)}")
     rowcol_dtype_inventory(pipe, required_dtype=dtype)
+    if vae_dtype is not None and vae_dtype != dtype:
+        # Applied after the pipeline-wide cast so it is not undone by it.
+        pipe.vae.to(dtype=vae_dtype)
+        install_vae_dtype_boundary(pipe, vae_dtype, dtype)
+        load_report["vae_dtype_override"] = str(vae_dtype).replace("torch.", "")
     return pipe, load_report
+
+
+def install_vae_dtype_boundary(
+    pipe: LowVRAMMVAdapterI2MVSDPipeline,
+    vae_dtype: torch.dtype,
+    pipeline_dtype: torch.dtype,
+) -> None:
+    """Cast at the VAE boundary so the rest of the pipeline can stay in its own dtype.
+
+    The upstream pipeline hands the VAE whatever dtype the latents are in. With the VAE promoted to
+    float32 for numerical reasons, that would be a dtype mismatch, so encode/decode are wrapped to
+    cast on the way in and back on the way out. Nothing else in the pipeline observes the change.
+    """
+    vae = pipe.vae
+    original_decode = vae.decode
+    original_encode = vae.encode
+
+    def decode(latents: torch.Tensor, *args: Any, **kwargs: Any):
+        result = original_decode(latents.to(dtype=vae_dtype), *args, **kwargs)
+        if isinstance(result, tuple):
+            return tuple(
+                value.to(dtype=pipeline_dtype) if isinstance(value, torch.Tensor) else value
+                for value in result
+            )
+        if hasattr(result, "sample") and isinstance(result.sample, torch.Tensor):
+            result.sample = result.sample.to(dtype=pipeline_dtype)
+        return result
+
+    def encode(image: torch.Tensor, *args: Any, **kwargs: Any):
+        result = original_encode(image.to(dtype=vae_dtype), *args, **kwargs)
+        # The encode result feeds the UNet, which is float16 and guards its input dtype. The
+        # numerical problem is inside the VAE's own convolutions, so computing in float32 and
+        # handing back float16 is both safe (latents sit around +/-4) and required.
+        distribution = getattr(result, "latent_dist", None)
+        if distribution is not None:
+            for attribute in ("parameters", "mean", "std", "logvar"):
+                value = getattr(distribution, attribute, None)
+                if isinstance(value, torch.Tensor):
+                    setattr(distribution, attribute, value.to(dtype=pipeline_dtype))
+        elif isinstance(result, tuple):
+            return tuple(
+                value.to(dtype=pipeline_dtype) if isinstance(value, torch.Tensor) else value
+                for value in result
+            )
+        return result
+
+    vae.decode = decode
+    vae.encode = encode
 
 
 def _finite_numeric_record(tensor: torch.Tensor, name: str) -> dict[str, Any]:
