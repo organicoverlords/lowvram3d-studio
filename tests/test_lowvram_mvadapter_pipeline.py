@@ -91,6 +91,10 @@ class RouteRestrictionTests(unittest.TestCase):
                     lowvram.REQUIRED_ADAPTER_NAME,
                 )
         self.assertFalse(loader.call_args.kwargs["requires_safety_checker"])
+        self.assertEqual(
+            lowvram.LowVRAMMVAdapterI2MVSDPipeline._get_signature_types()["requires_safety_checker"],
+            (bool,),
+        )
 
     def test_text_only_adapter_is_rejected(self) -> None:
         with self.assertRaises(RuntimeError) as ctx:

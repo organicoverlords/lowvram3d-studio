@@ -21,8 +21,6 @@ completely unloaded adapter — with explicit key accounting that fails closed.
 Route restrictions enforced here: image+geometry SD2.1 only.  Text-conditioned
 adapters are rejected by name, and nvdiffrast is never imported.
 """
-from __future__ import annotations
-
 import hashlib
 from typing import Any
 
