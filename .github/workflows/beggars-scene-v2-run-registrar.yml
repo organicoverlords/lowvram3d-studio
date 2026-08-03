@@ -24,7 +24,7 @@ jobs:
           ref: agent/blender-beggars-scene-20260804
           fetch-depth: 0
 
-      - name: Locate and record the self-hosted v2 run
+      - name: Locate run and record Windows runner state
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -44,23 +44,32 @@ jobs:
             exit 1
           fi
 
+          runners_response="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runners?per_page=100")"
+          runner_json="$(printf '%s' "$runners_response" | jq -c '[.runners[] | select(([.labels[].name] | index("self-hosted")) and ([.labels[].name] | index("Windows")) and ([.labels[].name] | index("X64")))] | first // null')"
+
           evidence='evidence/latest-beggars-scene-v2'
           mkdir -p "$evidence"
-          printf '%s' "$run_json" | jq --arg observed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{
-            classification: "RUN_REGISTERED",
-            workflow_run_id: .id,
-            workflow_name: .name,
-            workflow_path: .path,
-            event: .event,
-            status: .status,
-            conclusion: .conclusion,
-            head_sha: .head_sha,
-            head_branch: .head_branch,
-            url: .html_url,
-            created_at: .created_at,
-            updated_at: .updated_at,
-            observed_at: $observed_at
-          }' > "$evidence/run-registration.json"
+          jq -n \
+            --argjson run "$run_json" \
+            --argjson runner "$runner_json" \
+            --arg observed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{
+              classification: "RUN_REGISTERED",
+              workflow_run_id: $run.id,
+              workflow_name: $run.name,
+              workflow_path: $run.path,
+              event: $run.event,
+              status: $run.status,
+              conclusion: $run.conclusion,
+              head_sha: $run.head_sha,
+              head_branch: $run.head_branch,
+              url: $run.html_url,
+              created_at: $run.created_at,
+              updated_at: $run.updated_at,
+              runner_classification: (if $runner == null then "RUNNER_NOT_REGISTERED" elif $runner.status == "online" then "RUNNER_ONLINE" else "RUNNER_OFFLINE" end),
+              runner: $runner,
+              observed_at: $observed_at
+            }' > "$evidence/run-registration.json"
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
