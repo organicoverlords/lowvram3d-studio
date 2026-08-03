@@ -1,0 +1,366 @@
+name: Panda full texture pipeline repair on local worker
+run-name: Panda full texture repair ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/panda-full-texture-pipeline-20260804
+    paths:
+      - .github/workflows/panda-full-texture-pipeline-local-worker.yml
+      - agent-requests/panda-full-texture-pipeline-20260804.md
+      - agent-requests/panda-full-texture-pipeline-trigger.txt
+
+permissions:
+  contents: write
+
+concurrency:
+  group: panda-full-texture-pipeline-repair
+  cancel-in-progress: false
+
+jobs:
+  repair-and-prove:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 360
+    env:
+      EXPECTED_REPO: organicoverlords/lowvram3d-studio
+      EXPECTED_BRANCH: fix/panda-full-texture-pipeline-20260804
+      LOCAL_CLAUDE_REPO: C:\Users\Lauri\Desktop\lowvram3d-unified-pipeline-v2-20260802
+      PANDA_ROOT: C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout
+      OUTPUT_ROOT: C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\panda_full_pipeline_repair_20260804
+      BLENDER_EXE: C:\Program Files\Blender Foundation\Blender 5.2\blender.exe
+      PROMPT_FILE: agent-requests\panda-full-texture-pipeline-20260804.md
+
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/panda-full-texture-pipeline-20260804
+          clean: true
+          fetch-depth: 0
+
+      - name: Verify repository identity and source of truth
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $repo = git config --get remote.origin.url
+          $branch = git branch --show-current
+          $head = git rev-parse HEAD
+          $status = @(git status --short)
+          Write-Host "REPO_ROOT=$PWD"
+          Write-Host "REMOTE=$repo"
+          Write-Host "BRANCH=$branch"
+          Write-Host "HEAD=$head"
+          Write-Host "DIRTY_COUNT=$($status.Count)"
+          if ($repo -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') {
+            throw "Repository identity mismatch: $repo"
+          }
+          if ($branch -ne $env:EXPECTED_BRANCH) {
+            throw "Branch mismatch: $branch"
+          }
+          if ($status.Count -ne 0) {
+            throw "Actions checkout is dirty before work"
+          }
+          git fetch origin $env:EXPECTED_BRANCH --quiet
+          $remoteHead = git rev-parse "origin/$env:EXPECTED_BRANCH"
+          if ($head -ne $remoteHead) {
+            throw "Local checkout is not equal to remote branch"
+          }
+          Write-Host "REMOTE_HEAD=$remoteHead"
+
+      - name: Capture Claude-era local worktree without modifying it
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $capture = Join-Path $PWD '.agent\local-claude-state'
+          New-Item -ItemType Directory -Path $capture -Force | Out-Null
+          if (-not (Test-Path -LiteralPath (Join-Path $env:LOCAL_CLAUDE_REPO '.git'))) {
+            '{"available":false,"reason":"local repository missing"}' | Set-Content (Join-Path $capture 'state.json') -Encoding utf8
+            exit 0
+          }
+          $before = (Get-Item -LiteralPath $env:LOCAL_CLAUDE_REPO).LastWriteTimeUtc
+          $root = git -C $env:LOCAL_CLAUDE_REPO rev-parse --show-toplevel
+          $remote = git -C $env:LOCAL_CLAUDE_REPO config --get remote.origin.url
+          $branch = git -C $env:LOCAL_CLAUDE_REPO branch --show-current
+          $head = git -C $env:LOCAL_CLAUDE_REPO rev-parse HEAD
+          $status = @(git -C $env:LOCAL_CLAUDE_REPO status --short)
+          $nameStatus = @(git -C $env:LOCAL_CLAUDE_REPO diff --name-status)
+          $cachedNameStatus = @(git -C $env:LOCAL_CLAUDE_REPO diff --cached --name-status)
+          $untracked = @(git -C $env:LOCAL_CLAUDE_REPO ls-files --others --exclude-standard)
+          git -C $env:LOCAL_CLAUDE_REPO diff --no-ext-diff --binary | Set-Content (Join-Path $capture 'working.patch') -Encoding utf8
+          git -C $env:LOCAL_CLAUDE_REPO diff --cached --no-ext-diff --binary | Set-Content (Join-Path $capture 'index.patch') -Encoding utf8
+          $status | Set-Content (Join-Path $capture 'status.txt') -Encoding utf8
+          $nameStatus | Set-Content (Join-Path $capture 'working-name-status.txt') -Encoding utf8
+          $cachedNameStatus | Set-Content (Join-Path $capture 'index-name-status.txt') -Encoding utf8
+          $untracked | Set-Content (Join-Path $capture 'untracked.txt') -Encoding utf8
+          [ordered]@{
+            available = $true
+            root = $root
+            remote = $remote
+            branch = $branch
+            head = $head
+            dirty_count = $status.Count
+            working_changes = $nameStatus
+            staged_changes = $cachedNameStatus
+            untracked = $untracked
+            captured_at = (Get-Date).ToUniversalTime().ToString('o')
+          } | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $capture 'state.json') -Encoding utf8
+          $after = (Get-Item -LiteralPath $env:LOCAL_CLAUDE_REPO).LastWriteTimeUtc
+          if ($before -ne $after) {
+            throw "Local Claude repository directory timestamp changed during read-only capture"
+          }
+          Write-Host "LOCAL_CLAUDE_ROOT=$root"
+          Write-Host "LOCAL_CLAUDE_BRANCH=$branch"
+          Write-Host "LOCAL_CLAUDE_HEAD=$head"
+          Write-Host "LOCAL_CLAUDE_DIRTY_COUNT=$($status.Count)"
+
+      - name: Resolve tools and record machine preflight
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not (Test-Path -LiteralPath $env:BLENDER_EXE)) {
+            throw "Blender 5.2 executable is missing"
+          }
+          if (-not (Test-Path -LiteralPath $env:PANDA_ROOT)) {
+            throw "Canonical panda root is missing"
+          }
+          $codex = Get-Command codex -ErrorAction SilentlyContinue
+          if (-not $codex) {
+            throw "Codex CLI is not installed or not on PATH"
+          }
+          $pythonCandidates = @(
+            'C:\AI\3d-studio-pipeline\workers\mv_adapter\.venv\Scripts\python.exe',
+            'C:\AI\HY3D2\python_standalone\python.exe',
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $selected = $null
+          foreach ($candidate in $pythonCandidates) {
+            & $candidate -c "import numpy, scipy, PIL, pytest; print('TEXTURE_ENV_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) { $selected = $candidate; break }
+          }
+          if (-not $selected) {
+            throw "No Python environment has numpy, scipy, Pillow, and pytest"
+          }
+          "REPAIR_PYTHON=$selected" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "CODEX_EXE=$($codex.Source)" | Add-Content -LiteralPath $env:GITHUB_ENV
+          New-Item -ItemType Directory -Path '.agent' -Force | Out-Null
+          $gpu = & nvidia-smi --query-gpu=name,memory.total,memory.used,utilization.gpu --format=csv,noheader 2>&1
+          $processes = Get-CimInstance Win32_Process | Where-Object {
+            $_.Name -match 'python|blender|codex' -or $_.CommandLine -match 'LowVRAM3D|tactical_red_panda|multiview_texture'
+          } | Select-Object ProcessId, Name, CreationDate, CommandLine
+          [ordered]@{
+            repository = $env:EXPECTED_REPO
+            branch = $env:EXPECTED_BRANCH
+            head = (git rev-parse HEAD)
+            remote = (git config --get remote.origin.url)
+            python = $selected
+            python_version = (& $selected --version 2>&1 | Out-String).Trim()
+            blender = $env:BLENDER_EXE
+            blender_version = (& $env:BLENDER_EXE --version 2>&1 | Select-Object -First 1 | Out-String).Trim()
+            codex = $codex.Source
+            codex_version = (& $codex.Source --version 2>&1 | Out-String).Trim()
+            gpu = ($gpu | Out-String).Trim()
+            computer = Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsTotalVisibleMemorySize
+            relevant_processes = $processes
+            recorded_at = (Get-Date).ToUniversalTime().ToString('o')
+          } | ConvertTo-Json -Depth 8 | Set-Content '.agent\machine-preflight.json' -Encoding utf8
+          Get-Content '.agent\machine-preflight.json'
+
+      - name: Run Codex repair passes
+        id: codex
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'
+          New-Item -ItemType Directory -Path $env:OUTPUT_ROOT -Force | Out-Null
+          $last = Join-Path $PWD '.agent\codex-last-message.md'
+          $events = Join-Path $PWD '.agent\codex-events.jsonl'
+          $acceptance = Join-Path $env:OUTPUT_ROOT 'acceptance.json'
+          $proven = $false
+          $exitCodes = @()
+          for ($pass = 1; $pass -le 3; $pass++) {
+            Write-Host "CODEX_PASS=$pass"
+            if ($pass -eq 1) {
+              $inputPath = Join-Path $PWD $env:PROMPT_FILE
+            } else {
+              $continuation = Join-Path $PWD ".agent\codex-continuation-$pass.md"
+              $currentAcceptance = if (Test-Path -LiteralPath $acceptance) { Get-Content -LiteralPath $acceptance -Raw } else { 'acceptance.json is absent' }
+              $previous = if (Test-Path -LiteralPath $last) { Get-Content -LiteralPath $last -Raw } else { 'No previous final message was written.' }
+              @"
+Continue the task in agent-requests/panda-full-texture-pipeline-20260804.md from the current working tree and existing output artifacts. Do not restart, discard, or merely summarize. Inspect the real failing path, implement the next evidence-backed correction, rerun the focused tests and canonical reproduction, and continue until FRONT_REAR_TEXTURE_REPAIR_PROVEN or a genuine external HARD_BLOCKER.
+
+Previous Codex final message:
+$previous
+
+Current acceptance file:
+$currentAcceptance
+"@ | Set-Content -LiteralPath $continuation -Encoding utf8
+              $inputPath = $continuation
+            }
+            Get-Content -LiteralPath $inputPath -Raw | & $env:CODEX_EXE -a never exec --sandbox workspace-write --add-dir $env:PANDA_ROOT --json --output-last-message $last - 2>&1 | Tee-Object -FilePath $events -Append
+            $code = $LASTEXITCODE
+            $exitCodes += $code
+            Write-Host "CODEX_PASS_${pass}_EXIT=$code"
+            if (Test-Path -LiteralPath $acceptance) {
+              try {
+                $record = Get-Content -LiteralPath $acceptance -Raw | ConvertFrom-Json
+                Write-Host "CODEX_PASS_${pass}_CLASSIFICATION=$($record.classification)"
+                if ($record.classification -eq 'FRONT_REAR_TEXTURE_REPAIR_PROVEN') {
+                  $proven = $true
+                  break
+                }
+              } catch {
+                Write-Warning "acceptance.json is not valid JSON after pass $pass"
+              }
+            }
+          }
+          "CODEX_EXIT_CODES=$($exitCodes -join ',')" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "CODEX_REPORTED_PROVEN=$proven" | Add-Content -LiteralPath $env:GITHUB_ENV
+          exit 0
+
+      - name: Independently compile and test the resulting repository
+        id: tests
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          $changed = @(
+            git diff --name-only --diff-filter=ACMRT HEAD -- '*.py'
+            git ls-files --others --exclude-standard -- '*.py'
+          ) | Sort-Object -Unique
+          foreach ($file in $changed) {
+            if (Test-Path -LiteralPath $file) {
+              & $env:REPAIR_PYTHON -m py_compile $file
+              if ($LASTEXITCODE -ne 0) { throw "Compile failed: $file" }
+            }
+          }
+          $focused = @(
+            'tests/test_fast_texture_projection.py',
+            'tests/test_multiview_texture_projection.py',
+            'tests/test_multiview_texture_fusion.py',
+            'tests/test_texture_pipeline.py',
+            'tests/test_unified_pipeline_v2.py'
+          ) | Where-Object { Test-Path -LiteralPath $_ }
+          if ($focused.Count -gt 0) {
+            & $env:REPAIR_PYTHON -m pytest @focused -q
+            if ($LASTEXITCODE -ne 0) { throw "Focused texture tests failed" }
+          }
+          & $env:REPAIR_PYTHON -m pytest tests -q
+          if ($LASTEXITCODE -ne 0) { throw "Repository test suite failed" }
+          "INDEPENDENT_TESTS_PASSED=true" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Enforce final visual and pipeline acceptance contract
+        id: gate
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = Join-Path $env:OUTPUT_ROOT 'acceptance.json'
+          if (-not (Test-Path -LiteralPath $path)) {
+            throw "Canonical acceptance.json is missing"
+          }
+          $a = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+          $required = [ordered]@{
+            classification = 'FRONT_REAR_TEXTURE_REPAIR_PROVEN'
+            full_pipeline_texture_qa = 'PROVEN'
+            front_face_quality = 'PROVEN'
+            rear_face_projection = 'PROVEN_ABSENT'
+            side_face_wrap = 'PROVEN_ABSENT'
+            fresh_import = 'PROVEN'
+            active_texture_resolution = 'PROVEN'
+          }
+          foreach ($key in $required.Keys) {
+            if ($a.$key -ne $required[$key]) {
+              throw "Acceptance gate failed: $key=$($a.$key), expected $($required[$key])"
+            }
+          }
+          foreach ($key in @('geometry_hash_preserved','uv_hash_preserved','tests_passed','canonical_reproduction_passed')) {
+            if ($a.$key -ne $true) { throw "Acceptance gate failed: $key is not true" }
+          }
+          foreach ($key in @('final_glb','contact_sheet','proof_document')) {
+            if (-not $a.$key) { throw "Acceptance gate failed: $key is absent" }
+          }
+          if (-not (Test-Path -LiteralPath $a.final_glb)) { throw "Final GLB does not exist" }
+          if (-not (Test-Path -LiteralPath $a.contact_sheet)) { throw "Contact sheet does not exist" }
+          if (-not (Test-Path -LiteralPath $a.proof_document)) {
+            $repoProof = Join-Path $PWD $a.proof_document
+            if (-not (Test-Path -LiteralPath $repoProof)) { throw "Proof document does not exist" }
+          }
+          $glbSize = (Get-Item -LiteralPath $a.final_glb).Length
+          if ($glbSize -lt 1024) { throw "Final GLB is implausibly small" }
+          Write-Host ($a | ConvertTo-Json -Depth 12)
+          "FINAL_ACCEPTANCE_PROVEN=true" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Publish compact evidence and commit proven repair
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = Join-Path $PWD 'evidence\latest-panda-full-texture-repair'
+          if (Test-Path -LiteralPath $evidence) { Remove-Item -LiteralPath $evidence -Recurse -Force }
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          foreach ($name in @('acceptance.json','pipeline_receipt.json','root_cause.md')) {
+            $source = Join-Path $env:OUTPUT_ROOT $name
+            if (Test-Path -LiteralPath $source) { Copy-Item -LiteralPath $source -Destination $evidence -Force }
+          }
+          foreach ($source in @('.agent\machine-preflight.json','.agent\codex-last-message.md')) {
+            if (Test-Path -LiteralPath $source) { Copy-Item -LiteralPath $source -Destination $evidence -Force }
+          }
+          [ordered]@{
+            schema = 'panda_full_texture_local_worker_v1'
+            workflow_run_id = '${{ github.run_id }}'
+            workflow_run_url = 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            input_sha = '${{ github.sha }}'
+            codex_exit_codes = $env:CODEX_EXIT_CODES
+            codex_reported_proven = $env:CODEX_REPORTED_PROVEN
+            independent_tests_passed = $env:INDEPENDENT_TESTS_PASSED
+            final_acceptance_proven = $env:FINAL_ACCEPTANCE_PROVEN
+            recorded_at = (Get-Date).ToUniversalTime().ToString('o')
+          } | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $evidence 'workflow_receipt.json') -Encoding utf8
+
+          if (Test-Path -LiteralPath '.agent\local-claude-state') {
+            Remove-Item -LiteralPath '.agent\local-claude-state' -Recurse -Force
+          }
+          if (Test-Path -LiteralPath '.agent\codex-events.jsonl') {
+            Remove-Item -LiteralPath '.agent\codex-events.jsonl' -Force
+          }
+          Get-ChildItem -LiteralPath '.agent' -Filter 'codex-continuation-*.md' -ErrorAction SilentlyContinue | Remove-Item -Force
+
+          $large = Get-ChildItem -File -Recurse | Where-Object {
+            $_.FullName -notmatch '\\.git\\' -and $_.Length -gt 25MB
+          }
+          foreach ($file in $large) {
+            $relative = [IO.Path]::GetRelativePath($PWD, $file.FullName)
+            if ((git ls-files --error-unmatch -- $relative 2>$null) -or (git status --porcelain -- $relative)) {
+              throw "Large generated file must not be committed: $relative"
+            }
+          }
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          if (@(git status --porcelain).Count -eq 0) {
+            throw "Codex produced no repository changes or compact evidence"
+          }
+          git commit -m "fix: prove front/rear-safe multiview texture pipeline"
+          if ($LASTEXITCODE -ne 0) { throw "Could not commit proven repair" }
+          git push origin "HEAD:$env:EXPECTED_BRANCH"
+          if ($LASTEXITCODE -ne 0) { throw "Could not push proven repair" }
+          $localHead = git rev-parse HEAD
+          git fetch origin $env:EXPECTED_BRANCH --quiet
+          $remoteHead = git rev-parse "origin/$env:EXPECTED_BRANCH"
+          if ($localHead -ne $remoteHead) { throw "Local and remote heads differ after push" }
+          if (@(git status --porcelain).Count -ne 0) { throw "Worktree is dirty after commit" }
+          Write-Host "PROVEN_COMMIT=$localHead"
+
+      - name: Upload full diagnostic and final artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: panda-full-texture-repair-${{ github.run_id }}
+          path: |
+            .agent\machine-preflight.json
+            .agent\codex-last-message.md
+            .agent\codex-events.jsonl
+            C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\panda_full_pipeline_repair_20260804\**
+          if-no-files-found: warn
+          retention-days: 30
