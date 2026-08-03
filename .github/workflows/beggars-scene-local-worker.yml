@@ -1,0 +1,508 @@
+name: Beggars meme Blender recreation on local PC
+run-name: Beggars meme recreation ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - .github/workflows/beggars-scene-local-worker.yml
+      - configs/scene/beggars_banquet_recreation_v1.json
+      - tools/beggars_scene/prepare_reference_sequence.py
+      - tools/beggars_scene/package_results.py
+      - blender/build_beggars_meme_scene.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-meme-local-worker
+  cancel-in-progress: true
+
+jobs:
+  build-photoreal-meme-recreation:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout exact dedicated branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify repository identity and source of truth
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $expectedRef = 'refs/heads/agent/blender-beggars-scene-20260804'
+          if ('${{ github.ref }}' -ne $expectedRef) {
+            throw "Wrong branch: expected $expectedRef, received ${{ github.ref }}"
+          }
+          $remote = git remote get-url origin
+          if ($remote -notmatch 'organicoverlords/lowvram3d-studio') {
+            throw "Wrong repository remote: $remote"
+          }
+          $head = git rev-parse HEAD
+          if ($head -ne '${{ github.sha }}') {
+            throw "Checkout HEAD $head does not equal workflow SHA ${{ github.sha }}"
+          }
+          if (@(git status --short).Count -gt 0) {
+            throw 'Checkout is dirty before execution'
+          }
+          $config = Get-Content -LiteralPath 'configs/scene/beggars_banquet_recreation_v1.json' -Raw | ConvertFrom-Json
+          if ($config.worker_policy.branch -ne 'agent/blender-beggars-scene-20260804') {
+            throw "Config branch mismatch: $($config.worker_policy.branch)"
+          }
+          if ($config.scene_id -ne 'beggars-banquet-meme-clip-match-20260804') {
+            throw "Unexpected scene specification: $($config.scene_id)"
+          }
+          "WORKER_HEAD=$head" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "WORKER_REMOTE=$remote" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "REPOSITORY_IDENTITY=PROVEN"
+          Write-Host "SOURCE_OF_TRUTH=$head"
+
+      - name: Resolve Blender, Python and bounded output roots
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $blender = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
+          if (-not (Test-Path -LiteralPath $blender)) {
+            throw "Required Blender 5.2 executable is missing: $blender"
+          }
+          $pythonCandidates = @(
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            'C:\AI\HY3D2\python_standalone\python.exe',
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $python = $null
+          foreach ($candidate in $pythonCandidates) {
+            & $candidate -c "import sys; assert sys.version_info >= (3, 11); print(sys.executable)" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              $python = $candidate
+              break
+            }
+          }
+          if (-not $python) {
+            throw 'No usable Python 3.11+ interpreter was found'
+          }
+
+          $root = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\run-${{ github.run_id }}"
+          $private = Join-Path $root '_reference_private'
+          $artifact = Join-Path $root 'artifact'
+          if (Test-Path -LiteralPath $root) {
+            Remove-Item -LiteralPath $root -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $private -Force | Out-Null
+          New-Item -ItemType Directory -Path $artifact -Force | Out-Null
+
+          "BLENDER_EXE=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "SCENE_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "BEGGARS_ROOT=$root" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "BEGGARS_PRIVATE=$private" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "BEGGARS_OUTPUT=$artifact" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "BLENDER=$blender"
+          Write-Host "PYTHON=$python"
+          Write-Host "OUTPUT_ROOT=$root"
+
+      - name: Fail closed when the GPU is busy
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $nvidia = (Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue).Source
+          if (-not $nvidia) {
+            throw 'nvidia-smi.exe is unavailable; GPU state cannot be proven'
+          }
+          $usedText = & $nvidia --query-gpu=memory.used --format=csv,noheader,nounits
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not query GPU memory usage'
+          }
+          $usedValues = @($usedText | ForEach-Object { [int]($_.Trim()) })
+          $used = ($usedValues | Measure-Object -Sum).Sum
+          $config = Get-Content -LiteralPath 'configs/scene/beggars_banquet_recreation_v1.json' -Raw | ConvertFrom-Json
+          $threshold = [int]$config.worker_policy.gpu_memory_abort_threshold_mib
+          Write-Host "GPU_USED_MIB=$used"
+          Write-Host "GPU_ABORT_THRESHOLD_MIB=$threshold"
+          if ($used -ge $threshold) {
+            throw "BLOCKED_GPU_BUSY: $used MiB is already in use"
+          }
+          "GPU_USED_MIB=$used" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host 'GPU_PREFLIGHT=PROVEN'
+
+      - name: Compile authored Python before installing dependencies
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & $env:SCENE_PYTHON -m py_compile `
+            tools\beggars_scene\prepare_reference_sequence.py `
+            tools\beggars_scene\package_results.py `
+            blender\build_beggars_meme_scene.py
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Python compilation failed'
+          }
+          & $env:SCENE_PYTHON -c "import json, pathlib; json.loads(pathlib.Path('configs/scene/beggars_banquet_recreation_v1.json').read_text(encoding='utf-8')); print('CONFIG_JSON=PROVEN')"
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Scene configuration JSON is invalid'
+          }
+
+      - name: Create isolated reconstruction environment
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $venv = Join-Path $env:BEGGARS_ROOT 'venv'
+          & $env:SCENE_PYTHON -m venv $venv
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not create the isolated Python environment'
+          }
+          $python = Join-Path $venv 'Scripts\python.exe'
+          & $python -m pip install --disable-pip-version-check --upgrade pip setuptools wheel
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not bootstrap pip'
+          }
+          & $python -m pip install --disable-pip-version-check `
+            numpy==1.26.4 `
+            opencv-python-headless==4.10.0.84 `
+            pyyaml==6.0.2 `
+            onnxruntime==1.19.2 `
+            onnx==1.16.2 `
+            scipy==1.13.1 `
+            scikit-image==0.24.0 `
+            yt-dlp `
+            gdown==5.2.0 `
+            imageio-ffmpeg==0.5.1
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not install pinned reconstruction dependencies'
+          }
+          "BEGGARS_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          $ffmpeg = & $python -c "import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())"
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $ffmpeg)) {
+            throw "Could not resolve ffmpeg: $ffmpeg"
+          }
+          "FFMPEG_EXE=$ffmpeg" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "ISOLATED_PYTHON=$python"
+          Write-Host "FFMPEG=$ffmpeg"
+
+      - name: Prepare pinned 3DDFA and YuNet models
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $thirdParty = Join-Path $env:BEGGARS_PRIVATE '3DDFA_V2'
+          git clone --quiet https://github.com/cleardusk/3DDFA_V2.git $thirdParty
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not clone 3DDFA_V2'
+          }
+          git -C $thirdParty checkout --quiet 1b6c67601abffc1e9f248b291708aef0e43b55ae
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not checkout the pinned 3DDFA_V2 commit'
+          }
+          $thirdPartyHead = git -C $thirdParty rev-parse HEAD
+          if ($thirdPartyHead -ne '1b6c67601abffc1e9f248b291708aef0e43b55ae') {
+            throw "3DDFA pin mismatch: $thirdPartyHead"
+          }
+
+          $onnxPath = Join-Path $thirdParty 'weights\mb1_120x120.onnx'
+          & $env:BEGGARS_PYTHON -m gdown 'https://drive.google.com/uc?id=1YpO1KfXvJHRmCBkErNa62dHm-CUjsoIk' -O $onnxPath
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $onnxPath)) {
+            throw 'Could not download the pinned 3DDFA ONNX model'
+          }
+          if ((Get-Item -LiteralPath $onnxPath).Length -lt 1000000) {
+            throw 'Downloaded 3DDFA ONNX model is implausibly small'
+          }
+
+          $yunet = Join-Path $env:BEGGARS_PRIVATE 'face_detection_yunet_2023mar.onnx'
+          Invoke-WebRequest `
+            -Uri 'https://raw.githubusercontent.com/opencv/opencv_zoo/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx' `
+            -OutFile $yunet `
+            -UseBasicParsing
+          if (-not (Test-Path -LiteralPath $yunet) -or (Get-Item -LiteralPath $yunet).Length -lt 100000) {
+            throw 'YuNet model download failed or produced an implausibly small file'
+          }
+          "THREEDDFA_ROOT=$thirdParty" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "YUNET_MODEL=$yunet" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "THREEDDFA_HEAD=$thirdPartyHead"
+          Write-Host 'FACE_MODELS=PROVEN'
+
+      - name: Fetch the exact meme clip as private temporary input
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $config = Get-Content -LiteralPath 'configs/scene/beggars_banquet_recreation_v1.json' -Raw | ConvertFrom-Json
+          $downloadRoot = Join-Path $env:BEGGARS_PRIVATE 'download'
+          New-Item -ItemType Directory -Path $downloadRoot -Force | Out-Null
+          $accepted = $null
+          $acceptedTitle = $null
+          $acceptedCandidate = $null
+
+          foreach ($candidate in @($config.source_context.reference_clip_candidates)) {
+            Get-ChildItem -LiteralPath $downloadRoot -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
+            Write-Host "REFERENCE_ATTEMPT=$candidate"
+            & $env:BEGGARS_PYTHON -m yt_dlp `
+              --no-playlist `
+              --max-downloads 1 `
+              --match-filter 'duration > 1 & duration < 30' `
+              --ffmpeg-location $env:FFMPEG_EXE `
+              --merge-output-format mp4 `
+              --write-info-json `
+              --no-write-thumbnail `
+              --format 'bv*[height<=720]+ba/b[height<=720]/b' `
+              --output (Join-Path $downloadRoot 'source.%(ext)s') `
+              $candidate
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "REFERENCE_ATTEMPT_FAILED=$candidate"
+              continue
+            }
+            $video = Get-ChildItem -LiteralPath $downloadRoot -File | Where-Object {
+              $_.Extension -in '.mp4', '.mkv', '.webm', '.mov'
+            } | Sort-Object Length -Descending | Select-Object -First 1
+            $infoFile = Get-ChildItem -LiteralPath $downloadRoot -Filter '*.info.json' -File | Select-Object -First 1
+            if (-not $video -or -not $infoFile) {
+              continue
+            }
+            try {
+              $info = Get-Content -LiteralPath $infoFile.FullName -Raw | ConvertFrom-Json
+              $searchable = "$($info.title) $($info.description) $($info.uploader)"
+              $duration = [double]$info.duration
+              if ($duration -le 1 -or $duration -ge 30) {
+                Write-Host "REFERENCE_REJECTED_DURATION=$duration"
+                continue
+              }
+              if ($searchable -notmatch '(?i)(beggar|odyssey|pattinson|antinous|reaction)') {
+                Write-Host "REFERENCE_REJECTED_IDENTITY=$searchable"
+                continue
+              }
+              $accepted = $video.FullName
+              $acceptedTitle = [string]$info.title
+              $acceptedCandidate = [string]$candidate
+              break
+            }
+            catch {
+              Write-Host "REFERENCE_INFO_PARSE_FAILED=$($_.Exception.Message)"
+            }
+          }
+
+          if (-not $accepted) {
+            throw 'REFERENCE_CLIP_BLOCKED: no bounded candidate could be downloaded and identity-validated'
+          }
+          "REFERENCE_CLIP=$accepted" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "REFERENCE_TITLE=$acceptedTitle" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "REFERENCE_CANDIDATE=$acceptedCandidate" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "REFERENCE_CLIP=PROVEN"
+          Write-Host "REFERENCE_TITLE=$acceptedTitle"
+
+      - name: Reconstruct tracked 3D face sequence
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $frames = Join-Path $env:BEGGARS_PRIVATE 'frames'
+          $sequence = Join-Path $env:BEGGARS_PRIVATE 'face_sequence.npz'
+          $keyframe = Join-Path $env:BEGGARS_PRIVATE 'selected_keyframe.png'
+          $report = Join-Path $env:BEGGARS_OUTPUT 'reference_reconstruction_report.json'
+          & $env:BEGGARS_PYTHON tools\beggars_scene\prepare_reference_sequence.py `
+            --clip $env:REFERENCE_CLIP `
+            --third-party-root $env:THREEDDFA_ROOT `
+            --yunet-model $env:YUNET_MODEL `
+            --frames-dir $frames `
+            --output-npz $sequence `
+            --output-report $report `
+            --keyframe-output $keyframe `
+            --target-fps 12 `
+            --max-seconds 8 `
+            --smoothing 0.68
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Tracked 3D face reconstruction failed'
+          }
+          if (-not (Test-Path -LiteralPath $sequence) -or (Get-Item -LiteralPath $sequence).Length -lt 1000000) {
+            throw 'Tracked face sequence is missing or implausibly small'
+          }
+          "FACE_SEQUENCE=$sequence" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host 'TRACKED_FACE_RECONSTRUCTION=PROVEN'
+
+      - name: Build, save, reload and render the Blender recreation
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & $env:BLENDER_EXE `
+            --background `
+            --factory-startup `
+            --python blender\build_beggars_meme_scene.py `
+            -- `
+            --sequence $env:FACE_SEQUENCE `
+            --config configs\scene\beggars_banquet_recreation_v1.json `
+            --output-dir $env:BEGGARS_OUTPUT `
+            --render-engine eevee
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Blender scene build or render failed'
+          }
+          $required = @(
+            'beggars_photoreal_recreation.blend',
+            'hero_clean_render.png',
+            'wide_scene_proof.png',
+            'beggars_photoreal_recreation_silent.mp4',
+            'scene_receipt.json'
+          )
+          foreach ($name in $required) {
+            $path = Join-Path $env:BEGGARS_OUTPUT $name
+            if (-not (Test-Path -LiteralPath $path)) {
+              throw "Missing Blender output: $path"
+            }
+          }
+          Write-Host 'BLENDER_BUILD_SAVE_RELOAD_RENDER=PROVEN'
+
+      - name: Create generic synthetic voice and final MP4
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $voice = Join-Path $env:BEGGARS_ROOT 'synthetic_voice.wav'
+          Add-Type -AssemblyName System.Speech
+          $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
+          try {
+            $synth.Rate = -1
+            $synth.Volume = 100
+            $synth.SetOutputToWaveFile($voice)
+            $synth.Speak('Somebody get these beggars out of here!')
+          }
+          finally {
+            $synth.Dispose()
+          }
+          if (-not (Test-Path -LiteralPath $voice) -or (Get-Item -LiteralPath $voice).Length -lt 10000) {
+            throw 'Synthetic voice generation failed'
+          }
+
+          $config = Get-Content -LiteralPath 'configs/scene/beggars_banquet_recreation_v1.json' -Raw | ConvertFrom-Json
+          $duration = [double]$config.creative_target.duration_frames / [double]$config.creative_target.fps
+          $silent = Join-Path $env:BEGGARS_OUTPUT 'beggars_photoreal_recreation_silent.mp4'
+          $final = Join-Path $env:BEGGARS_OUTPUT 'beggars_photoreal_recreation.mp4'
+          $filter = "[1:a]adelay=520|520,apad=pad_dur=$duration[a]"
+          & $env:FFMPEG_EXE `
+            -y `
+            -i $silent `
+            -i $voice `
+            -filter_complex $filter `
+            -map '0:v:0' `
+            -map '[a]' `
+            -c:v copy `
+            -c:a aac `
+            -b:a 192k `
+            -t $duration `
+            $final
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Could not mux synthetic voice into the final MP4'
+          }
+          if (-not (Test-Path -LiteralPath $final) -or (Get-Item -LiteralPath $final).Length -lt 100000) {
+            throw 'Final MP4 is missing or implausibly small'
+          }
+          "FINAL_VIDEO=$final" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host 'SYNTHETIC_AUDIO_AND_FINAL_VIDEO=PROVEN'
+
+      - name: Record worker identity and execution receipt
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $receipt = [ordered]@{
+            classification = 'PROVEN'
+            repository = '${{ github.repository }}'
+            branch = '${{ github.ref_name }}'
+            head_sha = '${{ github.sha }}'
+            worker_head = $env:WORKER_HEAD
+            remote = $env:WORKER_REMOTE
+            workflow_run_id = '${{ github.run_id }}'
+            workflow_run_url = 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            blender = $env:BLENDER_EXE
+            python = $env:BEGGARS_PYTHON
+            gpu_used_mib_at_start = [int]$env:GPU_USED_MIB
+            reference_title = $env:REFERENCE_TITLE
+            reference_candidate = $env:REFERENCE_CANDIDATE
+            reference_media_uploaded = $false
+            actor_voice_cloned = $false
+            render_scope = 'TRACKED_3D_FACE_PLUS_PROCEDURAL_BLENDER_SCENE'
+            recorded_at = (Get-Date).ToUniversalTime().ToString('o')
+          }
+          $receipt | ConvertTo-Json -Depth 8 | Set-Content `
+            -LiteralPath (Join-Path $env:BEGGARS_OUTPUT 'worker_receipt.json') `
+            -Encoding utf8
+
+      - name: Package and validate artifact outputs
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & $env:BEGGARS_PYTHON tools\beggars_scene\package_results.py `
+            --output-dir $env:BEGGARS_OUTPUT `
+            --final-video $env:FINAL_VIDEO `
+            --workflow-run-id '${{ github.run_id }}' `
+            --head-sha '${{ github.sha }}'
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Output packaging or validation failed'
+          }
+          Remove-Item -LiteralPath $env:BEGGARS_PRIVATE -Recurse -Force
+          if (Test-Path -LiteralPath $env:BEGGARS_PRIVATE) {
+            throw 'Private source media directory still exists after cleanup'
+          }
+          Remove-Item -LiteralPath (Join-Path $env:BEGGARS_OUTPUT 'beggars_photoreal_recreation_silent.mp4') -Force
+          Write-Host 'PRIVATE_REFERENCE_MEDIA_CLEANUP=PROVEN'
+          Write-Host 'ARTIFACT_VALIDATION=PROVEN'
+
+      - name: Commit compact machine receipts
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = Join-Path $PWD 'evidence\latest-beggars-scene'
+          if (Test-Path -LiteralPath $evidence) {
+            Remove-Item -LiteralPath $evidence -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          Copy-Item -LiteralPath (Join-Path $env:BEGGARS_OUTPUT 'scene_receipt.json') -Destination $evidence
+          Copy-Item -LiteralPath (Join-Path $env:BEGGARS_OUTPUT 'artifact_manifest.json') -Destination $evidence
+          Copy-Item -LiteralPath (Join-Path $env:BEGGARS_OUTPUT 'reference_reconstruction_report.json') -Destination $evidence
+          Copy-Item -LiteralPath (Join-Path $env:BEGGARS_OUTPUT 'worker_receipt.json') -Destination $evidence
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- evidence/latest-beggars-scene
+          if (@(git status --porcelain -- evidence/latest-beggars-scene).Count -gt 0) {
+            git commit -m "evidence(scene): record beggars meme run ${{ github.run_id }}"
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Could not commit compact scene receipts'
+            }
+            git push origin HEAD:agent/blender-beggars-scene-20260804
+            if ($LASTEXITCODE -ne 0) {
+              throw 'Could not push compact scene receipts'
+            }
+          }
+
+      - name: Record final workflow status
+        if: always()
+        shell: powershell
+        run: |
+          if (-not $env:BEGGARS_OUTPUT) {
+            Write-Host 'Output root was never initialized'
+            exit 0
+          }
+          New-Item -ItemType Directory -Path $env:BEGGARS_OUTPUT -Force | Out-Null
+          [ordered]@{
+            classification = if ('${{ job.status }}' -eq 'success') { 'PROVEN' } else { 'REJECTED' }
+            job_status = '${{ job.status }}'
+            workflow_run_id = '${{ github.run_id }}'
+            head_sha = '${{ github.sha }}'
+            branch = '${{ github.ref_name }}'
+            reference_media_upload_scope = 'EXCLUDED'
+            recorded_at = (Get-Date).ToUniversalTime().ToString('o')
+          } | ConvertTo-Json | Set-Content `
+            -LiteralPath (Join-Path $env:BEGGARS_OUTPUT 'workflow_final_receipt.json') `
+            -Encoding utf8
+
+      - name: Upload Blender recreation artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-meme-blender-${{ github.run_id }}
+          path: |
+            ${{ env.BEGGARS_OUTPUT }}/beggars_photoreal_recreation.blend
+            ${{ env.BEGGARS_OUTPUT }}/beggars_photoreal_recreation.mp4
+            ${{ env.BEGGARS_OUTPUT }}/hero_clean_render.png
+            ${{ env.BEGGARS_OUTPUT }}/wide_scene_proof.png
+            ${{ env.BEGGARS_OUTPUT }}/proof_frame_*.png
+            ${{ env.BEGGARS_OUTPUT }}/contact_sheet.png
+            ${{ env.BEGGARS_OUTPUT }}/*.json
+          if-no-files-found: warn
+          retention-days: 14
