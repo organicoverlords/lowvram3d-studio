@@ -1,0 +1,17 @@
+{
+  "schema": "ship_benchmark_source_v1",
+  "asset_id": "lucky_drown_casino_boat",
+  "source_original": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\baatti.jpg",
+  "source_copy": "benchmarks/source-images/20260803-ship-benchmark/baatti.jpg",
+  "original_sha256": "5a6d39c08efa9c4177fe77a19060c494c724a023acbccfec48444d8009706152",
+  "copied_sha256": "5a6d39c08efa9c4177fe77a19060c494c724a023acbccfec48444d8009706152",
+  "sha256_equal": true,
+  "file_size_bytes": 110661,
+  "dimensions": [659, 484],
+  "colour_mode": "RGB",
+  "format": "JPEG",
+  "generation_scope": "geometry_only_until_winner_selection",
+  "generator": "mini_turbo",
+  "texture_before_selection": false,
+  "uv_before_selection": false
+}
