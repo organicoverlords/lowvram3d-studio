@@ -12,6 +12,7 @@ import sys
 import unittest
 from types import SimpleNamespace
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "workers"))
@@ -69,6 +70,28 @@ class CondEncoderRegistrationTests(unittest.TestCase):
 
 @unittest.skipUnless(HAS_STACK, f"torch/diffusers stack unavailable: {STACK_ERROR}")
 class RouteRestrictionTests(unittest.TestCase):
+    def test_loader_passes_local_safety_checker_contract(self) -> None:
+        fake_pipe = SimpleNamespace(
+            scheduler=object(),
+            init_custom_adapter=lambda **_kwargs: None,
+            _load_custom_adapter=lambda _state: {"adapter_loaded_key_count": 0},
+        )
+        with patch.object(
+            lowvram.LowVRAMMVAdapterI2MVSDPipeline,
+            "from_pretrained",
+            return_value=fake_pipe,
+        ) as loader:
+            with patch(
+                "mvadapter.schedulers.scheduling_shift_snr.ShiftSNRScheduler.from_scheduler",
+                return_value=fake_pipe.scheduler,
+            ):
+                lowvram.build_low_vram_pipeline(
+                    "local-stable-diffusion-2-1-base",
+                    {},
+                    lowvram.REQUIRED_ADAPTER_NAME,
+                )
+        self.assertFalse(loader.call_args.kwargs["requires_safety_checker"])
+
     def test_text_only_adapter_is_rejected(self) -> None:
         with self.assertRaises(RuntimeError) as ctx:
             lowvram.assert_image_geometry_adapter("mvadapter_t2mv_sd21.safetensors")

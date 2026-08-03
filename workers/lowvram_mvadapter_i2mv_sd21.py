@@ -218,6 +218,7 @@ def build_low_vram_pipeline(
         torch_dtype=dtype,
         local_files_only=True,
         safety_checker=None,
+        requires_safety_checker=False,
     )
     pipe.scheduler = ShiftSNRScheduler.from_scheduler(
         pipe.scheduler,
