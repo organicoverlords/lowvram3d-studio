@@ -1,0 +1,536 @@
+"""Run one bounded image+geometry SD2.1 MV-Adapter six-view sequence.
+
+This worker owns generation and QA only.  It never rasterises a mesh, writes a
+UV/atlas/GLB, or imports nvdiffrast.  A separate process must invoke the
+``oom-fallback`` attempt, and only after a primary receipt classified a real
+CUDA allocator OOM.
+"""
+from __future__ import annotations
+
+import argparse
+import gc
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import time
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+from PIL import Image, ImageDraw
+
+
+PROMPT = (
+    "high quality clean albedo reference of the same tactical red panda character, "
+    "consistent materials, consistent identity, flat neutral lighting"
+)
+VIEW_NAMES = ("front", "right", "rear", "left", "top", "bottom")
+MIN_RAM_MB = 2048
+MIN_PAGEFILE_MB = 1024
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _nvidia_snapshot() -> dict[str, Any]:
+    result: dict[str, Any] = {"available": False, "total_mb": None, "free_mb": None, "active_processes": []}
+    try:
+        query = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name,memory.total,memory.free", "--format=csv,noheader,nounits", "--id=0"],
+            capture_output=True, text=True, timeout=10, check=True,
+        )
+        row = [part.strip() for part in query.stdout.strip().splitlines()[0].split(",")]
+        result.update({"available": True, "name": row[0], "total_mb": int(row[1]), "free_mb": int(row[2])})
+        apps = subprocess.run(
+            ["nvidia-smi", "--query-compute-apps=pid,process_name,used_memory", "--format=csv,noheader,nounits", "--id=0"],
+            capture_output=True, text=True, timeout=10, check=True,
+        )
+        for line in apps.stdout.splitlines():
+            if line.strip():
+                parts = [part.strip() for part in line.split(",")]
+                result["active_processes"].append({"pid": parts[0], "name": parts[1], "used_mb": parts[2]})
+    except (OSError, subprocess.SubprocessError, ValueError, IndexError):
+        return result
+    return result
+
+
+def _system_snapshot() -> dict[str, Any]:
+    try:
+        import psutil
+    except ImportError as exc:
+        raise RuntimeError("MVADAPTER_PSUTIL_REQUIRED_FOR_RAM_PAGEFILE_GATE") from exc
+    memory = psutil.virtual_memory()
+    pagefile = psutil.swap_memory()
+    return {
+        "ram_total_mb": round(memory.total / 2**20, 3),
+        "ram_available_mb": round(memory.available / 2**20, 3),
+        "pagefile_total_mb": round(pagefile.total / 2**20, 3),
+        "pagefile_free_mb": round(pagefile.free / 2**20, 3),
+        "pid": os.getpid(),
+    }
+
+
+def _torch_memory(torch: Any) -> dict[str, Any]:
+    return {
+        "allocated_mb": round(torch.cuda.memory_allocated() / 2**20, 3),
+        "reserved_mb": round(torch.cuda.memory_reserved() / 2**20, 3),
+        "max_memory_allocated_mb": round(torch.cuda.max_memory_allocated() / 2**20, 3),
+        "max_memory_reserved_mb": round(torch.cuda.max_memory_reserved() / 2**20, 3),
+    }
+
+
+def _is_cuda_oom(exc: BaseException) -> bool:
+    name = type(exc).__name__.lower()
+    message = str(exc).lower()
+    return "outofmemory" in name or "cuda out of memory" in message or "cuda error: out of memory" in message
+
+
+def _verify_hash(path: Path, expected: str, label: str) -> str:
+    if not path.is_file():
+        raise RuntimeError(f"MVADAPTER_{label}_MISSING:{path}")
+    actual = sha256(path)
+    if actual.lower() != expected.lower():
+        raise RuntimeError(f"MVADAPTER_{label}_HASH_MISMATCH:{actual}:{expected}")
+    return actual
+
+
+def _selected(config: dict[str, Any], attempt: str) -> tuple[dict[str, Any], str]:
+    if config.get("schema") != "lowvram3d_mvadapter_ig2mv_sd21_inference_v1":
+        raise RuntimeError("MVADAPTER_CONFIG_SCHEMA_INVALID")
+    if config.get("status") != "PREPARED_NOT_EXECUTED":
+        raise RuntimeError(f"MVADAPTER_CONFIG_STATUS_INVALID:{config.get('status')}")
+    if config.get("gpu_sequence_consumed"):
+        raise RuntimeError("MVADAPTER_GPU_SEQUENCE_ALREADY_CONSUMED")
+    if config.get("generator_family") != "MVADAPTER_SD21" or config.get("conditioning") != "IMAGE_PLUS_GEOMETRY":
+        raise RuntimeError("MVADAPTER_ROUTE_INVALID")
+    if config.get("text_conditioned_fallback") != "FORBIDDEN" or config.get("comfyui_generation_route") == "PROVEN":
+        raise RuntimeError("MVADAPTER_FORBIDDEN_ROUTE_CONFIGURED")
+    if config.get("pipeline_class") != "LowVRAMMVAdapterI2MVSDPipeline":
+        raise RuntimeError("MVADAPTER_PIPELINE_CLASS_INVALID")
+    if config.get("adapter", "").split("\\")[-1] != "mvadapter_ig2mv_sd21.safetensors":
+        raise RuntimeError("MVADAPTER_ADAPTER_FILENAME_INVALID")
+    if attempt == "primary":
+        selected = config["primary"]
+    elif attempt == "oom-fallback":
+        selected = config["oom_fallback"]
+    else:
+        raise RuntimeError(f"MVADAPTER_ATTEMPT_INVALID:{attempt}")
+    return selected, attempt
+
+
+def validate_preflight(config_path: Path, attempt: str, primary_receipt: Path | None = None) -> dict[str, Any]:
+    config = _json(config_path)
+    selected, attempt = _selected(config, attempt)
+    if attempt == "oom-fallback":
+        if primary_receipt is None or not primary_receipt.is_file():
+            raise RuntimeError("MVADAPTER_OOM_FALLBACK_PRIMARY_RECEIPT_REQUIRED")
+        primary = _json(primary_receipt)
+        if primary.get("status") != "CUDA_OOM" or not primary.get("fallback_eligible"):
+            raise RuntimeError("MVADAPTER_OOM_FALLBACK_NOT_AUTHORIZED")
+    adapter = Path(config["adapter"])
+    mesh = Path(config["mesh"])
+    conditioning = Path(selected["conditioning_reference"])
+    controls = Path(selected["control_tensor"])
+    contract = Path(selected["camera_contract"])
+    adapter_hash = _verify_hash(adapter, config["adapter_sha256"], "ADAPTER")
+    mesh_hash = _verify_hash(mesh, config["immutable_mesh_sha256"], "MESH")
+    conditioning_hash = _verify_hash(conditioning, selected["conditioning_reference_sha256"], "CONDITIONING")
+    control_hash = _verify_hash(controls, selected["control_tensor_sha256"], "CONTROL")
+    contract_hash = _verify_hash(contract, selected["camera_contract_sha256"], "CAMERA_CONTRACT")
+    tensor = np.load(controls, allow_pickle=False)
+    resolution = int(selected["resolution"])
+    if tuple(tensor.shape) != (6, 6, resolution, resolution):
+        raise RuntimeError(f"MVADAPTER_CONTROL_SHAPE_INVALID:{tuple(tensor.shape)}")
+    if tensor.dtype not in (np.float16, np.float32) or not np.isfinite(tensor).all():
+        raise RuntimeError("MVADAPTER_CONTROL_TENSOR_INVALID")
+    camera = _json(contract)
+    if camera.get("view_count") != 6 or not camera.get("fixture_gate_passed"):
+        raise RuntimeError("MVADAPTER_CAMERA_CONTRACT_UNPROVEN")
+    for key in ("semantic_mapping_proven", "handedness_proven", "top_bottom_rotation_proven"):
+        if not camera.get(key):
+            raise RuntimeError(f"MVADAPTER_CAMERA_{key.upper()}_UNPROVEN")
+    if sorted(int(view["index"]) for view in camera.get("views", [])) != list(range(6)):
+        raise RuntimeError("MVADAPTER_CAMERA_VIEW_INDEX_INVALID")
+    if float(camera.get("front_rear_direction_dot", 0.0)) > -0.999:
+        raise RuntimeError("MVADAPTER_CAMERA_FRONT_REAR_NOT_OPPOSITE")
+    if float(camera.get("left_right_direction_dot", 0.0)) > -0.999:
+        raise RuntimeError("MVADAPTER_CAMERA_LEFT_RIGHT_NOT_OPPOSITE")
+    if float(camera.get("top_bottom_direction_dot", 0.0)) > -0.999:
+        raise RuntimeError("MVADAPTER_CAMERA_TOP_BOTTOM_NOT_OPPOSITE")
+    if int(selected["views"]) != 6 or int(selected["resolution"]) not in (256, 384):
+        raise RuntimeError("MVADAPTER_EXECUTION_DIMENSIONS_INVALID")
+    system = _system_snapshot()
+    if system["ram_available_mb"] < MIN_RAM_MB or system["pagefile_free_mb"] < MIN_PAGEFILE_MB:
+        raise RuntimeError(f"MVADAPTER_RAM_PAGEFILE_INSUFFICIENT:{system}")
+    gpu = _nvidia_snapshot()
+    if not gpu["available"]:
+        raise RuntimeError("MVADAPTER_NVIDIA_SMI_UNAVAILABLE")
+    if gpu["active_processes"]:
+        raise RuntimeError(f"MVADAPTER_CONFLICTING_GPU_PROCESS:{gpu['active_processes']}")
+    return {
+        "config": config,
+        "selected": selected,
+        "attempt": attempt,
+        "adapter": adapter,
+        "mesh": mesh,
+        "conditioning": conditioning,
+        "controls": controls,
+        "contract": contract,
+        "adapter_sha256": adapter_hash,
+        "mesh_sha256": mesh_hash,
+        "conditioning_sha256": conditioning_hash,
+        "control_sha256": control_hash,
+        "camera_contract_sha256": contract_hash,
+        "camera": camera,
+        "system_before": system,
+        "gpu_before": gpu,
+        "resolution": resolution,
+    }
+
+
+def _image_array(image: Image.Image) -> np.ndarray:
+    return np.asarray(image.convert("RGB"), dtype=np.uint8)
+
+
+def _foreground_mask(array: np.ndarray) -> np.ndarray:
+    border = np.concatenate((array[0], array[-1], array[:, 0], array[:, -1]), axis=0).astype(np.float32)
+    background = np.median(border, axis=0)
+    distance = np.linalg.norm(array.astype(np.float32) - background, axis=2)
+    saturation = (array.max(axis=2).astype(np.float32) - array.min(axis=2).astype(np.float32)) / 255.0
+    mask = (distance > 12.0) | (saturation > 0.06)
+    if int(mask.sum()) < max(32, array.shape[0] * array.shape[1] // 200):
+        mask = distance > 6.0
+    return mask
+
+
+def _bbox(mask: np.ndarray) -> tuple[int, int, int, int] | None:
+    ys, xs = np.nonzero(mask)
+    if not len(xs):
+        return None
+    return int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())
+
+
+def _transform_mask(mask: np.ndarray, scale: float, dx: int, dy: int) -> np.ndarray:
+    image = Image.fromarray(mask.astype(np.uint8) * 255, "L")
+    size = max(1, int(round(mask.shape[0] * scale)))
+    resized = image.resize((size, size), Image.Resampling.NEAREST)
+    canvas = Image.new("L", image.size, 0)
+    left = (mask.shape[1] - size) // 2 + dx
+    top = (mask.shape[0] - size) // 2 + dy
+    canvas.paste(resized, (left, top))
+    return np.asarray(canvas) > 127
+
+
+def _iou(left: np.ndarray, right: np.ndarray) -> float:
+    union = np.logical_or(left, right).sum()
+    return float(np.logical_and(left, right).sum() / union) if union else 0.0
+
+
+def _registered_iou(generated: np.ndarray, target: np.ndarray) -> tuple[float, dict[str, float]]:
+    best = (0.0, {"scale": 1.0, "dx": 0, "dy": 0})
+    span = max(1, generated.shape[0] // 16)
+    for scale in (0.94, 0.97, 1.0, 1.03, 1.06):
+        for dx in range(-span, span + 1, max(1, span // 2)):
+            for dy in range(-span, span + 1, max(1, span // 2)):
+                score = _iou(_transform_mask(generated, scale, dx, dy), target)
+                if score > best[0]:
+                    best = (score, {"scale": scale, "dx": dx, "dy": dy})
+    return best
+
+
+def _corr(left: np.ndarray, right: np.ndarray, mask: np.ndarray | None = None) -> float:
+    a = left.astype(np.float32).mean(axis=2)
+    b = right.astype(np.float32).mean(axis=2)
+    if mask is not None:
+        a = a[mask]
+        b = b[mask]
+    else:
+        a = a.ravel()
+        b = b.ravel()
+    if a.std() < 1e-6 or b.std() < 1e-6:
+        return 0.0
+    return float(np.corrcoef(a, b)[0, 1])
+
+
+def _color_qa(array: np.ndarray, mask: np.ndarray) -> dict[str, Any]:
+    pixels = array[mask].astype(np.float32) / 255.0
+    if len(pixels) == 0:
+        return {"foreground_saturation": 0.0, "black_clipping_fraction": 1.0, "white_clipping_fraction": 1.0}
+    saturation = (pixels.max(axis=1) - pixels.min(axis=1)).mean()
+    return {
+        "foreground_saturation": round(float(saturation), 6),
+        "foreground_luminance": round(float((pixels @ np.asarray([0.2126, 0.7152, 0.0722])).mean()), 6),
+        "black_clipping_fraction": round(float((pixels.max(axis=1) < 0.02).mean()), 6),
+        "white_clipping_fraction": round(float((pixels.min(axis=1) > 0.98).mean()), 6),
+        "channel_std": round(float(pixels.std(axis=0).mean()), 6),
+    }
+
+
+def qa_outputs(images: list[Image.Image], controls_dir: Path, resolution: int) -> dict[str, Any]:
+    if len(images) != 6:
+        raise RuntimeError(f"MVADAPTER_OUTPUT_COUNT_INVALID:{len(images)}")
+    views: list[dict[str, Any]] = []
+    arrays: list[np.ndarray] = []
+    generated_masks: list[np.ndarray] = []
+    for index, image in enumerate(images):
+        array = _image_array(image)
+        if array.shape != (resolution, resolution, 3) or not np.isfinite(array).all():
+            raise RuntimeError(f"MVADAPTER_OUTPUT_IMAGE_INVALID:{index}:{array.shape}")
+        if float(array.mean()) < 2.0 or float(array.mean()) > 253.0 or float(array.std()) < 2.0:
+            raise RuntimeError(f"MVADAPTER_OUTPUT_BLANK_OR_FLAT:{index}")
+        arrays.append(array)
+        generated_mask = _foreground_mask(array)
+        generated_masks.append(generated_mask)
+        target_path = controls_dir / f"{('horizontal_' + str(index)) if index < 4 else VIEW_NAMES[index]}_mask.png"
+        target = np.asarray(Image.open(target_path).convert("L").resize((resolution, resolution), Image.Resampling.NEAREST)) > 32
+        direct = _iou(generated_mask, target)
+        registered, transform = _registered_iou(generated_mask, target)
+        bbox = _bbox(generated_mask)
+        clipping = 0.0
+        if bbox is not None:
+            x0, y0, x1, y1 = bbox
+            edge = generated_mask[[0, -1], :].sum() + generated_mask[:, [0, -1]].sum()
+            clipping = float(edge / max(1, generated_mask.sum()))
+        qa = _color_qa(array, generated_mask)
+        views.append({
+            "index": index,
+            "name": VIEW_NAMES[index],
+            "dimensions": [resolution, resolution],
+            "foreground_coverage": round(float(generated_mask.mean()), 6),
+            "direct_iou": round(direct, 6),
+            "registered_iou": round(registered, 6),
+            "registration": transform,
+            "clipping_fraction": round(clipping, 6),
+            "color": qa,
+            "passed_generation_reference_gate": bool(registered >= (0.65 if index >= 4 else 0.75) and clipping <= 0.08),
+        })
+    rear_mask = np.logical_or(generated_masks[0], generated_masks[2])
+    direct_corr = _corr(arrays[0], arrays[2], rear_mask)
+    mirrored_corr = _corr(
+        arrays[0], arrays[2][:, ::-1], np.logical_or(generated_masks[0], generated_masks[2][:, ::-1])
+    )
+    rear = views[2]
+    qa = {
+        "schema": "lowvram3d_mvadapter_six_view_qa_v1",
+        "views": views,
+        "front_rear_direct_correlation": round(direct_corr, 6),
+        "front_rear_mirrored_correlation": round(mirrored_corr, 6),
+        "rear_numeric_gate_passed": bool(direct_corr < 0.82 and mirrored_corr < 0.82),
+        "structural_gate_passed": all(view["passed_generation_reference_gate"] for view in views),
+        "colour_gate_passed": all(
+            view["color"]["foreground_saturation"] >= 0.08
+            and view["color"]["black_clipping_fraction"] < 0.05
+            and view["color"]["white_clipping_fraction"] < 0.05
+            for view in views
+        ),
+        "semantic_gate": "USER_REVIEW_REQUIRED",
+        "rear_semantic_visual_review_required": True,
+    }
+    qa["passed"] = bool(qa["structural_gate_passed"] and qa["colour_gate_passed"] and qa["rear_numeric_gate_passed"])
+    return qa
+
+
+def _contact_sheet(images: list[Image.Image], output: Path) -> None:
+    tile = images[0].convert("RGB")
+    size = tile.size[0]
+    sheet = Image.new("RGB", (size * 3, size * 2), (32, 32, 32))
+    draw = ImageDraw.Draw(sheet)
+    for index, image in enumerate(images):
+        x = (index % 3) * size
+        y = (index // 3) * size
+        sheet.paste(image.convert("RGB"), (x, y))
+        draw.text((x + 8, y + 8), f"{index}: {VIEW_NAMES[index]}", fill=(255, 255, 255))
+    sheet.save(output)
+
+
+def _update_config(config_path: Path, status: str) -> None:
+    config = _json(config_path)
+    config["status"] = status
+    config["gpu_sequence_consumed"] = True
+    config["next_action"] = "USER_REVIEW_REQUIRED"
+    config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+
+
+def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: Path | None = None) -> dict[str, Any]:
+    preflight = validate_preflight(config_path, attempt, primary_receipt)
+    selected = preflight["selected"]
+    output_dir.mkdir(parents=True, exist_ok=True)
+    receipt: dict[str, Any] = {
+        "schema": "lowvram3d_mvadapter_sd21_six_view_inference_v1",
+        "config": str(config_path),
+        "attempt": attempt,
+        "attempt_resolution": int(selected["resolution"]),
+        "pipeline_class": preflight["config"]["pipeline_class"],
+        "prompt": preflight["config"].get("prompt", PROMPT),
+        "negative_prompt": None,
+        "classifier_free_guidance": False,
+        "parameters": selected,
+        "preflight": {key: value for key, value in preflight.items() if key not in {"config", "selected", "camera"}},
+        "reference_unet_pass_started": False,
+        "cond_encoder_executed": False,
+        "denoising_started": False,
+        "denoising_steps_completed": 0,
+        "vae_decode_completed": False,
+        "output_images": [],
+        "gpu_sequence_consumed": False,
+        "fallback_eligible": False,
+        "_started": time.time(),
+    }
+    torch = None
+    pipe = None
+    original_unet_forward = None
+    original_cond_forward = None
+    try:
+        import torch as torch_module
+        torch = torch_module
+        if not torch.cuda.is_available():
+            raise RuntimeError("MVADAPTER_CUDA_UNAVAILABLE")
+        torch.cuda.empty_cache()
+        torch.cuda.reset_peak_memory_stats()
+        receipt["memory_before_model"] = {**preflight["gpu_before"], **_torch_memory(torch)}
+        upstream = Path(preflight["config"].get("mvadapter_source", r"C:\AI\mvadapter-upstream-inspection"))
+        if not upstream.is_dir():
+            raise RuntimeError(f"MVADAPTER_UPSTREAM_SOURCE_MISSING:{upstream}")
+        sys.path.append(str(upstream))
+        from lowvram_mvadapter_i2mv_sd21 import (
+            attention_report,
+            build_low_vram_pipeline,
+            component_inventory,
+            install_low_vram_offload,
+            offload_hook_report,
+        )
+        adapter_state = __import__("safetensors.torch", fromlist=["load_file"]).load_file(str(preflight["adapter"]), device="cpu")
+        pipe, adapter_report = build_low_vram_pipeline(
+            str(preflight["config"]["base_model"]),
+            adapter_state,
+            preflight["adapter"].name,
+            num_views=6,
+            dtype=torch.float16,
+        )
+        receipt["adapter_report"] = adapter_report
+        receipt["component_inventory"] = component_inventory(pipe)
+        receipt["attention"] = attention_report(pipe)
+        receipt["offload"] = install_low_vram_offload(pipe, device="cuda")
+        receipt["offload_hooks"] = offload_hook_report(pipe)
+        control = torch.from_numpy(np.ascontiguousarray(np.load(preflight["controls"], allow_pickle=False).astype(np.float32)))
+        reference = Image.open(preflight["conditioning"]).convert("RGB")
+        state = {"unet_calls": 0}
+        original_unet_forward = pipe.unet.forward
+        original_cond_forward = pipe.cond_encoder.forward
+
+        def tracked_unet(*args: Any, **kwargs: Any):
+            state["unet_calls"] += 1
+            if state["unet_calls"] == 1:
+                receipt["reference_unet_pass_started"] = True
+            else:
+                receipt["denoising_started"] = True
+            return original_unet_forward(*args, **kwargs)
+
+        def tracked_cond(*args: Any, **kwargs: Any):
+            receipt["cond_encoder_executed"] = True
+            return original_cond_forward(*args, **kwargs)
+
+        pipe.unet.forward = tracked_unet
+        pipe.cond_encoder.forward = tracked_cond
+
+        def on_step_end(_pipe: Any, step: int, _timestep: Any, callback_kwargs: dict[str, Any]) -> dict[str, Any]:
+            receipt["denoising_steps_completed"] = int(step) + 1
+            return callback_kwargs
+
+        torch.cuda.reset_peak_memory_stats()
+        receipt["memory_before_denoising"] = {**_nvidia_snapshot(), **_torch_memory(torch)}
+        generator = torch.Generator(device="cuda").manual_seed(int(selected["seed"]))
+        result = pipe(
+            prompt=receipt["prompt"],
+            negative_prompt=None,
+            height=int(selected["resolution"]),
+            width=int(selected["resolution"]),
+            num_inference_steps=int(selected["steps"]),
+            guidance_scale=1.0,
+            reference_conditioning_scale=float(selected["reference_conditioning_scale"]),
+            control_conditioning_scale=float(selected["control_conditioning_scale"]),
+            control_image=control,
+            reference_image=reference,
+            num_images_per_prompt=6,
+            generator=generator,
+            output_type="pil",
+            callback_on_step_end=on_step_end,
+        )
+        images = list(result.images)
+        receipt["vae_decode_completed"] = True
+        receipt["gpu_sequence_consumed"] = True
+        if len(images) != 6:
+            raise RuntimeError(f"MVADAPTER_OUTPUT_COUNT_INVALID:{len(images)}")
+        for index, image in enumerate(images):
+            path = output_dir / f"view_{index}_{VIEW_NAMES[index]}.png"
+            image.convert("RGB").save(path)
+            receipt["output_images"].append({"index": index, "name": path.name, "path": str(path), "sha256": sha256(path)})
+        _contact_sheet(images, output_dir / "six_view_contact_sheet.png")
+        receipt["contact_sheet"] = str(output_dir / "six_view_contact_sheet.png")
+        receipt["qa"] = qa_outputs(images, Path(preflight["controls"]).parent, int(selected["resolution"]))
+        receipt["status"] = "PROVEN" if receipt["qa"]["passed"] else "QA_REJECTED"
+        _update_config(config_path, "EXECUTED_384" if attempt == "primary" else "EXECUTED_256_OOM_FALLBACK" if receipt["qa"]["passed"] else "EXECUTED_QA_REJECTED")
+    except Exception as exc:
+        receipt["status"] = "CUDA_OOM" if _is_cuda_oom(exc) else "REJECTED"
+        receipt["error"] = f"{type(exc).__name__}: {exc}"
+        receipt["fallback_eligible"] = bool(attempt == "primary" and _is_cuda_oom(exc))
+        receipt["gpu_sequence_consumed"] = False
+    finally:
+        if pipe is not None:
+            try:
+                pipe.unet.forward = original_unet_forward
+                pipe.cond_encoder.forward = original_cond_forward
+            except Exception:
+                pass
+        del pipe
+        gc.collect()
+        if torch is not None and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            receipt["memory_after"] = {**_nvidia_snapshot(), **_torch_memory(torch)}
+        receipt["system_after"] = _system_snapshot()
+    receipt["output_count"] = len(receipt["output_images"])
+    receipt["wall_seconds"] = round(time.time() - receipt.get("_started", time.time()), 3)
+    receipt.pop("_started", None)
+    receipt_path = output_dir / "inference_receipt.json"
+    receipt_path.write_text(json.dumps(receipt, indent=2, default=str) + "\n", encoding="utf-8")
+    return receipt
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--attempt", choices=("primary", "oom-fallback"), required=True)
+    parser.add_argument("--primary-receipt", type=Path, default=None)
+    args = parser.parse_args()
+    started = time.time()
+    try:
+        receipt = execute(args.config, args.output_dir, args.attempt, args.primary_receipt)
+    except Exception as exc:
+        receipt = {
+            "schema": "lowvram3d_mvadapter_sd21_six_view_inference_v1",
+            "status": "PREFLIGHT_REJECTED",
+            "error": f"{type(exc).__name__}: {exc}",
+            "output_count": 0,
+            "gpu_sequence_consumed": False,
+            "fallback_eligible": False,
+        }
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+        (args.output_dir / "inference_receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(receipt, indent=2, default=str), flush=True)
+    return 0 if receipt.get("status") == "PROVEN" else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

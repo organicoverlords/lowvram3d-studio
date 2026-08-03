@@ -9,6 +9,7 @@
   "comfyui_generation_route": "REJECTED",
   "pipeline_class": "LowVRAMMVAdapterI2MVSDPipeline",
   "pipeline_module": "workers/lowvram_mvadapter_i2mv_sd21.py",
+  "mvadapter_source": "C:\\AI\\mvadapter-upstream-inspection",
   "base_model": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--stabilityai--stable-diffusion-2-1-base",
   "adapter": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--huanngzh--mv-adapter\\mvadapter_ig2mv_sd21.safetensors",
   "adapter_sha256": "7940d6197be614fc6a3483ece1ed37cac850f94375d127ada6ae6464ce9252c3",
@@ -41,7 +42,9 @@
     "conditioning_reference": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\mvadapter_conditioning_v3\\conditioning_384.png",
     "conditioning_reference_sha256": "8e77e68845069430185cbdec8dd21260f79cee5e412222c5ff85d0ef9e39df08",
     "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v3\\control_tensor.npy",
+    "control_tensor_sha256": "9fbf0f5dd4ac4f17516e11c4771556b55f7d8e96aa3489f5e4ef3294b10ff1283",
     "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v3\\camera_contract.json"
+    ,"camera_contract_sha256": "fa64a40fb2dbc09be3be031a55aba08f66b58a7c0c6b12889d2b800725f25f58"
   },
   "oom_fallback": {
     "allowed_retries": 1,
@@ -52,7 +55,9 @@
     "conditioning_reference": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\mvadapter_conditioning_v3\\conditioning_256.png",
     "conditioning_reference_sha256": "0fd5491bdf4dfcbcfccc49f6b9af85956fbb87970858a8c61129e1a4c4fe147d",
     "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_256_v3\\control_tensor.npy",
+    "control_tensor_sha256": "e55c4f05341fd5af6abe69fd5c0d217d23cd18ab05c8877bceae066c81d1cead",
     "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_256_v3\\camera_contract.json",
+    "camera_contract_sha256": "fa64a40fb2dbc09be3be031a55aba08f66b58a7c0c6b12889d2b800725f25f58",
     "policy": "384 image+geometry SD2.1 -> classified CUDA OOM -> full cleanup and VRAM recovery proof -> one 256 image+geometry SD2.1 retry",
     "adapter_switch_after_oom": "FORBIDDEN",
     "text_conditioned_fallback": "FORBIDDEN",
@@ -66,6 +71,9 @@
     "denoising_called": false,
     "output_images": 0
   },
+  "prompt": "high quality clean albedo reference of the same tactical red panda character, consistent materials, consistent identity, flat neutral lighting",
+  "negative_prompt": null,
+  "classifier_free_guidance": false,
   "gpu_sequence_consumed": false,
   "next_action": "ONE_IMAGE_GEOMETRY_SIX_VIEW_INFERENCE"
 }
