@@ -23,6 +23,7 @@ adapters are rejected by name, and nvdiffrast is never imported.
 """
 import hashlib
 from collections import Counter
+from functools import wraps
 from typing import Any
 
 import torch
@@ -204,6 +205,62 @@ def assert_image_geometry_adapter(adapter_name: str) -> None:
         raise RuntimeError(f"MVADAPTER_REQUIRES_IG2MV_SD21_ADAPTER:{adapter_name}")
 
 
+def install_rowcol_reference_cache_compatibility() -> None:
+    """Keep upstream reference-cache writes available across diffusers copies."""
+    processor_class = DecoupledMVRowColSelfAttnProcessor2_0
+    if getattr(processor_class, "_lowvram_cache_compatibility", False):
+        return
+    original_call = processor_class.__call__
+
+    @wraps(original_call)
+    def cache_safe_call(
+        self: Any,
+        attn: Any,
+        hidden_states: torch.Tensor,
+        encoder_hidden_states: Any = None,
+        attention_mask: Any = None,
+        temb: Any = None,
+        mv_scale: float = 1.0,
+        ref_hidden_states: Any = None,
+        ref_scale: float = 1.0,
+        cache_hidden_states: Any = None,
+        use_mv: bool = True,
+        use_ref: bool = True,
+        num_views: Any = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> torch.Tensor:
+        if cache_hidden_states is not None:
+            self._lowvram_reference_hidden_state = hidden_states.detach().clone()
+        elif use_ref:
+            cached = getattr(self, "_lowvram_reference_hidden_state", None)
+            if cached is not None and (ref_hidden_states is None or self.name not in ref_hidden_states):
+                if cached.shape[0] == 1 and hidden_states.shape[0] > 1:
+                    cached = cached.repeat_interleave(hidden_states.shape[0], dim=0)
+                ref_hidden_states = dict(ref_hidden_states or {})
+                ref_hidden_states[self.name] = cached
+        return original_call(
+            self,
+            attn,
+            hidden_states,
+            encoder_hidden_states=encoder_hidden_states,
+            attention_mask=attention_mask,
+            temb=temb,
+            mv_scale=mv_scale,
+            ref_hidden_states=ref_hidden_states,
+            ref_scale=ref_scale,
+            cache_hidden_states=cache_hidden_states,
+            use_mv=use_mv,
+            use_ref=use_ref,
+            num_views=num_views,
+            *args,
+            **kwargs,
+        )
+
+    processor_class.__call__ = cache_safe_call
+    processor_class._lowvram_cache_compatibility = True
+
+
 def build_low_vram_pipeline(
     base_model: str,
     adapter_state: dict[str, torch.Tensor],
@@ -233,6 +290,7 @@ def build_low_vram_pipeline(
         shift_scale=8.0,
         scheduler_class=DDPMScheduler,
     )
+    install_rowcol_reference_cache_compatibility()
     pipe.init_custom_adapter(
         num_views=num_views, self_attn_processor=DecoupledMVRowColSelfAttnProcessor2_0
     )
