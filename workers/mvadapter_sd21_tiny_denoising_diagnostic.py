@@ -144,6 +144,35 @@ def _install_reference_numeric_hooks(torch: Any, pipe: Any, trace: IncrementalTr
     return handles
 
 
+def _install_condition_numeric_hooks(torch: Any, pipe: Any, trace: IncrementalTrace) -> list[Any]:
+    handles: list[Any] = []
+
+    def hook(name: str):
+        def record(_module: Any, inputs: Any, output: Any) -> None:
+            value = _first_tensor(torch, output)
+            if value is None:
+                return
+            output_stats = {**_tensor_record(f"{name}.output", value), **_finite_stats(value)}
+            input_value = _first_tensor(torch, inputs)
+            input_stats = (
+                {**_tensor_record(f"{name}.input", input_value), **_finite_stats(input_value)}
+                if input_value is not None else None
+            )
+            trace.write("condition_module_output", module=name, input=input_stats, output=output_stats)
+            if output_stats.get("finite") is not True:
+                raise FirstReferenceNonFinite(
+                    f"FIRST_NONFINITE_CONDITION_MODULE={name};INPUT_ABS_MAX={input_stats.get('absolute_maximum') if input_stats else None};"
+                    f"OUTPUT_ABS_MAX={output_stats.get('absolute_maximum')};INPUT_DTYPE={input_stats.get('dtype') if input_stats else None};"
+                    f"OUTPUT_DTYPE={output_stats.get('dtype')}"
+                )
+        return record
+
+    for name, module in pipe.cond_encoder.named_modules():
+        if name:
+            handles.append(module.register_forward_hook(hook(f"cond_encoder.{name}")))
+    return handles
+
+
 class IncrementalTrace:
     """Append-and-flush evidence so a destroyed CUDA context leaves a trace."""
 
@@ -338,6 +367,7 @@ def run_probe(
     originals = None
     guard_handles: list[Any] = []
     reference_numeric_handles: list[Any] = []
+    condition_numeric_handles: list[Any] = []
     pending_exc: BaseException | None = None
     try:
         inputs = _validate_inputs(config_path)
@@ -454,13 +484,21 @@ def run_probe(
             control_feature = pipe.prepare_control_image(control, resolution, resolution, 6, 1, target, torch.float16, False)
             control_feature = control_feature.to(target, dtype=torch.float16)
             trace.write("condition_encoder_started", tensor=_tensor_record("control_after_preprocessing", control_feature), memory=_memory(torch))
+            condition_numeric_handles = _install_condition_numeric_hooks(torch, pipe, trace)
             residuals = pipe.cond_encoder(control_feature)
             torch.cuda.synchronize(target)
             if not residuals:
                 raise RuntimeError("COND_RESIDUALS_EMPTY")
-            if any(t.dtype != torch.float16 or t.device != target or not bool(torch.isfinite(t).all()) for t in residuals):
+            residual_records = [
+                {**_tensor_record(f"condition_residual_{index}", value), **_finite_stats(value)}
+                for index, value in enumerate(residuals)
+            ]
+            receipt["condition_residuals"] = {
+                "summary": tensor_group_record("condition_residuals", list(residuals)),
+                "entries": residual_records,
+            }
+            if any(t.dtype != torch.float16 or t.device != target or record.get("finite") is not True for t, record in zip(residuals, residual_records)):
                 raise RuntimeError("COND_RESIDUAL_CONTRACT_INVALID")
-            receipt["condition_residuals"] = {"summary": tensor_group_record("condition_residuals", list(residuals)), "entries": [_tensor_record(f"condition_residual_{i}", t) for i, t in enumerate(residuals)]}
             trace.write("condition_encoder_completed", memory=_memory(torch), residuals=receipt["condition_residuals"])
             latent_size = resolution // 8
             latents = torch.randn((6, 4, latent_size, latent_size), device=target, dtype=torch.float16, generator=torch.Generator(device=target).manual_seed(int(selected["seed"])))
@@ -497,6 +535,11 @@ def run_probe(
             except Exception:
                 pass
         for handle in reference_numeric_handles:
+            try:
+                handle.remove()
+            except Exception:
+                pass
+        for handle in condition_numeric_handles:
             try:
                 handle.remove()
             except Exception:
