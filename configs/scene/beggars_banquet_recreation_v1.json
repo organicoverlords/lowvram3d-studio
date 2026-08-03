@@ -1,69 +1,91 @@
 {
-  "schema_version": "blender_cinematic_recreation_v1",
-  "scene_id": "beggars-banquet-recreation-20260804",
-  "title": "Somebody Get These Beggars Out of Here - original Blender recreation",
+  "schema_version": "blender_photoreal_scene_recreation_v2",
+  "scene_id": "beggars-banquet-photoreal-20260804",
+  "title": "Photoreal Blender recreation of the Somebody Get These Beggars Out of Here shot",
   "source_context": {
     "film": "The Odyssey (2026)",
-    "scene": "Antinous rejects the disguised Odysseus during a banquet",
-    "reference_urls": [
-      "https://i.kym-cdn.com/entries/icons/facebook/000/057/198/Somebody_Get_These_Beggars_Out_Of_Here_meme_banner_image.jpg",
-      "https://www.youtube.com/shorts/iy7cgP-JDWU"
-    ],
-    "copyright_policy": "Use public references only for composition study. Build original geometry, materials, animation, lighting and voice. Do not redistribute source footage or audio."
+    "shot": "Antinous delivers the viral line at the Ithaca banquet",
+    "hero_performer": "Robert Pattinson",
+    "reference_still_url": "https://i.kym-cdn.com/entries/icons/facebook/000/057/198/Somebody_Get_These_Beggars_Out_Of_Here_meme_banner_image.jpg",
+    "reference_clip_url": "https://x.com/celestesangels/status/2079389139791741383",
+    "reference_use": "Download only inside the local worker for reconstruction, camera matching and visual comparison. Do not commit the copyrighted reference media to GitHub or package it into deliverables."
   },
   "creative_target": {
-    "fidelity_goal": "Recognizable cinematic recreation of the composition and dramatic beat, not a pixel-identical copy or actor scan.",
-    "shot": "warm shallow-focus medium close-up of Antinous at a crowded feast",
-    "duration_frames": 144,
+    "fidelity_goal": "Recreate the original live-action shot as photorealistically as the local hardware permits, including actor likeness. This is not a stylized meme remake.",
+    "priority_order": [
+      "Robert Pattinson likeness and asymmetrical grin",
+      "exact close-up framing and head angle",
+      "warm orange-red skin lighting and deep black costume",
+      "shallow depth of field with amber circular bokeh",
+      "hair silhouette and forehead strands",
+      "short facial performance and line timing",
+      "banquet-hall context outside the focal plane"
+    ],
+    "reference_frame": {
+      "aspect_ratio": "16:9",
+      "hero_face_center_normalized": [0.56, 0.43],
+      "hero_face_height_fraction": 0.66,
+      "head_yaw_degrees": -12,
+      "head_roll_degrees": -4,
+      "expression": "broad asymmetric contemptuous grin, upper teeth visible, left brow slightly raised",
+      "costume": "near-black ancient tunic or cloak merging into background",
+      "lighting": "strong warm key from camera-left/front, weak warm rim, nearly black fill",
+      "background": "dark Ithacan feast hall rendered as soft warm shapes and round fire bokeh"
+    },
+    "duration_frames": 96,
     "fps": 24,
     "resolution": [1280, 720],
-    "camera_lens_mm": 85,
-    "hero_character": "dark-haired arrogant young suitor in a black ancient tunic",
-    "foreground_character": "hooded older beggar seen as a soft silhouette from behind",
-    "background": "Ithacan palace banquet hall with columns, firelight, long table and blurred suitors",
-    "performance": [
-      "hero glances toward the beggar",
-      "hero leans forward with a contemptuous half-smile",
-      "jaw and mouth animate across the line",
-      "hero relaxes into a brief amused grin"
-    ],
+    "final_renderer": "Cycles GPU when VRAM preflight passes; Eevee Next fallback for proof renders",
     "dialogue": "Somebody get these beggars out of here!",
-    "voice_policy": "Generic local synthetic voice only; do not imitate a real performer."
+    "audio_policy": "Use locally obtained reference audio only for timing analysis. Do not redistribute it. Final deliverable may be silent unless a legally usable user-supplied or synthetic track is available."
+  },
+  "reconstruction_pipeline": {
+    "primary_face_route": "DECA or EMOCA detailed expressive reconstruction when an already authorized FLAME environment is available",
+    "automatic_fallback_face_route": "Pinned 3DDFA_V2 ONNX reconstruction with OBJ vertex colors and Blender-side corrective sculpting",
+    "pinned_3ddfa_commit": "1b6c67601abffc1e9f248b291708aef0e43b55ae",
+    "body_route": "camera-specific neck, shoulders and black costume built in Blender because only the close-up silhouette is visible",
+    "hair_route": "procedural scalp cap plus groomed curves/cards matched to the reference silhouette",
+    "set_route": "minimal physical banquet geometry plus practical emissive lamps placed to reproduce reference bokeh",
+    "camera_route": "reference-overlay camera match followed by overlay removal before final render",
+    "comparison_route": "render/reference contact sheet plus image metrics on a face-and-lighting crop; metrics are advisory and visual inspection remains decisive"
   },
   "deliverables": [
-    "beggars_banquet_recreation.blend",
-    "beggars_banquet_recreation.mp4",
-    "hero_closeup.png",
-    "wide_context.png",
+    "beggars_photoreal_recreation.blend",
+    "hero_reference_match.png",
+    "hero_clean_render.png",
+    "wide_scene_proof.png",
     "contact_sheet.png",
+    "beggars_photoreal_recreation.mp4",
     "scene_receipt.json"
   ],
   "acceptance": {
     "required_objects": [
       "CAM_Hero",
-      "CAM_Wide",
       "CHAR_Antinous",
-      "CHAR_Beggar",
       "SET_BanquetHall",
-      "PROP_FeastTable"
+      "LIGHT_WarmKey",
+      "LIGHT_WarmRim"
     ],
-    "minimum_background_suitors": 4,
+    "actor_likeness_is_required": true,
+    "stylized_or_primitive_face_is_rejected": true,
+    "reference_media_visible_in_final_render_is_rejected": true,
+    "must_use_real_3d_head_geometry": true,
     "must_use_depth_of_field": true,
-    "must_have_animation": true,
     "must_save_reload_validate": true,
-    "must_render_stills": true,
-    "must_render_mp4": true,
-    "fail_closed_on_missing_deliverable": true
+    "must_render_clean_frame": true,
+    "must_publish_comparison_sheet": true,
+    "must_fail_closed_on_missing_head_reconstruction": true,
+    "animation_classification_may_be_partial_if_reference_clip_download_is_blocked": true
   },
   "worker_policy": {
     "branch": "agent/blender-beggars-scene-20260804",
-    "base_head": "e6fd5edbfc2816fcf3f535d68b7aade3963f0372",
-    "blender_path": "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe",
     "runner_labels": ["self-hosted", "Windows", "X64"],
+    "blender_path": "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe",
     "gpu_memory_abort_threshold_mib": 4800,
-    "timeout_minutes": 45,
-    "source_of_truth": "this branch at github.sha",
+    "timeout_minutes": 120,
+    "source_of_truth": "the exact checked-out github.sha on the dedicated branch",
     "commit_large_binary_outputs": false,
+    "commit_reference_media": false,
     "upload_outputs_as_artifact": true
   }
 }
