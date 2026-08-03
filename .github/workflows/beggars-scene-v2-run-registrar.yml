@@ -1,0 +1,70 @@
+name: Beggars v2 run registrar
+run-name: Register beggars v2 run ${{ github.sha }}
+
+on:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - .github/workflows/beggars-scene-local-worker-v2.yml
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  register-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout dedicated branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/blender-beggars-scene-20260804
+          fetch-depth: 0
+
+      - name: Locate and record the self-hosted v2 run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          run_json=''
+          for attempt in $(seq 1 30); do
+            response="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/beggars-scene-local-worker-v2.yml/runs?branch=${GITHUB_REF_NAME}&event=push&per_page=20")"
+            run_json="$(printf '%s' "$response" | jq -c --arg sha "$GITHUB_SHA" '[.workflow_runs[] | select(.head_sha == $sha)] | first // empty')"
+            if [[ -n "$run_json" ]]; then
+              break
+            fi
+            sleep 2
+          done
+          if [[ -z "$run_json" ]]; then
+            echo "No v2 workflow run registered for $GITHUB_SHA" >&2
+            exit 1
+          fi
+
+          evidence='evidence/latest-beggars-scene-v2'
+          mkdir -p "$evidence"
+          printf '%s' "$run_json" | jq --arg observed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{
+            classification: "RUN_REGISTERED",
+            workflow_run_id: .id,
+            workflow_name: .name,
+            workflow_path: .path,
+            event: .event,
+            status: .status,
+            conclusion: .conclusion,
+            head_sha: .head_sha,
+            head_branch: .head_branch,
+            url: .html_url,
+            created_at: .created_at,
+            updated_at: .updated_at,
+            observed_at: $observed_at
+          }' > "$evidence/run-registration.json"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$evidence/run-registration.json"
+          git commit -m "evidence(scene): register beggars v2 run ${GITHUB_RUN_ID}"
+          git pull --rebase origin agent/blender-beggars-scene-20260804
+          git push origin HEAD:agent/blender-beggars-scene-20260804
