@@ -1,0 +1,61 @@
+﻿{
+    "classification":  "PROVEN_LOCAL_RUNS_DISCOVERED",
+    "repository":  "organicoverlords/lowvram3d-studio",
+    "branch":  "agent/blender-beggars-scene-20260804",
+    "diagnostic_head":  "225f5bc4a60e8a2697ca2aaa5e8e662fbef671d5",
+    "worker_name":  "LOWVRAM3D-KONE",
+    "worker_os":  "Windows",
+    "worker_arch":  "X64",
+    "diagnostic_workflow_run_id":  "30856535812",
+    "inspected_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene",
+    "run_count":  2,
+    "runs":  [
+                 {
+                     "run_directory":  "run-30856355184",
+                     "modified_utc":  "2026-08-03T21:51:49.5872849Z",
+                     "final_receipt":  {
+                                           "classification":  "REJECTED",
+                                           "job_status":  "failure",
+                                           "workflow_run_id":  "30856355184",
+                                           "head_sha":  "e41e733db810148a5b2a3e423530aff3763ece39",
+                                           "branch":  "agent/blender-beggars-scene-20260804",
+                                           "reference_media_upload_scope":  "EXCLUDED",
+                                           "recorded_at":  "2026-08-03T21:55:22.4992280Z"
+                                       },
+                     "worker_receipt":  null,
+                     "artifact_files":  [
+                                            {
+                                                "name":  "workflow_final_receipt.json",
+                                                "bytes":  336,
+                                                "modified_utc":  "2026-08-03T21:55:22.6464197Z"
+                                            }
+                                        ],
+                     "private_reference_content_listed":  false
+                 },
+                 {
+                     "run_directory":  "run-30854986254",
+                     "modified_utc":  "2026-08-03T21:31:58.3277653Z",
+                     "final_receipt":  {
+                                           "classification":  "REJECTED",
+                                           "job_status":  "failure",
+                                           "workflow_run_id":  "30854986254",
+                                           "head_sha":  "a4e1598ac9fc54391b9ebcb109381a39db755ec7",
+                                           "branch":  "agent/blender-beggars-scene-20260804",
+                                           "reference_media_upload_scope":  "EXCLUDED",
+                                           "recorded_at":  "2026-08-03T21:36:37.9058824Z"
+                                       },
+                     "worker_receipt":  null,
+                     "artifact_files":  [
+                                            {
+                                                "name":  "workflow_final_receipt.json",
+                                                "bytes":  336,
+                                                "modified_utc":  "2026-08-03T21:36:38.1525009Z"
+                                            }
+                                        ],
+                     "private_reference_content_listed":  false
+                 }
+             ],
+    "source_media_read":  false,
+    "source_media_uploaded":  false,
+    "recorded_at":  "2026-08-03T21:55:48.6350605Z"
+}
