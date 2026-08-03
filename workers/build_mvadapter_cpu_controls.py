@@ -34,7 +34,19 @@ VIEWS: tuple[dict[str, Any], ...] = (
     {"index": 4, "semantic_name": "top", "elevation": 89.99, "azimuth": 90.0, "axis": "top"},
     {"index": 5, "semantic_name": "bottom", "elevation": -89.99, "azimuth": 90.0, "axis": "bottom"},
 )
-CANONICAL_TRANSFORM = np.asarray([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=np.float64)
+#: Control space is built so that its +Z is the asset's up axis and its +X is the
+#: direction the asset faces, because the rig places the azimuth-0 camera on +X and
+#: sweeps elevation about +Z. The legacy basis assumed a Z-up asset; a standard glTF
+#: asset is Y-up with +Z forward, and feeding one to the other rotates the character
+#: onto its side and hands the face-on camera the elevation +-90 embedding.
+CANONICAL_BASES = {
+    # canonical = (-y, x, z): control up is mesh +Z.
+    "legacy_z_up": np.asarray([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=np.float64),
+    # canonical = (z, x, y): control up is mesh +Y, control +X is mesh +Z.
+    "y_up_z_front": np.asarray([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]], dtype=np.float64),
+}
+DEFAULT_CANONICAL_BASIS = "legacy_z_up"
+CANONICAL_TRANSFORM = CANONICAL_BASES[DEFAULT_CANONICAL_BASIS]
 CANONICAL_INVERSE = CANONICAL_TRANSFORM.T
 CAMERA_DISTANCE = 1.8
 CAMERA_NEAR = 0.1
@@ -275,7 +287,7 @@ def _prove_semantic_orientation(views: list[dict[str, Any]], size: int = FIXTURE
     }
 
 
-def build_camera_contract() -> dict[str, Any]:
+def build_camera_contract(canonical_basis: str = DEFAULT_CANONICAL_BASIS) -> dict[str, Any]:
     views: list[dict[str, Any]] = []
     for item in VIEWS:
         camera = _official_camera(item["elevation"], item["azimuth"])
@@ -338,8 +350,9 @@ def build_camera_contract() -> dict[str, Any]:
         "fixture_evidence": fixture_evidence,
         "projection_half_span": PROJECTION_HALF_SPAN,
         "projection_span": PROJECTION_SPAN,
-        "control_space_transform": CANONICAL_TRANSFORM.tolist(),
-        "control_space_inverse": CANONICAL_INVERSE.tolist(),
+        "canonical_basis": canonical_basis,
+        "control_space_transform": CANONICAL_BASES[canonical_basis].tolist(),
+        "control_space_inverse": CANONICAL_BASES[canonical_basis].T.tolist(),
         "control_space_recentered": False,
         "control_space_rescaled": True,
         "control_max_abs": 0.5,
@@ -419,9 +432,13 @@ def _rasterise(
     return face_id, bary, position, normal, zbuffer
 
 
-def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, Any]:
+def build_controls(mesh: Path, output_dir: Path, size: int = 256,
+                   canonical_basis: str = DEFAULT_CANONICAL_BASIS) -> dict[str, Any]:
     if size < 16:
         raise RuntimeError("CPU_CONTROL_SIZE_INVALID")
+    if canonical_basis not in CANONICAL_BASES:
+        raise RuntimeError(f"CPU_CONTROL_CANONICAL_BASIS_INVALID:{canonical_basis}")
+    transform = CANONICAL_BASES[canonical_basis]
     original_hash = sha256(mesh)
     positions, _mesh_normals, uv, tris, normal_source, scene_report = read_glb(
         mesh, return_normal_source=True, return_scene_report=True
@@ -429,14 +446,14 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
     if uv is None:
         raise RuntimeError("CPU_CONTROL_UV_MISSING")
     positions = positions.astype(np.float64)
-    canonical_positions = positions @ CANONICAL_TRANSFORM.T
+    canonical_positions = positions @ transform.T
     largest = float(np.max(np.abs(canonical_positions)))
     if largest <= 1e-12:
         raise RuntimeError("CPU_CONTROL_MESH_DEGENERATE")
     vertices = canonical_positions * (0.5 / largest)
-    normals = np.asarray(_mesh_normals, dtype=np.float64) @ CANONICAL_TRANSFORM.T
+    normals = np.asarray(_mesh_normals, dtype=np.float64) @ transform.T
     normals /= np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-12)
-    contract = build_camera_contract()
+    contract = build_camera_contract(canonical_basis)
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "camera_contract.json").write_text(json.dumps(contract, indent=2), encoding="utf-8")
     tensor = np.full((6, 6, size, size), 0.5, dtype=np.float32)
@@ -537,8 +554,9 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
         "normal_source": normal_source,
         "gltf_scene_transform": scene_report,
         "official_normal_contract": True,
-        "control_space_transform": CANONICAL_TRANSFORM.tolist(),
-        "control_space_inverse": CANONICAL_INVERSE.tolist(),
+        "canonical_basis": canonical_basis,
+        "control_space_transform": transform.tolist(),
+        "control_space_inverse": transform.T.tolist(),
         "control_space_recentered": False,
         "control_space_rescaled": True,
         "control_max_abs": round(float(np.max(np.abs(vertices))), 9),
@@ -580,8 +598,11 @@ def main() -> int:
     parser.add_argument("--mesh", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--size", type=int, default=256)
+    parser.add_argument("--canonical-basis", default=DEFAULT_CANONICAL_BASIS,
+                        choices=sorted(CANONICAL_BASES))
     args = parser.parse_args()
-    report = build_controls(Path(args.mesh), Path(args.output_dir), args.size)
+    report = build_controls(Path(args.mesh), Path(args.output_dir), args.size,
+                            canonical_basis=args.canonical_basis)
     print(json.dumps(report, indent=2), flush=True)
     return 0
 
