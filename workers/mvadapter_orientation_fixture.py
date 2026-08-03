@@ -204,10 +204,8 @@ def _is_asymmetric(vertices: np.ndarray) -> bool:
 
 
 def normalise(vertices: np.ndarray) -> np.ndarray:
-    """Apply the same +/-0.5 normalisation the production control builder uses."""
-    centre = (vertices.min(axis=0) + vertices.max(axis=0)) * 0.5
-    centred = vertices - centre
-    largest = float(np.max(np.abs(centred)))
+    """Apply official rescale-only normalisation without recentering."""
+    largest = float(np.max(np.abs(vertices)))
     if largest <= 1e-12:
         raise RuntimeError("FIXTURE_DEGENERATE")
-    return centred * (0.5 / largest)
+    return vertices * (0.5 / largest)

@@ -44,7 +44,10 @@ def face_normals(positions: np.ndarray, tris: np.ndarray) -> np.ndarray:
 
 def vertex_normals(positions: np.ndarray, tris: np.ndarray) -> np.ndarray:
     accumulated = np.zeros_like(positions, dtype=np.float64)
-    per_face = face_normals(positions.astype(np.float64), tris)
+    # Upstream accumulates raw cross products, so larger faces contribute
+    # proportionally more than smaller faces before the vertex normalization.
+    vertices = positions.astype(np.float64)
+    per_face = np.cross(vertices[tris[:, 1]] - vertices[tris[:, 0]], vertices[tris[:, 2]] - vertices[tris[:, 0]])
     for corner in range(3):
         np.add.at(accumulated, tris[:, corner], per_face)
     lengths = np.linalg.norm(accumulated, axis=1, keepdims=True)
@@ -78,7 +81,7 @@ def triangle_components(positions: np.ndarray, tris: np.ndarray, weld: float = 4
     return labels[corners[:, 0]], welded
 
 
-def read_glb(path: Path):
+def read_glb(path: Path, *, return_normal_source: bool = False):
     """Return (positions, normals, uv, indices). normals and uv may be synthesised or None."""
     meta, binary = _chunks(Path(path).read_bytes())
 
@@ -118,9 +121,12 @@ def read_glb(path: Path):
         raise RuntimeError("GLB contains no mesh primitives")
     positions = np.concatenate(position_parts, axis=0)
     tris = np.concatenate(index_parts, axis=0)
+    normal_source = "EMBEDDED_GLTF" if has_normals else "AREA_WEIGHTED_RECOMPUTED"
     normals = (np.concatenate(normal_parts, axis=0)
                if has_normals else vertex_normals(positions, tris))
     uv = np.concatenate(uv_parts, axis=0) if has_uvs else None
+    if return_normal_source:
+        return positions, normals, uv, tris, normal_source
     return positions, normals, uv, tris
 
 

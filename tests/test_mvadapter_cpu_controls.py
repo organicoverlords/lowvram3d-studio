@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "workers"))
 
 from build_mvadapter_cpu_controls import build_camera_contract, build_controls  # noqa: E402
-from mesh_io import write_glb  # noqa: E402
+from mesh_io import read_glb, vertex_normals, write_glb  # noqa: E402
 
 
 def _cube(path: Path) -> None:
@@ -66,3 +66,32 @@ def test_cpu_controls_are_deterministic(tmp_path: Path) -> None:
     b = np.load(tmp_path / "b" / "control_tensor.npy")
     assert np.array_equal(a, b)
 
+
+def test_embedded_normals_are_preserved_and_canonical_contract_is_recorded(tmp_path: Path) -> None:
+    mesh = tmp_path / "fixture.glb"
+    _cube(mesh)
+    positions, normals, _uv, _tris, source = read_glb(mesh, return_normal_source=True)
+    assert positions.shape == normals.shape
+    assert source == "EMBEDDED_GLTF"
+    report = build_controls(mesh, tmp_path / "controls", size=32)
+    assert report["normal_source"] == "EMBEDDED_GLTF"
+    assert report["control_space_recentered"] is False
+    assert report["control_space_rescaled"] is True
+    assert report["control_max_abs"] == 0.5
+    assert np.asarray(report["control_space_transform"]).tolist() == [
+        [0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]
+    ]
+
+
+def test_missing_normal_fallback_is_area_weighted() -> None:
+    positions = np.asarray(
+        [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 10, 0], [0, 0, 1]], dtype=np.float32
+    )
+    tris = np.asarray([[0, 1, 2], [0, 3, 4]], dtype=np.int64)
+    normals = vertex_normals(positions, tris)
+    equal_weight = np.asarray([1.0, 0.0, 1.0], dtype=np.float64)
+    equal_weight /= np.linalg.norm(equal_weight)
+    expected = np.asarray([10.0, 0.0, 1.0], dtype=np.float64)
+    expected /= np.linalg.norm(expected)
+    assert not np.allclose(normals[0], equal_weight, atol=1e-5)
+    assert np.allclose(normals[0], expected, atol=1e-5)

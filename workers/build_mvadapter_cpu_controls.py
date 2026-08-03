@@ -27,13 +27,18 @@ from mvadapter_orientation_fixture import (
 
 
 VIEWS: tuple[dict[str, Any], ...] = (
-    {"index": 0, "semantic_name": "horizontal_0", "direction": [0.0, -1.0, 0.0], "up": [0.0, 0.0, 1.0], "axis": "front"},
-    {"index": 1, "semantic_name": "horizontal_1", "direction": [1.0, 0.0, 0.0], "up": [0.0, 0.0, 1.0], "axis": "right"},
-    {"index": 2, "semantic_name": "horizontal_2", "direction": [0.0, 1.0, 0.0], "up": [0.0, 0.0, 1.0], "axis": "rear"},
-    {"index": 3, "semantic_name": "horizontal_3", "direction": [-1.0, 0.0, 0.0], "up": [0.0, 0.0, 1.0], "axis": "left"},
-    {"index": 4, "semantic_name": "top", "direction": [0.0, 0.0, 1.0], "up": [0.0, 1.0, 0.0], "axis": "top"},
-    {"index": 5, "semantic_name": "bottom", "direction": [0.0, 0.0, -1.0], "up": [0.0, 1.0, 0.0], "axis": "bottom"},
+    {"index": 0, "semantic_name": "horizontal_0", "elevation": 0.0, "azimuth": -90.0, "axis": "front"},
+    {"index": 1, "semantic_name": "horizontal_1", "elevation": 0.0, "azimuth": 0.0, "axis": "right"},
+    {"index": 2, "semantic_name": "horizontal_2", "elevation": 0.0, "azimuth": 90.0, "axis": "rear"},
+    {"index": 3, "semantic_name": "horizontal_3", "elevation": 0.0, "azimuth": 180.0, "axis": "left"},
+    {"index": 4, "semantic_name": "top", "elevation": 89.99, "azimuth": 90.0, "axis": "top"},
+    {"index": 5, "semantic_name": "bottom", "elevation": -89.99, "azimuth": 90.0, "axis": "bottom"},
 )
+CANONICAL_TRANSFORM = np.asarray([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], dtype=np.float64)
+CANONICAL_INVERSE = CANONICAL_TRANSFORM.T
+CAMERA_DISTANCE = 1.8
+CAMERA_NEAR = 0.1
+CAMERA_FAR = 100.0
 #: Official MV-Adapter geometry framing: object normalised to +/-0.5 and
 #: projected through one shared orthographic span of +/-0.55 for every view.
 PROJECTION_HALF_SPAN = 0.55
@@ -59,17 +64,56 @@ def _unit(value: list[float] | np.ndarray) -> np.ndarray:
     return vector / length
 
 
+def _official_camera(elevation_deg: float, azimuth_deg: float) -> dict[str, Any]:
+    elevation = np.deg2rad(float(elevation_deg))
+    azimuth = np.deg2rad(float(azimuth_deg))
+    position = np.asarray(
+        [
+            CAMERA_DISTANCE * np.cos(elevation) * np.cos(azimuth),
+            CAMERA_DISTANCE * np.cos(elevation) * np.sin(azimuth),
+            CAMERA_DISTANCE * np.sin(elevation),
+        ], dtype=np.float64,
+    )
+    direction = _unit(-position)
+    world_up = np.asarray([0.0, 0.0, 1.0], dtype=np.float64)
+    right = _unit(np.cross(direction, world_up))
+    up = _unit(np.cross(right, direction))
+    c2w = np.eye(4, dtype=np.float64)
+    c2w[:3, 0] = right
+    c2w[:3, 1] = up
+    c2w[:3, 2] = -direction
+    c2w[:3, 3] = position
+    w2c = np.linalg.inv(c2w)
+    projection = np.zeros((4, 4), dtype=np.float64)
+    projection[0, 0] = 2.0 / PROJECTION_SPAN
+    projection[1, 1] = -2.0 / PROJECTION_SPAN
+    projection[2, 2] = -2.0 / (CAMERA_FAR - CAMERA_NEAR)
+    projection[2, 3] = -(CAMERA_FAR + CAMERA_NEAR) / (CAMERA_FAR - CAMERA_NEAR)
+    projection[3, 3] = 1.0
+    return {
+        "camera_position": position,
+        "camera_direction": direction,
+        "camera_right": right,
+        "camera_up": up,
+        "camera_to_world": c2w,
+        "world_to_camera": w2c,
+        "projection_matrix": projection,
+        "mvp_matrix": projection @ w2c,
+    }
+
+
 def _render_fixture_view(
     vertices: np.ndarray,
     normals: np.ndarray,
     tris: np.ndarray,
     component_of_triangle: np.ndarray,
     direction: np.ndarray,
+    right: np.ndarray,
     up: np.ndarray,
     size: int,
 ) -> dict[str, Any]:
     """Rasterise the asymmetric fixture and measure per-component evidence."""
-    screen, depth = _project(vertices, direction, up, PROJECTION_SPAN)
+    screen, depth = _project(vertices, direction, right, up, PROJECTION_SPAN)
     face_id, _bary, _position, _normal, zbuffer = _rasterise(screen, depth, vertices, normals, tris, size)
     mask = face_id >= 0
     if not mask.any():
@@ -118,8 +162,16 @@ def _prove_semantic_orientation(views: list[dict[str, Any]], size: int = FIXTURE
         direction = np.asarray(view["camera_direction"], dtype=np.float64)
         up = np.asarray(view["camera_up"], dtype=np.float64)
         right = np.asarray(view["camera_right"], dtype=np.float64)
+        official = _official_camera(float(view["elevation_deg"]), float(view["azimuth_deg"]))
+        if not (
+            np.allclose(direction, official["camera_direction"], atol=1e-6)
+            and np.allclose(right, official["camera_right"], atol=1e-6)
+            and np.allclose(up, official["camera_up"], atol=1e-6)
+            and np.allclose(np.asarray(view["camera_to_world"]), official["camera_to_world"], atol=1e-6)
+        ):
+            raise RuntimeError(f"CAMERA_CONTRACT_ASYMMETRIC_FIXTURE_FAILED:[{view['index']}]")
         rendered = _render_fixture_view(
-            vertices, normals, tris, component_of_triangle, direction, up, size
+            vertices, normals, tris, component_of_triangle, direction, right, up, size
         )
         measured = rendered["measured"]
 
@@ -226,28 +278,24 @@ def _prove_semantic_orientation(views: list[dict[str, Any]], size: int = FIXTURE
 def build_camera_contract() -> dict[str, Any]:
     views: list[dict[str, Any]] = []
     for item in VIEWS:
-        direction = _unit(item["direction"])
-        up = _unit(item["up"])
-        forward = -direction
-        right = _unit(np.cross(forward, up))
-        corrected_up = _unit(np.cross(right, forward))
-        c2w = np.eye(4, dtype=np.float64)
-        c2w[:3, 0] = right
-        c2w[:3, 1] = corrected_up
-        c2w[:3, 2] = forward
-        views.append(
-            {
-                "index": int(item["index"]),
-                "semantic_name": str(item["semantic_name"]),
-                "axis_label": str(item["axis"]),
-                "camera_direction": direction.tolist(),
-                "camera_up": corrected_up.tolist(),
-                "camera_right": right.tolist(),
-                "camera_to_world": c2w.tolist(),
-                "world_to_camera": np.linalg.inv(c2w).tolist(),
-                "fixture_gate_passed": False,
-            }
-        )
+        camera = _official_camera(item["elevation"], item["azimuth"])
+        views.append({
+            "index": int(item["index"]),
+            "semantic_name": str(item["semantic_name"]),
+            "axis_label": str(item["axis"]),
+            "elevation_deg": float(item["elevation"]),
+            "azimuth_deg": float(item["azimuth"]),
+            "distance": CAMERA_DISTANCE,
+            "camera_position": camera["camera_position"].tolist(),
+            "camera_direction": camera["camera_direction"].tolist(),
+            "camera_up": camera["camera_up"].tolist(),
+            "camera_right": camera["camera_right"].tolist(),
+            "camera_to_world": camera["camera_to_world"].tolist(),
+            "world_to_camera": camera["world_to_camera"].tolist(),
+            "projection_matrix": camera["projection_matrix"].tolist(),
+            "mvp_matrix": camera["mvp_matrix"].tolist(),
+            "fixture_gate_passed": False,
+        })
     by_axis = {v["axis_label"]: np.asarray(v["camera_direction"]) for v in views}
     horizontal = [v for v in views if v["axis_label"] in {"front", "right", "rear", "left"}]
     fixture_evidence = _prove_semantic_orientation(views)
@@ -290,19 +338,31 @@ def build_camera_contract() -> dict[str, Any]:
         "fixture_evidence": fixture_evidence,
         "projection_half_span": PROJECTION_HALF_SPAN,
         "projection_span": PROJECTION_SPAN,
-        "control_space_transform": "identity_panda_front_minus_y_up_plus_z",
-        "control_space_inverse": "identity_panda_front_minus_y_up_plus_z",
+        "control_space_transform": CANONICAL_TRANSFORM.tolist(),
+        "control_space_inverse": CANONICAL_INVERSE.tolist(),
+        "control_space_recentered": False,
+        "control_space_rescaled": True,
+        "control_max_abs": 0.5,
+        "official_camera_contract": {
+            "distance": CAMERA_DISTANCE,
+            "left": -PROJECTION_HALF_SPAN,
+            "right": PROJECTION_HALF_SPAN,
+            "bottom": -PROJECTION_HALF_SPAN,
+            "top": PROJECTION_HALF_SPAN,
+            "near": CAMERA_NEAR,
+            "far": CAMERA_FAR,
+            "elevations_deg": [item["elevation"] for item in VIEWS],
+            "azimuths_deg": [item["azimuth"] for item in VIEWS],
+            "official_near_pole_up": True,
+        },
     }
 
 
-def _project(vertices: np.ndarray, direction: np.ndarray, up: np.ndarray, projection_span: float) -> tuple[np.ndarray, np.ndarray]:
-    forward = -direction
-    right = _unit(np.cross(forward, up))
-    corrected_up = _unit(np.cross(right, forward))
+def _project(vertices: np.ndarray, direction: np.ndarray, right: np.ndarray, up: np.ndarray, projection_span: float) -> tuple[np.ndarray, np.ndarray]:
     screen = np.stack(
-        [vertices @ right / projection_span + 0.5, 0.5 - (vertices @ corrected_up) / projection_span], axis=1
+        [vertices @ right / projection_span + 0.5, 0.5 - (vertices @ up) / projection_span], axis=1
     )
-    depth = -(vertices @ direction)
+    depth = vertices @ direction
     return screen, depth
 
 
@@ -363,17 +423,16 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
     if size < 16:
         raise RuntimeError("CPU_CONTROL_SIZE_INVALID")
     original_hash = sha256(mesh)
-    positions, _mesh_normals, uv, tris = read_glb(mesh)
+    positions, _mesh_normals, uv, tris, normal_source = read_glb(mesh, return_normal_source=True)
     if uv is None:
         raise RuntimeError("CPU_CONTROL_UV_MISSING")
     positions = positions.astype(np.float64)
-    centre = (positions.min(axis=0) + positions.max(axis=0)) * 0.5
-    centred = positions - centre
-    largest = float(np.max(np.abs(centred)))
+    canonical_positions = positions @ CANONICAL_TRANSFORM.T
+    largest = float(np.max(np.abs(canonical_positions)))
     if largest <= 1e-12:
         raise RuntimeError("CPU_CONTROL_MESH_DEGENERATE")
-    vertices = centred * (0.5 / largest)
-    normals = vertex_normals(vertices, tris).astype(np.float64)
+    vertices = canonical_positions * (0.5 / largest)
+    normals = np.asarray(_mesh_normals, dtype=np.float64) @ CANONICAL_TRANSFORM.T
     normals /= np.maximum(np.linalg.norm(normals, axis=1, keepdims=True), 1e-12)
     contract = build_camera_contract()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -385,7 +444,8 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
         name = str(item["semantic_name"])
         direction = np.asarray(item["camera_direction"], dtype=np.float64)
         up = np.asarray(item["camera_up"], dtype=np.float64)
-        screen, depth = _project(vertices, direction, up, PROJECTION_SPAN)
+        right = np.asarray(item["camera_right"], dtype=np.float64)
+        screen, depth = _project(vertices, direction, right, up, PROJECTION_SPAN)
         face_id, bary, position, normal, zbuffer = _rasterise(screen, depth, vertices, normals, tris, size)
         mask = face_id >= 0
         if not mask.any():
@@ -432,6 +492,8 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
             "silhouette_pixels": int(mask.sum()),
             "visible_triangles": int(visible.sum()),
             "projection_span": PROJECTION_SPAN,
+            "elevation_deg": item["elevation_deg"],
+            "azimuth_deg": item["azimuth_deg"],
             "occupancy_x": round(occupancy_x, 6),
             "occupancy_y": round(occupancy_y, 6),
             "occupancy": round(max(occupancy_x, occupancy_y), 6),
@@ -470,6 +532,13 @@ def build_controls(mesh: Path, output_dir: Path, size: int = 256) -> dict[str, A
         "mesh_sha256_before": original_hash,
         "mesh_sha256_after": sha256(mesh),
         "geometry_or_uv_mutation": False,
+        "normal_source": normal_source,
+        "official_normal_contract": True,
+        "control_space_transform": CANONICAL_TRANSFORM.tolist(),
+        "control_space_inverse": CANONICAL_INVERSE.tolist(),
+        "control_space_recentered": False,
+        "control_space_rescaled": True,
+        "control_max_abs": round(float(np.max(np.abs(vertices))), 9),
         "size": size,
         "projection_span": PROJECTION_SPAN,
         "projection_half_span": PROJECTION_HALF_SPAN,

@@ -29,7 +29,7 @@ from typing import Any
 import torch
 from diffusers.models import T2IAdapter
 
-from mvadapter.models.attention_processor import DecoupledMVRowSelfAttnProcessor2_0
+from mvadapter.models.attention_processor import DecoupledMVRowColSelfAttnProcessor2_0
 from mvadapter.pipelines.pipeline_mvadapter_i2mv_sd import MVAdapterI2MVSDPipeline
 
 
@@ -226,7 +226,7 @@ def build_low_vram_pipeline(
         scheduler_class=DDPMScheduler,
     )
     pipe.init_custom_adapter(
-        num_views=num_views, self_attn_processor=DecoupledMVRowSelfAttnProcessor2_0
+        num_views=num_views, self_attn_processor=DecoupledMVRowColSelfAttnProcessor2_0
     )
     load_report = pipe._load_custom_adapter(adapter_state)
     return pipe, load_report
@@ -282,6 +282,10 @@ def attention_report(pipe: LowVRAMMVAdapterI2MVSDPipeline) -> dict[str, Any]:
     """Confirm SDPA processors survive and attention slicing is not installed."""
     processors = pipe.unet.attn_processors
     names = sorted({type(processor).__name__ for processor in processors.values()})
+    rowcol_count = sum(type(processor).__name__ == "DecoupledMVRowColSelfAttnProcessor2_0" for processor in processors.values())
+    row_only_count = sum(type(processor).__name__ == "DecoupledMVRowSelfAttnProcessor2_0" for processor in processors.values())
+    if rowcol_count <= 0 or row_only_count != 0:
+        raise RuntimeError(f"MVADAPTER_ROWCOL_PROCESSOR_INVALID:rowcol={rowcol_count},row_only={row_only_count}")
     sliced = sorted(name for name in names if "Sliced" in name)
     if sliced:
         raise RuntimeError(f"MVADAPTER_ATTENTION_SLICING_ENABLED:{sliced}")
@@ -293,6 +297,10 @@ def attention_report(pipe: LowVRAMMVAdapterI2MVSDPipeline) -> dict[str, Any]:
         "sliced_processor_classes": sliced,
         "non_sdpa_processor_classes": non_sdpa,
         "processor_count": len(processors),
+        "expected_processor": "DecoupledMVRowColSelfAttnProcessor2_0",
+        "rowcol_processor_count": int(rowcol_count),
+        "row_only_processor_count": int(row_only_count),
+        "rowcol_processor_proven": True,
     }
 
 

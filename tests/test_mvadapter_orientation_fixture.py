@@ -110,8 +110,8 @@ def test_image_side_placements_are_measured_not_assumed() -> None:
         assert placement["measured_image_side_y"] == placement["expected_image_side_y"]
 
 
-def test_top_and_bottom_views_are_mirrored_horizontally() -> None:
-    """Top and bottom cannot both place +X on the same image side."""
+def test_top_and_bottom_views_use_the_official_near_pole_horizontal_basis() -> None:
+    """The near-pole camera utility determines the horizontal basis."""
     contract = build_camera_contract()
     evidence = {record["index"]: record for record in contract["fixture_evidence"]["evidence"]}
     sides = {}
@@ -120,7 +120,8 @@ def test_top_and_bottom_views_are_mirrored_horizontally() -> None:
             if placement["component"] == "right_fin":
                 sides[index] = placement["measured_image_side_x"]
     assert set(sides) == {4, 5}
-    assert sides[4] != sides[5]
+    assert sides[4] == "image_left"
+    assert sides[5] == "image_left"
 
 
 def test_proof_flags_are_not_unconditional() -> None:

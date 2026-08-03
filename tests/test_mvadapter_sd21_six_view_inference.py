@@ -64,7 +64,7 @@ def test_bounded_registration_reports_a_similarity_transform() -> None:
 
 def test_six_view_qa_requires_six_outputs_and_records_rear_numeric_gate(tmp_path: Path) -> None:
     images = _images_and_masks(tmp_path)
-    report = qa_outputs(images, tmp_path, 32)
+    report = qa_outputs(images, tmp_path, 32, ["front", "right", "rear", "left", "top", "bottom"])
     assert len(report["views"]) == 6
     assert report["structural_gate_passed"]
     assert report["colour_gate_passed"]

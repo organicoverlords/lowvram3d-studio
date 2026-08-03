@@ -108,7 +108,10 @@ def _verify_hash(path: Path, expected: str, label: str) -> str:
 def _selected(config: dict[str, Any], attempt: str) -> tuple[dict[str, Any], str]:
     if config.get("schema") != "lowvram3d_mvadapter_ig2mv_sd21_inference_v1":
         raise RuntimeError("MVADAPTER_CONFIG_SCHEMA_INVALID")
-    if config.get("status") != "PREPARED_NOT_EXECUTED":
+    allowed_statuses = {"PREPARED_NOT_EXECUTED"}
+    if attempt == "oom-fallback":
+        allowed_statuses.add("PRIMARY_384_CUDA_OOM_FALLBACK_AUTHORIZED")
+    if config.get("status") not in allowed_statuses:
         raise RuntimeError(f"MVADAPTER_CONFIG_STATUS_INVALID:{config.get('status')}")
     if config.get("gpu_sequence_consumed"):
         raise RuntimeError("MVADAPTER_GPU_SEQUENCE_ALREADY_CONSUMED")
@@ -277,7 +280,7 @@ def _color_qa(array: np.ndarray, mask: np.ndarray) -> dict[str, Any]:
     }
 
 
-def qa_outputs(images: list[Image.Image], controls_dir: Path, resolution: int) -> dict[str, Any]:
+def qa_outputs(images: list[Image.Image], controls_dir: Path, resolution: int, semantic_names: list[str]) -> dict[str, Any]:
     if len(images) != 6:
         raise RuntimeError(f"MVADAPTER_OUTPUT_COUNT_INVALID:{len(images)}")
     views: list[dict[str, Any]] = []
@@ -305,7 +308,7 @@ def qa_outputs(images: list[Image.Image], controls_dir: Path, resolution: int) -
         qa = _color_qa(array, generated_mask)
         views.append({
             "index": index,
-            "name": VIEW_NAMES[index],
+            "name": semantic_names[index],
             "dimensions": [resolution, resolution],
             "foreground_coverage": round(float(generated_mask.mean()), 6),
             "direct_iou": round(direct, 6),
@@ -341,7 +344,7 @@ def qa_outputs(images: list[Image.Image], controls_dir: Path, resolution: int) -
     return qa
 
 
-def _contact_sheet(images: list[Image.Image], output: Path) -> None:
+def _contact_sheet(images: list[Image.Image], output: Path, semantic_names: list[str]) -> None:
     tile = images[0].convert("RGB")
     size = tile.size[0]
     sheet = Image.new("RGB", (size * 3, size * 2), (32, 32, 32))
@@ -350,14 +353,14 @@ def _contact_sheet(images: list[Image.Image], output: Path) -> None:
         x = (index % 3) * size
         y = (index // 3) * size
         sheet.paste(image.convert("RGB"), (x, y))
-        draw.text((x + 8, y + 8), f"{index}: {VIEW_NAMES[index]}", fill=(255, 255, 255))
+        draw.text((x + 8, y + 8), f"{index}: {semantic_names[index]}", fill=(255, 255, 255))
     sheet.save(output)
 
 
-def _update_config(config_path: Path, status: str) -> None:
+def _update_config(config_path: Path, status: str, consumed: bool = True) -> None:
     config = _json(config_path)
     config["status"] = status
-    config["gpu_sequence_consumed"] = True
+    config["gpu_sequence_consumed"] = bool(consumed)
     config["next_action"] = "USER_REVIEW_REQUIRED"
     config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
@@ -385,6 +388,9 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         "output_images": [],
         "gpu_sequence_consumed": False,
         "fallback_eligible": False,
+        "reference_unet_call_count": 0,
+        "denoising_unet_call_count": 0,
+        "denoising_steps_requested": int(selected["steps"]),
         "_started": time.time(),
     }
     torch = None
@@ -425,15 +431,17 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["offload_hooks"] = offload_hook_report(pipe)
         control = torch.from_numpy(np.ascontiguousarray(np.load(preflight["controls"], allow_pickle=False).astype(np.float32)))
         reference = Image.open(preflight["conditioning"]).convert("RGB")
-        state = {"unet_calls": 0}
+        state = {"unet_calls": 0, "reference_unet_calls": 0, "denoising_unet_calls": 0}
         original_unet_forward = pipe.unet.forward
         original_cond_forward = pipe.cond_encoder.forward
 
         def tracked_unet(*args: Any, **kwargs: Any):
             state["unet_calls"] += 1
             if state["unet_calls"] == 1:
+                state["reference_unet_calls"] += 1
                 receipt["reference_unet_pass_started"] = True
             else:
+                state["denoising_unet_calls"] += 1
                 receipt["denoising_started"] = True
             return original_unet_forward(*args, **kwargs)
 
@@ -467,25 +475,48 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             output_type="pil",
             callback_on_step_end=on_step_end,
         )
+        receipt["reference_unet_call_count"] = state["reference_unet_calls"]
+        receipt["denoising_unet_call_count"] = state["denoising_unet_calls"]
         images = list(result.images)
         receipt["vae_decode_completed"] = True
         receipt["gpu_sequence_consumed"] = True
         if len(images) != 6:
             raise RuntimeError(f"MVADAPTER_OUTPUT_COUNT_INVALID:{len(images)}")
+        semantic_names = [str(view.get("proven_semantic", VIEW_NAMES[int(view["index"])])) for view in sorted(preflight["camera"]["views"], key=lambda item: int(item["index"]))]
+        receipt["view_semantics"] = semantic_names
         for index, image in enumerate(images):
-            path = output_dir / f"view_{index}_{VIEW_NAMES[index]}.png"
+            path = output_dir / f"view_{index}_{semantic_names[index]}.png"
             image.convert("RGB").save(path)
             receipt["output_images"].append({"index": index, "name": path.name, "path": str(path), "sha256": sha256(path)})
-        _contact_sheet(images, output_dir / "six_view_contact_sheet.png")
+        _contact_sheet(images, output_dir / "six_view_contact_sheet.png", semantic_names)
         receipt["contact_sheet"] = str(output_dir / "six_view_contact_sheet.png")
-        receipt["qa"] = qa_outputs(images, Path(preflight["controls"]).parent, int(selected["resolution"]))
+        receipt["qa"] = qa_outputs(images, Path(preflight["controls"]).parent, int(selected["resolution"]), semantic_names)
         receipt["status"] = "PROVEN" if receipt["qa"]["passed"] else "QA_REJECTED"
-        _update_config(config_path, "EXECUTED_384" if attempt == "primary" else "EXECUTED_256_OOM_FALLBACK" if receipt["qa"]["passed"] else "EXECUTED_QA_REJECTED")
+        if attempt == "primary":
+            config_status = "EXECUTED_384_QA_PASSED" if receipt["qa"]["passed"] else "EXECUTED_384_QA_REJECTED"
+        else:
+            config_status = "EXECUTED_256_OOM_FALLBACK_QA_PASSED" if receipt["qa"]["passed"] else "EXECUTED_256_OOM_FALLBACK_QA_REJECTED"
+        _update_config(config_path, config_status)
     except Exception as exc:
-        receipt["status"] = "CUDA_OOM" if _is_cuda_oom(exc) else "REJECTED"
+        receipt["reference_unet_call_count"] = state.get("reference_unet_calls", 0) if "state" in locals() else 0
+        receipt["denoising_unet_call_count"] = state.get("denoising_unet_calls", 0) if "state" in locals() else 0
+        genuine_oom = _is_cuda_oom(exc)
+        if genuine_oom and attempt == "primary":
+            receipt["status"] = "CUDA_OOM"
+            _update_config(config_path, "PRIMARY_384_CUDA_OOM_FALLBACK_AUTHORIZED", consumed=False)
+        elif genuine_oom and attempt == "oom-fallback":
+            receipt["status"] = "HARD_BLOCKER_CUDA_OOM_AT_256"
+            receipt["gpu_sequence_consumed"] = True
+        elif receipt["denoising_started"]:
+            receipt["status"] = "RUNTIME_REJECTED_SEQUENCE_CONSUMED"
+            receipt["gpu_sequence_consumed"] = True
+            _update_config(config_path, "RUNTIME_REJECTED_SEQUENCE_CONSUMED")
+        else:
+            receipt["status"] = "CUDA_OOM" if genuine_oom else "REJECTED"
         receipt["error"] = f"{type(exc).__name__}: {exc}"
-        receipt["fallback_eligible"] = bool(attempt == "primary" and _is_cuda_oom(exc))
-        receipt["gpu_sequence_consumed"] = False
+        receipt["fallback_eligible"] = bool(attempt == "primary" and genuine_oom)
+        if not receipt["gpu_sequence_consumed"]:
+            receipt["gpu_sequence_consumed"] = bool(receipt["denoising_started"] and not genuine_oom)
     finally:
         if pipe is not None:
             try:

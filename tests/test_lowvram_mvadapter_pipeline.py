@@ -10,6 +10,7 @@ import inspect
 import json
 import sys
 import unittest
+from types import SimpleNamespace
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -89,6 +90,18 @@ class RouteRestrictionTests(unittest.TestCase):
         self.assertFalse(
             any(name == "nvdiffrast" or name.startswith("nvdiffrast.") for name in sys.modules)
         )
+
+    def test_rowcol_processor_is_required(self) -> None:
+        rowcol = type("DecoupledMVRowColSelfAttnProcessor2_0", (), {})()
+        report = lowvram.attention_report(SimpleNamespace(unet=SimpleNamespace(attn_processors={"a": rowcol})))
+        self.assertEqual(report["expected_processor"], "DecoupledMVRowColSelfAttnProcessor2_0")
+        self.assertEqual(report["rowcol_processor_count"], 1)
+        self.assertEqual(report["row_only_processor_count"], 0)
+
+    def test_row_only_processor_is_rejected(self) -> None:
+        row = type("DecoupledMVRowSelfAttnProcessor2_0", (), {})()
+        with self.assertRaises(RuntimeError):
+            lowvram.attention_report(SimpleNamespace(unet=SimpleNamespace(attn_processors={"a": row})))
 
 
 @unittest.skipUnless(PREFLIGHT_RECEIPT.is_file(), "preflight receipt not produced on this machine")
