@@ -1,0 +1,85 @@
+{
+  "asset_tasks": [
+    {
+      "action": "import_gltf",
+      "asset_id": "source_mesh_v2",
+      "collection": "SCENE_VISUAL_SHELL",
+      "collision": "none",
+      "lod_policy": "nanite",
+      "material_policy": "unlit_projection",
+      "navigation": "ignored",
+      "representation": "visual_shell",
+      "semantic_class": "source_visible_shell",
+      "source_uri": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb",
+      "tags": [
+        "legacy_evidence",
+        "source_camera_locked",
+        "sha256:2ee23fd3816f44931a25628392fa5962b23a55dcc17e207540dd3d937e940011"
+      ],
+      "task_id": "asset:source_mesh_v2",
+      "transform": {
+        "rotation_deg_xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_xyz": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation_m": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "triangle_budget": 374959
+    }
+  ],
+  "camera": {
+    "far_m": 500.0,
+    "field_of_view_deg": 48.0,
+    "id": "source",
+    "look_at_m": [
+      0.0,
+      38.0,
+      12.0
+    ],
+    "near_m": 0.1,
+    "position_m": [
+      0.0,
+      -110.0,
+      18.0
+    ],
+    "principal_point_norm": [
+      0.5,
+      0.5
+    ],
+    "projection": "perspective",
+    "purpose": "source_match"
+  },
+  "classification": "PROVEN",
+  "collections": [
+    "SCENE_VISUAL_SHELL",
+    "SCENE_EDITABLE",
+    "SCENE_GAMEPLAY_PROXY",
+    "SCENE_PROCEDURAL_MODULES",
+    "SCENE_REFERENCE_ONLY"
+  ],
+  "counts": {
+    "asset_tasks": 1,
+    "import_tasks": 1,
+    "placeholder_tasks": 0,
+    "spline_tasks": 0
+  },
+  "errors": [],
+  "geometry_generation_required": false,
+  "gpu_work_required": false,
+  "neural_work_required": false,
+  "scene_id": "castlegrounds_source_locked_v1",
+  "scene_spec_sha256": "8d56d336d8dfc1a3dc1e964a05c5a39f15556d74ac5eb21fe57d9aa8f6a79189",
+  "scene_spec_valid": true,
+  "schema_version": "scene_preparation_plan_v1",
+  "spline_tasks": []
+}

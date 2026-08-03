@@ -1,0 +1,277 @@
+{
+  "assets": [
+    {
+      "collision": "none",
+      "id": "source_mesh_v2",
+      "lod_policy": "nanite",
+      "material_policy": "unlit_projection",
+      "navigation": "ignored",
+      "region_id": "background",
+      "representation": "visual_shell",
+      "semantic_class": "source_visible_shell",
+      "source_uri": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb",
+      "tags": [
+        "legacy_evidence",
+        "source_camera_locked",
+        "sha256:2ee23fd3816f44931a25628392fa5962b23a55dcc17e207540dd3d937e940011"
+      ],
+      "transform": {
+        "rotation_deg_xyz": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_xyz": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "translation_m": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "triangle_budget": 374959
+    }
+  ],
+  "budgets": {
+    "allow_concurrent_neural_and_unreal_gpu": false,
+    "gpu_vram_mb": 6144,
+    "max_draw_calls_target": 500,
+    "max_gpu_population_instances": 0,
+    "max_texture_memory_mb": 1536,
+    "max_total_triangles": 374959
+  },
+  "camera": {
+    "envelope": {
+      "max_pitch_deg": 0.0,
+      "max_translation_m": 0.0,
+      "max_yaw_deg": 0.0
+    },
+    "required_views": [
+      {
+        "far_m": 500.0,
+        "field_of_view_deg": 48.0,
+        "id": "source",
+        "look_at_m": [
+          0.0,
+          38.0,
+          12.0
+        ],
+        "near_m": 0.1,
+        "position_m": [
+          0.0,
+          -110.0,
+          18.0
+        ],
+        "principal_point_norm": [
+          0.5,
+          0.5
+        ],
+        "projection": "perspective",
+        "purpose": "source_match"
+      }
+    ],
+    "source_camera": {
+      "far_m": 500.0,
+      "field_of_view_deg": 48.0,
+      "id": "source",
+      "look_at_m": [
+        0.0,
+        38.0,
+        12.0
+      ],
+      "near_m": 0.1,
+      "position_m": [
+        0.0,
+        -110.0,
+        18.0
+      ],
+      "principal_point_norm": [
+        0.5,
+        0.5
+      ],
+      "projection": "perspective",
+      "purpose": "source_match"
+    }
+  },
+  "coordinate_system": {
+    "handedness": "right",
+    "units": "meters",
+    "unreal_scale_cm_per_unit": 100,
+    "up_axis": "Z"
+  },
+  "depth_bands": [
+    {
+      "far_m": 19.0,
+      "id": "foreground",
+      "near_m": 0.1
+    },
+    {
+      "far_m": 36.0,
+      "id": "castle",
+      "near_m": 19.0
+    },
+    {
+      "far_m": 57.0,
+      "id": "water",
+      "near_m": 36.0
+    },
+    {
+      "far_m": 500.0,
+      "id": "background",
+      "near_m": 57.0
+    }
+  ],
+  "intent": {
+    "description": "Deterministic migration of preserved image-to-scene evidence.",
+    "deterministic_seed": 20260803,
+    "mode": "source_locked_2p5d",
+    "quality_tier": "smoke",
+    "target_engine": "unreal_5_8"
+  },
+  "landmarks": [
+    {
+      "id": "lighthouse_top",
+      "role": "layout_anchor",
+      "world_m": [
+        12,
+        25,
+        49
+      ]
+    },
+    {
+      "id": "castle_base",
+      "role": "layout_anchor",
+      "world_m": [
+        10,
+        28,
+        5
+      ]
+    },
+    {
+      "id": "foreground_cliff",
+      "role": "layout_anchor",
+      "world_m": [
+        -22,
+        31,
+        16
+      ]
+    },
+    {
+      "id": "background_spire",
+      "role": "layout_anchor",
+      "world_m": [
+        -4,
+        66,
+        18
+      ]
+    }
+  ],
+  "outputs": {
+    "source_shell_glb": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb"
+  },
+  "pcg": {
+    "layers": [],
+    "policy": "reference_driven_incremental",
+    "reference_graphs": [
+      "Project/PCG/Reference/LegacySourceShell"
+    ]
+  },
+  "populations": [],
+  "proof": {
+    "current_classification": "PARTIAL",
+    "evidence_root": "proof/scene/20260803-image-to-scene-smoke/",
+    "required_gates": [
+      "SCENE_SPEC_VALID",
+      "SOURCE_CAMERA_COVERAGE_PROVEN",
+      "UNREAL_INTERCHANGE_IMPORT_PROVEN",
+      "UNREAL_SAVE_RELOAD_PROVEN",
+      "UNREAL_SOURCE_RENDER_PROVEN",
+      "UNREAL_PARALLAX_PROVEN"
+    ]
+  },
+  "regions": [
+    {
+      "confidence": 0.5,
+      "depth_band": "foreground",
+      "id": "foreground",
+      "interactive": false,
+      "label": "lower terrain, rocks and near shoreline",
+      "representation": "gameplay_proxy",
+      "tags": [
+        "legacy_evidence"
+      ],
+      "walkable": false
+    },
+    {
+      "confidence": 0.5,
+      "depth_band": "castle",
+      "id": "midground",
+      "interactive": true,
+      "label": "castle island, lighthouse base, bridges and nearby water",
+      "representation": "editable_mesh",
+      "tags": [
+        "legacy_evidence"
+      ],
+      "walkable": false
+    },
+    {
+      "confidence": 0.5,
+      "depth_band": "background",
+      "id": "background",
+      "interactive": false,
+      "label": "distant cliffs, islands and towers",
+      "representation": "visual_shell",
+      "tags": [
+        "legacy_evidence"
+      ],
+      "walkable": false
+    },
+    {
+      "confidence": 0.5,
+      "id": "sky",
+      "interactive": false,
+      "label": "upper cloud and sky region",
+      "representation": "sky",
+      "tags": [
+        "legacy_evidence"
+      ],
+      "walkable": false
+    },
+    {
+      "confidence": 0.5,
+      "depth_band": "foreground",
+      "id": "walkable_surface",
+      "interactive": true,
+      "label": "foreground terrain and castle island; approximate in smoke geometry",
+      "representation": "gameplay_proxy",
+      "tags": [
+        "legacy_evidence"
+      ],
+      "walkable": true
+    }
+  ],
+  "scene_id": "castlegrounds_source_locked_v1",
+  "schema_version": "scene_spec_v1",
+  "source": {
+    "dimensions_px": [
+      1448,
+      1086
+    ],
+    "kind": "image",
+    "notes": "Migrated without rerunning geometry or depth inference.",
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
+    "sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba"
+  },
+  "splines": [],
+  "uncertainties": [
+    {
+      "description": "Unseen geometry is not reconstructed by the source-locked migration.",
+      "fallback": "Use independent gameplay proxies outside the source camera envelope.",
+      "id": "unseen_surfaces",
+      "severity": "high"
+    }
+  ]
+}
