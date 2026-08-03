@@ -132,6 +132,24 @@ class RouteRestrictionTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             lowvram.attention_report(SimpleNamespace(unet=SimpleNamespace(attn_processors={"a": row})))
 
+    def test_nonfinite_reference_latents_are_rejected_before_unet(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "REFERENCE_LATENTS_FP16_NONFINITE"):
+            lowvram.assert_finite_reference_latents(
+                lowvram.torch.tensor([float("nan"), 1.0], dtype=lowvram.torch.float16),
+                "reference_latents_fp16",
+            )
+
+    def test_finite_reference_latent_report_records_range(self) -> None:
+        report = lowvram.assert_finite_reference_latents(
+            lowvram.torch.tensor([-2.0, 0.5, 3.0], dtype=lowvram.torch.float16),
+            "reference_latents_fp16",
+        )
+        self.assertTrue(report["finite"])
+        self.assertEqual(report["finite_count"], 3)
+        self.assertEqual(report["nan_count"], 0)
+        self.assertEqual(report["minimum_finite_value"], -2.0)
+        self.assertEqual(report["maximum_finite_value"], 3.0)
+
 
 @unittest.skipUnless(PREFLIGHT_RECEIPT.is_file(), "preflight receipt not produced on this machine")
 class PreflightReceiptTests(unittest.TestCase):

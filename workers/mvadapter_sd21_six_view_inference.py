@@ -455,6 +455,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             install_fp16_input_guards,
             install_low_vram_offload,
             offload_hook_report,
+            prepare_reference_latents_fp32,
             reference_unet_dtype_smoke_test,
             rowcol_dtype_inventory,
             tensor_dtype_record,
@@ -476,6 +477,25 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         }
         receipt["sdpa_backend"] = _sdpa_backend_report(torch)
         _heartbeat(heartbeat_path, receipt, "pipeline_constructed", processor=receipt["attention"].get("expected_processor"))
+        reference = Image.open(preflight["conditioning"]).convert("RGB")
+        generator = torch.Generator(device="cuda").manual_seed(int(selected["seed"]))
+        reference_preprocessed = pipe.image_processor.preprocess(reference)
+        reference_latents, receipt["reference_vae_fp32"] = prepare_reference_latents_fp32(
+            pipe,
+            reference_preprocessed,
+            generator=generator,
+            device="cuda:0",
+            requested_dtype=torch.float16,
+        )
+        _heartbeat(
+            heartbeat_path,
+            receipt,
+            "reference_latents_fp32_validated",
+            tensor=tensor_dtype_record("reference_latents", reference_latents),
+        )
+        # The tiny dtype smoke must exercise its own 64px input.  Reinstall the
+        # production reference-latent override only after that smoke completes.
+        pipe.clear_reference_latents_override()
         receipt["offload"] = install_low_vram_offload(pipe, device="cuda")
         receipt["offload_hooks"] = offload_hook_report(pipe)
         _heartbeat(heartbeat_path, receipt, "sequential_offload_installed")
@@ -498,7 +518,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["reference_cache_summary"] = receipt["reference_unet_dtype_smoke"]["reference_cache_summary"]
         receipt["offload_hooks_after_smoke"] = offload_hook_report(pipe)
         _heartbeat(heartbeat_path, receipt, "reference_unet_dtype_smoke_passed")
-        reference = Image.open(preflight["conditioning"]).convert("RGB")
+        pipe.set_reference_latents_override(reference_latents)
         _heartbeat(heartbeat_path, receipt, "conditioning_loaded", size=list(reference.size))
         state = {"unet_calls": 0, "reference_unet_calls": 0, "denoising_unet_calls": 0}
         original_unet_forward = pipe.unet.forward
@@ -541,7 +561,6 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
 
         torch.cuda.reset_peak_memory_stats()
         receipt["memory_before_denoising"] = {**_nvidia_snapshot(), **_torch_memory(torch)}
-        generator = torch.Generator(device="cuda").manual_seed(int(selected["seed"]))
         result = pipe(
             prompt=receipt["prompt"],
             negative_prompt=None,
@@ -614,6 +633,7 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
                 pass
         if pipe is not None:
             try:
+                pipe.clear_reference_latents_override()
                 pipe.unet.forward = original_unet_forward
                 pipe.cond_encoder.forward = original_cond_forward
             except Exception:

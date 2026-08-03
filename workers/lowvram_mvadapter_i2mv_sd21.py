@@ -84,6 +84,41 @@ class LowVRAMMVAdapterI2MVSDPipeline(MVAdapterI2MVSDPipeline):
         self.register_modules(cond_encoder=cond_encoder)
         self._adapter_load_report: dict[str, Any] | None = None
 
+    def set_reference_latents_override(self, latents: torch.Tensor) -> None:
+        """Use one explicitly owned, prevalidated reference-latent tensor."""
+        if not isinstance(latents, torch.Tensor):
+            raise TypeError("MVADAPTER_REFERENCE_LATENTS_OVERRIDE_NOT_TENSOR")
+        self._lowvram_reference_latents_override = latents
+
+    def clear_reference_latents_override(self) -> None:
+        self._lowvram_reference_latents_override = None
+
+    def prepare_image_latents(self, *args: Any, **kwargs: Any) -> torch.Tensor:
+        override = getattr(self, "_lowvram_reference_latents_override", None)
+        if override is not None:
+            dtype = kwargs.get("dtype")
+            device = kwargs.get("device")
+            if dtype is None and len(args) >= 5:
+                dtype = args[4]
+            if device is None and len(args) >= 6:
+                device = args[5]
+            requested_batch = kwargs.get("batch_size")
+            if requested_batch is None and len(args) >= 3:
+                requested_batch = args[2]
+            images_per_prompt = kwargs.get("num_images_per_prompt", 1)
+            if images_per_prompt is None and len(args) >= 4:
+                images_per_prompt = args[3]
+            requested_batch = int(requested_batch or 1) * int(images_per_prompt or 1)
+            if requested_batch != int(override.shape[0]):
+                raise RuntimeError(
+                    f"MVADAPTER_REFERENCE_LATENTS_BATCH_MISMATCH:{requested_batch}:{override.shape[0]}"
+                )
+            return override.to(
+                device=device if device is not None else override.device,
+                dtype=dtype if dtype is not None else override.dtype,
+            )
+        return super().prepare_image_latents(*args, **kwargs)
+
     # ------------------------------------------------------------------
     # adapter construction
     # ------------------------------------------------------------------
@@ -306,6 +341,100 @@ def build_low_vram_pipeline(
         raise RuntimeError(f"MVADAPTER_UNET_DTYPE_INVALID:{sorted(str(value) for value in unet_dtypes)}")
     rowcol_dtype_inventory(pipe, required_dtype=dtype)
     return pipe, load_report
+
+
+def _finite_numeric_record(tensor: torch.Tensor, name: str) -> dict[str, Any]:
+    """Diagnostic statistics for the narrow FP32 reference-latent boundary."""
+    record = tensor_dtype_record(name, tensor)
+    finite_mask = torch.isfinite(tensor)
+    finite_count = int(finite_mask.sum().item())
+    record.update(
+        {
+            "finite": bool(finite_mask.all()),
+            "finite_count": finite_count,
+            "nan_count": int(torch.isnan(tensor).sum().item()),
+            "positive_inf_count": int((torch.isinf(tensor) & (tensor > 0)).sum().item()),
+            "negative_inf_count": int((torch.isinf(tensor) & (tensor < 0)).sum().item()),
+        }
+    )
+    if finite_count:
+        finite_values = tensor[finite_mask]
+        record["minimum_finite_value"] = float(finite_values.min().item())
+        record["maximum_finite_value"] = float(finite_values.max().item())
+        record["absolute_maximum"] = float(finite_values.abs().max().item())
+    else:
+        record.update(
+            {
+                "minimum_finite_value": None,
+                "maximum_finite_value": None,
+                "absolute_maximum": None,
+            }
+        )
+    return record
+
+
+def assert_finite_reference_latents(tensor: torch.Tensor, name: str) -> dict[str, Any]:
+    record = _finite_numeric_record(tensor, name)
+    if not record["finite"]:
+        raise RuntimeError(f"MVADAPTER_{name.upper()}_NONFINITE")
+    return record
+
+
+def prepare_reference_latents_fp32(
+    pipe: LowVRAMMVAdapterI2MVSDPipeline,
+    preprocessed_reference: torch.Tensor,
+    generator: Any,
+    device: str = "cuda:0",
+    requested_dtype: torch.dtype = torch.float16,
+) -> tuple[torch.Tensor, dict[str, Any]]:
+    """Encode the reference image once in FP32, then return validated FP16 latents.
+
+    This is deliberately performed before sequential-offload hooks are installed.
+    The temporary FP32 VAE and working latents are released before production
+    reference-cache or denoising execution begins.
+    """
+    if not isinstance(preprocessed_reference, torch.Tensor):
+        raise TypeError("MVADAPTER_REFERENCE_IMAGE_NOT_TENSOR")
+    target = torch.device(device)
+    vae = pipe.vae
+    prior_dtype = next(vae.parameters()).dtype
+    report: dict[str, Any] = {
+        "mode": "FP32_VAE_REFERENCE_ENCODE",
+        "requested_latent_dtype": str(requested_dtype).replace("torch.", ""),
+        "preprocessed_reference": assert_finite_reference_latents(
+            preprocessed_reference, "preprocessed_reference_image"
+        ),
+    }
+    latents_fp32 = None
+    try:
+        vae.to(device=target, dtype=torch.float32)
+        with torch.no_grad():
+            latents_fp32 = pipe.prepare_image_latents(
+                preprocessed_reference.to(device=target, dtype=torch.float32),
+                torch.zeros((1,), device=target, dtype=torch.long),
+                batch_size=1,
+                num_images_per_prompt=1,
+                dtype=torch.float32,
+                device=target,
+                generator=generator,
+                add_noise=False,
+            )
+        report["reference_latents_fp32"] = assert_finite_reference_latents(
+            latents_fp32, "reference_latents_fp32"
+        )
+        latents_fp16 = latents_fp32.to(device=target, dtype=requested_dtype)
+        report["reference_latents_fp16"] = assert_finite_reference_latents(
+            latents_fp16, "reference_latents_fp16"
+        )
+    finally:
+        del latents_fp32
+        vae.to(device="cpu", dtype=prior_dtype)
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    pipe.set_reference_latents_override(latents_fp16)
+    report["vae_restored_dtype"] = str(prior_dtype).replace("torch.", "")
+    report["temporary_fp32_released"] = True
+    return latents_fp16, report
 
 
 # ----------------------------------------------------------------------

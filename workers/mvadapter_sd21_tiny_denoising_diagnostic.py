@@ -279,8 +279,8 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
         from lowvram_mvadapter_i2mv_sd21 import (
             attention_report, build_low_vram_pipeline, component_dtype_inventory,
             component_inventory, install_fp16_input_guards, install_low_vram_offload,
-            offload_hook_report, rowcol_dtype_inventory, tensor_dtype_record,
-            tensor_group_record,
+            offload_hook_report, prepare_reference_latents_fp32, rowcol_dtype_inventory,
+            tensor_dtype_record, tensor_group_record,
         )
         adapter_state = safetensors.torch.load_file(str(Path(inputs["config"]["adapter"])), device="cpu")
         pipe, adapter_report = build_low_vram_pipeline(
@@ -297,6 +297,23 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
             "mem_efficient_enabled": bool(torch.backends.cuda.mem_efficient_sdp_enabled()),
             "flash_enabled": bool(torch.backends.cuda.flash_sdp_enabled()),
         }
+        selected = inputs["selected"]
+        reference_image = Image.open(Path(selected["conditioning_reference"])).convert("RGB")
+        reference_preprocessed = pipe.image_processor.preprocess(reference_image)
+        reference_generator = torch.Generator(device=target).manual_seed(int(selected["seed"]))
+        reference_latents, receipt["reference_vae_fp32"] = prepare_reference_latents_fp32(
+            pipe,
+            reference_preprocessed,
+            generator=reference_generator,
+            device="cuda:0",
+            requested_dtype=torch.float16,
+        )
+        pipe.clear_reference_latents_override()
+        trace.write(
+            "reference_latents_fp32_validated",
+            report=receipt["reference_vae_fp32"],
+            memory=_memory(torch),
+        )
         if offload == "sequential":
             receipt["offload_report"] = install_low_vram_offload(pipe, "cuda")
             receipt["offload_hooks"] = offload_hook_report(pipe)
@@ -304,20 +321,14 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
             pipe.to(device=target, dtype=torch.float16)
             receipt["offload_report"] = {"offload_mode": "DISABLED", "device": str(target)}
             receipt["component_devices_resident"] = component_inventory(pipe)
+        pipe.set_reference_latents_override(reference_latents)
         guard_handles = install_fp16_input_guards(pipe)
         originals = _install_sdpa_trace(torch, trace, target)
-        selected = inputs["selected"]
         with torch.no_grad():
             prompt_embeds, _ = pipe.encode_prompt(PROMPT, target, 1, False, None)
             prompt_embeds = prompt_embeds.to(target, dtype=torch.float16)
             trace.write("prompt_ready", tensor=_tensor_record("prompt_embeddings", prompt_embeds), memory=_memory(torch))
-            reference_image = pipe.image_processor.preprocess(Image.open(Path(selected["conditioning_reference"])).convert("RGB"))
-            reference_image = reference_image.to(target, dtype=torch.float16)
-            reference_latents = pipe.prepare_image_latents(
-                reference_image, torch.zeros((1,), device=target, dtype=torch.long), 1, 1,
-                torch.float16, target, add_noise=False,
-            )
-            trace.write("reference_inputs_ready", image=_tensor_record("reference_image_tensor", reference_image), latents=_tensor_record("reference_latents", reference_latents), memory=_memory(torch))
+            trace.write("reference_inputs_ready", latents=_tensor_record("reference_latents", reference_latents), memory=_memory(torch))
             cache_sink: dict[str, Any] = {}
 
             class ReferenceCache(dict[str, Any]):
@@ -401,6 +412,10 @@ def run_probe(config_path: Path, output_dir: Path, backend: str, offload: str, r
         trace.write("cleanup", memory=_safe_memory(__import__("torch")) if "torch" in sys.modules and getattr(__import__("torch"), "cuda", None) and __import__("torch").cuda.is_available() else {})
         trace.close()
         if pipe is not None:
+            try:
+                pipe.clear_reference_latents_override()
+            except Exception:
+                pass
             del pipe
         gc.collect()
         if "torch" in sys.modules and __import__("torch").cuda.is_available():
