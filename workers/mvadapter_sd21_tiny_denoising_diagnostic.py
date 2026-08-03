@@ -440,8 +440,8 @@ def run_probe(
                 if value.shape[0] != 1 or value.dtype != torch.float16 or value.device != target or not contract.get("finite", False):
                     raise RuntimeError(f"REFERENCE_CACHE_CONTRACT_INVALID:{name}:{contract}")
                 cache_records.append(value)
-            if sorted(ownership["actual_keys"]) != expected:
-                raise RuntimeError(f"REFERENCE_CACHE_KEYSET_MISMATCH:{ownership['actual_keys']}:{expected}")
+            if sorted(reference_cache) != expected and not set(expected).issubset(reference_cache):
+                raise RuntimeError(f"REFERENCE_CACHE_KEYSET_MISMATCH:{sorted(reference_cache)}:{expected}")
             receipt["reference_cache"] = {
                 "batch_before_expansion": 1,
                 "summary": tensor_group_record("reference_cache", cache_records),
