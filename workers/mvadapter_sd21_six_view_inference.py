@@ -424,6 +424,8 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         "reference_unet_call_count": 0,
         "denoising_unet_call_count": 0,
         "denoising_steps_requested": int(selected["steps"]),
+        "cuda_oom": "NO",
+        "fallback_to_256": "FORBIDDEN",
         "_started": time.time(),
     }
     _heartbeat(heartbeat_path, receipt, "preflight_passed", resolution=int(selected["resolution"]))
@@ -447,9 +449,15 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         from lowvram_mvadapter_i2mv_sd21 import (
             attention_report,
             build_low_vram_pipeline,
+            component_dtype_inventory,
             component_inventory,
+            cond_encoder_device_path_smoke_test,
+            install_fp16_input_guards,
             install_low_vram_offload,
             offload_hook_report,
+            reference_unet_dtype_smoke_test,
+            rowcol_dtype_inventory,
+            tensor_dtype_record,
         )
         adapter_state = __import__("safetensors.torch", fromlist=["load_file"]).load_file(str(preflight["adapter"]), device="cpu")
         pipe, adapter_report = build_low_vram_pipeline(
@@ -462,6 +470,10 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["adapter_report"] = adapter_report
         receipt["component_inventory"] = component_inventory(pipe)
         receipt["attention"] = attention_report(pipe)
+        receipt["dtype_inventory"] = {
+            "model_components": component_dtype_inventory(pipe),
+            "rowcol_processors": rowcol_dtype_inventory(pipe, required_dtype=torch.float16),
+        }
         receipt["sdpa_backend"] = _sdpa_backend_report(torch)
         _heartbeat(heartbeat_path, receipt, "pipeline_constructed", processor=receipt["attention"].get("expected_processor"))
         receipt["offload"] = install_low_vram_offload(pipe, device="cuda")
@@ -469,6 +481,23 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         _heartbeat(heartbeat_path, receipt, "sequential_offload_installed")
         control = torch.from_numpy(np.ascontiguousarray(np.load(preflight["controls"], allow_pickle=False).astype(np.float32)))
         _heartbeat(heartbeat_path, receipt, "controls_loaded", shape=list(control.shape), dtype=str(control.dtype))
+        guard_handles = install_fp16_input_guards(pipe)
+        receipt["device_path_smoke_test"] = cond_encoder_device_path_smoke_test(
+            pipe, control.numpy(), resolution=64, device="cuda:0"
+        )
+        receipt["dtype_inventory"]["cond_encoder_smoke"] = {
+            "control_tensor_after_preprocessing": receipt["device_path_smoke_test"]["control_tensor_after_preprocessing"],
+            "cond_encoder_residual_outputs": receipt["device_path_smoke_test"]["cond_encoder_residual_outputs"],
+            "condition_residual_summary": receipt["device_path_smoke_test"]["condition_residual_summary"],
+        }
+        _heartbeat(heartbeat_path, receipt, "cond_encoder_dtype_smoke_passed")
+        receipt["reference_unet_dtype_smoke"] = reference_unet_dtype_smoke_test(
+            pipe, device="cuda:0", resolution=64
+        )
+        receipt["dtype_inventory"]["reference_unet_smoke"] = receipt["reference_unet_dtype_smoke"]["tensor_inventory"]
+        receipt["reference_cache_summary"] = receipt["reference_unet_dtype_smoke"]["reference_cache_summary"]
+        receipt["offload_hooks_after_smoke"] = offload_hook_report(pipe)
+        _heartbeat(heartbeat_path, receipt, "reference_unet_dtype_smoke_passed")
         reference = Image.open(preflight["conditioning"]).convert("RGB")
         _heartbeat(heartbeat_path, receipt, "conditioning_loaded", size=list(reference.size))
         state = {"unet_calls": 0, "reference_unet_calls": 0, "denoising_unet_calls": 0}
@@ -496,6 +525,10 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
 
         def on_step_end(_pipe: Any, step: int, _timestep: Any, callback_kwargs: dict[str, Any]) -> dict[str, Any]:
             receipt["denoising_steps_completed"] = int(step) + 1
+            if int(step) == 0 and isinstance(callback_kwargs.get("latents"), torch.Tensor):
+                receipt["dtype_inventory"]["diffusion_latents"] = tensor_dtype_record(
+                    "diffusion_latents", callback_kwargs["latents"]
+                )
             _heartbeat(
                 heartbeat_path,
                 receipt,
@@ -553,8 +586,12 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         receipt["reference_unet_call_count"] = state.get("reference_unet_calls", 0) if "state" in locals() else 0
         receipt["denoising_unet_call_count"] = state.get("denoising_unet_calls", 0) if "state" in locals() else 0
         genuine_oom = _is_cuda_oom(exc)
+        receipt["cuda_oom"] = "YES" if genuine_oom else "NO"
+        if "dtype" in str(exc).lower():
+            receipt["classification"] = "DTYPE_RUNTIME_REJECTED"
         if genuine_oom and attempt == "primary":
             receipt["status"] = "CUDA_OOM"
+            receipt["fallback_to_256"] = "AUTHORIZED_AFTER_CLEANUP"
             _update_config(config_path, "PRIMARY_384_CUDA_OOM_FALLBACK_AUTHORIZED", consumed=False)
         elif genuine_oom and attempt == "oom-fallback":
             receipt["status"] = "HARD_BLOCKER_CUDA_OOM_AT_256"
@@ -570,6 +607,11 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
         if not receipt["gpu_sequence_consumed"]:
             receipt["gpu_sequence_consumed"] = bool(receipt["denoising_started"] and not genuine_oom)
     finally:
+        for handle in locals().get("guard_handles", []):
+            try:
+                handle.remove()
+            except Exception:
+                pass
         if pipe is not None:
             try:
                 pipe.unet.forward = original_unet_forward

@@ -22,6 +22,7 @@ Route restrictions enforced here: image+geometry SD2.1 only.  Text-conditioned
 adapters are rejected by name, and nvdiffrast is never imported.
 """
 import hashlib
+from collections import Counter
 from typing import Any
 
 import torch
@@ -43,6 +44,7 @@ FORBIDDEN_ADAPTER_NAMES = (
 
 #: Model components that must exist, be enumerable and be offloadable.
 REQUIRED_MODEL_COMPONENTS = ("text_encoder", "unet", "vae", "cond_encoder")
+ROWCOL_PROCESSOR_NAME = "DecoupledMVRowColSelfAttnProcessor2_0"
 
 
 class LowVRAMMVAdapterI2MVSDPipeline(MVAdapterI2MVSDPipeline):
@@ -235,9 +237,16 @@ def build_low_vram_pipeline(
         num_views=num_views, self_attn_processor=DecoupledMVRowColSelfAttnProcessor2_0
     )
     load_report = pipe._load_custom_adapter(adapter_state)
+    # Adapter construction creates new modules after from_pretrained().  Move
+    # the complete assembled pipeline before offload hooks are installed, then
+    # explicitly cover the two dynamically-created components.
+    pipe.to(dtype=dtype)
+    pipe.unet.to(dtype=dtype)
+    pipe.cond_encoder.to(dtype=dtype)
     unet_dtypes = {parameter.dtype for parameter in pipe.unet.parameters()}
     if unet_dtypes != {dtype}:
         raise RuntimeError(f"MVADAPTER_UNET_DTYPE_INVALID:{sorted(str(value) for value in unet_dtypes)}")
+    rowcol_dtype_inventory(pipe, required_dtype=dtype)
     return pipe, load_report
 
 
@@ -282,6 +291,131 @@ def component_inventory(pipe: LowVRAMMVAdapterI2MVSDPipeline) -> dict[str, Any]:
     if cond.get("dtypes") != ["float16"]:
         raise RuntimeError(f"MVADAPTER_COND_ENCODER_DTYPE_INVALID:{cond.get('dtypes')}")
     return components
+
+
+def _dtype_counts(parameters: list[torch.nn.Parameter]) -> dict[str, int]:
+    return dict(sorted(Counter(str(parameter.dtype).replace("torch.", "") for parameter in parameters).items()))
+
+
+def rowcol_dtype_inventory(
+    pipe: LowVRAMMVAdapterI2MVSDPipeline,
+    required_dtype: torch.dtype = torch.float16,
+) -> dict[str, Any]:
+    """Inventory every parameter in every installed RowCol processor."""
+    processors: list[dict[str, Any]] = []
+    parameters: list[torch.nn.Parameter] = []
+    mismatches: list[str] = []
+    for name, processor in sorted(pipe.unet.attn_processors.items()):
+        if type(processor).__name__ != ROWCOL_PROCESSOR_NAME:
+            continue
+        processor_parameters = list(processor.parameters()) if isinstance(processor, torch.nn.Module) else []
+        parameters.extend(processor_parameters)
+        processors.append(
+            {
+                "name": name,
+                "class": type(processor).__name__,
+                "parameter_count": int(sum(parameter.numel() for parameter in processor_parameters)),
+                "dtypes": _dtype_counts(processor_parameters),
+            }
+        )
+        for parameter_name, parameter in processor.named_parameters():
+            if parameter.dtype != required_dtype:
+                mismatches.append(f"{name}.{parameter_name}:{parameter.dtype}")
+    if not processors:
+        raise RuntimeError("MVADAPTER_ROWCOL_PROCESSOR_MISSING")
+    if mismatches:
+        raise RuntimeError(f"MVADAPTER_ROWCOL_DTYPE_MISMATCH:{mismatches[:8]}")
+    return {
+        "processor_class": ROWCOL_PROCESSOR_NAME,
+        "processor_count": len(processors),
+        "parameter_count": int(sum(parameter.numel() for parameter in parameters)),
+        "total_bytes": int(sum(parameter.numel() * parameter.element_size() for parameter in parameters)),
+        "dtypes": _dtype_counts(parameters),
+        "processors": processors,
+        "required_dtype": str(required_dtype).replace("torch.", ""),
+        "passed": True,
+    }
+
+
+def component_dtype_inventory(pipe: LowVRAMMVAdapterI2MVSDPipeline) -> dict[str, Any]:
+    """Return the complete model-side dtype inventory before offload."""
+    rowcol_ids = {
+        id(parameter)
+        for processor in pipe.unet.attn_processors.values()
+        if type(processor).__name__ == ROWCOL_PROCESSOR_NAME
+        for parameter in processor.parameters()
+    }
+    def record(module: torch.nn.Module, parameters: list[torch.nn.Parameter] | None = None) -> dict[str, Any]:
+        values = list(module.parameters()) if parameters is None else parameters
+        return {
+            "parameter_count": int(sum(parameter.numel() for parameter in values)),
+            "total_bytes": int(sum(parameter.numel() * parameter.element_size() for parameter in values)),
+            "dtypes": _dtype_counts(values),
+        }
+    base_unet = [parameter for parameter in pipe.unet.parameters() if id(parameter) not in rowcol_ids]
+    return {
+        "text_encoder": record(pipe.text_encoder),
+        "vae": record(pipe.vae),
+        "unet_base_parameters": record(pipe.unet, base_unet),
+        "rowcol_processor_parameters": rowcol_dtype_inventory(pipe),
+        "cond_encoder": record(pipe.cond_encoder),
+    }
+
+
+def tensor_dtype_record(name: str, tensor: torch.Tensor) -> dict[str, Any]:
+    """Record a tensor boundary without synchronizing or scanning its values."""
+    if not isinstance(tensor, torch.Tensor):
+        raise TypeError(f"{name} is not a torch.Tensor")
+    return {
+        "name": name,
+        "shape": list(tensor.shape),
+        "dtype": str(tensor.dtype).replace("torch.", ""),
+        "device": str(tensor.device),
+        "numel": int(tensor.numel()),
+    }
+
+
+def tensor_group_record(name: str, tensors: list[torch.Tensor]) -> dict[str, Any]:
+    """Summarize bytes, dtypes and devices for a tensor collection."""
+    return {
+        "name": name,
+        "tensor_count": len(tensors),
+        "total_bytes": int(sum(tensor.numel() * tensor.element_size() for tensor in tensors)),
+        "dtypes": sorted({str(tensor.dtype).replace("torch.", "") for tensor in tensors}),
+        "devices": sorted({str(tensor.device) for tensor in tensors}),
+    }
+
+
+def install_fp16_input_guards(pipe: LowVRAMMVAdapterI2MVSDPipeline) -> list[Any]:
+    """Reject floating tensors entering FP16 UNet/adapter modules in flight."""
+    handles: list[Any] = []
+
+    def tensors(value: Any):
+        if isinstance(value, torch.Tensor):
+            yield value
+        elif isinstance(value, dict):
+            for item in value.values():
+                yield from tensors(item)
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                yield from tensors(item)
+
+    def guard(module_name: str, module: torch.nn.Module):
+        expected = next((parameter.dtype for parameter in module.parameters() if parameter.is_floating_point()), None)
+        if expected != torch.float16:
+            return
+        def _check(_module: torch.nn.Module, args: tuple[Any, ...], kwargs: dict[str, Any]):
+            for tensor in (*tensors(args), *tensors(kwargs)):
+                if tensor.is_floating_point() and tensor.dtype != torch.float16:
+                    raise RuntimeError(f"MVADAPTER_FP16_INPUT_DTYPE_MISMATCH:{module_name}:{tensor.dtype}")
+        handles.append(module.register_forward_pre_hook(_check, with_kwargs=True))
+
+    guard("unet", pipe.unet)
+    guard("cond_encoder", pipe.cond_encoder)
+    for name, processor in sorted(pipe.unet.attn_processors.items()):
+        if type(processor).__name__ == ROWCOL_PROCESSOR_NAME and isinstance(processor, torch.nn.Module):
+            guard(f"unet.attn_processors.{name}", processor)
+    return handles
 
 
 # ----------------------------------------------------------------------
@@ -460,8 +594,12 @@ def cond_encoder_device_path_smoke_test(
 
         shapes = [list(state.shape) for state in residuals]
         devices = sorted({str(state.device) for state in residuals})
+        residual_dtypes = sorted({str(state.dtype).replace("torch.", "") for state in residuals})
         finite = all(bool(torch.isfinite(state).all()) for state in residuals)
         peak_allocated = torch.cuda.max_memory_allocated()
+        control_record = tensor_dtype_record("control_tensor_after_preprocessing", feature)
+        residual_records = [tensor_dtype_record(f"cond_encoder_residual_{index}", state) for index, state in enumerate(residuals)]
+        residual_summary = tensor_group_record("condition_residuals", list(residuals))
 
         del residuals, feature
     finally:
@@ -486,12 +624,16 @@ def cond_encoder_device_path_smoke_test(
     result = {
         "control_input_device": control_input_device,
         "control_input_shape": control_input_shape,
+        "control_tensor_after_preprocessing": control_record,
         "control_resolution": resolution,
         "cond_encoder_execution_device": execution_device,
         "cond_encoder_parameter_device_during_forward": observed.get("parameter_device_during_forward"),
         "cond_encoder_output_level_count": len(shapes),
         "cond_encoder_output_shapes": shapes,
         "cond_encoder_output_devices": devices,
+        "cond_encoder_output_dtypes": residual_dtypes,
+        "cond_encoder_residual_outputs": residual_records,
+        "condition_residual_summary": residual_summary,
         "cond_encoder_output_finite": bool(finite),
         "cond_encoder_at_rest_devices": at_rest,
         "cond_encoder_resident_on_cuda_after": any(d.startswith("cuda") for d in at_rest),
@@ -512,6 +654,8 @@ def cond_encoder_device_path_smoke_test(
         raise RuntimeError("MVADAPTER_COND_ENCODER_RETURNED_NO_RESIDUALS")
     if not result["cond_encoder_output_finite"]:
         raise RuntimeError("MVADAPTER_COND_ENCODER_OUTPUT_NOT_FINITE")
+    if result["cond_encoder_output_dtypes"] != ["float16"]:
+        raise RuntimeError(f"MVADAPTER_COND_ENCODER_RESIDUAL_DTYPE_MISMATCH:{result['cond_encoder_output_dtypes']}")
     if not any(d.startswith("cuda") for d in devices):
         raise RuntimeError(f"MVADAPTER_COND_ENCODER_OUTPUT_NOT_ON_CUDA:{devices}")
     if result["cond_encoder_resident_on_cuda_after"]:
@@ -525,3 +669,79 @@ def cond_encoder_device_path_smoke_test(
         )
     result["passed"] = True
     return result
+
+
+def reference_unet_dtype_smoke_test(
+    pipe: LowVRAMMVAdapterI2MVSDPipeline,
+    device: str = "cuda:0",
+    resolution: int = 64,
+) -> dict[str, Any]:
+    """Run exactly one tiny reference UNet forward with RowCol caching enabled."""
+    if pipe.unet.dtype != torch.float16:
+        raise RuntimeError(f"MVADAPTER_UNET_DTYPE_INVALID:{pipe.unet.dtype}")
+    if resolution % 8 != 0 or resolution < 32:
+        raise ValueError(f"MVADAPTER_REFERENCE_SMOKE_RESOLUTION_INVALID:{resolution}")
+    target = torch.device(device)
+    with torch.no_grad():
+        prompt_embeds, _ = pipe.encode_prompt(
+            "dtype smoke reference",
+            target,
+            1,
+            False,
+            None,
+        )
+        prompt_embeds = prompt_embeds.to(device=target, dtype=torch.float16)
+        reference_image = torch.zeros((1, 3, resolution, resolution), device=target, dtype=torch.float16)
+        timestep = torch.zeros((1,), device=target, dtype=torch.long)
+        reference_latents = pipe.prepare_image_latents(
+            reference_image,
+            timestep,
+            batch_size=1,
+            num_images_per_prompt=1,
+            dtype=torch.float16,
+            device=target,
+            add_noise=False,
+        )
+        cached_reference_hidden_states: dict[str, torch.Tensor] = {}
+        pipe.unet(
+            reference_latents,
+            torch.zeros((), device=target, dtype=torch.long),
+            encoder_hidden_states=prompt_embeds[-1:],
+            cross_attention_kwargs={
+                "cache_hidden_states": cached_reference_hidden_states,
+                "use_mv": False,
+                "use_ref": False,
+            },
+            return_dict=False,
+        )
+        torch.cuda.synchronize(target)
+    if not cached_reference_hidden_states:
+        raise RuntimeError("MVADAPTER_REFERENCE_SMOKE_NO_CACHED_HIDDEN_STATES")
+    hidden_records = [
+        tensor_dtype_record(f"cached_reference_hidden_states.{name}", value)
+        for name, value in sorted(cached_reference_hidden_states.items())
+    ]
+    all_records = [
+        tensor_dtype_record("prompt_embeddings", prompt_embeds),
+        tensor_dtype_record("reference_image_tensor", reference_image),
+        tensor_dtype_record("reference_latents", reference_latents),
+        *hidden_records,
+    ]
+    bad = [record for record in all_records if record["dtype"] != "float16"]
+    if bad:
+        raise RuntimeError(f"MVADAPTER_REFERENCE_SMOKE_DTYPE_MISMATCH:{bad}")
+    return {
+        "passed": True,
+        "resolution": resolution,
+        "rowcol_processor_active": True,
+        "cache_hidden_states_enabled": True,
+        "reference_unet_forward_count": 1,
+        "denoising_steps": 0,
+        "vae_decode": False,
+        "output_images": 0,
+        "gpu_sequence_consumed": False,
+        "reference_cache_summary": tensor_group_record(
+            "reference_cache", list(cached_reference_hidden_states.values())
+        ),
+        "tensor_inventory": all_records,
+    }

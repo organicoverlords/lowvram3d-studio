@@ -71,9 +71,13 @@ class CondEncoderRegistrationTests(unittest.TestCase):
 @unittest.skipUnless(HAS_STACK, f"torch/diffusers stack unavailable: {STACK_ERROR}")
 class RouteRestrictionTests(unittest.TestCase):
     def test_loader_passes_local_safety_checker_contract(self) -> None:
+        fake_unet = lowvram.torch.nn.Linear(1, 1).to(dtype=lowvram.torch.float16)
+        fake_unet.attn_processors = {}
         fake_pipe = SimpleNamespace(
             scheduler=object(),
-            unet=lowvram.torch.nn.Linear(1, 1).to(dtype=lowvram.torch.float16),
+            unet=fake_unet,
+            cond_encoder=lowvram.torch.nn.Linear(1, 1).to(dtype=lowvram.torch.float16),
+            to=lambda **_kwargs: fake_pipe,
             init_custom_adapter=lambda **_kwargs: None,
             _load_custom_adapter=lambda _state: {"adapter_loaded_key_count": 0},
         )
@@ -82,10 +86,7 @@ class RouteRestrictionTests(unittest.TestCase):
             "from_pretrained",
             return_value=fake_pipe,
         ) as loader:
-            with patch(
-                "mvadapter.schedulers.scheduling_shift_snr.ShiftSNRScheduler.from_scheduler",
-                return_value=fake_pipe.scheduler,
-            ):
+            with patch("mvadapter.schedulers.scheduling_shift_snr.ShiftSNRScheduler.from_scheduler", return_value=fake_pipe.scheduler), patch.object(lowvram, "rowcol_dtype_inventory", return_value={"passed": True}):
                 lowvram.build_low_vram_pipeline(
                     "local-stable-diffusion-2-1-base",
                     {},
