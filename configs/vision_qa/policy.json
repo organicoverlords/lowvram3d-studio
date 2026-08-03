@@ -1,0 +1,14 @@
+{
+  "schema": "vision_qa_policy_v1",
+  "primary_accept_confidence": 0.9,
+  "second_opinion_floor": 0.65,
+  "retry_confidence_floor": 0.7,
+  "hard_gate_precedence": true,
+  "manual_rejection_precedence": true,
+  "allow_arbitrary_commands": false,
+  "allow_threshold_changes": false,
+  "allow_model_to_claim_proof": false,
+  "one_heavy_gpu_process": true,
+  "disagreement": "USER_REVIEW",
+  "missing_evidence": "QUARANTINE"
+}
