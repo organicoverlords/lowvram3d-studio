@@ -1,0 +1,99 @@
+{
+  "schema": "horizontal_spike_diagnosis_v1",
+  "classification": "BLOCKED_HORIZONTAL_SPIKE_REQUIRES_BOUNDARY_REPAIR",
+  "gpu_used": false,
+  "atlas_modified": false,
+  "uv_modified": false,
+  "source_and_candidate_geometry": "PROVEN_IDENTICAL",
+  "spike_exists_in_immutable_source": "PROVEN",
+  "spike_exists_in_cpu_fallback": "PROVEN",
+  "spike_cause": "PROVEN_STRETCHED_TRIANGLES",
+  "spike_material_cause": "REJECTED",
+  "spike_detached_before_repair": "NOT_PROVEN_WHOLE_MESH_COMPONENT",
+  "visual_removal": "PROVEN_IN_CANDIDATE",
+  "topology_gate": "REJECTED_BOUNDARY_EDGE_GROWTH",
+  "candidate_promotion": "REJECTED",
+  "immutable_source": {
+    "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\bundle\\tactical_red_panda_scout_5step_uv_chart_separated.glb",
+    "sha256": "ec335a02e8975b1302f3a5c3a3a842e7ab256cff270f54ab415795b0c0ec76c1"
+  },
+  "current_cpu_fallback": {
+    "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\tactical_red_panda_scout_cpu_material_bound.glb",
+    "sha256": "3a0004e3188614cee258394db0ad39ef4f5c4edf7d4d10290b000a2678995931"
+  },
+  "exact_camera_flat_render": {
+    "camera": "production +z front, orthographic 512px",
+    "source_front": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_diagnosis_exact_front\\source\\front.png",
+    "candidate_front": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_diagnosis_exact_front\\candidate\\front.png",
+    "source_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_diagnosis_exact_front\\source\\front_three_quarter.png",
+    "candidate_three_quarter": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_diagnosis_exact_front\\candidate\\front_three_quarter.png",
+    "comparison": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_diagnosis_exact_front\\comparison_contact_sheet.png"
+  },
+  "initial_spike_faces": {
+    "triangle_count": 14,
+    "global_face_ids": [632321, 632326, 632330, 632332, 633141, 633147, 633157, 633957, 633963, 633973, 633975, 634897, 634900, 634902],
+    "whole_mesh_component_id": 0,
+    "primitive": 1,
+    "material": 1,
+    "screen_pixel_bounds": [134.3, 255.2, 361.9, 256.4],
+    "world_bounds_min": [-0.8606849, -0.1416211, 0.0275097],
+    "world_bounds_max": [0.6988256, -0.0510895, 0.0353696],
+    "extent": [1.5595105, 0.0905316, 0.0078599],
+    "side_length_aspect_min": 179.7066,
+    "side_length_aspect_median": 204.2473,
+    "side_length_aspect_max": 1394.8694,
+    "interpretation": "stretched strip bridging a small outboard face patch to the main mesh"
+  },
+  "post_bridge_islands": [
+    {
+      "stage": "after_14_face_removal",
+      "component_id": 1,
+      "triangle_count": 50,
+      "screen_pixel_bounds": [358.3, 256.4, 361.9, 257.9],
+      "world_bounds_min": [0.6739360, -0.1416211, 0.0167298],
+      "world_bounds_max": [0.6988256, -0.1090356, 0.0275097],
+      "material": 1,
+      "interpretation": "detached isolated dot after bridge removal"
+    },
+    {
+      "stage": "after_58_face_removal",
+      "component_id": 2,
+      "triangle_count": 21,
+      "screen_pixel_bounds": [358.3, 256.4, 361.9, 257.9],
+      "world_bounds_min": [0.6745122, -0.1325710, 0.0167298],
+      "world_bounds_max": [0.6988256, -0.1090356, 0.0275097],
+      "material": 1,
+      "interpretation": "remaining isolated dot faces"
+    }
+  ],
+  "repair_candidate": {
+    "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_repair_v3\\tactical_red_panda_scout_cpu_material_bound_spike_repaired.glb",
+    "sha256": "6ceeef345ca34319f38eca5213224af2e26bed413b67bc3e83099154c2c4d0d5",
+    "removed_original_face_count": 79,
+    "triangles_before": 644412,
+    "triangles_after": 644333,
+    "vertices_before_after": 462769,
+    "position_hash_unchanged": true,
+    "fresh_import": "PROVEN",
+    "eight_view_qa": "PROVEN_VISUALLY_NO_SPIKE",
+    "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_repair_v3\\contact_sheet_8views.png",
+    "fresh_import_report": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_repair_v3\\fresh_import_validation.json",
+    "eight_view_report": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_repair_v3\\cpu_fallback_eight_view_qa.json"
+  },
+  "welded_topology": {
+    "source_and_current": {
+      "components": 1,
+      "boundary_edges": 26,
+      "non_manifold_edges": 167
+    },
+    "candidate": {
+      "components": 1,
+      "boundary_edges": 53,
+      "non_manifold_edges": 167
+    },
+    "boundary_edge_delta": 27,
+    "promotion_result": "REJECTED_NO_NEW_BOUNDARY_EDGE_GROWTH_GATE"
+  },
+  "next_action": "BOUNDARY_AWARE_TOPOLOGY_REPAIR_OR_USER_REVIEW",
+  "preserved_inputs": true
+}
