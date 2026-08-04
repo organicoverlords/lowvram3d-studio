@@ -1,12 +1,12 @@
-run=35
+run=36
 requested=2026-08-04T08:17:00+03:00
-mode=github-self-hosted-bundle-export
-repair_commit=84e4d4750873619c672cd5aa2f8a8f0b2823e555
-repair_scope=export-exact-truncated-overhaul-archive
+mode=github-cloud-bundle-export
+repair_commit=a626b8337f348edcf46cebc7a47087d988049beb
+repair_scope=download-and-rebuild-visual-overhaul-archive
 codex=false
 claude=false
 magicmusic=false
 blender=false
 unreal=false
 gpu=false
-expected_result=BUNDLE_DIAGNOSTIC_COMPLETE
+expected_result=JUNGLE_VISUAL_OVERHAUL_BUNDLE_EXPORTED
