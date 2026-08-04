@@ -1,8 +1,8 @@
-run=14
-requested=2026-08-04T03:40:00+03:00
+run=15
+requested=2026-08-04T03:46:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=69660f1dd6f29182333e2cedb11ba5928ef63729
-repair_scope=unguarded-loader-verification-and-population-root-mobility
+repair_commit=dde6fad421cdd146c3260696d8ddfc9351bae349
+repair_scope=exact-hash-panda-source-recovery-and-unreal-repairs
 codex=false
 claude=false
 magicmusic=false
