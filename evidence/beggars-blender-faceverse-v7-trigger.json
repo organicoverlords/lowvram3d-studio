@@ -1,6 +1,7 @@
 {
-  "purpose": "Dispatch exactly one guarded conforming-hair Blender v7 still preflight after complete recursion compatibility.",
-  "workflow_commit": "c31d9c3de1b851ed588cd9081f6caa156998b02d",
+  "purpose": "Run one uninterrupted conforming-hair Blender v7 still preflight after both wrapper recursions were repaired.",
+  "workflow_commit": "4834cae7da365c49f085b994f381f766edba5138",
+  "recursion_compat_commit": "a8173869178fc15663c214542bbe0f84d542cda3",
   "visual_baseline_run": 30877403228,
-  "requested_at": "2026-08-04T06:11:00+03:00"
+  "requested_at": "2026-08-04T07:06:00+03:00"
 }
