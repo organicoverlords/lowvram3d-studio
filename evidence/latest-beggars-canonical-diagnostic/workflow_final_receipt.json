@@ -1,13 +1,13 @@
 ﻿{
-    "classification":  "REJECTED",
-    "failure":  "Projective v3 output is missing: v3_01_projective_face.png",
+    "classification":  "USER_VISUAL_REVIEW_REQUIRED",
+    "failure":  null,
     "repository":  "organicoverlords/lowvram3d-studio",
     "branch":  "agent/blender-beggars-scene-20260804",
-    "head_sha":  "02fb5fb5ad052c348dd5b132990e84db07a6239a",
-    "workflow_run_id":  "30866351097",
-    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30866351097",
-    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\canonical-diagnostic-30866351097",
+    "head_sha":  "ab6eae9b68ef1c3abf694b7ac92f990a9b4b0dea",
+    "workflow_run_id":  "30866658912",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30866658912",
+    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\canonical-diagnostic-30866658912",
     "reference_media_upload_scope":  "EXCLUDED",
     "reference_media_deleted":  true,
-    "recorded_at":  "2026-08-04T00:44:42.8331099Z"
+    "recorded_at":  "2026-08-04T00:49:39.2508425Z"
 }
