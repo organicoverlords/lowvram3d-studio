@@ -17,6 +17,7 @@ from typing import Any, Callable
 from .scene_completeness import audit_scene_completeness
 from .depth_stage import reconstruct_depth
 from .region_placement import place as place_regions
+from .asset_generation import free_vram_mb
 from .asset_generation import generate as generate_region_assets
 from .unreal_stage import (audit_overlaps, build_scene, capture_scene,
                            import_generated_meshes, normalise_package_root)
@@ -103,6 +104,41 @@ def _stage(state: dict[str, Any], name: str, input_hash: str, output_path: Path,
     }
 
 
+def _generation_phase_receipt(generated_assets: dict[str, Any], evidence: Path,
+                              state_path: Path,
+                              args: argparse.Namespace) -> dict[str, Any]:
+    """Stop after generation, and say exactly how to finish the run.
+
+    Generation and the editor cannot share this card: the editor holds ~2.3 GB
+    of 6 GB, which puts even the middle octree rung (4.3 GB) out of reach and
+    silently pins every asset to the lowest one. Splitting the run is what makes
+    the top rung reachable at all.
+    """
+    reached = sorted({asset.get("octree_resolution") for asset in
+                      generated_assets.get("assets", [])
+                      if asset.get("octree_resolution")}, reverse=True)
+    receipt = {
+        "schema_version": "generation_phase_receipt_v1",
+        "phase": "generate",
+        "classification": generated_assets.get("classification"),
+        "generated_count": generated_assets.get("generated_count", 0),
+        "skipped_count": generated_assets.get("skipped_count", 0),
+        "failed_count": generated_assets.get("failed_count", 0),
+        "octree_resolutions_reached": reached,
+        "free_vram_mb": free_vram_mb(),
+        "next": (
+            f"Open Unreal, then rerun with --phase build --resume to import "
+            f"these meshes and assemble the scene."),
+    }
+    _write_json(evidence / "generation_phase_receipt.json", receipt)
+    _write_json(state_path, {
+        "schema_version": "image_to_scene_pipeline_state_v1",
+        "scene_id": args.scene_id, "phase": "generate",
+        "generation_complete": True})
+    print(json.dumps(receipt, indent=2))
+    return receipt
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     paths = derive_scene_paths(args.scene_id, args.output_root, args.evidence_root, args.run_id)
     evidence = Path(paths["evidence"])
@@ -148,13 +184,24 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         # Generate a real mesh per object-like region. Without this the
         # structural scene is engine primitives standing in measured places --
         # correct as a layout, and not a scene.
-        if args.generate_assets:
+        if args.generate_assets and args.phase != "build":
             generated_assets = generate_region_assets(
                 placement, image, evidence / "generated_assets",
                 max_assets=args.max_generated_assets,
                 steps=args.generation_steps,
                 mask_dir=evidence / "depth" / "region_masks")
             _write_json(evidence / "generated_asset_manifest.json", generated_assets)
+            if args.phase == "generate":
+                return _generation_phase_receipt(
+                    generated_assets, evidence, state_path, args)
+        elif args.generate_assets:
+            # Build phase: the meshes were made in a separate run, with the
+            # editor closed so the card had room for the top octree rung.
+            generated_assets = _read(evidence / "generated_asset_manifest.json")
+            if not generated_assets:
+                raise SystemExit(
+                    f"--phase build found no generated_asset_manifest.json in "
+                    f"{evidence}. Run --phase generate first, with Unreal closed.")
 
     output_map = args.output_map or paths["map"]
     if spec.get("source", {}).get("sha256") != image_hash:
@@ -429,6 +476,13 @@ def main() -> int:
     parser.add_argument("--max-generated-assets", type=int, default=None,
                         help="cap generations; each costs several GPU-minutes")
     parser.add_argument("--generation-steps", type=int, default=5)
+    parser.add_argument(
+        "--phase", choices=("all", "generate", "build"), default="all",
+        help="Generation and the Unreal editor cannot share a 6 GB card: the "
+             "editor's ~2.3 GB puts even the 320 octree rung out of reach, so "
+             "an 'all' run is silently pinned to the lowest rung. Run "
+             "--phase generate with Unreal closed, then --phase build with it "
+             "open, to reach the top rung.")
     args = parser.parse_args()
     state = run(args)
     print("ONE_IMAGE_PIPELINE_ENTRYPOINT=PROVEN")
