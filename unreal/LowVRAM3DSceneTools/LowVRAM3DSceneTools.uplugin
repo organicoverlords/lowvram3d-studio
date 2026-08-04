@@ -1,0 +1,20 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "FriendlyName": "LowVRAM3D Scene Tools",
+  "Description": "Narrow named-camera capture and source-shell audit tools for the LowVRAM3D scene pipeline.",
+  "Category": "Editor",
+  "EnabledByDefault": false,
+  "CanContainContent": true,
+  "IsBetaVersion": true,
+  "Plugins": [
+    { "Name": "PythonScriptPlugin", "Enabled": true },
+    { "Name": "EditorScriptingUtilities", "Enabled": true },
+    { "Name": "ModelContextProtocol", "Enabled": true },
+    { "Name": "ToolsetRegistry", "Enabled": true },
+    { "Name": "MovieRenderPipeline", "Enabled": true },
+    { "Name": "SequencerScripting", "Enabled": true },
+    { "Name": "LevelSequenceEditor", "Enabled": true }
+  ]
+}

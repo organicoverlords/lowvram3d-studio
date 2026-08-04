@@ -1,0 +1,51 @@
+{
+  "camera": {
+    "aspect_ratio": 1.3333333730697632,
+    "fov_deg": 66.50838470458984,
+    "label": "Castlegrounds_Camera_Source",
+    "location_cm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "path": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1.L_Castlegrounds_Hybrid_V1:PersistentLevel.CameraActor_5",
+    "projection": "<CameraProjectionMode.PERSPECTIVE: 0>",
+    "rotation_deg": [
+      -0.0,
+      0.0,
+      89.99999999999999
+    ]
+  },
+  "captures": [],
+  "classification": "REJECTED",
+  "errors": [
+    {
+      "message": "could not create hybrid source material",
+      "type": "RuntimeError"
+    }
+  ],
+  "hidden_actors": [],
+  "material_audit_after": {},
+  "material_audit_before": {
+    "actor_label": "Castlegrounds_ReconstructedMesh",
+    "material_slots": [
+      {
+        "blend_mode": "<BlendMode.BLEND_OPAQUE: 0>",
+        "class": "Material",
+        "engine_placeholder": false,
+        "path": "/Game/AgentProof/ImageToSceneSmoke_20260803/HybridSourceShell/Materials/M_CastlegroundsSourceProjection.M_CastlegroundsSourceProjection",
+        "preview_material": false,
+        "shading_model": "<MaterialShadingModel.MSM_UNLIT: 0>",
+        "slot": 0,
+        "texture_dimensions": [],
+        "texture_paths": [],
+        "two_sided": true,
+        "unlit": true
+      }
+    ],
+    "mesh_asset": "/Game/AgentProof/ImageToSceneSmoke_20260803/HybridSourceShell/StaticMeshes/CastlegroundsSourceShell_NoNanite.CastlegroundsSourceShell_NoNanite"
+  },
+  "output_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "protected_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "schema_version": "source_shell_capture_receipt_v1"
+}

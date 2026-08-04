@@ -1,0 +1,33 @@
+{
+  "schema_version": "plugin_and_mcp_receipt_v1",
+  "classification": "PATCHED_NOT_LIVE_VERIFIED",
+  "project": "C:/Users/Lauri/Desktop/UnrealAITest58/UnrealAITest58.uproject",
+  "dedicated_plugin": "LowVRAM3DSceneTools",
+  "project_plugin_path": "C:/Users/Lauri/Desktop/UnrealAITest58/Plugins/LowVRAM3DSceneTools",
+  "repository_source": "unreal/LowVRAM3DSceneTools",
+  "required_plugins_declared": [
+    "ModelContextProtocol",
+    "ToolsetRegistry",
+    "PythonScriptPlugin",
+    "EditorScriptingUtilities",
+    "MovieRenderPipeline",
+    "SequencerScripting",
+    "LevelSequenceEditor"
+  ],
+  "mcp_endpoint": "http://127.0.0.1:8000/mcp",
+  "discovery_contract": ["list_toolsets", "describe_toolset", "call_tool"],
+  "tool_names": [
+    "get_camera_contract",
+    "capture_named_camera_fast",
+    "create_camera_cut_sequence",
+    "render_named_camera_mrq",
+    "apply_visual_capture_profile",
+    "restore_capture_visibility",
+    "audit_actor_materials",
+    "audit_source_shell_projection",
+    "validate_capture_image"
+  ],
+  "arbitrary_python": false,
+  "arbitrary_console_commands": false,
+  "live_editor_verification": "BLOCKED_EDITOR_NOT_RUNNING"
+}

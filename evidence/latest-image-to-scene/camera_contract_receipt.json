@@ -1,0 +1,16 @@
+{
+  "schema_version": "camera_contract_receipt_v1",
+  "classification": "PROVEN_STATIC_CONTRACT",
+  "camera_label": "Castlegrounds_Camera_Source",
+  "camera_path": "Castlegrounds_Camera_Source",
+  "location_cm": [0.0, 0.0, 0.0],
+  "rotation_source": "authoritative_source_map",
+  "horizontal_fov_deg": 66.50838470458984,
+  "projection": "perspective",
+  "resolution_px": [1448, 1086],
+  "aspect_ratio": 1.3333333333333333,
+  "player_camera_dependency": false,
+  "slate_capture": false,
+  "source_map_sha256": "39547be52ab21f3f6b0d99c0f2a2f93103a5c0ebf9da56435e37feae04cc15f9",
+  "live_capture_verification": "BLOCKED_EDITOR_NOT_RUNNING"
+}

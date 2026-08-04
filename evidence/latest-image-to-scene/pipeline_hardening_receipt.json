@@ -1,0 +1,26 @@
+{
+  "schema_version": "image_to_scene_pipeline_hardening_v1",
+  "classification": "IMAGE_TO_SCENE_PARTIAL",
+  "cpu_hardening": {
+    "classification": "PROVEN",
+    "focused_tests": 22,
+    "changes": [
+      "camera-and-pixel-and-material evidence gate",
+      "mean-luminance rejection for near-black outline captures",
+      "derived hybrid material asset naming",
+      "correct Unreal render-target API contract"
+    ]
+  },
+  "live_evidence": {
+    "named_camera_contract": "PROVEN",
+    "fast_capture_path": "PROVEN_REQUESTED",
+    "fast_capture_image_sha256": "98938a79d76deee34a55d7071c49c1d96e20f25c6fcde62580f52130b1c91c12",
+    "fast_capture_mean_luminance": 2.9492157,
+    "fast_capture_visual_gate": "REJECTED_LOW_MEAN_LUMINANCE",
+    "fresh_material_retry": "BLOCKED_ASSET_NAME_COLLISION_CORRECTED_OFFLINE",
+    "mrq": "NOT_RUN",
+    "promoted": false
+  },
+  "protected_source_map_sha256": "39547BE52AB21F3F6B0D99C0F2A2F93103A5C0EBF9DA56435E37FEAE04CC15F9",
+  "next_action": "windowed_unreal_retry_after_cpu_hardening"
+}
