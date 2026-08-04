@@ -86,8 +86,22 @@ $InstallerText = $InstallerBuilder.ToString().Replace("`r`n", "`n")
 if ($InstallerText.Length -eq 46900) { $InstallerText += "`n" }
 if ($InstallerText.Length -ne 46901) { throw "V3 installer byte-safe text length mismatch: expected=46901 actual=$($InstallerText.Length)" }
 $Installer = Join-Path $TempRoot 'apply-procedural-jungle-v3-overlay.py'
-[IO.File]::WriteAllText($Installer, $InstallerText, (New-Object Text.UTF8Encoding($false)))
+$Utf8NoBom = New-Object Text.UTF8Encoding($false)
+[IO.File]::WriteAllText($Installer, $InstallerText, $Utf8NoBom)
 $InstallerSha = (Get-FileHash -LiteralPath $Installer -Algorithm SHA256).Hash.ToLowerInvariant()
+$DiagnosticLogRoot = 'C:\AI\ProceduralJungle\20260804\logs'
+New-Item -ItemType Directory -Path $DiagnosticLogRoot -Force | Out-Null
+Get-ChildItem -LiteralPath $DiagnosticLogRoot -Filter 'jungle-v3-installer-*' -File -ErrorAction SilentlyContinue | Remove-Item -Force
+[IO.File]::WriteAllText((Join-Path $DiagnosticLogRoot 'jungle-v3-installer-reconstructed.py.log'), $InstallerText, $Utf8NoBom)
+$FragmentMetadata = New-Object Collections.Generic.List[string]
+for ($Index = 0; $Index -lt $InstallerFragments.Count; $Index++) {
+    $FragmentText = (Get-Content -LiteralPath $InstallerFragments[$Index].FullName -Raw).Replace("`r`n", "`n")
+    $FragmentPath = Join-Path $DiagnosticLogRoot ("jungle-v3-installer-fragment-{0:D2}.py.log" -f $Index)
+    [IO.File]::WriteAllText($FragmentPath, $FragmentText, $Utf8NoBom)
+    $FragmentSha = (Get-FileHash -LiteralPath $FragmentPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $FragmentMetadata.Add(("INDEX={0};NAME={1};LENGTH={2};SHA256={3}" -f $Index, $InstallerFragments[$Index].Name, $FragmentText.Length, $FragmentSha))
+}
+[IO.File]::WriteAllLines((Join-Path $DiagnosticLogRoot 'jungle-v3-installer-fragments.log'), $FragmentMetadata, $Utf8NoBom)
 $ExpectedInstallerSha = '8caff1745534e6c73ae21b86a6cb5ee035bad5512741a1c5561bc3b649a348d5'
 if ($InstallerSha -ne $ExpectedInstallerSha) {
     throw "V3 installer hash mismatch: expected=$ExpectedInstallerSha actual=$InstallerSha"
