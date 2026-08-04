@@ -1,5 +1,5 @@
 {
-  "actor_count": 16,
+  "actor_count": 18,
   "actors": [
     {
       "centre_m": [
@@ -115,6 +115,20 @@
     },
     {
       "centre_m": [
+        20.93,
+        -13.92,
+        -3.0
+      ],
+      "label": "vegetation_tree_004",
+      "size_m": [
+        0.67,
+        0.67,
+        4.39
+      ],
+      "source": "primitive"
+    },
+    {
+      "centre_m": [
         12.34,
         1.35,
         6.82
@@ -168,6 +182,20 @@
         3.29
       ],
       "source": "generated"
+    },
+    {
+      "centre_m": [
+        27.45,
+        9.4,
+        -3.48
+      ],
+      "label": "vegetation_tree_004",
+      "size_m": [
+        0.68,
+        0.68,
+        4.43
+      ],
+      "source": "primitive"
     },
     {
       "centre_m": [

@@ -38,6 +38,12 @@ SCATTER_TARGET = {"vegetation": 12, "prop": 6}
 # Classes that describe appearance rather than occupancy.
 NON_PLACED = {"sky"}
 
+# A canopy clump sitting this far above the ground needs something holding it
+# up, and a trunk is that thin a fraction of the crown it carries.
+MIN_TRUNK_HEIGHT = 0.5
+TRUNK_GIRTH_FRACTION = 0.12
+MIN_TRUNK_GIRTH = 0.15
+
 
 def unproject(u: float, v: float, depth: float, fov_x_deg: float,
               aspect: float) -> tuple[float, float, float]:
@@ -151,10 +157,37 @@ def scatter_offsets(mask_path: Path | None, bbox: list[float], count: int
     return [float(min(index, span)) / span for index in indices]
 
 
+def _intersects_any(actor: dict[str, Any], others: list[dict[str, Any]]) -> bool:
+    """Do this actor's world bounds meet any of the others'?"""
+    def bounds(spec):
+        centre = [c / CM_PER_M for c in spec["location_cm"]]
+        half = [s * 0.5 for s in spec["size_m"]]
+        return [(centre[i] - half[i], centre[i] + half[i]) for i in range(3)]
+
+    mine = bounds(actor)
+    for other in others:
+        theirs = bounds(other)
+        if all(mine[axis][0] < theirs[axis][1] and theirs[axis][0] < mine[axis][1]
+               for axis in range(3)):
+            return True
+    return False
+
+
+def ground_height_at(plane: dict[str, Any] | None, forward: float, right: float
+                     ) -> float | None:
+    """Height of the fitted ground plane under a point, or None if unfitted."""
+    if not plane:
+        return None
+    return (float(plane["slope_forward"]) * forward
+            + float(plane["slope_right"]) * right
+            + float(plane["height_at_camera_m"]))
+
+
 def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
           mask_dir: Path | str | None = None) -> dict[str, Any]:
     aspect = segmentation["image_dimensions"][0] / segmentation["image_dimensions"][1]
     fov_x = float(fov_x_deg or segmentation.get("camera", {}).get("fov_x_deg") or 90.0)
+    ground_plane = segmentation.get("ground_plane_unreal")
 
     actors: list[dict[str, Any]] = []
     skipped: list[str] = []
@@ -251,6 +284,12 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
                         cluster_region, fov_x, aspect)
                     thickness_c = max(0.5, float(cluster_depth.get("far", 0.0))
                                       - float(cluster_depth.get("near", 0.0)))
+                # The clump keeps its own measured extent. Stretching it down to
+                # the ground instead looks like grounding and is not: the mesh
+                # is a foliage blob, roughly as deep as it is tall, so scaling
+                # it uniformly to a ground-to-canopy height makes it that wide
+                # too -- overlapping pairs went 1 to 31 when it was tried.
+                base_z = centre_c[2] - height_c * 0.5
                 actors.append({
                     **common,
                     "kind": "scatter_instance",
@@ -260,10 +299,34 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
                     "cluster_depth_m": cluster_depth.get("median"),
                     "location_cm": [centre_c[0] * CM_PER_M,
                                     centre_c[1] * CM_PER_M,
-                                    (centre_c[2] - height_c * 0.5) * CM_PER_M],
+                                    base_z * CM_PER_M],
                     "size_m": [max(min(width_c, thickness_c), 0.5),
                                max(width_c, 0.5), max(height_c, 0.5)],
                 })
+
+                # What holds it up. Clustering finds canopy because canopy is
+                # what the camera saw -- trunks are thin, dark and mostly
+                # occluded -- so the clump alone hangs in the air. A support
+                # from the fitted ground plane to the canopy's base states the
+                # unobserved part explicitly, as a primitive, instead of
+                # deforming the observed part to hide the gap.
+                ground_z = ground_height_at(ground_plane, centre_c[0], centre_c[1])
+                if ground_z is not None and base_z - ground_z > MIN_TRUNK_HEIGHT:
+                    girth = max(min(width_c, thickness_c) * TRUNK_GIRTH_FRACTION,
+                                MIN_TRUNK_GIRTH)
+                    actors.append({
+                        **common,
+                        "kind": "trunk_support",
+                        "instance_index": index,
+                        # Centred: a primitive's origin is its middle, so a
+                        # trunk placed at ground level would be half buried.
+                        "location_cm": [centre_c[0] * CM_PER_M,
+                                        centre_c[1] * CM_PER_M,
+                                        (ground_z + base_z) * 0.5 * CM_PER_M],
+                        "size_m": [girth, girth, base_z - ground_z],
+                        "inferred": "not observed; spans the fitted ground plane "
+                                    "to the canopy this instance was measured at",
+                    })
 
         elif layer in SCATTER_TARGET:
             count = SCATTER_TARGET[layer]
@@ -309,9 +372,24 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
                            "size_m": [max(width * 0.5, 0.5), max(width, 0.5),
                                       max(height, 0.5)]})
 
+    # An inferred trunk that would pass through an observed building is an
+    # inference the evidence does not support: the canopy centroid is not the
+    # trunk's position, crowns overhang, and a tree behind a barn has its trunk
+    # behind the barn. Where the guess collides with something that *was*
+    # observed, drop it rather than intersect it.
+    solids = [a for a in actors if a["kind"] in ("structure", "clutter_volume")]
+    kept, withdrawn = [], []
+    for actor in actors:
+        if actor["kind"] == "trunk_support" and _intersects_any(actor, solids):
+            withdrawn.append(actor["region_id"])
+            continue
+        kept.append(actor)
+    actors = kept
+
     return {
         "schema_version": "region_placement_v1",
         "classification": "PROVEN" if actors else "EMPTY",
+        "withdrawn_trunk_supports": len(withdrawn),
         "camera_fov_x_deg": fov_x,
         "aspect_ratio": aspect,
         "actor_count": len(actors),

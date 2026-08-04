@@ -55,6 +55,19 @@ def _bridge():
     return Bridge()
 
 
+def _assign_json(bridge, name: str, value: Any, timeout: float = 120.0) -> None:
+    """Define a global in the editor from a Python value, safely.
+
+    Pasting `json.dumps(value)` straight into the editor's Python treats JSON as
+    a Python literal, which works right up until the payload contains a boolean:
+    `true` is a NameError there, and the whole request dies. Round-trip through
+    a quoted string and parse it on the far side instead.
+    """
+    payload = json.dumps(value)
+    bridge.python(f"import json\n{name} = json.loads({payload!r})", name,
+                  timeout=timeout)
+
+
 def _is_handler_timeout(exc: Exception) -> bool:
     """Did the editor run out of handler time, or did the script fail?
 
@@ -99,8 +112,7 @@ def import_generated_meshes(generated_assets: dict[str, Any],
                    "destination": destination}
         code = MESH_IMPORTER.read_text(encoding="utf-8")
         try:
-            bridge.python("MESH_IMPORT_REQUEST = " + json.dumps(request),
-                          "MESH_IMPORT_REQUEST", timeout=120.0)
+            _assign_json(bridge, "MESH_IMPORT_REQUEST", request)
             result = bridge.python_json(code, "result", timeout=timeout)
         except Exception as exc:
             # Only a *timeout* means "still working". Anything else is a real
@@ -121,8 +133,7 @@ def import_generated_meshes(generated_assets: dict[str, Any],
             while time.monotonic() < deadline:
                 time.sleep(20.0)
                 try:
-                    bridge.python("MESH_IMPORT_REQUEST = " + json.dumps(probe),
-                                  "MESH_IMPORT_REQUEST", timeout=120.0)
+                    _assign_json(bridge, "MESH_IMPORT_REQUEST", probe)
                     result = bridge.python_json(code, "result", timeout=300.0)
                     break
                 except Exception:
@@ -179,8 +190,7 @@ def build_scene(placement: dict[str, Any], scene_id: str,
     try:
         # Assign the request in __main__ first: the builder runs with
         # ExecuteFile semantics in that same scope and reads it as a global.
-        bridge.python(f"STRUCTURAL_REQUEST = {json.dumps(request)}",
-                      "STRUCTURAL_REQUEST", timeout=timeout)
+        _assign_json(bridge, "STRUCTURAL_REQUEST", request, timeout=timeout)
         receipt = bridge.python_json(
             BUILDER.read_text(encoding="utf-8"), "result", timeout=timeout)
     except Exception as exc:

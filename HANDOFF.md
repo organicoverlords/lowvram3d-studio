@@ -203,11 +203,24 @@ else had failed.
    overlap **1.00 → 0.28**, buried pairs 3 → 1, and the remaining one is the
    hovel, still a primitive. The scene now reads as a barn with a tree line.
 
-   Two things it does not fix, both wanting real instance segmentation:
-   - Clusters that are pure canopy have no trunk, so they **float**. Snapping
-     vegetation to the terrain would hide it; separating trunks would fix it.
-   - The crop for a scatter region is still a chunk of hedge, so the mesh is a
-     blob. Accurate to the input, and not a tree.
+   Canopy clumps no longer float. Segmentation fits a **sloped ground plane**
+   (least squares over every horizontal surface's points — a constant would be
+   wrong by metres, since this ground drops 0.176 m per metre forward), and each
+   clump gets an inferred `trunk_support` from that plane to its base.
+
+   Two things that were tried and rejected, both worth not repeating:
+   - *Stretching the clump down to the ground.* The mesh is a foliage blob,
+     roughly as deep as it is tall, so scaling it uniformly to a
+     ground-to-canopy height makes it that wide too — overlapping pairs went
+     1 → 31 and buried 0 → 9.
+   - *Trunks everywhere.* A trunk descending from a canopy centroid through the
+     barn is an inference the evidence does not support: crowns overhang, and a
+     tree behind a building has its trunk behind it. Trunks that would pierce an
+     observed solid are withdrawn (7 of 9 here), which is honest and keeps the
+     overlap numbers at their best.
+
+   Still wanting real instance segmentation: the crop for a scatter region is a
+   chunk of hedge, so the mesh is a blob. Accurate to the input, not a tree.
 
    **Placement now takes every position and size from measured points**
    (`measured_unreal_m`, converted to Unreal's frame once, in segmentation)

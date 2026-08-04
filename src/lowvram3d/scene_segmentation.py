@@ -83,6 +83,37 @@ MIN_CLUSTER_POINTS = 64
 CLUSTER_ITERATIONS = 12
 
 
+def fit_ground_plane(samples):
+    """Least-squares z = a*x + b*y + c over every horizontal surface's points.
+
+    A flat height would not do: MoGe's ground here drops 1.3 m below the camera
+    at 2.3 m out and 4.9 m at 13.5 m, so the scene slopes away and a constant
+    would be wrong at one end or the other by metres.
+
+    This exists so things that stand on the ground can be *put* on it. Clustering
+    a tree line by geometry finds canopy, because canopy is what the camera saw;
+    the trunks are dark, thin and mostly occluded. Placed at their own measured
+    extent, those clumps hang in mid-air, which is an artefact of what was
+    observed rather than a fact about the scene.
+    """
+    import numpy as np
+
+    if len(samples) < 32:
+        return None
+    points = np.asarray(samples, dtype=np.float64)
+    design = np.column_stack([points[:, 0], points[:, 1],
+                              np.ones(len(points))])
+    coefficients, *_ = np.linalg.lstsq(design, points[:, 2], rcond=None)
+    residual = points[:, 2] - design @ coefficients
+    return {
+        "slope_forward": round(float(coefficients[0]), 5),
+        "slope_right": round(float(coefficients[1]), 5),
+        "height_at_camera_m": round(float(coefficients[2]), 3),
+        "residual_p95_m": round(float(np.percentile(np.abs(residual), 95)), 3),
+        "sample_count": int(len(points)),
+    }
+
+
 def _measured_extent(selected):
     """Where a set of MoGe points actually sits, in Unreal's frame and metres.
 
@@ -219,6 +250,7 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
     total = float(width * height)
     regions: list[dict[str, Any]] = []
     unmapped: set[str] = set()
+    ground_samples: list[list[float]] = []
 
     for class_id in np.unique(labels):
         selection = labels == class_id
@@ -316,6 +348,10 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
                 region["measured_unreal_m"] = _measured_extent(selected)
 
                 if (region.get("surface") or {}).get("orientation") == "horizontal":
+                    # Subsample: the fit needs coverage, not every pixel.
+                    ground_samples.extend(np.column_stack([
+                        selected[::37, 2], selected[::37, 0],
+                        -selected[::37, 1]]).tolist())
                     # MoGe's Y is down, so a positive median is a surface below
                     # the camera. Named for what it measures rather than "height",
                     # because the sign is the whole question and a consumer in a
@@ -348,6 +384,9 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
         "region_count": len(regions),
         "layers_present": layers,
         "unmapped_labels": sorted(unmapped),
+        # A sloped plane through every horizontal surface, so anything that
+        # stands on the ground can be put on it.
+        "ground_plane_unreal": fit_ground_plane(ground_samples),
         "regions": regions,
     }
 

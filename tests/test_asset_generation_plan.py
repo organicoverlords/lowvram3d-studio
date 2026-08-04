@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from lowvram3d.asset_generation import (  # noqa: E402
     MEASURED_PEAK_VRAM_MB, MIN_CROP_ASPECT, _widen_to_aspect,
     ladder_for_headroom, plan)
-from lowvram3d.region_placement import place  # noqa: E402
+from lowvram3d.region_placement import ground_height_at, place  # noqa: E402
 
 
 def segmentation(*regions):
@@ -99,6 +99,92 @@ def test_widening_never_escapes_the_region():
 def test_widening_leaves_a_healthy_window_alone():
     bbox = [0.3, 0.5, 0.8, 0.75]
     assert _widen_to_aspect(bbox, [0.0, 0.0, 1.0, 1.0]) == bbox
+
+
+PLANE = {"slope_forward": -0.17564, "slope_right": 0.02765,
+         "height_at_camera_m": -1.137}
+
+
+def clustered(region_id, clusters):
+    """A vegetation region already split into clumps by segmentation."""
+    base = region("vegetation_tree_001", "vegetation", "tree", (0.0, 0.1, 0.9, 0.7))
+    base["id"] = region_id
+    base["clusters"] = clusters
+    return base
+
+
+def clump(forward, right, up, size, pixels=5000):
+    half = [s / 2 for s in size]
+    return {
+        "pixel_count": pixels,
+        "bbox_norm_xyxy": [0.4, 0.2, 0.5, 0.5],
+        "depth_m": {"near": forward - 1, "median": forward, "far": forward + 1},
+        "measured_unreal_m": {
+            "centroid": [forward, right, up],
+            "min": [forward - half[0], right - half[1], up - half[2]],
+            "max": [forward + half[0], right + half[1], up + half[2]],
+            "size": list(size),
+        },
+    }
+
+
+def test_ground_plane_slopes_away_from_the_camera():
+    """A constant height would be wrong by metres at one end or the other."""
+    near = ground_height_at(PLANE, 2.3, 0.0)
+    far = ground_height_at(PLANE, 13.5, 0.0)
+    assert near > far
+    assert far == pytest.approx(-3.51, abs=0.02)
+
+
+def test_no_plane_means_no_grounding_guess():
+    assert ground_height_at(None, 10.0, 0.0) is None
+
+
+def test_a_canopy_above_the_ground_gets_a_trunk():
+    """Clustering finds canopy; trunks are occluded, so they are inferred."""
+    segmentation_with_plane = {
+        **segmentation(clustered("vegetation_tree_001",
+                                 [clump(10.0, 0.0, 2.0, (2.0, 2.0, 2.0))])),
+        "ground_plane_unreal": PLANE,
+    }
+    actors = place(segmentation_with_plane)["actors"]
+    trunks = [a for a in actors if a["kind"] == "trunk_support"]
+    assert len(trunks) == 1
+    # Thin relative to the crown, and spanning ground to canopy base.
+    assert trunks[0]["size_m"][0] < 1.0
+    assert trunks[0]["size_m"][2] == pytest.approx(1.0 - ground_height_at(PLANE, 10.0, 0.0), abs=0.01)
+    assert "inferred" in trunks[0]
+
+
+def test_a_canopy_already_on_the_ground_gets_no_trunk():
+    segmentation_with_plane = {
+        **segmentation(clustered("vegetation_tree_001",
+                                 [clump(10.0, 0.0, -2.4, (2.0, 2.0, 2.0))])),
+        "ground_plane_unreal": PLANE,
+    }
+    actors = place(segmentation_with_plane)["actors"]
+    assert not [a for a in actors if a["kind"] == "trunk_support"]
+
+
+def test_a_trunk_that_would_pierce_a_building_is_withdrawn():
+    """The canopy centroid is not the trunk's position, and crowns overhang.
+
+    Where the guess collides with something that *was* observed, it is not a
+    guess worth making.
+    """
+    spec = segmentation(
+        clustered("vegetation_tree_001", [clump(10.0, 0.0, 4.0, (2.0, 2.0, 2.0))]),
+        region("architecture_barn_002", "architecture", "house",
+               (0.3, 0.4, 0.7, 0.75), depth=10.0),
+    )
+    spec["ground_plane_unreal"] = PLANE
+    # Put the building exactly where the trunk would descend.
+    spec["regions"][1]["measured_unreal_m"] = {
+        "centroid": [10.0, 0.0, -1.0], "min": [8.0, -4.0, -3.0],
+        "max": [12.0, 4.0, 1.0], "size": [4.0, 8.0, 4.0]}
+    result = place(spec)
+    assert result["withdrawn_trunk_supports"] == 1
+    assert not [a for a in result["actors"] if a["kind"] == "trunk_support"]
 
 
 LADDER = "384:3000,320:2000,256:1500"

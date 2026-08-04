@@ -42,6 +42,7 @@ MESH_BY_KIND = {
     "water_surface": "/Engine/BasicShapes/Cube.Cube",
     "structure": "/Engine/BasicShapes/Cube.Cube",
     "scatter_instance": "/Engine/BasicShapes/Cylinder.Cylinder",
+    "trunk_support": "/Engine/BasicShapes/Cylinder.Cylinder",
     "path_strip": "/Engine/BasicShapes/Cube.Cube",
     "clutter_volume": "/Engine/BasicShapes/Cube.Cube",
 }
@@ -173,10 +174,15 @@ for index, spec in enumerate(PLACEMENT["actors"]):
     kind = spec["kind"]
     size = [float(v) for v in spec["size_m"]]
     location = unreal.Vector(*[float(v) for v in spec["location_cm"]])
-    generated = generated_meshes.get(str(spec["region_id"]))
+    # Inferred supports stay primitives. The generated mesh is keyed by region,
+    # and a trunk shares its tree's region id -- so without this every trunk is
+    # spawned as another copy of the canopy, scaled down to trunk height.
+    generated = (None if kind == "trunk_support"
+                 else generated_meshes.get(str(spec["region_id"])))
 
     stride = instance_stride.get(str(spec["region_id"]), 1)
-    if kind == "scatter_instance" and stride > 1:
+    # Trunks are dropped with the instance they hold up, or they stand alone.
+    if kind in ("scatter_instance", "trunk_support") and stride > 1:
         if int(spec.get("instance_index", 0)) % stride:
             skipped_instances.append({
                 "region_id": spec["region_id"],
