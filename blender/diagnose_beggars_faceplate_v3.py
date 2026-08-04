@@ -5,7 +5,6 @@ import json
 import sys
 from pathlib import Path
 
-import bmesh
 import bpy
 from mathutils import Vector
 
@@ -42,9 +41,7 @@ def object_snapshot(obj: bpy.types.Object) -> dict:
     return {
         "name": obj.name,
         "type": obj.type,
-        "parent": obj.parent.name if obj.parent else None,
         "location": [float(value) for value in obj.location],
-        "rotation_euler": [float(value) for value in obj.rotation_euler],
         "scale": [float(value) for value in obj.scale],
         "hide_render": bool(obj.hide_render),
         "materials": materials,
@@ -69,7 +66,7 @@ def principled(name: str, color: tuple[float, float, float, float], roughness: f
     if bsdf.inputs.get("Roughness"):
         bsdf.inputs["Roughness"].default_value = roughness
     if bsdf.inputs.get("Specular IOR Level"):
-        bsdf.inputs["Specular IOR Level"].default_value = 0.20
+        bsdf.inputs["Specular IOR Level"].default_value = 0.18
     if bsdf.inputs.get("Subsurface Weight"):
         bsdf.inputs["Subsurface Weight"].default_value = 0.025 if "SKIN" in name else 0.0
     return material
@@ -87,24 +84,43 @@ def sphere(name: str, location: Vector, scale: tuple[float, float, float], mater
     return obj
 
 
-def open_front_hair_shell(
+def silhouette_mesh(
     name: str,
-    location: Vector,
-    scale: tuple[float, float, float],
+    center: Vector,
+    width: float,
+    height: float,
+    y: float,
     material: bpy.types.Material,
 ) -> bpy.types.Object:
-    obj = sphere(name, location, scale, material)
-    bm = bmesh.new()
-    bm.from_mesh(obj.data)
-    delete_vertices = [
-        vertex
-        for vertex in bm.verts
-        if vertex.co.y < -scale[1] * 0.04 and vertex.co.z < scale[2] * 0.46
+    outline = [
+        (-0.54, -0.20),
+        (-0.50, 0.24),
+        (-0.38, 0.58),
+        (-0.18, 0.76),
+        (0.05, 0.82),
+        (0.28, 0.70),
+        (0.46, 0.43),
+        (0.54, 0.08),
+        (0.48, -0.30),
+        (0.29, -0.48),
+        (0.00, -0.54),
+        (-0.30, -0.44),
     ]
-    bmesh.ops.delete(bm, geom=delete_vertices, context="VERTS")
-    bm.to_mesh(obj.data)
-    bm.free()
-    obj.data.update()
+    vertices = [(center.x, y, center.z)]
+    vertices.extend(
+        (center.x + width * x, y, center.z + height * z) for x, z in outline
+    )
+    faces = []
+    for index in range(len(outline)):
+        current = index + 1
+        following = (index + 1) % len(outline) + 1
+        faces.append((0, current, following))
+    mesh = bpy.data.meshes.new(f"MESH_{name}")
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    mesh.materials.append(material)
     return obj
 
 
@@ -128,25 +144,20 @@ def render(scene: bpy.types.Scene, output: Path) -> None:
     bpy.ops.render.render(write_still=True)
 
 
-def hide_named(names: list[str]) -> None:
+def hide_original_character_shell() -> None:
+    names = [
+        "CHAR_Antinous_HairCap",
+        "CHAR_Antinous_Neck",
+        "CHAR_Antinous_Torso",
+        "CHAR_Antinous_Shoulder_L",
+        "CHAR_Antinous_Shoulder_R",
+        "COSTUME_GoldNeckTrim",
+    ]
     for name in names:
         obj = bpy.data.objects.get(name)
         if obj is not None:
             obj.hide_render = True
             obj.hide_viewport = True
-
-
-def hide_original_character_shell() -> None:
-    hide_named(
-        [
-            "CHAR_Antinous_HairCap",
-            "CHAR_Antinous_Neck",
-            "CHAR_Antinous_Torso",
-            "CHAR_Antinous_Shoulder_L",
-            "CHAR_Antinous_Shoulder_R",
-            "COSTUME_GoldNeckTrim",
-        ]
-    )
     for obj in bpy.data.objects:
         if obj.name.startswith(("HAIR_Strand_", "HAIR_Wave", "FACIALHAIR_")):
             obj.hide_render = True
@@ -170,23 +181,17 @@ def main() -> int:
     scene.render.resolution_percentage = 100
     scene.render.film_transparent = False
     camera = bpy.data.objects.get("CAM_Hero")
-    if camera is None:
-        raise RuntimeError("CAM_Hero is missing")
+    face_plate = bpy.data.objects.get("CHAR_Antinous_FacePlate")
+    if camera is None or face_plate is None:
+        raise RuntimeError("CAM_Hero or CHAR_Antinous_FacePlate is missing")
     scene.camera = camera
 
-    face_plate = bpy.data.objects.get("CHAR_Antinous_FacePlate")
-    if face_plate is None:
-        raise RuntimeError("CHAR_Antinous_FacePlate is missing")
-
-    candidate_images = [
-        image
-        for image in bpy.data.images
-        if image.size[0] >= 1024
-        and image.size[1] >= 1024
-        and ("sprite" in image.name.lower() or "face" in image.name.lower())
-    ]
     image_report = []
-    for image in candidate_images:
+    for image in bpy.data.images:
+        if image.size[0] < 1024 or image.size[1] < 1024:
+            continue
+        if "sprite" not in image.name.lower() and "face" not in image.name.lower():
+            continue
         destination = output_dir / f"packed_{image.name.replace(' ', '_').replace('/', '_')}.png"
         old_path = image.filepath_raw
         old_format = image.file_format
@@ -199,22 +204,7 @@ def main() -> int:
             image.file_format = old_format
         image_report.append({"name": image.name, "size": list(image.size), "saved": destination.name})
 
-    report = {
-        "classification": "VISUAL_DIAGNOSTIC",
-        "source_blend": str(blend_path),
-        "frame": args.frame,
-        "engine": engine,
-        "face_plate_bounds": [list(bounds_world(face_plate)[0]), list(bounds_world(face_plate)[1])],
-        "images": image_report,
-        "objects": [
-            object_snapshot(obj)
-            for obj in bpy.data.objects
-            if obj.name.startswith(("CHAR_Antinous", "RIG_Head", "HAIR_", "COSTUME_"))
-        ],
-    }
-
     render(scene, output_dir / "variant_00_current.png")
-
     hide_original_character_shell()
     render(scene, output_dir / "variant_01_plate_only.png")
 
@@ -224,96 +214,84 @@ def main() -> int:
     width = max(maximum.x - minimum.x, 0.1)
     front_y = center.y
 
-    robe = principled("MAT_FACEPLATE_V5_ROBE", (0.004, 0.0045, 0.006, 1.0), 0.86)
-    skin = principled("MAT_FACEPLATE_V5_SKIN", (0.145, 0.070, 0.060, 1.0), 0.58)
-    hair = principled("MAT_FACEPLATE_V5_HAIR", (0.003, 0.0015, 0.001, 1.0), 0.52)
+    robe = principled("MAT_FACEPLATE_V6_ROBE", (0.003, 0.0035, 0.005, 1.0), 0.88)
+    skin = principled("MAT_FACEPLATE_V6_SKIN", (0.135, 0.064, 0.055, 1.0), 0.60)
+    hair = principled("MAT_FACEPLATE_V6_HAIR", (0.002, 0.001, 0.0007, 1.0), 0.62)
 
-    # The plate remains the foremost surface. Every support primitive begins
-    # farther from the camera than the plate's world-space Y coordinate.
-    face_plate.location.y -= height * 0.030
-    head = sphere(
-        "DIAG_V5_HeadShell",
-        Vector((center.x, front_y + height * 0.46, center.z + height * 0.025)),
-        (width * 0.58, height * 0.22, height * 0.53),
-        skin,
-    )
-    ear_left = sphere(
-        "DIAG_V5_Ear_L",
-        Vector((center.x - width * 0.53, front_y + height * 0.30, center.z - height * 0.015)),
-        (width * 0.085, height * 0.050, height * 0.145),
-        skin,
-    )
-    ear_right = sphere(
-        "DIAG_V5_Ear_R",
-        Vector((center.x + width * 0.53, front_y + height * 0.30, center.z - height * 0.015)),
-        (width * 0.085, height * 0.050, height * 0.145),
-        skin,
-    )
+    face_plate.location.y -= height * 0.035
     neck = sphere(
-        "DIAG_V5_Neck",
-        Vector((center.x, front_y + height * 0.38, minimum.z - height * 0.22)),
-        (width * 0.20, height * 0.12, height * 0.30),
+        "DIAG_V6_Neck",
+        Vector((center.x, front_y + height * 0.34, minimum.z - height * 0.22)),
+        (width * 0.18, height * 0.11, height * 0.29),
         skin,
     )
     torso = sphere(
-        "DIAG_V5_Torso",
-        Vector((center.x, front_y + height * 0.52, minimum.z - height * 0.83)),
-        (width * 1.00, height * 0.32, height * 0.60),
+        "DIAG_V6_Torso",
+        Vector((center.x, front_y + height * 0.52, minimum.z - height * 0.82)),
+        (width * 1.00, height * 0.31, height * 0.59),
         robe,
     )
     shoulder_left = sphere(
-        "DIAG_V5_Shoulder_L",
-        Vector((center.x - width * 0.78, front_y + height * 0.48, minimum.z - height * 0.70)),
-        (width * 0.48, height * 0.24, height * 0.34),
+        "DIAG_V6_Shoulder_L",
+        Vector((center.x - width * 0.77, front_y + height * 0.48, minimum.z - height * 0.69)),
+        (width * 0.47, height * 0.23, height * 0.33),
         robe,
     )
     shoulder_right = sphere(
-        "DIAG_V5_Shoulder_R",
-        Vector((center.x + width * 0.78, front_y + height * 0.48, minimum.z - height * 0.70)),
-        (width * 0.48, height * 0.24, height * 0.34),
+        "DIAG_V6_Shoulder_R",
+        Vector((center.x + width * 0.77, front_y + height * 0.48, minimum.z - height * 0.69)),
+        (width * 0.47, height * 0.23, height * 0.33),
         robe,
     )
     render(scene, output_dir / "variant_02_natural_bust.png")
 
-    hair_shell = open_front_hair_shell(
-        "DIAG_V5_OpenFrontHairShell",
-        Vector((center.x, front_y + height * 0.48, center.z + height * 0.19)),
-        (width * 0.60, height * 0.24, height * 0.47),
-        hair,
+    backplate = silhouette_mesh(
+        "DIAG_V6_HairHeadSilhouette",
+        center=Vector((center.x, front_y, center.z + height * 0.03)),
+        width=width * 1.04,
+        height=height * 1.04,
+        y=front_y + height * 0.055,
+        material=hair,
     )
-    target = Vector((center.x, center.y, center.z - height * 0.18))
+    ear_left = sphere(
+        "DIAG_V6_Ear_L",
+        Vector((center.x - width * 0.50, front_y + height * 0.10, center.z - height * 0.01)),
+        (width * 0.075, height * 0.042, height * 0.125),
+        skin,
+    )
+    ear_right = sphere(
+        "DIAG_V6_Ear_R",
+        Vector((center.x + width * 0.50, front_y + height * 0.10, center.z - height * 0.01)),
+        (width * 0.075, height * 0.042, height * 0.125),
+        skin,
+    )
     area_light(
-        "DIAG_V5_FrontFill",
-        Vector((center.x + width * 1.4, front_y - height * 2.6, center.z + height * 1.3)),
-        360.0,
+        "DIAG_V6_FrontFill",
+        Vector((center.x + width * 1.2, front_y - height * 2.4, center.z + height * 1.1)),
+        260.0,
         (0.72, 0.78, 1.0),
-        height * 2.3,
-        target,
+        height * 2.0,
+        Vector((center.x, center.y, center.z - height * 0.18)),
     )
     camera.data.dof.use_dof = False
     render(scene, output_dir / "variant_03_larger_face.png")
 
-    report["diagnostic_objects"] = [
-        object_snapshot(obj)
-        for obj in (
-            head,
-            ear_left,
-            ear_right,
-            neck,
-            torso,
-            shoulder_left,
-            shoulder_right,
-            hair_shell,
-        )
-    ]
-    report["variant_policy"] = {
-        "variant_01": "derived face plate only; all rejected primitive shell geometry hidden",
-        "variant_02": "faceplate foreground with skin shell, ears, neck and robe behind it",
-        "variant_03": "same depth-safe bust plus a rear/top open-front hair shell",
+    diagnostic_objects = [neck, torso, shoulder_left, shoulder_right, backplate, ear_left, ear_right]
+    report = {
+        "classification": "VISUAL_DIAGNOSTIC",
+        "source_blend": str(blend_path),
+        "frame": args.frame,
+        "engine": engine,
+        "face_plate_bounds": [list(minimum), list(maximum)],
+        "images": image_report,
+        "diagnostic_objects": [object_snapshot(obj) for obj in diagnostic_objects],
+        "variant_policy": {
+            "variant_01": "derived face plate only",
+            "variant_02": "face plate with true 3D neck and robe only",
+            "variant_03": "variant 02 plus a thin dark head/hair silhouette and small ears behind the face",
+        },
     }
-    (output_dir / "diagnostic.json").write_text(
-        json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
-    )
+    (output_dir / "diagnostic.json").write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
     bpy.ops.wm.save_as_mainfile(filepath=str(output_dir / "faceplate_v3_diagnostic.blend"))
     print(json.dumps(report, sort_keys=True))
     return 0
