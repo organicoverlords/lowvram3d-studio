@@ -16,8 +16,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lowvram3d.asset_generation import (  # noqa: E402
-    MEASURED_PEAK_VRAM_MB, MIN_CROP_ASPECT, _widen_to_aspect,
-    ladder_for_headroom, plan)
+    MEASURED_PEAK_VRAM_MB, MIN_CROP_ASPECT, _border_contact, _crop,
+    _square_pad, _widen_to_aspect, ladder_for_headroom, plan)
 from lowvram3d.region_placement import ground_height_at, place  # noqa: E402
 
 
@@ -228,6 +228,68 @@ def test_the_ladder_is_never_emptied():
     """Better to fail honestly at the smallest rung than to skip the asset."""
     ladder, _ = ladder_for_headroom("384:3000", 100)
     assert ladder == "384:3000"
+
+
+def synthetic_source(tmp_path, subject_box, size=(1200, 900)):
+    """A source image plus a mask covering exactly `subject_box` (pixels)."""
+    from PIL import Image, ImageDraw
+
+    image = Image.new("RGB", size, (120, 140, 90))
+    mask = Image.new("L", size, 0)
+    ImageDraw.Draw(mask).rectangle(subject_box, fill=255)
+    ImageDraw.Draw(image).rectangle(subject_box, fill=(70, 50, 40))
+    image_path, mask_path = tmp_path / "source.png", tmp_path / "mask.png"
+    image.save(image_path)
+    mask.save(mask_path)
+    return image_path, mask_path
+
+
+def test_a_letterboxed_subject_is_framed_square_before_generation():
+    """The generator pads to square regardless; doing it here keeps the subject big.
+
+    A 3:1 barn handed over as-is occupies a third of the conditioning frame, and
+    the coarse reconstruction that follows reads as a bad generator.
+    """
+    from PIL import Image
+
+    framed = _square_pad(Image.new("RGBA", (819, 266), (0, 0, 0, 255)))
+    assert framed.size[0] == framed.size[1]
+    assert framed.size[0] >= 819
+    # The subject stays centred, and the padding is transparent rather than a
+    # colour the generator would try to reconstruct.
+    assert framed.getpixel((framed.size[0] // 2, framed.size[1] // 2))[3] == 255
+    assert framed.getpixel((0, 0))[3] == 0
+
+
+def test_a_whole_subject_touches_none_of_its_own_edges(tmp_path):
+    """Crops are padded so a real object clears its frame -- the barn scores 0.0."""
+    image, mask = synthetic_source(tmp_path, (400, 500, 900, 700))
+    result = _crop(image, [400 / 1200, 500 / 900, 900 / 1200, 700 / 900],
+                   tmp_path / "crop.png", mask)
+    assert result["unbounded_crop"] is False
+    assert max(result["border_contact"].values()) == 0.0
+    assert result["conditioning_size_px"][0] == result["conditioning_size_px"][1]
+
+
+def test_a_slice_of_a_larger_mass_is_refused(tmp_path):
+    """A chunk of hedge has no silhouette; generating from it produces a slab."""
+    # Subject extends well past the crop on the left and the bottom.
+    image, mask = synthetic_source(tmp_path, (0, 100, 700, 900))
+    result = _crop(image, [300 / 1200, 100 / 900, 700 / 1200, 600 / 900],
+                   tmp_path / "crop.png", mask)
+    assert set(result["unbounded_sides"]) >= {"left", "bottom"}
+    assert result["unbounded_crop"] is True
+
+
+def test_border_contact_is_measured_per_edge():
+    from PIL import Image, ImageDraw
+
+    mask = Image.new("L", (100, 100), 0)
+    ImageDraw.Draw(mask).rectangle((0, 0, 49, 99), fill=255)
+    contact = _border_contact(mask)
+    assert contact["left"] == 1.0
+    assert contact["right"] == 0.0
+    assert contact["top"] == pytest.approx(0.5, abs=0.01)
 
 
 def test_every_generated_actor_is_accounted_for():

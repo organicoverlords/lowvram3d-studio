@@ -117,6 +117,25 @@ MIN_CROP_ASPECT = 1.0 / 3.0
 MIN_MASK_COVERAGE = 0.04
 # Breathing room around a region so its silhouette is not cut off at the edge.
 CROP_PADDING = 0.06
+# Mini Turbo conditions on a square image and letterboxes whatever it is given.
+# A 819x266 barn therefore arrives occupying a third of the frame, and the
+# reconstruction is correspondingly coarse -- an effect that reads as "the
+# generator is bad" when it is really "the subject was three times too small".
+# Pad the matted crop to square ourselves, with a margin, so the framing is
+# known here instead of happening by accident downstream.
+CONDITIONING_MARGIN = 0.08
+# The crop is padded by CROP_PADDING on every side precisely so a silhouette is
+# not cut off, so a subject that fits its own frame touches no edge at all: the
+# barn scores 0.0 on all four. A mask that still runs off two sides is not a
+# subject, it is a window cut out of a larger continuous mass -- and feeding one
+# to a single-image generator yields a slab (measured: the tree line came back
+# 1.96 x 1.13 x 0.17 m, then got instanced fourteen times). Worth refusing.
+#
+# This also catches a subject genuinely cut off by the photograph's own border.
+# That is the right call for the same reason: what was never seen cannot be
+# reconstructed, only invented.
+MAX_UNBOUNDED_SIDES = 2
+BORDER_CONTACT_FRACTION = 0.5
 
 
 def resolve_runtime(overrides: dict[str, str] | None = None) -> dict[str, Any]:
@@ -211,6 +230,40 @@ def plan(placement: dict[str, Any]) -> list[dict[str, Any]]:
     return sorted(jobs.values(), key=lambda job: job["asset_id"])
 
 
+def _square_pad(matted, margin: float = CONDITIONING_MARGIN):
+    """Centre an RGBA subject on a transparent square canvas.
+
+    Expanding the *crop* to square instead would pull in neighbouring pixels,
+    which the mask then removes anyway; padding costs nothing and cannot import
+    another object's geometry into this one's conditioning image.
+    """
+    from PIL import Image
+
+    width, height = matted.size
+    side = int(round(max(width, height) * (1.0 + 2.0 * margin)))
+    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    canvas.paste(matted, ((side - width) // 2, (side - height) // 2))
+    return canvas
+
+
+def _border_contact(mask) -> dict[str, float]:
+    """How much of each crop edge the mask covers.
+
+    A whole object leaves its own frame on every side. A chunk of hedge does not.
+    """
+    import numpy as np
+
+    array = np.asarray(mask.convert("L")) >= 128
+    if array.size == 0:
+        return {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+    return {
+        "top": round(float(array[0].mean()), 4),
+        "bottom": round(float(array[-1].mean()), 4),
+        "left": round(float(array[:, 0].mean()), 4),
+        "right": round(float(array[:, -1].mean()), 4),
+    }
+
+
 def _crop(image_path: Path, bbox: list[float], destination: Path,
           mask_path: Path | None = None) -> dict[str, Any]:
     """Crop the region, and matte it with its own segmentation mask if there is one.
@@ -252,10 +305,18 @@ def _crop(image_path: Path, bbox: list[float], destination: Path,
         if covered >= MIN_MASK_COVERAGE:
             matted = crop.convert("RGBA")
             matted.putalpha(mask)
-            matted.save(destination)
+            framed = _square_pad(matted)
+            framed.save(destination)
+            contact = _border_contact(mask)
+            unbounded = [side for side, value in contact.items()
+                         if value >= BORDER_CONTACT_FRACTION]
             result.update({"matte": "segmentation_mask",
                            "mask_png": str(mask_path),
-                           "mask_coverage": round(covered, 4)})
+                           "mask_coverage": round(covered, 4),
+                           "conditioning_size_px": list(framed.size),
+                           "border_contact": contact,
+                           "unbounded_sides": sorted(unbounded),
+                           "unbounded_crop": len(unbounded) >= MAX_UNBOUNDED_SIDES})
             return result
         # Too little of the crop survives the mask to condition on -- usually a
         # region whose bbox is mostly other things. Say so rather than handing
@@ -300,7 +361,22 @@ def wait_for_vram(required_mb: int, timeout: float,
     free = initial
     while free < required_mb and time.monotonic() - start < timeout:
         time.sleep(poll)
-        free = free_vram_mb() or free
+        current = free_vram_mb() or free
+        # Only a *transient* is worth waiting out. A co-resident editor holds its
+        # allocation for the whole run, so if nothing is being released between
+        # polls the headroom is not coming and every further poll is dead time.
+        released = current - free
+        free = current
+        if released <= 0:
+            return {
+                "checked": True,
+                "required_mb": required_mb,
+                "free_mb_before": initial,
+                "free_mb_at_start": free,
+                "waited_seconds": round(time.monotonic() - start, 1),
+                "sufficient": False,
+                "gave_up": "free VRAM is not rising; another process is holding it",
+            }
     return {
         "checked": True,
         "required_mb": required_mb,
@@ -506,6 +582,15 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
             entry["reason"] = (
                 f"crop is {crop['crop_size_px']} px, below the {MIN_CROP_PIXELS} px "
                 "minimum to condition on")
+            receipt["assets"].append(entry)
+            continue
+        if crop.get("unbounded_crop"):
+            entry["status"] = "skipped"
+            entry["reason"] = (
+                "crop runs off its own edge on "
+                f"{', '.join(crop['unbounded_sides'])} -- a cut-out of a larger "
+                "mass, not a subject. Generating from it yields a slab, so this "
+                "region keeps its primitive.")
             receipt["assets"].append(entry)
             continue
 
