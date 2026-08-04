@@ -1,6 +1,8 @@
-run=4
-requested=2026-08-04T01:31:00+03:00
+run=12
+requested=2026-08-04T03:09:00+03:00
 mode=github-self-hosted-direct-pr
+repair_commit=083a98ec06ad9239b886b5149e2968fab4a5dbf5
+repair_scope=unreal-material-probes-and-population-root-mobility
 codex=false
 claude=false
 magicmusic=false
