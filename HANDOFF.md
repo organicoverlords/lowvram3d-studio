@@ -1,13 +1,62 @@
-# Handoff — 2026-08-04 (second session)
+# Handoff — 2026-08-05 (third session)
 
 Repo: `C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803`
 Branch: `agent/scene-pipeline-smoke-20260803`
-Head: `80d07bb` (this session started at `0658086`)
+Head: `9319ff0` (this session started at `61ab886`, 18 commits)
 Unreal project: `C:\Users\Lauri\Desktop\UnrealAITest58\UnrealAITest58.uproject` (UE 5.8.0)
 
-**Start here:** `docs/AXIS_CONVENTIONS.md`, then `docs/unreal-mcp/README.md`, then
-`docs/pipelines/README.md`. Run `python -m uemcp doctor` from `unreal/` before
-diagnosing anything.
+**Start here:** `docs/DESIGN_IMPROVEMENTS.md` (read the retraction in section 1
+first), then `docs/AXIS_CONVENTIONS.md`, then `docs/pipelines/README.md`. Run
+`python -m uemcp doctor` from `unreal/` before diagnosing anything.
+
+## Read this before trusting any number in here
+
+Three defects this session were found by **looking at an image**, and all three
+had survived confident, mutually consistent numeric checks:
+
+1. a "second building" that was a tree-trunk shadow;
+2. a "tree line" that is **one wind-swept tree** -- twelve instances came from a
+   pixel budget, and every vegetation symptom followed from that one number;
+3. a facing test that put the barn's appearance on its **rear**, which shipped
+   because nothing in the project could render a texture outside an Unreal scene.
+
+`docs/DESIGN_IMPROVEMENTS.md` records the general form: *agreement between
+measurements is not evidence when they share an input.* Crop border contact,
+projected scale disagreement and pairwise overlap all independently indicted the
+vegetation region, and all three were downstream of the same wrong cluster count.
+
+## What changed this session
+
+- **Split-phase runs.** Generation and the editor cannot share a 6 GB card; the
+  editor's ~2.3 GB pins every asset to octree 256. Run `--phase generate` with
+  Unreal closed, then `--phase build --resume` with it open. Both assets now
+  reach **384**, which had never happened before.
+- **Square conditioning.** Mini Turbo letterboxes what it is given, so an
+  819x266 barn filled a third of the frame. Crops are padded to square.
+- **One connected mass is one object.** k-means over points is gone.
+- **Welding on export.** Every delivered mesh was triangle soup: 449,917
+  vertices for 149,997 triangles, 149,960 disconnected bodies. Now 74,556 and
+  1 body, files 3.5x smaller. Likely the cause of the import handler timeouts.
+- **Placement is optimised, not just audited.** Cross-region overlap 0.26 -> 0.05.
+- **Honest texture coverage.** Faces the camera never saw are flat-filled rather
+  than smeared. Barn 0.392, tree 0.426 -- i.e. most of an asset's appearance is
+  invention, and the ship benchmark independently measured 0.19.
+- **`workers/render_textured_views.py`** renders appearance on the CPU, and runs
+  automatically for every generated asset.
+
+## Unfinished, and why
+
+**Nothing has been built in Unreal since any of this.** The last scene predates
+welding, the facing gate, the placement objective and both current assets. That
+is the obvious next step and it needs the editor open.
+
+Multi-view texturing is the correct fix for the largest remaining defect and has
+**never worked on this machine** -- see the corrected section 3 of the design
+notes, and `proof/benchmarks/20260803-ship-production-texture.json`, whose own
+root cause reads "5 of the 6 conditioning views are mirrored fills at confidence
+0". Give it its own budget; do not slot it into a scene run.
+
+`scripts/measure_offaxis_stability.py` is still written and never executed.
 
 ---
 
