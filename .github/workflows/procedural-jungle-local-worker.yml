@@ -1,8 +1,7 @@
-name: Build playable procedural jungle on local worker
-run-name: Dense procedural jungle and walking panda ${{ github.run_id }}
+name: Jungle PR 15 walking panda
+run-name: Jungle visual bundle export ${{ github.run_id }}
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - feature/procedural-jungle-playable-20260804
@@ -10,112 +9,37 @@ on:
       - worker-triggers/procedural-jungle-direct-worker.txt
 
 permissions:
-  contents: write
-
-concurrency:
-  group: procedural-jungle-playable-local-worker
-  cancel-in-progress: false
+  contents: read
 
 jobs:
-  build-and-prove:
-    if: github.repository_owner == 'organicoverlords'
-    runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 360
+  export-visual-overhaul-bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout exact jungle branch
         uses: actions/checkout@v4
         with:
           ref: feature/procedural-jungle-playable-20260804
           clean: true
-          fetch-depth: 0
+          fetch-depth: 1
 
-      - name: Verify branch equals remote
-        shell: powershell
+      - name: Verify exact bundle inputs
+        shell: bash
         run: |
-          $ErrorActionPreference = 'Stop'
-          $remote = git config --get remote.origin.url
-          $branch = git branch --show-current
-          $head = git rev-parse HEAD
-          $status = @(git status --short)
-          if ($remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $remote" }
-          if ($branch -ne 'feature/procedural-jungle-playable-20260804') { throw "Branch mismatch: $branch" }
-          if ($status.Count -ne 0) { throw 'Checkout is dirty' }
-          git fetch origin $branch --quiet
-          $remoteHead = git rev-parse "origin/$branch"
-          if ($head -ne $remoteHead) { throw "Checkout head differs from remote: $head vs $remoteHead" }
-          "WORKER_START_HEAD=$head" | Add-Content -LiteralPath $env:GITHUB_ENV
+          set -euo pipefail
+          test "$(git branch --show-current)" = "feature/procedural-jungle-playable-20260804"
+          mapfile -t chunks < <(find worker-bundles/procedural-jungle-visual-overhaul -maxdepth 1 -type f -name 'chunk-*.b64' | sort)
+          test "${#chunks[@]}" -eq 4
+          printf '%s\n' "${chunks[@]}"
+          sha256sum "${chunks[@]}"
+          wc -c "${chunks[@]}"
 
-      - name: Run deterministic dense-jungle pipeline
-        shell: powershell
-        run: |
-          $ErrorActionPreference = 'Stop'
-          powershell -NoProfile -ExecutionPolicy Bypass -File scripts\procedural_jungle\run-procedural-jungle-local-worker.ps1
-
-      - name: Independently gate playable and visual acceptance evidence
-        shell: powershell
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $acceptancePath = 'evidence\latest-procedural-jungle\acceptance.json'
-          $receiptPath = 'evidence\latest-procedural-jungle\workflow_receipt.json'
-          $reportPath = 'proof\scene\20260804-procedural-jungle\FINAL_REPORT.md'
-          foreach ($path in @($acceptancePath, $receiptPath, $reportPath)) {
-            if (-not (Test-Path -LiteralPath $path)) { throw "Required proof file missing: $path" }
-          }
-          $a = Get-Content -LiteralPath $acceptancePath -Raw | ConvertFrom-Json
-          if ($a.classification -ne 'JUNGLE_PANDA_PLAYABLE_PROVEN') { throw "Acceptance rejected: $($a.classification)" }
-          if ($a.visual_quality -ne 'PROVEN') { throw "Visual quality rejected: $($a.visual_quality)" }
-          if ($a.visual_quality_classification -ne 'DENSE_JUNGLE_VISUAL_QUALITY_PROVEN') {
-            throw "Visual classification rejected: $($a.visual_quality_classification)"
-          }
-          foreach ($key in @('project_exists','tests_passed')) {
-            if (-not $a.$key) { throw "Acceptance field is false: $key" }
-          }
-          foreach ($key in @('map_save_reload','no_external_art_assets','terrain','river','waterfall','lower_pool','vegetation','wind','lighting_atmosphere','player_controls','collision_route','panda_skeletal_mesh','panda_walk_animation','panda_route_motion','standalone_launch','visual_capture','performance_1080p')) {
-            if ($a.$key -ne 'PROVEN') { throw "Acceptance field is not PROVEN: $key=$($a.$key)" }
-          }
-          if ([double]$a.average_fps -lt 30) { throw "Average FPS below 30: $($a.average_fps)" }
-          if ([double]$a.minimum_fps -lt 20) { throw "Minimum FPS below 20: $($a.minimum_fps)" }
-          if ([double]$a.panda_travel_distance_cm -lt 300) { throw 'Panda travel proof too short' }
-          if ([int]$a.capture_count -lt 8) { throw 'Too few proof captures' }
-          if ([int]$a.generated_variant_count -lt 40) { throw 'Too few generated mesh variants for the dense jungle' }
-          if ([int]$a.generated_instance_count -lt 3300) { throw 'Too few generated jungle instances' }
-          if ([int]$a.canopy_instance_count -lt 380) { throw 'Canopy remains too sparse' }
-          if ([int]$a.understory_instance_count -lt 2500) { throw 'Understory remains too sparse' }
-          if ([int]$a.panda_framed_capture_count -lt 4) { throw 'Too few captures frame the moving panda' }
-          if ([int]$a.vegetation_rich_frame_count -lt 6) { throw 'Too few captures contain dense vegetation' }
-          if ([double]$a.average_saturation -lt 0.19) { throw 'Capture set remains visually washed out' }
-          if ([double]$a.average_near_white_fraction -gt 0.16) { throw 'Capture set remains overexposed' }
-          if ([double]$a.average_green_fraction -lt 0.25) { throw 'Capture set does not read as vegetation-rich jungle' }
-          if ([int]$a.panda_bone_count -lt 21) { throw 'Panda skeleton is incomplete' }
-          if ([int]$a.forbidden_asset_reference_count -ne 0) { throw 'Forbidden external art references found' }
-          if ($a.codex_invoked -or $a.claude_invoked -or $a.magicmusic_invoked) { throw 'An unauthorized helper was invoked' }
-          Write-Host ($a | ConvertTo-Json -Depth 30)
-
-      - name: Commit compact proof only
-        shell: powershell
-        run: |
-          $ErrorActionPreference = 'Stop'
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- evidence/latest-procedural-jungle/acceptance.json evidence/latest-procedural-jungle/workflow_receipt.json proof/scene/20260804-procedural-jungle/FINAL_REPORT.md
-          $changed = @(git status --porcelain -- evidence/latest-procedural-jungle proof/scene/20260804-procedural-jungle)
-          if ($changed.Count -eq 0) { throw 'No compact proof changes were produced' }
-          git commit -m "proof(jungle): dense playable scene with walking panda ${{ github.run_id }}"
-          git push origin HEAD:feature/procedural-jungle-playable-20260804
-
-      - name: Upload selected proof logs and images
-        if: always()
+      - name: Upload exact committed visual-overhaul bundle
         uses: actions/upload-artifact@v4
         with:
-          name: procedural-jungle-proof-${{ github.run_id }}
+          name: jungle-visual-overhaul-bundle-${{ github.run_id }}
           path: |
-            C:\AI\ProceduralJungle\20260804\acceptance.json
-            C:\AI\ProceduralJungle\20260804\preflight.json
-            C:\AI\ProceduralJungle\20260804\panda_source.json
-            C:\AI\ProceduralJungle\20260804\unreal_build_report.json
-            C:\AI\ProceduralJungle\20260804\map_reload_audit.json
-            C:\AI\ProceduralJungle\20260804\proof\*.json
-            C:\AI\ProceduralJungle\20260804\proof\*.png
-            C:\AI\ProceduralJungle\20260804\logs\*.log
-          if-no-files-found: warn
-          retention-days: 14
+            worker-bundles/procedural-jungle-visual-overhaul/chunk-*.b64
+            scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
+          if-no-files-found: error
+          retention-days: 2
