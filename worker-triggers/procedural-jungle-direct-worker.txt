@@ -1,9 +1,10 @@
-run=51
-requested=2026-08-04T18:46:00+03:00
+run=52
+requested=2026-08-04T18:54:00+03:00
 mode=github-self-hosted-v3-visual-overhaul
-repair_commit=79884864a9da5b621c78500a726c0739f04bb2b1
-repair_scope=python-patch-decoded-build-unreal-guard-after-proven-coexistence-gate
+repair_commit=f08c85a597f6ece756b474230e1b91d53dadd760
+repair_scope=checked-in-python-patch-for-redundant-decoded-build-unreal-guard
 coexistence_wrapper_source=498e600c5873377fd0f55b8179b86ec62780b32c
+patch_script=scripts\procedural_jungle\patch_decoded_build_unreal_guard.py
 installer_sha256=8caff1745534e6c73ae21b86a6cb5ee035bad5512741a1c5561bc3b649a348d5
 protected_unreal_project=C:\Users\Lauri\Desktop\UnrealAITest58\UnrealAITest58.uproject
 max_prebuild_gpu_used_mib=4400
