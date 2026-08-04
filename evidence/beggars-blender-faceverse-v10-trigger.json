@@ -1,9 +1,9 @@
 {
-  "purpose": "Rerun the bounded v10 proof with reloaded projected-material resolution, then render 70%, 85% and 100% mesh-projection strengths without a source-frame plane.",
+  "purpose": "Run the bounded v10 proof with the projected shader bound directly to FaceVerse material slot zero, then render 70%, 85% and 100% mesh-projection strengths without a source-frame plane.",
   "projection_exporter_commit": "1e525ae2c97065b218b62279e4f5c024ae2533ae",
   "builder_commit": "1584482632d20ff3a6f313dde75d2c31e84f5d21",
-  "material_compat_commit": "987a45800c56e87a4165bab65b2d2653f922fd59",
+  "direct_material_slot_commit": "c6172311037c374d05a092431f9e454889ca5a9f",
   "workflow_commit": "6ab012ca35ad174ab8c25841d82d925c3ba4633d",
-  "failed_pre_variant_run": 30879794000,
-  "requested_at": "2026-08-04T08:23:00+03:00"
+  "failed_unassigned_shader_run": 30879969422,
+  "requested_at": "2026-08-04T08:31:00+03:00"
 }
