@@ -1,5 +1,5 @@
-name: Diagnose jungle visual overhaul bundle
-run-name: Jungle visual bundle repair diagnostic ${{ github.run_id }}
+name: Repair jungle V3 installer fragment
+run-name: Jungle V3 one-byte fragment repair ${{ github.run_id }}
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 jobs:
-  diagnose-bundle:
+  repair-fragment:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -23,72 +23,51 @@ jobs:
           clean: true
           fetch-depth: 0
 
-      - name: Reconstruct and partially extract audited bundle
-        shell: bash
+      - name: Repair exactly one missing byte
+        shell: python
         run: |
-          set -u -o pipefail
-          branch="$(git branch --show-current)"
-          test "$branch" = "feature/procedural-jungle-playable-20260804"
+          from __future__ import annotations
 
-          bundle_root="worker-bundles/procedural-jungle-visual-overhaul"
-          diagnostic_root="diagnostics/procedural-jungle-visual-overhaul"
-          rm -rf "$diagnostic_root"
-          mkdir -p "$diagnostic_root/extracted"
+          import hashlib
+          from pathlib import Path
 
-          mapfile -t chunks < <(find "$bundle_root" -maxdepth 1 -type f -name 'chunk-*.b64' | sort)
-          test "${#chunks[@]}" -eq 4
-          cat "${chunks[@]}" | tr -d '[:space:]' | base64 --decode > "$diagnostic_root/visual-overhaul.tar.xz"
+          path = Path("worker-bundles/procedural-jungle-v3-installer/chunk-04.pyfrag")
+          raw = path.read_bytes()
+          old_sha = hashlib.sha256(raw).hexdigest()
+          expected_old_sha = "7ed43d0d95501af0179b00a5ea1eb1bf446b3601f81ca157aad6f1258e4155ca"
+          expected_new_sha = "2f477fced48baa9457c0548dab4cbfc724639df4b51dc534021b09876fbe50e7"
+          offset = 4015
 
-          archive_sha="$(sha256sum "$diagnostic_root/visual-overhaul.tar.xz" | awk '{print $1}')"
-          archive_bytes="$(wc -c < "$diagnostic_root/visual-overhaul.tar.xz" | tr -d ' ')"
-          expected_sha="d78dfd8b68e1a47573446c038bfaaf03d996751b931160266279ee5814613129"
+          if len(raw) != 5999:
+              raise SystemExit(f"unexpected old length: {len(raw)}")
+          if old_sha != expected_old_sha:
+              raise SystemExit(f"unexpected old sha: {old_sha}")
+          if raw[offset - 8:offset + 12] != b"O4maLSWichtdn5U/zqHM8":
+              raise SystemExit(f"unexpected repair context: {raw[offset - 8:offset + 12]!r}")
 
-          xz_status=0
-          xz -t "$diagnostic_root/visual-overhaul.tar.xz" > "$diagnostic_root/xz-test.log" 2>&1 || xz_status=$?
+          repaired = raw[:offset] + b"n" + raw[offset:]
+          new_sha = hashlib.sha256(repaired).hexdigest()
+          if len(repaired) != 6000:
+              raise SystemExit(f"unexpected repaired length: {len(repaired)}")
+          if new_sha != expected_new_sha:
+              raise SystemExit(f"unexpected repaired sha: {new_sha}")
+          if repaired[offset - 8:offset + 13] != b"O4maLSWnichtdn5U/zqHM8":
+              raise SystemExit("repaired context is incorrect")
 
-          decode_status=0
-          xz -dc "$diagnostic_root/visual-overhaul.tar.xz" > "$diagnostic_root/partial.tar" 2> "$diagnostic_root/xz-decode.log" || decode_status=$?
+          path.write_bytes(repaired)
+          print("JUNGLE_V3_FRAGMENT_ONE_BYTE_REPAIR=PROVEN")
+          print(f"OLD_SHA256={old_sha}")
+          print(f"NEW_SHA256={new_sha}")
+          print(f"REPAIR_OFFSET={offset}")
+          print("INSERTED_BYTE=0x6e")
 
-          tar_list_status=0
-          tar -tvf "$diagnostic_root/partial.tar" > "$diagnostic_root/tar-list.log" 2> "$diagnostic_root/tar-list-error.log" || tar_list_status=$?
-
-          tar_extract_status=0
-          tar --ignore-zeros -xf "$diagnostic_root/partial.tar" -C "$diagnostic_root/extracted" > "$diagnostic_root/tar-extract.log" 2> "$diagnostic_root/tar-extract-error.log" || tar_extract_status=$?
-
-          find "$diagnostic_root/extracted" -type f -print0 | sort -z | xargs -0 -r sha256sum > "$diagnostic_root/extracted-sha256.log"
-          find "$diagnostic_root/extracted" -type f -printf '%s %p\n' | sort -k2 > "$diagnostic_root/extracted-sizes.log"
-
-          {
-            echo "BRANCH=$branch"
-            echo "HEAD=$(git rev-parse HEAD)"
-            echo "CHUNK_COUNT=${#chunks[@]}"
-            echo "ARCHIVE_SHA256=$archive_sha"
-            echo "EXPECTED_ARCHIVE_SHA256=$expected_sha"
-            echo "ARCHIVE_SHA_MATCH=$([ "$archive_sha" = "$expected_sha" ] && echo TRUE || echo FALSE)"
-            echo "ARCHIVE_BYTES=$archive_bytes"
-            echo "XZ_TEST_EXIT=$xz_status"
-            echo "XZ_DECODE_EXIT=$decode_status"
-            echo "TAR_LIST_EXIT=$tar_list_status"
-            echo "TAR_EXTRACT_EXIT=$tar_extract_status"
-            echo "EXTRACTED_FILE_COUNT=$(find "$diagnostic_root/extracted" -type f | wc -l | tr -d ' ')"
-            echo "BLENDER_INVOKED=FALSE"
-            echo "UNREAL_INVOKED=FALSE"
-            echo "GPU_INVOKED=FALSE"
-            echo "CODEX_INVOKED=FALSE"
-            echo "CLAUDE_INVOKED=FALSE"
-            echo "MAGICMUSIC_INVOKED=FALSE"
-          } > "$diagnostic_root/report.txt"
-
-          cat "$diagnostic_root/report.txt"
-          cat "$diagnostic_root/tar-list-error.log" || true
-          cat "$diagnostic_root/tar-extract-error.log" || true
-
-      - name: Commit diagnostic extraction
+      - name: Commit exact repair
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- diagnostics/procedural-jungle-visual-overhaul
-          git commit -m "diagnostic(jungle): inspect truncated visual overhaul bundle ${{ github.run_id }}"
+          test "$(git status --porcelain -- worker-bundles/procedural-jungle-v3-installer/chunk-04.pyfrag | wc -l)" -eq 1
+          git add -- worker-bundles/procedural-jungle-v3-installer/chunk-04.pyfrag
+          git commit -m "fix(jungle): restore one missing V3 installer byte"
           git push origin HEAD:feature/procedural-jungle-playable-20260804
