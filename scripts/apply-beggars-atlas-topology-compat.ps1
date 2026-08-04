@@ -55,7 +55,7 @@ if ($content.Contains($old)) {
     $content = $content.Replace($old, $new)
     Write-Host 'ATLAS_TOPOLOGY_CLOSURE_REMOVED=APPLIED'
 }
-elif ($content.Contains('"classification": "NOT_REQUIRED_CLOSED_DENSE_TOPOLOGY"')) {
+elseif ($content.Contains('"classification": "NOT_REQUIRED_CLOSED_DENSE_TOPOLOGY"')) {
     Write-Host 'ATLAS_TOPOLOGY_CLOSURE_REMOVED=ALREADY_APPLIED'
 }
 else {
