@@ -1,5 +1,5 @@
-name: Repair jungle V3 installer fragment
-run-name: Jungle V3 one-byte fragment repair ${{ github.run_id }}
+name: Patch jungle Unreal ownership preflight
+run-name: Jungle safe Unreal process preflight patch ${{ github.run_id }}
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 jobs:
-  repair-fragment:
+  patch-worker:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -23,51 +23,71 @@ jobs:
           clean: true
           fetch-depth: 0
 
-      - name: Repair exactly one missing byte
+      - name: Insert fail-closed owned-editor preflight
         shell: python
         run: |
-          from __future__ import annotations
-
-          import hashlib
           from pathlib import Path
 
-          path = Path("worker-bundles/procedural-jungle-v3-installer/chunk-04.pyfrag")
-          raw = path.read_bytes()
-          old_sha = hashlib.sha256(raw).hexdigest()
-          expected_old_sha = "7ed43d0d95501af0179b00a5ea1eb1bf446b3601f81ca157aad6f1258e4155ca"
-          expected_new_sha = "2f477fced48baa9457c0548dab4cbfc724639df4b51dc534021b09876fbe50e7"
-          offset = 4015
+          path = Path("scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1")
+          text = path.read_text(encoding="utf-8")
+          marker = "JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_V1"
+          anchor = "$BuildPath = Join-Path $ExtractRoot 'scripts\\procedural_jungle\\build-procedural-jungle.ps1'"
+          if marker in text:
+              raise SystemExit("owned-editor preflight already exists")
+          if text.count(anchor) != 1:
+              raise SystemExit(f"unexpected build anchor count: {text.count(anchor)}")
 
-          if len(raw) != 5999:
-              raise SystemExit(f"unexpected old length: {len(raw)}")
-          if old_sha != expected_old_sha:
-              raise SystemExit(f"unexpected old sha: {old_sha}")
-          if raw[offset - 8:offset + 13] != b"RO4maLSWichtdn5U/zqHM":
-              raise SystemExit(f"unexpected repair context: {raw[offset - 8:offset + 13]!r}")
+          block = r'''$OwnedProjectRoot = 'C:\Users\Lauri\Desktop\ProceduralJungle58'
+          $ProcessLogRoot = 'C:\AI\ProceduralJungle\20260804\logs'
+          New-Item -ItemType Directory -Path $ProcessLogRoot -Force | Out-Null
+          $ProcessLogPath = Join-Path $ProcessLogRoot 'unreal_process_preflight.log'
+          $ExistingUnreal = @(Get-CimInstance Win32_Process -Filter "Name = 'UnrealEditor.exe'" -ErrorAction Stop)
+          $ProcessLines = New-Object Collections.Generic.List[string]
+          foreach ($Entry in $ExistingUnreal) {
+              $NativeProcess = Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue
+              $Responding = if ($NativeProcess) { [string]$NativeProcess.Responding } else { 'UNKNOWN' }
+              $WindowTitle = if ($NativeProcess) { [string]$NativeProcess.MainWindowTitle } else { '' }
+              $ProcessLines.Add(("PID={0};CREATED={1};RESPONDING={2};TITLE={3};PATH={4};COMMAND={5}" -f $Entry.ProcessId, $Entry.CreationDate, $Responding, $WindowTitle, $Entry.ExecutablePath, $Entry.CommandLine))
+          }
+          [IO.File]::WriteAllLines($ProcessLogPath, $ProcessLines, (New-Object Text.UTF8Encoding($false)))
 
-          repaired = raw[:offset] + b"n" + raw[offset:]
-          new_sha = hashlib.sha256(repaired).hexdigest()
-          if len(repaired) != 6000:
-              raise SystemExit(f"unexpected repaired length: {len(repaired)}")
-          if new_sha != expected_new_sha:
-              raise SystemExit(f"unexpected repaired sha: {new_sha}")
-          if repaired[offset - 8:offset + 14] != b"RO4maLSWnichtdn5U/zqHM":
-              raise SystemExit(f"repaired context is incorrect: {repaired[offset - 8:offset + 14]!r}")
+          $UnownedUnreal = @($ExistingUnreal | Where-Object {
+              -not $_.CommandLine -or $_.CommandLine.IndexOf($OwnedProjectRoot, [StringComparison]::OrdinalIgnoreCase) -lt 0
+          })
+          if ($UnownedUnreal.Count -gt 0) {
+              $Ids = @($UnownedUnreal | ForEach-Object { $_.ProcessId }) -join ','
+              throw "Unrelated Unreal Editor process(es) are running; refusing to interfere. PID(s): $Ids. Evidence: $ProcessLogPath"
+          }
 
-          path.write_bytes(repaired)
-          print("JUNGLE_V3_FRAGMENT_ONE_BYTE_REPAIR=PROVEN")
-          print(f"OLD_SHA256={old_sha}")
-          print(f"NEW_SHA256={new_sha}")
-          print(f"REPAIR_OFFSET={offset}")
-          print("INSERTED_BYTE=0x6e")
+          foreach ($Entry in $ExistingUnreal) {
+              $NativeProcess = Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue
+              if (-not $NativeProcess) { continue }
+              $RequestedClose = $false
+              if ($NativeProcess.MainWindowHandle -ne 0) {
+                  $RequestedClose = $NativeProcess.CloseMainWindow()
+              }
+              $Deadline = (Get-Date).AddSeconds(20)
+              while ((Get-Date) -lt $Deadline -and (Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue)) {
+                  Start-Sleep -Milliseconds 500
+              }
+              if (Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue) {
+                  throw "Pipeline-owned Unreal Editor PID $($Entry.ProcessId) did not close gracefully; force termination is not authorized. CloseRequested=$RequestedClose Evidence=$ProcessLogPath"
+              }
+          }
+          Write-Host 'JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_V1=PROVEN'
+          Write-Host "JUNGLE_EXISTING_UNREAL_PROCESS_COUNT=$($ExistingUnreal.Count)"
 
-      - name: Commit exact repair
+          '''
+          path.write_text(text.replace(anchor, block + anchor), encoding="utf-8")
+          print("JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_PATCH=PROVEN")
+
+      - name: Commit preflight patch
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          test "$(git status --porcelain -- worker-bundles/procedural-jungle-v3-installer/chunk-04.pyfrag | wc -l)" -eq 1
-          git add -- worker-bundles/procedural-jungle-v3-installer/chunk-04.pyfrag
-          git commit -m "fix(jungle): restore one missing V3 installer byte"
+          grep -q 'JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_V1' scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
+          git add -- scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
+          git commit -m "fix(jungle): safely classify existing Unreal editor"
           git push origin HEAD:feature/procedural-jungle-playable-20260804
