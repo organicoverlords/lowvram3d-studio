@@ -18,12 +18,13 @@
   "steps": 5,
   "octree_ladder": "384:3000,320:2000,256:1500",
   "diagnostic_telemetry": false,
-  "source_image_sha256": "125ff82dc20f387a9e77254f61ecb2d5aeffb174b5808497b0fa2015f9f8595a",
+  "source_image_sha256": "4c64ac56027801aa4e35c43ea589855f806530ee26f9ddc611333aaa8ee4a683",
   "weights": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\\model.fp16.safetensors",
   "weights_bytes": 3822584202,
   "torch": "2.8.0+cu126",
   "gpu": "NVIDIA GeForce GTX 1660 SUPER",
-  "matte": "rembg",
+  "conditioning_source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\crop.png",
+  "matte": "shaman_matte.py",
   "conditioning_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\mini_turbo_conditioning.png",
   "image_dimensions": [
     819,
@@ -37,14 +38,14 @@
       "octree_resolution": 384,
       "num_chunks": 3000,
       "status": "ok",
-      "peak_vram_mb": 5548
+      "peak_vram_mb": 5017
     }
   ],
   "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
-  "raw_glb_sha256": "b23da2d5850371a5a49a30adf1537d8cfc1492223d88d46e0e371425d171aff1",
-  "raw_glb_bytes": 30427268,
-  "raw_vertices": 844831,
-  "raw_triangles": 1690706,
-  "generation_seconds": 577.8,
+  "raw_glb_sha256": "9906c07bc2d821bba72e97c6327979118bf85d76830a4d08a6efa9ecb0690544",
+  "raw_glb_bytes": 22860412,
+  "raw_vertices": 634774,
+  "raw_triangles": 1270192,
+  "generation_seconds": 519.9,
   "guidance_scale": 5.0
 }

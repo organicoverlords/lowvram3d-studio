@@ -1,0 +1,23 @@
+{
+  "body_count": 12,
+  "classification": "PROVEN",
+  "euler_number": -322,
+  "extent": [
+    1.9728,
+    0.7683,
+    1.4755
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+  "merged_vertices": 74677,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\preview_segmask.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 149998,
+  "vertices": 449922,
+  "view_coverage": {
+    "front": 0.2684,
+    "side": 0.271,
+    "three_quarter": 0.2979,
+    "top": 0.4191
+  },
+  "watertight": true
+}

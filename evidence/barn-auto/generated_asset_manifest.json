@@ -1,5 +1,5 @@
 {
-  "actors_served": 1,
+  "actors_served": 13,
   "assets": [
     {
       "actor_indices": [
@@ -23,22 +23,49 @@
         819,
         266
       ],
+      "decimation": {
+        "blender_exit_code": 0,
+        "classification": "PROVEN",
+        "decimated": true,
+        "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+        "input_triangles": 1270192,
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+        "output_bytes": 12599040,
+        "output_triangles": 149998,
+        "ratio": 0.118092,
+        "reduction": 0.8819,
+        "schema_version": "mesh_decimation_v1",
+        "target_triangles": 150000
+      },
       "exit_code": 0,
-      "generation_seconds": 577.8,
-      "glb": "evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
-      "glb_bytes": 30427268,
-      "glb_sha256": "b23da2d5850371a5a49a30adf1537d8cfc1492223d88d46e0e371425d171aff1",
+      "generation_attempts": [
+        {
+          "error": null,
+          "exit_code": 0,
+          "octree_ladder": "384:3000,320:2000,256:1500",
+          "outcome": "ok"
+        }
+      ],
+      "generation_seconds": 519.9,
+      "glb": "evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+      "glb_bytes": 12599040,
+      "glb_sha256": "a3173f9bcb3b24c74ca899a026aba5679ecd86ab296851a3616d393ccf9884ab",
       "layer_type": "architecture",
+      "mask_coverage": 0.5913,
+      "mask_png": "evidence\\barn-auto\\depth\\region_masks\\architecture_house_025.png",
+      "matte": "segmentation_mask",
       "octree_resolution": 384,
-      "peak_vram_mb": 5548,
+      "peak_vram_mb": 5017,
+      "raw_glb": "evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+      "raw_triangles": 1270192,
       "region_id": "architecture_house_025",
       "semantic_label": "house",
       "shared_across_instances": false,
       "status": "generated",
-      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:37<00:00,  1.70it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
+      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:24<00:00,  2.58it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
       "too_small": false,
-      "triangles": 1690706,
-      "vertices": 844831
+      "triangles": 149998,
+      "vertices": 634774
     },
     {
       "actor_indices": [
@@ -64,13 +91,36 @@
       ],
       "exit_code": 1,
       "failure_code": null,
+      "generation_attempts": [
+        {
+          "error": "CUDA error: misaligned address\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKI",
+          "exit_code": 1,
+          "octree_ladder": "384:3000,320:2000,256:1500",
+          "outcome": "failed"
+        },
+        {
+          "error": "CUDA error: misaligned address\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKI",
+          "exit_code": 1,
+          "octree_ladder": "320:2000,256:1500",
+          "outcome": "failed"
+        },
+        {
+          "error": "CUDA error: an illegal memory access was encountered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider pass",
+          "exit_code": 1,
+          "octree_ladder": "256:1500",
+          "outcome": "failed"
+        }
+      ],
       "layer_type": "architecture",
-      "reason": "CUDA error: misaligned address\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+      "mask_coverage": 0.2687,
+      "mask_png": "evidence\\barn-auto\\depth\\region_masks\\architecture_hovel_079.png",
+      "matte": "segmentation_mask",
+      "reason": "CUDA error: an illegal memory access was encountered\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
       "region_id": "architecture_hovel_079",
       "semantic_label": "hovel",
       "shared_across_instances": false,
       "status": "failed",
-      "stderr_tail": "e 68 scaleType 0. Will attempt to recover by calling unfused cublas path. (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\aten\\src\\ATen\\cuda\\CUDABlas.cpp:1736.)\n  return F.linear(input, self.weight, self.bias)\n\nDiffusion Sampling::  20%|##        | 1/5 [00:58<03:55, 58.89s/it]\nMINI_TURBO_FAILED error=CUDA error: misaligned address CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect. For debugging consider passing CUDA_LAUNCH_BLOCKING=1 Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+      "stderr_tail": "el.fp16.safetensors\n\nDiffusion Sampling::   0%|          | 0/5 [00:00<?, ?it/s]\nDiffusion Sampling::  20%|##        | 1/5 [00:56<03:44, 56.04s/it]\nDiffusion Sampling::  40%|####      | 2/5 [01:52<02:48, 56.16s/it]\nDiffusion Sampling::  40%|####      | 2/5 [01:58<02:57, 59.03s/it]\nMINI_TURBO_FAILED error=CUDA error: an illegal memory access was encountered CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect. For debugging consider passing CUDA_LAUNCH_BLOCKING=1 Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
       "too_small": false
     },
     {
@@ -107,22 +157,55 @@
         364,
         819
       ],
-      "exit_code": 1,
-      "failure_code": null,
+      "decimation": {
+        "blender_exit_code": 0,
+        "classification": "PROVEN",
+        "decimated": true,
+        "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\vegetation_tree_004.glb",
+        "input_triangles": 3491906,
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+        "output_bytes": 12591932,
+        "output_triangles": 149898,
+        "ratio": 0.042956,
+        "reduction": 0.9571,
+        "schema_version": "mesh_decimation_v1",
+        "target_triangles": 150000
+      },
+      "exit_code": 0,
+      "generation_attempts": [
+        {
+          "error": null,
+          "exit_code": 0,
+          "octree_ladder": "384:3000,320:2000,256:1500",
+          "outcome": "ok"
+        }
+      ],
+      "generation_seconds": 1632.4,
+      "glb": "evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+      "glb_bytes": 12591932,
+      "glb_sha256": "4ecb40a1f97ea540e09ec2fbd26c47533d8462828f4dea1ee19131210a1608b3",
       "instance_count": 12,
       "layer_type": "vegetation",
-      "reason": "CUDA error: misaligned address\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
+      "mask_coverage": 0.5482,
+      "mask_png": "evidence\\barn-auto\\depth\\region_masks\\vegetation_tree_004.png",
+      "matte": "segmentation_mask",
+      "octree_resolution": 320,
+      "peak_vram_mb": 6878,
+      "raw_glb": "evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\vegetation_tree_004.glb",
+      "raw_triangles": 3491906,
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "shared_across_instances": true,
-      "status": "failed",
-      "stderr_tail": "n.shapgen - INFO - Try to load model from local path: C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\n2026-08-04 13:08:23,517 - hy3dgen.shapgen - INFO - Loading model from C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\\model.fp16.safetensors\nMINI_TURBO_FAILED error=CUDA error: misaligned address CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect. For debugging consider passing CUDA_LAUNCH_BLOCKING=1 Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
-      "too_small": false
+      "status": "generated",
+      "stderr_tail": "2:58, 59.53s/it]\nDiffusion Sampling::  60%|######    | 3/5 [03:01<02:01, 60.71s/it]\nDiffusion Sampling::  80%|########  | 4/5 [04:01<01:00, 60.45s/it]\nDiffusion Sampling:: 100%|##########| 5/5 [05:00<00:00, 60.25s/it]\nDiffusion Sampling:: 100%|##########| 5/5 [05:00<00:00, 60.19s/it]\n2026-08-04 14:09:52,553 - hy3dgen.shapgen - INFO - FlashVDMVolumeDecoding Resolution: [79, 158, 316]\n\nFlashVDM Volume Decoding:   0%|          | 0/64 [00:00<?, ?it/s]\nFlashVDM Volume Decoding:  56%|#####6    | 36/64 [00:14<00:11,  2.43it/s]\nFlashVDM Volume Decoding: 100%|##########| 64/64 [00:14<00:00,  4.31it/s]\n",
+      "too_small": false,
+      "triangles": 149898,
+      "vertices": 1743639
     }
   ],
   "classification": "PARTIAL",
-  "failed_count": 2,
-  "generated_count": 1,
+  "failed_count": 1,
+  "generated_count": 2,
   "generator": "hunyuan3d_mini_turbo",
   "octree_ladder": "384:3000,320:2000,256:1500",
   "planned_asset_count": 3,
@@ -143,5 +226,6 @@
   "schema_version": "generated_asset_manifest_v1",
   "skipped_count": 0,
   "source_image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
-  "steps": 5
+  "steps": 5,
+  "triangle_budget": 150000
 }

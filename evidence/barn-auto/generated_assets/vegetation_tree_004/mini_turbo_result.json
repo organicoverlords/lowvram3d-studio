@@ -1,5 +1,5 @@
 {
-  "success": false,
+  "success": true,
   "selected_generator": "mini_turbo",
   "generator_locked": true,
   "fallback_generators_allowed": [],
@@ -18,19 +18,40 @@
   "steps": 5,
   "octree_ladder": "384:3000,320:2000,256:1500",
   "diagnostic_telemetry": false,
-  "source_image_sha256": "00e7f479b6bed74ab86b9699aabf291d2971a7f9a5c56384831eecc966699fb2",
+  "source_image_sha256": "8d02c1605ec29ea49ecfd3e70a8694c13da8b497f173eb0b2c26ce40c2c61962",
   "weights": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\\model.fp16.safetensors",
   "weights_bytes": 3822584202,
   "torch": "2.8.0+cu126",
   "gpu": "NVIDIA GeForce GTX 1660 SUPER",
-  "matte": "rembg",
+  "conditioning_source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\crop.png",
+  "matte": "shaman_matte.py",
   "conditioning_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\mini_turbo_conditioning.png",
   "image_dimensions": [
     364,
     819
   ],
   "flashvdm": true,
-  "error": "CUDA error: misaligned address\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n",
-  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\workers\\mini_turbo_generate.py\", line 420, in main\n    generated = pipeline(\n                ^^^^^^^^^\n  File \"C:\\AI\\HY3D2\\python_standalone\\Lib\\site-packages\\torch\\utils\\_contextlib.py\", line 120, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\pipelines.py\", line 730, in __call__\n    timesteps, num_inference_steps = retrieve_timesteps(\n                                     ^^^^^^^^^^^^^^^^^^^\n  File \"C:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\pipelines.py\", line 85, in retrieve_timesteps\n    scheduler.set_timesteps(sigmas=sigmas, device=device, **kwargs)\n  File \"C:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\schedulers.py\", line 406, in set_timesteps\n    self.timesteps = timesteps.to(device=device)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch.AcceleratorError: CUDA error: misaligned address\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n\n",
-  "last_successful_operation": "see generation_trace.jsonl"
+  "octree_resolution": 320,
+  "num_chunks": 2000,
+  "attempts": [
+    {
+      "octree_resolution": 384,
+      "num_chunks": 3000,
+      "status": "cuda_oom",
+      "error": "CUDA out of memory. Tried to allocate 1.32 GiB. GPU 0 has a total capacity of 6.00 GiB of which 0 bytes is free. Of the allocated memory 7.59 GiB is allocated by PyTorch, and 1.31 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (http"
+    },
+    {
+      "octree_resolution": 320,
+      "num_chunks": 2000,
+      "status": "ok",
+      "peak_vram_mb": 6878
+    }
+  ],
+  "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\vegetation_tree_004.glb",
+  "raw_glb_sha256": "ebb0f50ce17d5cd195cc98a00efc862bec79f33083daec18b117d03318721842",
+  "raw_glb_bytes": 62827368,
+  "raw_vertices": 1743639,
+  "raw_triangles": 3491906,
+  "generation_seconds": 1632.4,
+  "guidance_scale": 5.0
 }

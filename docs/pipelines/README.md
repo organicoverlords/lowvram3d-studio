@@ -60,9 +60,25 @@ Every actor is real geometry with real materials, so it holds up from any angle
 and can be walked through. The cost is that it will never match the source
 image pixel-wise, and grading it that way is a category error.
 
-Its current failure is upstream: semantic analysis is a stub, so every region
-collapses to one `visual_shell` and the builders emit scaled cubes. That is why
-the generated castlegrounds scene is a field of white boxes.
+Semantic analysis is real now (SegFormer + MoGe), and object-like regions are
+generated per-object rather than placed as primitives:
+
+```
+region ─► crop the source image to its bbox
+       ─► matte with the region's own segmentation mask
+       ─► Hunyuan3D Mini Turbo ─► GLB
+       ─► decimate to a triangle budget
+       ─► import, scale from imported bounds, spawn
+```
+
+Surfaces (terrain, water, paths) keep their measured planes: they are extents,
+not objects with a silhouette. Scatter regions generate once and reuse the mesh
+across instances -- a tree line is twelve placements of one subject, not twelve
+ten-minute generations.
+
+Regions that fail to generate keep their primitive, and the build receipt counts
+generated and primitive actors separately. Do not average them: "16 actors
+spawned" was equally true of a field of cubes.
 
 ---
 

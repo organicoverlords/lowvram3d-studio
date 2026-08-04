@@ -40,6 +40,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -54,6 +55,18 @@ PREVIEWER = REPO / "workers" / "preview_generated_mesh.py"
 # minutes and outlives the editor bridge's handler timeout, so a slow import is
 # indistinguishable from a failed one. Reduce before the mesh leaves this stage.
 DEFAULT_TRIANGLE_BUDGET = 150_000
+
+# Observed on this GTX 1660 SUPER, across two independent runs: the first asset
+# of a run generates cleanly and every asset after it dies with `CUDA error:
+# misaligned address` inside a Linear on the second diffusion step. Each asset
+# is already its own process, so this is not a leaked context -- it looks like
+# the card itself needing to settle after ten minutes at 100%. This GPU has
+# form: fp16 cuDNN convolution on it produces NaN often enough to be disabled
+# elsewhere in the project.
+#
+# A pause between assets is the cheap thing to try. It is not a fix, and the
+# retry ladder still carries the load if it does not help.
+DEFAULT_SETTLE_SECONDS = 45.0
 
 # Mini Turbo is installed standalone: its own Python, hy3dgen as a source tree
 # on PYTHONPATH, and weights under a model root that is not either of those.
@@ -322,6 +335,7 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
              octree_ladder: str = "384:3000,320:2000,256:1500",
              mask_dir: Path | None = None,
              triangle_budget: int = DEFAULT_TRIANGLE_BUDGET,
+             settle_seconds: float = DEFAULT_SETTLE_SECONDS,
              timeout: float = 1800.0) -> dict[str, Any]:
     """Crop, generate and verify one mesh per eligible region."""
     output_dir = Path(output_dir)
@@ -361,7 +375,9 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
     environment["PYTHONPATH"] = (
         runtime["source_tree"] + (os.pathsep + existing if existing else ""))
 
-    for job in jobs:
+    for position, job in enumerate(jobs):
+        if position and settle_seconds > 0:
+            time.sleep(settle_seconds)
         asset_dir = output_dir / job["asset_id"]
         crop = _crop(Path(image), job["crop_bbox_norm_xyxy"],
                      asset_dir / "crop.png",
@@ -420,6 +436,8 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
                 break
             if not _is_retryable_cuda_fault(worker_result.get("error")):
                 break
+            if settle_seconds > 0:
+                time.sleep(settle_seconds)
 
         entry["generation_attempts"] = attempts
         if timed_out:
