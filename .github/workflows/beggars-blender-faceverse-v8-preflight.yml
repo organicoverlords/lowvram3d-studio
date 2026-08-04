@@ -1,5 +1,5 @@
 name: Beggars Blender FaceVerse v8 preflight
-run-name: Beggars Blender FaceVerse v8 preflight ${{ github.run_id }}
+run-name: Beggars Blender FaceVerse v8 guarded preflight ${{ github.run_id }}
 
 on:
   workflow_dispatch:
@@ -8,9 +8,6 @@ on:
       - agent/blender-beggars-scene-20260804
     paths:
       - evidence/beggars-blender-faceverse-v8-trigger.json
-      - blender/build_beggars_meme_scene_faceverse_v8.py
-      - scripts/run-beggars-blender-faceverse-v8-preflight.ps1
-      - .github/workflows/beggars-blender-faceverse-v8-preflight.yml
 
 permissions:
   contents: write
@@ -42,7 +39,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add "$evidence/run-registration.json"
-          git commit -m 'evidence(scene): register anatomically corrected Blender v8 ${{ github.run_id }}'
+          git commit -m 'evidence(scene): register smooth-dome Blender v8 ${{ github.run_id }}'
           for attempt in 1 2 3 4; do
             git pull --rebase origin agent/blender-beggars-scene-20260804
             if git push origin HEAD:agent/blender-beggars-scene-20260804; then exit 0; fi
@@ -55,14 +52,22 @@ jobs:
     runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 35
     steps:
-      - name: Checkout exact anatomically corrected v8 source
+      - name: Checkout exact smooth-dome v8 source
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
           clean: true
           fetch-depth: 1
 
-      - name: Run anatomically corrected Blender v8 preflight
+      - name: Balance source and native face color
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-blender-faceverse-v8-source-color.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Blender FaceVerse v8 color-balance patch failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Run smooth-dome Blender v8 preflight
         shell: powershell
         run: |
           & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\run-beggars-blender-faceverse-v8-preflight.ps1
@@ -70,7 +75,7 @@ jobs:
             throw "Blender FaceVerse v8 preflight failed with exit code $LASTEXITCODE"
           }
 
-      - name: Upload anatomically corrected Blender v8 preflight
+      - name: Upload smooth-dome Blender v8 preflight
         uses: actions/upload-artifact@v4
         with:
           name: beggars-blender-faceverse-v8-preflight-${{ github.run_id }}
