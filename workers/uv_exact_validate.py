@@ -123,6 +123,8 @@ def main() -> int:
     parser.add_argument("--report", required=True)
     parser.add_argument("--resolution", type=int, default=4096)
     parser.add_argument("--timeout-seconds", type=float, default=60.0)
+    parser.add_argument("--conflict-only", action="store_true",
+                        help="gate only positive-area overlap, degeneracy, bounds, and timeout")
     args = parser.parse_args()
 
     path = Path(args.input)
@@ -165,7 +167,11 @@ def main() -> int:
         "stretch_ok": bool(np.isfinite(stretch_p95) and stretch_p95 <= MAX_STRETCH_P95),
     }
     report["gate"] = gate
-    report["gate_passed"] = all(gate.values())
+    report["gate_passed"] = (
+        all(gate.values()) if not args.conflict_only else
+        bool(gate["exact_overlap_validation_succeeded"] and gate["no_positive_overlap"]
+             and gate["no_degenerate"] and gate["no_out_of_bounds"])
+    )
 
     Path(args.report).parent.mkdir(parents=True, exist_ok=True)
     Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")

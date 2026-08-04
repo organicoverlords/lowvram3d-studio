@@ -42,13 +42,13 @@ except ImportError:  # direct worker execution
 
 try:
     from lowvram3d.texture_provenance import (
-        Lineage, SourceClass, create_empty_atlas_provenance,
+        EvidenceState, FrequencyAuthority, Lineage, SourceClass, create_empty_atlas_provenance,
         create_empty_triangle_provenance, rasterize_triangle_lineage_to_atlas,
         save_npz, summarize_provenance,
     )
 except ImportError:  # direct worker execution
     from texture_provenance import (
-        Lineage, SourceClass, create_empty_atlas_provenance,
+        EvidenceState, FrequencyAuthority, Lineage, SourceClass, create_empty_atlas_provenance,
         create_empty_triangle_provenance, rasterize_triangle_lineage_to_atlas,
         save_npz, summarize_provenance,
     )
@@ -102,6 +102,8 @@ def main() -> None:
     parser.add_argument("--semantic-mask-manifest", default="")
     parser.add_argument("--surface-view-assignment", default="")
     parser.add_argument("--output-provenance-npz", default="")
+    parser.add_argument("--direct-only", action="store_true",
+                        help="emit only gated direct observations; never paint unobserved geometry")
     args = parser.parse_args()
 
     npz, viewdir, meta_path, outdir = Path(args.npz), Path(args.views_dir), Path(args.view_metadata), Path(args.output_dir)
@@ -119,12 +121,20 @@ def main() -> None:
     view_locs, ortho = d["view_locs"], float(d["ortho_scale"])
     total_tris = len(tris)
 
+    surface_assignment = None
+    if args.surface_view_assignment:
+        surface_assignment = np.asarray(np.load(args.surface_view_assignment), np.int32)
+        if surface_assignment.shape != (total_tris,):
+            raise RuntimeError("SURFACE_ASSIGNMENT_SHAPE_MISMATCH")
+    if args.direct_only and surface_assignment is None:
+        raise RuntimeError("SOURCE_ASSIGNMENT_MISSING")
+
     face_id_arrays: dict[str, np.ndarray] = {}
     for vname in view_names:
         key = f"face_id_{vname}"
         if key in d.files:
             face_id_arrays[vname] = np.asarray(d[key], dtype=np.int32)
-        elif args.require_face_id:
+        elif args.require_face_id or args.direct_only:
             raise RuntimeError(f"FACE_ID_BUFFER_MISSING:{key}")
 
     usable = [(i, n) for i, n in enumerate(view_names)
@@ -210,6 +220,8 @@ def main() -> None:
         vis = d[f"vis_{vname}"]
         facing = normals @ vdir
         projection_gate = projection_triangle_gate(vis, facing)
+        if surface_assignment is not None:
+            projection_gate &= surface_assignment == int(vi)
         triangle_visible |= vis
         triangle_front_facing |= np.isfinite(facing) & (facing > FACING_MIN)
         gate_counts[vname] = {
@@ -300,6 +312,10 @@ def main() -> None:
 
     colour = best_rgb.copy()
     mask = real_mask.copy()
+    if args.direct_only:
+        # The generic evidence route must not let this compatibility worker's historical donor,
+        # padding, or inpaint code write an unseen texel. Keep only the direct mask for output.
+        island = real_mask.copy()
     n_islands, island_labels = cv2.connectedComponents(island.astype(np.uint8), connectivity=8)
 
     # ---- unseen-surface fill, in 3D rather than in atlas space ----
@@ -418,13 +434,13 @@ def main() -> None:
 
     unseen_triangles = int((~has_observation).sum())
 
-    paintable = (tri_id >= 0) & island & (~real_mask)
+    paintable = (tri_id >= 0) & island & (~real_mask) & (not args.direct_only)
     if paintable.any():
         colour[paintable] = tri_colour[tri_id[paintable]]
         mask |= paintable
 
     # ---- island padding: grow only inside each chart, never across charts ----
-    remaining = island & (~mask)
+    remaining = island & (~mask) & (not args.direct_only)
     if remaining.any():
         for label in range(1, n_islands):
             this_island = island_labels == label
@@ -452,6 +468,8 @@ def main() -> None:
             mask[y0:y1, x0:x1] |= sub_mask
 
     filled = mask & ~real_mask
+    if args.direct_only:
+        filled = np.zeros_like(real_mask)
     if filled.any():
         # Normalised (mask-aware) blur. A plain GaussianBlur averages in the black void outside the
         # chart, which is what previously darkened every synthesised region towards the island edge.
@@ -465,7 +483,7 @@ def main() -> None:
     # Any remaining holes are inpainted per-island so colour can never cross into an unrelated
     # UV chart (island_labels partitions the atlas; inpaint runs once per label with everything
     # outside that label's island masked out of the input entirely).
-    still_holes = (~mask) & island
+    still_holes = (~mask) & island & (not args.direct_only)
     if still_holes.any():
         for label in range(1, n_islands):
             this_island = island_labels == label
@@ -482,7 +500,7 @@ def main() -> None:
     # copying the nearest already-painted texel within the same island.  This cannot transport
     # colour across charts, and it never invents a source pixel: a chart with no painted texel is
     # filled from the already-computed local/global material prior.
-    residual_holes = island & (~mask)
+    residual_holes = island & (~mask) & (not args.direct_only)
     residual_island_holes = int(np.count_nonzero(residual_holes))
     if residual_holes.any():
         for label in range(1, n_islands):
@@ -508,6 +526,8 @@ def main() -> None:
                 colour[this_island] = global_prior
             mask[this_island] = True
 
+    if args.direct_only:
+        fill_tier[~has_observation] = 4
     if args.neutral_fill_only:
         # Do not overwrite the atlas here.  Existing UVs may have ownership
         # collisions; erasing every texel whose *last* raster owner is
@@ -589,6 +609,14 @@ def main() -> None:
     triangle_v3["source_class"][global_ids] = np.uint8(SourceClass.GLOBAL_PRIOR)
     triangle_v3["primary_view"] = triangle_winning_view
     triangle_v3["confidence"] = triangle_winning_conf
+    observed_v3 = triangle_observed.copy()
+    triangle_v3["evidence_state"][observed_v3] = np.uint8(EvidenceState.DIRECT_OBSERVED)
+    triangle_v3["frequency_authority"][observed_v3] = np.uint8(FrequencyAuthority.FULL)
+    triangle_v3["completion_method"][observed_v3] = "direct_projection"
+    if args.direct_only:
+        triangle_v3["evidence_state"][~observed_v3] = np.uint8(EvidenceState.UNRESOLVED)
+        triangle_v3["frequency_authority"][~observed_v3] = np.uint8(FrequencyAuthority.NONE)
+        triangle_v3["completion_method"][~observed_v3] = "unresolved"
     if args.surface_view_assignment:
         assignment = np.load(args.surface_view_assignment)
         if assignment.shape == (total_tris,):
@@ -665,6 +693,8 @@ def main() -> None:
             "unseen_fill_policy": "neutral_material_for_unobserved_triangles",
             "neutral_fill_only": bool(args.neutral_fill_only),
             "neutral_fill_policy": neutral_fill_policy,
+            "direct_projection_only": bool(args.direct_only),
+            "unobserved_raw_image_rgb_texels": 0 if args.direct_only else None,
             "fill_tier_triangle_counts": {
                 "observed": int((fill_tier == 0).sum()),
                 "constrained_donor": int((fill_tier == 1).sum()),

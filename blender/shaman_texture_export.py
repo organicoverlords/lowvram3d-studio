@@ -19,7 +19,7 @@ from final_pipeline_bake import ensure_uv_layer
 
 
 def build_material(basecolor: Path, normal: Path, orm: Path):
-    material = bpy.data.materials.new("ShamanPBR")
+    material = bpy.data.materials.new("PipelineV2PBR")
     material.use_nodes = True
     tree = material.node_tree
     tree.nodes.clear()

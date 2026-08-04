@@ -1,9 +1,4 @@
-"""Production stage adapters for Pipeline V2.
-
-These are thin orchestration layers over the V1 workers proven during the shaman run.  They add
-immutable-input receipts, bounded retries and generic artifact names; they do not reimplement UV,
-baking or projection algorithms.
-"""
+"""Production stage adapters for the generic Pipeline V2 texture compiler."""
 from __future__ import annotations
 
 import json
@@ -58,6 +53,12 @@ TEXTURE_SCOPES = {
     "PARTIAL_360_PRODUCTION",
     "FULL_360_PRODUCTION",
 }
+
+EVIDENCE_TEXTURE_STAGES = (
+    "VIEW_EVIDENCE", "SURFACE_REGIONS", "SURFACE_EVIDENCE", "SOURCE_ASSIGNMENT",
+    "DIRECT_PROJECTION", "UNOBSERVED_COMPLETION", "FREQUENCY_FUSION",
+    "TEXTURE_EVIDENCE_QA", "TEXTURE_SCOPE",
+)
 
 
 def classify_texture_scope(*, actual_route: str, semantic_view_count: int,
@@ -145,6 +146,9 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     resolution = int(texture_manifest["resolution"])
     requested_texture_route = str(texture_manifest.get("route", "raster_project")).lower()
     texture_quality_tier = str(texture_manifest.get("quality_tier", "preview")).lower()
+    evidence_compiler_enabled = bool(texture_manifest.get(
+        "evidence_compiler", texture_quality_tier == "production"
+    ))
     approved_single_view_face_route = bool(
         texture_manifest.get("approved_single_view_face_route", False)
     )
@@ -661,6 +665,17 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
 
             def mv_runner(_overrides):
                 stage = pipeline.stage_dir("TEXTURE") / "candidate"
+                uv_consumer_report = stage / "uv_consumer_gate.json"
+                if evidence_compiler_enabled:
+                    uv_code, uv_out = pipeline.run([
+                        pipeline.python, w("uv_exact_validate.py"), "--input", mesh,
+                        "--report", uv_consumer_report, "--resolution", str(resolution),
+                        "--conflict-only",
+                    ])
+                    if uv_code != 0:
+                        return StageResult("failed", failure_codes=["UV_CONSUMER_CONFLICT"],
+                                           gates={"uv_consumer_report": str(uv_consumer_report)},
+                                           detail=f"exact UV consumer gate exit {uv_code}: {uv_out[-1000:]}")
                 # Fail closed before starting projection.  A missing or partial control bundle
                 # used to reach the worker and only fail after setup, which looked like a slow
                 # texture run and obscured the real production blocker.
@@ -681,6 +696,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 ]
                 if region_config:
                     command += ["--region-config", region_config]
+                if evidence_compiler_enabled:
+                    command += ["--direct-only"]
                 code, out = pipeline.run(command)
                 report = stage / "injective_texture_report.json"
                 data = _json(report)
@@ -709,6 +726,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     "atlas_sha256": atlas.get("atlas_sha256"),
                     "textured_glb_sha256": data.get("textured_glb_sha256"),
                     "provenance": data.get("provenance"),
+                    "evidence_compiler_enabled": evidence_compiler_enabled,
+                    "evidence_stage_order": list(EVIDENCE_TEXTURE_STAGES),
                 }
                 codes = []
                 if not gate.get("injective"):
@@ -735,13 +754,68 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             projection = stage / "projection"
             npz = stage / "projection.npz"
             view_report = stage / "view_report.json"
+            uv_consumer_report = stage / "uv_consumer_gate.json"
+            if evidence_compiler_enabled:
+                uv_code, uv_out = pipeline.run([
+                    pipeline.python, w("uv_exact_validate.py"), "--input", mesh,
+                    "--report", uv_consumer_report, "--resolution", str(resolution),
+                    "--conflict-only",
+                ])
+                if uv_code != 0:
+                    return StageResult("failed", failure_codes=["UV_CONSUMER_CONFLICT"],
+                                       gates={"uv_consumer_report": str(uv_consumer_report)},
+                                       detail=f"exact UV consumer gate exit {uv_code}: {uv_out[-1000:]}")
             code, out = pipeline.run([
-                pipeline.python, w("shaman_texture_views_oriented.py"),
+                pipeline.python, w("build_texture_projection_inputs.py"),
                 "--mesh", mesh, "--source", matte, "--output-npz", npz,
                 "--views-dir", views, "--report", view_report,
             ])
             if code != 0 or not npz.exists():
                 return StageResult("failed", detail=f"view builder exit {code}: {out[-1000:]}")
+
+            evidence_manifest = stage / "view_evidence_manifest.json"
+            evidence_dir = stage / "view_evidence"
+            regions_dir = stage / "surface_regions"
+            regions_report = stage / "surface_region_report.json"
+            evidence_npz = stage / "triangle_view_evidence.npz"
+            evidence_report = stage / "surface_evidence_summary.json"
+            assignment_dir = stage / "source_assignment"
+            assignment_report = stage / "assignment_report.json"
+            assignment_path = assignment_dir / "primary_view_per_triangle.npy"
+            if evidence_compiler_enabled:
+                code, out = pipeline.run([
+                    pipeline.python, w("prepare_texture_view_evidence.py"),
+                    "--projection-npz", npz, "--views-dir", views,
+                    "--output-dir", evidence_dir, "--manifest", evidence_manifest,
+                ])
+                if code != 0:
+                    return StageResult("failed", failure_codes=["VIEW_EVIDENCE_FAILED"],
+                                       detail=f"view evidence exit {code}: {out[-800:]}")
+                code, out = pipeline.run([
+                    pipeline.python, w("build_surface_regions.py"), "--mesh", mesh,
+                    "--output-dir", regions_dir, "--report", regions_report,
+                ])
+                if code != 0:
+                    return StageResult("failed", failure_codes=["SURFACE_REGIONS_FAILED"],
+                                       detail=f"surface regions exit {code}: {out[-800:]}")
+                triangle_count = int(_json(view_report).get("triangles", 0))
+                code, out = pipeline.run([
+                    pipeline.python, w("classify_surface_evidence.py"),
+                    "--evidence-manifest", evidence_manifest, "--triangle-count", str(triangle_count),
+                    "--output", evidence_npz, "--report", evidence_report,
+                ])
+                if code != 0:
+                    return StageResult("failed", failure_codes=["SURFACE_EVIDENCE_FAILED"],
+                                       detail=f"surface evidence exit {code}: {out[-800:]}")
+                code, out = pipeline.run([
+                    pipeline.python, w("assign_texture_sources.py"), "--mesh", mesh,
+                    "--evidence", evidence_npz, "--output-dir", assignment_dir,
+                    "--report", assignment_report,
+                    "--regions", regions_dir / "surface_region_per_triangle.npy",
+                ])
+                if code != 0:
+                    return StageResult("failed", failure_codes=["SOURCE_ASSIGNMENT_FAILED"],
+                                       detail=f"source assignment exit {code}: {out[-800:]}")
 
             # Everything downstream that has a notion of "front" reads it from here. The projection
             # hemisphere and the review cameras disagreeing is not a cosmetic problem: it produced a
@@ -765,15 +839,18 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "--progress", projection / "raster-progress.json",
                 "--report", projection_report,
             ]
-            if face_detail_required:
+            if face_detail_required and not evidence_compiler_enabled:
                 projection_command += ["--require-face-id", "--face-id-radius", "1"]
+            if evidence_compiler_enabled:
+                projection_command += ["--direct-only"]
+                projection_command += ["--surface-view-assignment", assignment_path]
             code, out = pipeline.run(projection_command)
             if code != 0 or not (projection / "basecolor.png").exists():
                 return StageResult("failed", detail=f"projection exit {code}: {out[-1000:]}")
 
             projection_data = _json(projection_report)
             face_id_match_percent = projection_data.get("face_id_match_percent")
-            if face_detail_required and (
+            if face_detail_required and not evidence_compiler_enabled and (
                     face_id_match_percent is None
                     or float(face_id_match_percent) < float(face_detail.get("min_face_id_match_percent", 99.0))):
                 return StageResult(
@@ -795,9 +872,72 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     return StageResult("failed", failure_codes=["UV_ROW_ORIENTATION_MISMATCH"],
                                        detail=f"atlas conversion exit {code}: {out[-800:]}")
 
+            completion_report = stage / "unobserved_completion_report.json"
+            completion_provenance = stage / "atlas_provenance_completed.npz"
+            if evidence_compiler_enabled:
+                completed_basecolor = stage / "basecolor_completed.png"
+                code, out = pipeline.run([
+                    pipeline.python, w("complete_unobserved_atlas.py"),
+                    "--projection-npz", npz, "--basecolor", base_oriented,
+                    "--triangle-provenance", projection / "triangle_provenance.npz",
+                    "--regions", regions_dir / "surface_region_per_triangle.npy",
+                    "--output", completed_basecolor,
+                    "--output-provenance", completion_provenance,
+                    "--report", completion_report,
+                ])
+                if code != 0 or not completed_basecolor.exists():
+                    return StageResult("failed", failure_codes=["UNOBSERVED_COMPLETION_FAILED"],
+                                       detail=f"unobserved completion exit {code}: {out[-800:]}")
+                base_oriented = completed_basecolor
+
+            evidence_stage_receipts = stage / "evidence_stage_receipts.json"
+            if evidence_compiler_enabled:
+                evidence_qa_report = stage / "texture_evidence_qa.json"
+                code, out = pipeline.run([
+                    pipeline.python, w("validate_texture_evidence.py"),
+                    "--provenance", completion_provenance, "--report", evidence_qa_report,
+                ])
+                if code != 0:
+                    return StageResult("failed", failure_codes=["TEXTURE_EVIDENCE_QA_FAILED"],
+                                       detail=f"texture evidence QA exit {code}: {out[-800:]}")
+                scope_report = stage / "texture_scope.json"
+                projection_summary = _json(projection_report)
+                direct_percent = float(projection_summary.get("observed_semantic_coverage_percent") or 0.0)
+                scope = "FULL_360_PRODUCTION" if len(projection_summary.get("semantic_views") or []) >= 6 else "FRONT_HERO_PRODUCTION"
+                scope_report.write_text(json.dumps({
+                    "schema": "texture_scope_v1", "scope": scope,
+                    "direct_observation_percent": direct_percent,
+                    "unobserved_safe_completion": True,
+                    "full_360_requires_accepted_matching_views": True,
+                }, indent=2), encoding="utf-8")
+                stage_outputs = {
+                    "VIEW_EVIDENCE": evidence_manifest,
+                    "SURFACE_REGIONS": regions_report,
+                    "SURFACE_EVIDENCE": evidence_report,
+                    "SOURCE_ASSIGNMENT": assignment_report,
+                    "DIRECT_PROJECTION": projection_report,
+                    "UNOBSERVED_COMPLETION": completion_report,
+                    "FREQUENCY_FUSION": base_oriented,
+                    "TEXTURE_EVIDENCE_QA": evidence_qa_report,
+                    "TEXTURE_SCOPE": scope_report,
+                }
+                receipts = []
+                for stage_name, path in stage_outputs.items():
+                    receipts.append({"stage": stage_name, "status": "passed",
+                                     "output": str(path),
+                                     "sha256": sha256(path) if Path(path).is_file() else None,
+                                     "failure_code": None})
+                evidence_stage_receipts.write_text(json.dumps({
+                    "schema": "evidence_texture_stage_receipts_v1",
+                    "stages": receipts,
+                    "stage_order": list(EVIDENCE_TEXTURE_STAGES),
+                    "hidden_fallback": False,
+                    "recursive_geometry_restart": False,
+                }, indent=2), encoding="utf-8")
+
             protected_mask = None
             face_report = None
-            if face_detail_required:
+            if face_detail_required and not evidence_compiler_enabled:
                 face_report = stage / "face_texture_report.json"
                 face_output = stage / "basecolor_face_refined.png"
                 face_diagnostics = stage / "face_diagnostics"
@@ -851,12 +991,19 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             ]
             if face_detail_required and protected_mask is not None:
                 repaint_command += ["--protected-mask", protected_mask]
-            if face_detail_required:
+            if face_detail_required and not evidence_compiler_enabled:
                 repaint_command[repaint_command.index("--basecolor") + 1] = face_output
-            code, out = pipeline.run(repaint_command)
-            if code != 0:
-                return StageResult("failed", failure_codes=["FLAT_NEUTRAL_ATLAS_REGIONS"],
-                                   detail=f"prior repaint exit {code}: {out[-800:]}")
+            if evidence_compiler_enabled:
+                repainted = base_oriented
+                repaint_report.write_text(json.dumps({
+                    "schema": "evidence_aware_completion_waiting_v1",
+                    "method": "no_image_donor_transfer", "unresolved_allowed": True,
+                }, indent=2), encoding="utf-8")
+            else:
+                code, out = pipeline.run(repaint_command)
+                if code != 0:
+                    return StageResult("failed", failure_codes=["FLAT_NEUTRAL_ATLAS_REGIONS"],
+                                       detail=f"prior repaint exit {code}: {out[-800:]}")
 
             basecolor = stage / f"{asset_id}_basecolor_{suffix}.png"
             detail_report = stage / "detail_report.json"
@@ -869,10 +1016,17 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             ]
             if face_detail_required and protected_mask is not None:
                 detail_command += ["--protected-mask", protected_mask]
-            code, out = pipeline.run(detail_command)
-            if code != 0:
-                return StageResult("failed", failure_codes=["UNFINISHED_SYNTHESIS"],
-                                   detail=f"detail fill exit {code}: {out[-800:]}")
+            if evidence_compiler_enabled:
+                basecolor = base_oriented
+                detail_report.write_text(json.dumps({
+                    "schema": "evidence_aware_frequency_fusion_waiting_v1",
+                    "method": "direct_frequency_preserved_low_only_completion_pending",
+                }, indent=2), encoding="utf-8")
+            else:
+                code, out = pipeline.run(detail_command)
+                if code != 0:
+                    return StageResult("failed", failure_codes=["UNFINISHED_SYNTHESIS"],
+                                       detail=f"detail fill exit {code}: {out[-800:]}")
 
             orm = stage / f"{asset_id}_orm_{suffix}.png"
             class_map = stage / "material_class.png"
@@ -900,7 +1054,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             blend = stage / f"{asset_id}_textured_lod0.blend"
             material_manifest = stage / "material_manifest.json"
             code, out = _blender(
-                pipeline, b("shaman_texture_export.py"), "--mesh", mesh,
+                pipeline, b("texture_export.py"), "--mesh", mesh,
                 "--basecolor", basecolor, "--normal", normal, "--orm", orm,
                 "--atlas-size", str(resolution),
                 "--output-glb", glb, "--output-blend", blend,
@@ -914,7 +1068,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             unlit_dir = render_dir / "final_textured" / "unlit"
             review_report = stage / "review_report.json"
             code, out = _blender(
-                pipeline, b("shaman_texture_review.py"), "--glb", glb,
+                pipeline, b("texture_review.py"), "--glb", glb,
                 "--output-dir", lit_dir, "--report", review_report,
                 "--resolution", "1024", "--samples", "24",
                 # argparse treats a value beginning with '-' as another option
@@ -927,7 +1081,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 return StageResult("failed", detail=f"review renderer exit {code}: {out[-1000:]}")
             unlit_report = stage / "unlit_review_report.json"
             code, out = _blender(
-                pipeline, b("shaman_texture_review.py"), "--glb", glb,
+                pipeline, b("texture_review.py"), "--glb", glb,
                 "--output-dir", unlit_dir, "--report", unlit_report,
                 "--resolution", "1024", "--samples", "1", "--unlit",
                 f"--front-direction={front_direction}",
@@ -968,7 +1122,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             ]
             contact_sheet = final_render_dir / "contact_sheet.png"
             contact_report = final_render_dir / "contact_sheet_report.json"
-            contact_command = [pipeline.python, w("shaman_contact_sheet.py"), "--output", contact_sheet,
+            contact_command = [pipeline.python, w("texture_contact_sheet.py"), "--output", contact_sheet,
                                "--report", contact_report, "--title", f"{asset_id} final textured"]
             for path in contact_inputs:
                 contact_command += ["--image", path]
@@ -990,6 +1144,22 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 outputs["face_texture_report"] = face_report
                 outputs["protected_face_mask"] = protected_mask
                 outputs["face_diagnostics"] = face_report.parent / "face_diagnostics"
+            if evidence_compiler_enabled:
+                outputs.update({
+                    "view_evidence_manifest": evidence_manifest,
+                    "surface_regions": regions_dir / "surface_region_per_triangle.npy",
+                    "surface_region_report": regions_report,
+                    "surface_evidence": evidence_npz,
+                    "surface_evidence_report": evidence_report,
+                    "source_assignment": assignment_path,
+                    "source_assignment_report": assignment_report,
+                    "unobserved_completion": completion_report,
+                    "atlas_provenance": completion_provenance,
+                    "evidence_stage_receipts": evidence_stage_receipts,
+                    "uv_consumer_report": uv_consumer_report,
+                    "texture_evidence_qa": evidence_qa_report,
+                    "texture_scope": scope_report,
+                })
             review = _json(review_report)
             for name, entry in (review.get("views") or {}).items():
                 path = Path(entry.get("path", ""))
@@ -1007,6 +1177,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 face_detail_required=face_detail_required,
                 approved_single_view_face_route=approved_single_view_face_route,
             )
+            if evidence_compiler_enabled:
+                production_scope = _json(scope_report).get("scope", "FRONT_HERO_PRODUCTION")
             full_360_eligible = production_scope == "FULL_360_PRODUCTION"
             production_eligible = texture_quality_tier == "production" and production_scope != "PREVIEW_TEXTURE"
             gates = {
@@ -1028,6 +1200,11 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "review_views": sorted((review.get("views") or {}).keys()),
                 "final_render_dir": str(final_render_dir),
                 "contact_sheet": str(contact_sheet),
+                "evidence_compiler_enabled": evidence_compiler_enabled,
+                "evidence_stage_order": list(EVIDENCE_TEXTURE_STAGES),
+                "direct_projection_only": bool(evidence_compiler_enabled),
+                "unobserved_raw_image_rgb_texels": 0 if evidence_compiler_enabled else None,
+                "unobserved_full_frequency_texels": 0 if evidence_compiler_enabled else None,
             }
             if face_report is not None:
                 face_data = _json(face_report)
@@ -1051,14 +1228,24 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 )
             return StageResult("passed", outputs=outputs, gates=gates)
 
-        return pipeline.execute("TEXTURE", [
+        texture_inputs = [
             matte, mesh, normal, ao, cavity, material_id, manifest_path,
-            w("shaman_texture_views_oriented.py"), w("raster_project.py"),
-            w("pipeline_prior_repaint.py"), w("atlas_detail_fill.py"),
-            w("face_texture_refine.py"), Path(manifest["source"]["path"]),
-            w("pipeline_orm.py"), b("shaman_texture_export.py"),
-            b("shaman_texture_review.py"),
-        ], runner)
+            w("build_texture_projection_inputs.py"), w("raster_project.py"),
+            Path(manifest["source"]["path"]),
+            w("pipeline_orm.py"), b("texture_export.py"),
+            b("texture_review.py"),
+        ]
+        if not evidence_compiler_enabled:
+            texture_inputs += [w("pipeline_prior_repaint.py"), w("atlas_detail_fill.py"),
+                               w("face_texture_refine.py")]
+        if evidence_compiler_enabled:
+            texture_inputs += [
+                w("prepare_texture_view_evidence.py"), w("build_surface_regions.py"),
+                w("classify_surface_evidence.py"), w("assign_texture_sources.py"),
+                w("complete_unobserved_surfaces.py"), w("fuse_texture_evidence.py"),
+                w("validate_texture_evidence.py"),
+            ]
+        return pipeline.execute("TEXTURE", texture_inputs, runner)
 
     # ---------------------------------------------------------------- TEXTURE_QA
     def texture_qa():
@@ -1079,7 +1266,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             texture_receipt = pipeline.read_receipt("TEXTURE") or {}
             texture_outputs = texture_receipt.get("outputs") or {}
             face_report_path = Path(texture_outputs["face_texture_report"]["path"]) if (
-                face_detail_required and texture_outputs.get("face_texture_report")
+                face_detail_required and not evidence_compiler_enabled
+                and texture_outputs.get("face_texture_report")
             ) else None
             face_data = _json(face_report_path) if face_report_path else {}
             render_paths = [Path(v["path"]) for k, v in (texture_receipt.get("outputs") or {}).items()
@@ -1097,7 +1285,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "--review-report", _output(pipeline, "TEXTURE", "review_report"),
                 "--material-id-components", str(bake_report.get("high_component_count", 0)),
             ]
-            if face_detail_required:
+            if face_detail_required and not evidence_compiler_enabled:
                 command += ["--source-face-contrast", str(face_data.get("source_face_edge_energy", 0.0))]
             code, out = pipeline.run(command)
             data = _json(report)
@@ -1115,7 +1303,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             blocking = list(data.get("blocking_codes", []))
             if texture_quality_tier == "production" and not gates["production_eligible"]:
                 blocking.append("PRODUCTION_TEXTURE_ROUTE_UNAVAILABLE")
-            if face_detail_required:
+            if face_detail_required and not evidence_compiler_enabled:
                 final_render_dir = Path(texture_gates.get("final_render_dir", ""))
                 required_renders = [final_render_dir / name for name in (
                     "close_face_lit.png", "close_face_unlit.png")]

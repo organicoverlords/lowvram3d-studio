@@ -67,7 +67,7 @@ def sha256(path: Path) -> str:
 
 
 def observe(mesh: Path, bundle: Path, receipt: dict, atlas_size: int, depth_tolerance: float,
-            min_facing: float, detail_radius: int) -> dict:
+            min_facing: float, detail_radius: int, direct_only: bool = False) -> dict:
     """Rasterise the atlas once, then gate every view against it."""
     contract = json.loads((bundle / "camera_contract.json").read_text(encoding="utf-8"))
     if "control_space_transform" not in contract:
@@ -132,6 +132,12 @@ def observe(mesh: Path, bundle: Path, receipt: dict, atlas_size: int, depth_tole
         raw = np.asarray(Image.open(image_path).convert("RGB"))
         control_mask = np.asarray(Image.open(bundle / f"{prefix}_mask.png").convert("L")) > 127
         control_depth = np.load(bundle / f"{prefix}_depth.npy")
+        triangle_id_path = bundle / f"{prefix}_triangle_ids.npy"
+        if direct_only and not triangle_id_path.is_file():
+            raise RuntimeError(f"FACE_ID_BUFFER_MISSING:{triangle_id_path.name}")
+        control_triangle_ids = np.load(triangle_id_path) if triangle_id_path.is_file() else None
+        if control_triangle_ids is not None and control_triangle_ids.shape != control_mask.shape:
+            raise RuntimeError(f"FACE_ID_DIMENSION_MISMATCH:{prefix}")
         render = raw.shape[0]
 
         fit = register(foreground_mask(raw), control_mask)
@@ -152,12 +158,15 @@ def observe(mesh: Path, bundle: Path, receipt: dict, atlas_size: int, depth_tole
         cx = np.clip(xs, 0, render - 1)
         cy = np.clip(ys, 0, render - 1)
         in_mask = control_mask[cy, cx] & in_bounds
+        face_id_match = np.ones_like(in_bounds, dtype=bool)
+        if control_triangle_ids is not None:
+            face_id_match = control_triangle_ids[cy, cx] == corners[:, 0] * 0 + owner_flat
         buffered = control_depth[cy, cx]
         depth_delta = np.abs(texel_position @ direction - buffered)
         unoccluded = np.isfinite(buffered) & (depth_delta <= depth_tolerance)
         facing = -(texel_normal @ direction)
         front_facing = facing > min_facing
-        valid = in_bounds & in_mask & unoccluded & front_facing
+        valid = in_bounds & in_mask & unoccluded & front_facing & face_id_match
 
         boundary = distance_from_boundary(control_mask)
         weight = (np.clip(facing, 0.0, 1.0) ** 3.0
@@ -182,6 +191,7 @@ def observe(mesh: Path, bundle: Path, receipt: dict, atlas_size: int, depth_tole
             "texels_rejected_by_depth": int((in_bounds & in_mask & ~unoccluded).sum()),
             "texels_rejected_back_facing": int(
                 (in_bounds & in_mask & unoccluded & ~front_facing).sum()),
+            "texels_rejected_face_id": int((in_bounds & in_mask & unoccluded & front_facing & ~face_id_match).sum()),
             "texels_valid": int(valid.sum()),
         })
         del screen, pixel, aligned, aligned_low, aligned_high, aligned_detail
@@ -433,6 +443,8 @@ def main() -> int:
     parser.add_argument("--donor-max-distance-fraction", type=float, default=0.030)
     parser.add_argument("--donor-min-normal-dot", type=float, default=0.50)
     parser.add_argument("--donor-neighbours", type=int, default=16)
+    parser.add_argument("--direct-only", action="store_true",
+                        help="forbid all observed-to-unobserved donor transfer")
     parser.add_argument("--output-basename", default="",
                         help="artifact stem; defaults to the mesh stem without a UV suffix")
     args = parser.parse_args()
@@ -450,7 +462,7 @@ def main() -> int:
 
     started = time.time()
     cache = observe(mesh, Path(args.bundle), receipt, args.atlas_size, args.depth_tolerance,
-                    args.min_facing_cosine, args.detail_radius)
+                    args.min_facing_cosine, args.detail_radius, args.direct_only)
     timings["observe"] = time.time() - started
     print(f"TEXTURE_OBSERVE owned={int(cache['owned'].sum())} "
           f"injective={cache['injectivity']['injective']} {timings['observe']:.0f}s", flush=True)
@@ -463,8 +475,17 @@ def main() -> int:
           flush=True)
 
     started = time.time()
-    donor = donor_fill(cache, fused, args.donor_blur_radius, args.donor_max_distance_fraction,
-                       args.donor_min_normal_dot, args.donor_neighbours)
+    if args.direct_only:
+        donor = {
+            "unobserved_texels": int((~fused["observed"]).sum()), "donated_texels": 0,
+            "unresolved_texels": int((~fused["observed"]).sum()),
+            "max_distance": 0.0, "min_normal_dot": float(args.donor_min_normal_dot),
+            "neighbours": int(args.donor_neighbours), "low_frequency_blur_radius_texels": 0,
+            "high_frequency_donated": False, "direct_projection_only": True,
+        }
+    else:
+        donor = donor_fill(cache, fused, args.donor_blur_radius, args.donor_max_distance_fraction,
+                           args.donor_min_normal_dot, args.donor_neighbours)
     timings["donor_fill"] = time.time() - started
     print(f"TEXTURE_DONOR donated={donor['donated_texels']} "
           f"unresolved={donor['unresolved_texels']} {timings['donor_fill']:.0f}s", flush=True)
@@ -498,6 +519,7 @@ def main() -> int:
             "min_facing_cosine": args.min_facing_cosine,
             "detail_radius": args.detail_radius,
             "regularisation": "none",
+            "direct_projection_only": bool(args.direct_only),
         },
         "atlas_injectivity": cache["injectivity"],
         "per_view": cache["diagnostics"],
@@ -514,6 +536,8 @@ def main() -> int:
             "atlas_wrapping": "CLAMP_TO_EDGE",
             "neural_regeneration": False,
             "camera_remapping": False,
+            "unobserved_raw_image_rgb_texels": 0 if args.direct_only else None,
+            "unobserved_full_frequency_texels": 0 if args.direct_only else None,
         },
         "timings_seconds": {k: round(v, 1) for k, v in timings.items()},
     }

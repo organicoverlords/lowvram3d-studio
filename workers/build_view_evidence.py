@@ -107,8 +107,25 @@ def main() -> int:
                 alpha = image[:, :, 3].astype(np.float32) / 255.0 if image.ndim == 3 and image.shape[2] >= 4 else np.ones_like(alpha)
         semantic = str(item.get("source_class", "UNKNOWN"))
         source_class = np.full((args.resolution, args.resolution), semantic, dtype="U24")
+        tri_area = np.zeros(len(tris), np.float32)
+        projected = screen * float(args.resolution - 1)
+        for tid, tri in enumerate(tris):
+            a, b, c = projected[tri]
+            tri_area[tid] = abs(float((b[0] - a[0]) * (c[1] - a[1]) -
+                                      (b[1] - a[1]) * (c[0] - a[0]))) * 0.5
+        pixel_area = np.zeros_like(face, np.float32)
+        pixel_area[visible] = tri_area[face[visible]]
+        exact_match = visible.copy()
         npz_path = out / f"view_evidence_{name}.npz"
-        np.savez_compressed(npz_path, triangle_id=face, barycentric=bary, depth=z, visible=visible, normal_facing=np.clip(norm @ (-direction), -1.0, 1.0), uv=pixel_uv, world_position=pos, source_alpha=alpha, semantic_source_class=source_class, camera_hash=hashlib.sha256(json.dumps(camera, sort_keys=True).encode()).hexdigest(), mesh_hash=sha256(mesh_path))
+        np.savez_compressed(npz_path, triangle_id=face, barycentric=bary, depth=z,
+                            visible=visible, triangle_visibility=visible,
+                            exact_triangle_id_match=exact_match,
+                            normal_facing=np.clip(norm @ (-direction), -1.0, 1.0),
+                            projected_triangle_area=pixel_area, uv=pixel_uv,
+                            world_position=pos, world_normal=norm, source_alpha=alpha,
+                            semantic_source_class=source_class,
+                            camera_hash=hashlib.sha256(json.dumps(camera, sort_keys=True).encode()).hexdigest(),
+                            mesh_hash=sha256(mesh_path))
         manifest.append({"view_name": name, "path": str(npz_path), "camera_hash": hashlib.sha256(json.dumps(camera, sort_keys=True).encode()).hexdigest(), "mesh_hash": sha256(mesh_path), "visible_pixels": int(visible.sum()), "semantic_source_class": semantic})
     manifest_path = out / "view_evidence_manifest.json"
     manifest_path.write_text(json.dumps({"schema": "view_evidence_v1", "mesh": str(mesh_path), "resolution": args.resolution, "views": manifest, "backend": "numpy_cpu_exact_texel_center"}, indent=2), encoding="utf-8")
