@@ -1,9 +1,7 @@
 {
-  "purpose": "Dispatch exactly one FaceVerse v4 preflight after safe probes and seeded uv-venv recovery, then record its run ID.",
-  "workflow_commit": "6c47a850e9418a2b5054d92fcd163ed1ed51a119",
-  "python_compat_commit": "0f60941499a3482ca2c532ec1c143fc6b64e1253",
-  "native_compat_commit": "5c50dd5ddf8d6a2bd80a3be766149b23dc4a9e33",
-  "venv_compat_commit": "512036d84abef44c14d713c43d263bb0f3d2a65c",
-  "probe_compat_commit": "3a000080aa8f4d527aeb4e663c952e29bf82632b",
-  "requested_at": "2026-08-04T04:24:00+03:00"
+  "purpose": "Dispatch exactly one FaceVerse v4 preflight using the official links first and the structurally validated GitHub release fallback second, then record its run ID.",
+  "workflow_commit": "2a145ab1142bb2ab1d24b252bf5d3b4a4fd6f704",
+  "release_fallback_commit": "54e0572a53a5a52319a206904bd734ebfdc02faa",
+  "cached_environment_run": 30868515985,
+  "requested_at": "2026-08-04T04:41:00+03:00"
 }
