@@ -1,10 +1,11 @@
-run=29
-requested=2026-08-04T06:09:00+03:00
+run=30
+requested=2026-08-04T06:43:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=881215bc6124e4bc15fae91a9f015d554fbf7fc1
-repair_scope=line-scoped-capture-counter-path-collision-powershell5-writes-runtime-visual-acceptance
+repair_commit=c8f453720c3f7dc528fe7ec0e9db910e92ab95e3
+repair_scope=diagnostic-direct-bundle-source-inspection-for-visual-overhaul
 codex=false
 claude=false
 magicmusic=false
-panda_walk=true
-classification_required=JUNGLE_PANDA_PLAYABLE_PROVEN
+blender=false
+unreal=false
+classification_required=DIAGNOSTIC_COMPLETE_NO_BUILD
