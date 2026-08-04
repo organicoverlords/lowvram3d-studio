@@ -13,7 +13,7 @@
     "canonical_z_low": 18799.19015625,
     "scene_scale": 1.3551984016596451e-05
   },
-  "output_npz": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\canonical-diagnostic-30865976590\\_reference_private\\canonical_face_sequence.npz",
+  "output_npz": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\canonical-diagnostic-30866351097\\_reference_private\\canonical_face_sequence.npz",
   "pose_decoupled": true,
   "route": "3DDFA_CANONICAL_DENSE_IDENTITY_MEDIAN_EXPRESSION_TRACK",
   "scene_bounds": {
