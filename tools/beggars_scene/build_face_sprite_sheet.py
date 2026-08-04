@@ -24,6 +24,9 @@ def parse_args() -> argparse.Namespace:
 
 def stabilize_boxes(boxes: np.ndarray) -> np.ndarray:
     boxes = np.asarray(boxes, dtype=np.float32)
+    if boxes.ndim != 2 or boxes.shape[1] < 4:
+        raise ValueError(f"Expected tracked boxes with at least four columns, got {boxes.shape}")
+
     centers = np.stack(
         [
             (boxes[:, 0] + boxes[:, 2]) * 0.5,
@@ -37,7 +40,9 @@ def stabilize_boxes(boxes: np.ndarray) -> np.ndarray:
         raise RuntimeError("No valid tracked face boxes were available for sprite stabilization")
     global_side = float(np.median(valid_sides))
 
-    stabilized = np.zeros_like(boxes)
+    # Preserve tracker metadata such as confidence columns while stabilizing
+    # only the geometric x1/y1/x2/y2 coordinates.
+    stabilized = boxes.copy()
     for index in range(len(boxes)):
         left = max(0, index - 2)
         right = min(len(boxes), index + 3)
@@ -46,7 +51,7 @@ def stabilize_boxes(boxes: np.ndarray) -> np.ndarray:
         center = np.median(local_centers, axis=0)
         side = float(np.median(local_sides))
         side = float(np.clip(side, global_side * 0.82, global_side * 1.18))
-        stabilized[index] = (
+        stabilized[index, :4] = (
             center[0] - side * 0.5,
             center[1] - side * 0.5,
             center[0] + side * 0.5,
