@@ -8,6 +8,7 @@ on:
       - agent/blender-beggars-scene-20260804
     paths:
       - blender/build_beggars_meme_scene_faceverse_v7.py
+      - scripts/apply-beggars-blender-faceverse-v7-recursion-fix.ps1
       - scripts/run-beggars-blender-faceverse-v7-preflight.ps1
       - .github/workflows/beggars-blender-faceverse-v7-preflight.yml
 
@@ -60,6 +61,14 @@ jobs:
           ref: ${{ github.sha }}
           clean: true
           fetch-depth: 1
+
+      - name: Bind original v5 mesh constructor
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-blender-faceverse-v7-recursion-fix.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Blender FaceVerse v7 constructor binding failed with exit code $LASTEXITCODE"
+          }
 
       - name: Run conforming-hair Blender v7 preflight
         shell: powershell
