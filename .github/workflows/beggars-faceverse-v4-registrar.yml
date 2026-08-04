@@ -1,0 +1,118 @@
+name: Beggars FaceVerse v4 registrar
+run-name: Beggars FaceVerse v4 registrar ${{ github.run_id }}
+
+on:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - evidence/faceverse-v4-registrar-trigger.json
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: beggars-faceverse-v4-registrar
+  cancel-in-progress: true
+
+jobs:
+  dispatch-and-register:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Dispatch and resolve FaceVerse run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import time
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+
+          repo = os.environ['REPOSITORY']
+          branch = os.environ['BRANCH']
+          token = os.environ['GH_TOKEN']
+          workflow = 'beggars-faceverse-v4-preflight.yml'
+          api = f'https://api.github.com/repos/{repo}'
+          headers = {
+              'Accept': 'application/vnd.github+json',
+              'Authorization': f'Bearer {token}',
+              'X-GitHub-Api-Version': '2022-11-28',
+              'User-Agent': 'beggars-faceverse-v4-registrar',
+          }
+
+          def request(method: str, url: str, payload=None):
+              data = None if payload is None else json.dumps(payload).encode('utf-8')
+              req = urllib.request.Request(url, data=data, method=method, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  body = response.read()
+                  return None if not body else json.loads(body.decode('utf-8'))
+
+          before = request(
+              'GET',
+              f'{api}/actions/workflows/{workflow}/runs?branch={urllib.parse.quote(branch)}&per_page=20',
+          ).get('workflow_runs', [])
+          before_ids = {run['id'] for run in before}
+          request('POST', f'{api}/actions/workflows/{workflow}/dispatches', {'ref': branch})
+
+          run = None
+          for _ in range(30):
+              time.sleep(4)
+              result = request(
+                  'GET',
+                  f'{api}/actions/workflows/{workflow}/runs?branch={urllib.parse.quote(branch)}&event=workflow_dispatch&per_page=20',
+              )
+              fresh = [item for item in result.get('workflow_runs', []) if item['id'] not in before_ids]
+              if fresh:
+                  run = max(fresh, key=lambda item: item['id'])
+                  break
+          if run is None:
+              raise SystemExit('Dispatched FaceVerse workflow did not register within 120 seconds')
+
+          evidence = Path('evidence/latest-beggars-faceverse-v4-registrar')
+          evidence.mkdir(parents=True, exist_ok=True)
+          payload = {
+              'classification': 'RUN_REGISTERED',
+              'workflow_run_id': run['id'],
+              'workflow_name': run['name'],
+              'workflow_path': run['path'],
+              'event': run['event'],
+              'status': run['status'],
+              'conclusion': run['conclusion'],
+              'head_sha': run['head_sha'],
+              'head_branch': run['head_branch'],
+              'url': run['html_url'],
+              'created_at': run['created_at'],
+              'updated_at': run['updated_at'],
+              'observed_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+          }
+          (evidence / 'run-registration.json').write_text(
+              json.dumps(payload, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          print(json.dumps(payload, sort_keys=True))
+          PY
+
+      - name: Publish FaceVerse registration receipt
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add evidence/latest-beggars-faceverse-v4-registrar/run-registration.json
+          git commit -m "evidence(scene): register FaceVerse v4 run ${{ github.run_id }}"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if git push origin HEAD:agent/blender-beggars-scene-20260804; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
