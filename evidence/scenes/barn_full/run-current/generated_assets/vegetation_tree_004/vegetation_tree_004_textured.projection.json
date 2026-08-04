@@ -1,0 +1,26 @@
+{
+  "classification": "PROVEN",
+  "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\crop.png",
+  "facing_min": 0.2,
+  "fill_rgb": [
+    35.1,
+    33.8,
+    29.0
+  ],
+  "flat_filled_face_count": 83524,
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+  "mask_coverage": 0.1803,
+  "observed_from": "single view; faces below the facing threshold are flat-filled rather than smeared, so textured_face_fraction is the share of this mesh's appearance that was actually observed",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
+  "output_bytes": 5154700,
+  "projection": "object_space_front_minus_z",
+  "schema_version": "crop_projection_v1",
+  "texture_size": [
+    1649,
+    1641
+  ],
+  "textured_face_count": 60487,
+  "textured_face_fraction": 0.42,
+  "triangles": 144011,
+  "vertices": 124031
+}

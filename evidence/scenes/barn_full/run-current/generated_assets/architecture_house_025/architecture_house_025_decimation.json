@@ -4,11 +4,12 @@
   "decimated": true,
   "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
   "input_triangles": 1240894,
+  "min_part_fraction": 0.02,
   "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
-  "output_bytes": 12598908,
-  "output_triangles": 149997,
+  "output_bytes": 3587200,
+  "output_triangles": 149744,
   "ratio": 0.120881,
-  "reduction": 0.8791,
+  "reduction": 0.8793,
   "schema_version": "mesh_decimation_v1",
   "target_triangles": 150000
 }

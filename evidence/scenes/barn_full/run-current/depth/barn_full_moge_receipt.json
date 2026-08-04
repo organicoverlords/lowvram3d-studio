@@ -2,15 +2,15 @@
   "camera": {
     "aspect_ratio": 1.3333333333333333,
     "convention": "gltf_y_up_z_back",
-    "fov_x_deg": 92.88072928447795,
-    "fov_y_deg": 76.52494207269122,
+    "fov_x_deg": 92.86779693466511,
+    "fov_y_deg": 76.51235022213903,
     "projection": "perspective"
   },
   "classification": "PROVEN",
   "depth_edge_rtol": 0.05,
   "depth_range": [
-    1.4164676666259766,
-    543.9358520507812
+    1.4160451889038086,
+    544.1774291992188
   ],
   "device": "cuda",
   "grid_stride": 2,
@@ -22,12 +22,12 @@
   "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
   "masked_pixel_fraction": 0.6951939806477214,
   "model": "Ruicheng/moge-2-vitb-normal",
-  "output_bytes": 13974188,
+  "output_bytes": 13973636,
   "output_glb": "evidence\\scenes\\barn_full\\run-current\\depth\\barn_full_moge.glb",
-  "output_sha256": "76b137159bc2e230dbf2593d9378cfe73aaa7b7ab77788bc50c1704c510ef581",
-  "quads_considered": 270107,
-  "quads_dropped_at_depth_edges": 18673,
+  "output_sha256": "574b9f53554abfaa93edfa654de62df4dad8db33e5dffdac31d382b579156990",
+  "quads_considered": 270106,
+  "quads_dropped_at_depth_edges": 18695,
   "schema_version": "moge_reconstruction_receipt_v1",
-  "triangles": 502868,
+  "triangles": 502822,
   "vertices": 273303
 }

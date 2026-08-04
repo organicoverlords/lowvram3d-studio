@@ -5,8 +5,8 @@
     "height_at_camera_m": -1.137,
     "residual_p95_m": 1.186,
     "sample_count": 12556,
-    "slope_forward": -0.17564,
-    "slope_right": 0.02765
+    "slope_forward": -0.17573,
+    "slope_right": 0.02771
   },
   "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
   "image_dimensions": [
@@ -43,39 +43,39 @@
             0.39835
           ],
           "component_id": 0,
-          "component_pixel_count": 466647,
+          "component_pixel_count": 466646,
           "depth_m": {
-            "far": 23.119,
-            "median": 14.4,
-            "near": 11.732
+            "far": 23.115,
+            "median": 14.398,
+            "near": 11.73
           },
           "measured_unreal_m": {
             "centroid": [
-              14.4,
+              14.398,
               -0.408,
               2.225
             ],
             "max": [
-              23.119,
-              10.745,
+              23.115,
+              10.746,
               7.134
             ],
             "min": [
-              11.732,
-              -18.007,
+              11.73,
+              -18.003,
               -4.52
             ],
             "size": [
-              11.387,
-              28.752,
+              11.385,
+              28.749,
               11.654
             ]
           },
-          "pixel_count": 466647,
+          "pixel_count": 466646,
           "separable": true
         },
         {
-          "aspect_lateral_over_height": 3.124,
+          "aspect_lateral_over_height": 3.123,
           "bbox_norm_xyxy": [
             0.21892,
             0.70074,
@@ -89,30 +89,30 @@
           "component_id": 1,
           "component_pixel_count": 347,
           "depth_m": {
-            "far": 16.242,
-            "median": 3.253,
+            "far": 16.234,
+            "median": 3.254,
             "near": 2.429
           },
           "measured_unreal_m": {
             "centroid": [
-              3.253,
-              -1.849,
-              -1.065
+              3.254,
+              -1.85,
+              -1.066
             ],
             "max": [
-              16.242,
+              16.234,
               -1.345,
               -0.803
             ],
             "min": [
               2.429,
-              -9.321,
-              -5.224
+              -9.319,
+              -5.222
             ],
             "size": [
-              13.813,
-              7.976,
-              4.422
+              13.805,
+              7.974,
+              4.42
             ]
           },
           "pixel_count": 347,
@@ -122,9 +122,9 @@
       "confidence": 0.942,
       "confidence_p10": 0.767,
       "depth_m": {
-        "far": 23.117,
-        "median": 14.397,
-        "near": 11.73
+        "far": 23.113,
+        "median": 14.395,
+        "near": 11.728
       },
       "id": "vegetation_tree_004",
       "layer_type": "vegetation",
@@ -136,22 +136,22 @@
       ],
       "measured_unreal_m": {
         "centroid": [
-          14.397,
+          14.395,
           -0.416,
           2.221
         ],
         "max": [
-          23.117,
-          10.744,
+          23.113,
+          10.746,
           7.134
         ],
         "min": [
-          11.73,
-          -18.003,
-          -4.524
+          11.728,
+          -18.0,
+          -4.525
         ],
         "size": [
-          11.387,
+          11.384,
           28.746,
           11.658
         ]
@@ -163,16 +163,16 @@
       "surface": {
         "mean_normal": [
           -0.0135,
-          0.2765,
+          0.2766,
           -0.9609
         ],
         "orientation": "vertical",
         "walkable_candidate": false
       },
       "world_extent_m": [
-        356.913,
-        68.746,
-        412.529
+        357.018,
+        68.772,
+        412.67
       ]
     },
     {
@@ -185,9 +185,9 @@
       "confidence": 0.9755,
       "confidence_p10": 0.9304,
       "depth_m": {
-        "far": 456.139,
-        "median": 12.465,
-        "near": 11.444
+        "far": 455.535,
+        "median": 12.464,
+        "near": 11.44
       },
       "id": "sky_sky_002",
       "layer_type": "sky",
@@ -199,24 +199,24 @@
       ],
       "measured_unreal_m": {
         "centroid": [
-          12.465,
-          7.183,
+          12.464,
+          7.185,
           1.682
         ],
         "max": [
-          456.139,
-          462.832,
-          7.253
+          455.535,
+          461.993,
+          7.25
         ],
         "min": [
-          11.444,
-          -8.837,
-          -59.208
+          11.44,
+          -8.823,
+          -59.213
         ],
         "size": [
-          444.695,
-          471.668,
-          66.462
+          444.095,
+          470.816,
+          66.464
         ]
       },
       "observed_fraction": 0.0081,
@@ -225,17 +225,17 @@
       "semantic_label": "sky",
       "surface": {
         "mean_normal": [
-          -0.4737,
-          0.191,
-          -0.8597
+          -0.4742,
+          0.1904,
+          -0.8596
         ],
         "orientation": "vertical",
         "walkable_candidate": false
       },
       "world_extent_m": [
-        502.351,
-        76.766,
-        536.631
+        501.495,
+        76.534,
+        536.637
       ]
     },
     {
@@ -248,7 +248,7 @@
       "confidence": 0.9688,
       "confidence_p10": 0.9305,
       "depth_m": {
-        "far": 10.328,
+        "far": 10.329,
         "median": 2.323,
         "near": 1.566
       },
@@ -267,8 +267,8 @@
           -1.326
         ],
         "max": [
-          10.328,
-          6.382,
+          10.329,
+          6.383,
           -1.156
         ],
         "min": [
@@ -277,8 +277,8 @@
           -3.721
         ],
         "size": [
-          8.762,
-          9.408,
+          8.763,
+          9.409,
           2.565
         ]
       },
@@ -290,7 +290,7 @@
         "drop_below_camera_m": 1.326,
         "drop_spread_m": 2.565,
         "mean_normal": [
-          -0.0698,
+          -0.0699,
           -0.7609,
           -0.6451
         ],
@@ -298,9 +298,9 @@
         "walkable_candidate": true
       },
       "world_extent_m": [
-        58.555,
-        8.518,
-        27.471
+        58.526,
+        8.51,
+        27.455
       ]
     },
     {
@@ -313,9 +313,9 @@
       "confidence": 0.8891,
       "confidence_p10": 0.6845,
       "depth_m": {
-        "far": 16.734,
-        "median": 13.529,
-        "near": 10.787
+        "far": 16.732,
+        "median": 13.528,
+        "near": 10.785
       },
       "id": "architecture_house_025",
       "layer_type": "architecture",
@@ -327,17 +327,17 @@
       ],
       "measured_unreal_m": {
         "centroid": [
-          13.529,
+          13.528,
           0.933,
           -2.677
         ],
         "max": [
-          16.734,
+          16.732,
           7.238,
           -0.871
         ],
         "min": [
-          10.787,
+          10.785,
           -4.638,
           -4.427
         ],
@@ -353,7 +353,7 @@
       "semantic_label": "house",
       "surface": {
         "mean_normal": [
-          -0.1482,
+          -0.1481,
           -0.5444,
           -0.8256
         ],
@@ -361,9 +361,9 @@
         "walkable_candidate": false
       },
       "world_extent_m": [
-        16.698,
+        16.7,
         4.902,
-        25.253
+        25.252
       ]
     },
     {
@@ -376,9 +376,9 @@
       "confidence": 0.6221,
       "confidence_p10": 0.484,
       "depth_m": {
-        "far": 17.364,
-        "median": 15.862,
-        "near": 14.23
+        "far": 17.362,
+        "median": 15.861,
+        "near": 14.227
       },
       "id": "architecture_hovel_079",
       "layer_type": "architecture",
@@ -390,24 +390,24 @@
       ],
       "measured_unreal_m": {
         "centroid": [
-          15.862,
+          15.861,
           -7.268,
           -2.441
         ],
         "max": [
-          17.364,
+          17.362,
           -5.615,
           0.121
         ],
         "min": [
-          14.23,
-          -9.714,
-          -4.993
+          14.227,
+          -9.712,
+          -4.992
         ],
         "size": [
           3.135,
-          4.099,
-          5.114
+          4.096,
+          5.113
         ]
       },
       "observed_fraction": 1.0,
@@ -417,16 +417,16 @@
       "surface": {
         "mean_normal": [
           0.3422,
-          -0.2338,
-          -0.9101
+          -0.2339,
+          -0.91
         ],
         "orientation": "vertical",
         "walkable_candidate": false
       },
       "world_extent_m": [
-        6.621,
-        6.207,
-        9.711
+        6.622,
+        6.208,
+        9.706
       ]
     },
     {
@@ -439,9 +439,9 @@
       "confidence": 0.6196,
       "confidence_p10": 0.4909,
       "depth_m": {
-        "far": 214.502,
-        "median": 69.622,
-        "near": 15.526
+        "far": 214.405,
+        "median": 69.516,
+        "near": 15.527
       },
       "id": "terrain_field_029",
       "layer_type": "terrain",
@@ -453,24 +453,24 @@
       ],
       "measured_unreal_m": {
         "centroid": [
-          69.622,
-          66.104,
-          -14.313
+          69.516,
+          66.029,
+          -14.29
         ],
         "max": [
-          214.502,
-          181.629,
+          214.405,
+          181.363,
           -3.291
         ],
         "min": [
-          15.526,
-          13.468,
-          -32.823
+          15.527,
+          13.473,
+          -32.798
         ],
         "size": [
-          198.976,
-          168.16,
-          29.532
+          198.878,
+          167.89,
+          29.506
         ]
       },
       "observed_fraction": 0.9949,
@@ -478,20 +478,20 @@
       "representation": "heightfield",
       "semantic_label": "field",
       "surface": {
-        "drop_below_camera_m": 14.313,
-        "drop_spread_m": 29.532,
+        "drop_below_camera_m": 14.29,
+        "drop_spread_m": 29.506,
         "mean_normal": [
           -0.2057,
           -0.977,
-          -0.0569
+          -0.0568
         ],
         "orientation": "horizontal",
         "walkable_candidate": true
       },
       "world_extent_m": [
-        404.592,
-        65.448,
-        490.387
+        404.201,
+        65.391,
+        489.857
       ]
     }
   ],

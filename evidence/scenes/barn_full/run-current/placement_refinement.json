@@ -3,13 +3,13 @@
   "applied": true,
   "at_cap_count": 2,
   "classification": "PROVEN",
-  "cost_after": 299.332248,
-  "cost_before": 791.949152,
+  "cost_after": 299.353618,
+  "cost_before": 792.108556,
   "ground_plane_used": true,
   "inferred_actor_count": 0,
   "max_shift_m": 2.8507,
   "max_shift_per_axis_m": 2.0,
-  "mean_shift_m": 1.2384,
+  "mean_shift_m": 1.2383,
   "moved_count": 3,
   "optimiser": {
     "iterations": 13,
@@ -20,7 +20,7 @@
   "scale_disagreement": {
     "median_ratio": 1.395,
     "note": "actor extent vs the pixels it came from; translation cannot fix this",
-    "worst_ratio": 1.404
+    "worst_ratio": 1.405
   },
   "schema_version": "placement_refinement_v1",
   "shift_cap_per_axis_m": 2.0,

@@ -1,5 +1,5 @@
 {
-  "actors_served": 1,
+  "actors_served": 3,
   "assets": [
     {
       "actor_indices": [
@@ -40,11 +40,12 @@
         "decimated": true,
         "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
         "input_triangles": 1240894,
+        "min_part_fraction": 0.02,
         "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
-        "output_bytes": 12598908,
-        "output_triangles": 149997,
+        "output_bytes": 3587200,
+        "output_triangles": 149744,
         "ratio": 0.120881,
-        "reduction": 0.8791,
+        "reduction": 0.8793,
         "schema_version": "mesh_decimation_v1",
         "target_triangles": 150000
       },
@@ -57,15 +58,15 @@
           "outcome": "ok"
         }
       ],
-      "generation_seconds": 278.3,
+      "generation_seconds": 422.3,
       "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
-      "glb_bytes": 16441032,
-      "glb_sha256": "ef146801b6b6dad8aad738af6e6954953062d90afff9fde68c9198158f7aaeb2",
+      "glb_bytes": 4578404,
+      "glb_sha256": "d25924d901ee550053f0c669303a12049f72f61c0dda9f5b3ae513101b79c9e9",
       "layer_type": "architecture",
       "mask_coverage": 0.5913,
       "mask_png": "evidence\\scenes\\barn_full\\run-current\\depth\\region_masks\\architecture_house_025.png",
       "matte": "segmentation_mask",
-      "mesh_bodies": 9,
+      "mesh_bodies": 1,
       "mesh_extent": [
         1.9708,
         0.7615,
@@ -82,48 +83,52 @@
       "separable": true,
       "shared_across_instances": false,
       "status": "generated",
-      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:18<00:00,  3.54it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
+      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:18<00:00,  3.48it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
       "texture_projection": {
         "classification": "PROVEN",
         "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\crop.png",
+        "facing_min": 0.2,
         "fill_rgb": [
           44.1,
           38.1,
           32.4
         ],
+        "flat_filled_face_count": 90159,
         "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
         "mask_coverage": 0.1427,
-        "observed_from": "single view; sides stretch along the projection axis",
+        "observed_from": "single view; faces below the facing threshold are flat-filled rather than smeared, so textured_face_fraction is the share of this mesh's appearance that was actually observed",
         "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
-        "output_bytes": 16441032,
+        "output_bytes": 4578404,
         "projection": "object_space_front_minus_z",
         "schema_version": "crop_projection_v1",
         "texture_size": [
-          950,
+          958,
           950
         ],
         "textured": true,
-        "triangles": 149997,
-        "vertices": 449917
+        "textured_face_count": 59585,
+        "textured_face_fraction": 0.3979,
+        "triangles": 149744,
+        "vertices": 126895
       },
       "too_small": false,
-      "triangles": 149997,
+      "triangles": 149744,
       "unbounded_crop": false,
       "unbounded_sides": [],
       "vertices": 620147,
       "view_coverage": {
         "front": 0.263,
-        "side": 0.2993,
+        "side": 0.2992,
         "three_quarter": 0.3023,
         "top": 0.4054
       },
       "vram_headroom": {
         "checked": true,
-        "free_mb_at_start": 5397,
-        "free_mb_before": 5397,
+        "free_mb_at_start": 5280,
+        "free_mb_before": 4887,
         "required_mb": 5200,
         "sufficient": true,
-        "waited_seconds": 0.1
+        "waited_seconds": 15.1
       }
     },
     {
@@ -134,50 +139,127 @@
       "asset_id": "vegetation_tree_004",
       "border_contact": {
         "bottom": 0.0,
-        "left": 0.0,
+        "left": 0.1526,
         "right": 0.0,
         "top": 0.0
       },
-      "conditioned_on_actor_index": 1,
+      "conditioned_on_actor_index": 0,
+      "conditioned_on_pixel_share": 0.9993,
       "conditioning_size_px": [
-        45,
-        45
+        1641,
+        1641
       ],
       "crop_bbox_norm_xyxy": [
-        0.21892,
-        0.70074,
-        0.24309,
-        0.71823
+        0.0,
+        0.04972,
+        0.92196,
+        0.72284
       ],
       "crop_box_px": [
-        315,
-        760,
-        354,
-        781
+        0,
+        10,
+        1415,
+        829
       ],
       "crop_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\crop.png",
       "crop_size_px": [
-        39,
-        21
+        1415,
+        819
       ],
+      "decimated_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+      "decimation": {
+        "blender_exit_code": 0,
+        "classification": "PROVEN",
+        "decimated": true,
+        "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004.glb",
+        "input_triangles": 2275924,
+        "min_part_fraction": 0.02,
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+        "output_bytes": 3401428,
+        "output_triangles": 144011,
+        "ratio": 0.065907,
+        "reduction": 0.9367,
+        "schema_version": "mesh_decimation_v1",
+        "target_triangles": 150000
+      },
+      "exit_code": 0,
+      "generation_attempts": [
+        {
+          "error": null,
+          "exit_code": 0,
+          "octree_ladder": "384:3000,320:2000,256:1500",
+          "outcome": "ok"
+        }
+      ],
+      "generation_seconds": 483.8,
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
+      "glb_bytes": 5154700,
+      "glb_sha256": "a69714f540a1bf0179608aa687630b255188bec4d2cf73a5be4f9de9786fc165",
       "instance_count": 2,
       "layer_type": "vegetation",
-      "mask_coverage": 0.42,
+      "mask_coverage": 0.419,
       "mask_png": "evidence\\scenes\\barn_full\\run-current\\depth\\region_masks\\vegetation_tree_004.png",
       "matte": "segmentation_mask",
-      "reason": "crop is [39, 21] px, below the 64 px minimum to condition on",
+      "mesh_bodies": 5,
+      "mesh_extent": [
+        1.9611,
+        1.2224,
+        0.9012
+      ],
+      "mesh_watertight": false,
+      "octree_resolution": 384,
+      "peak_vram_mb": 6223,
+      "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\preview.png",
+      "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004.glb",
+      "raw_triangles": 2275924,
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "separable": true,
       "shared_across_instances": true,
-      "status": "skipped",
-      "too_small": true,
+      "status": "generated",
+      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:18<00:00,  3.46it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
+      "texture_projection": {
+        "classification": "PROVEN",
+        "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\crop.png",
+        "facing_min": 0.2,
+        "fill_rgb": [
+          35.1,
+          33.8,
+          29.0
+        ],
+        "flat_filled_face_count": 83524,
+        "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+        "mask_coverage": 0.1803,
+        "observed_from": "single view; faces below the facing threshold are flat-filled rather than smeared, so textured_face_fraction is the share of this mesh's appearance that was actually observed",
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
+        "output_bytes": 5154700,
+        "projection": "object_space_front_minus_z",
+        "schema_version": "crop_projection_v1",
+        "texture_size": [
+          1649,
+          1641
+        ],
+        "textured": true,
+        "textured_face_count": 60487,
+        "textured_face_fraction": 0.42,
+        "triangles": 144011,
+        "vertices": 124031
+      },
+      "too_small": false,
+      "triangles": 144011,
       "unbounded_crop": false,
       "unbounded_sides": [],
+      "vertices": 1135860,
+      "view_coverage": {
+        "front": 0.3112,
+        "side": 0.4308,
+        "three_quarter": 0.3947,
+        "top": 0.2511
+      },
       "vram_headroom": {
         "checked": true,
-        "free_mb_at_start": 5393,
-        "free_mb_before": 5393,
+        "free_mb_at_start": 5468,
+        "free_mb_before": 5468,
         "required_mb": 5200,
         "sufficient": true,
         "waited_seconds": 0.1
@@ -186,7 +268,7 @@
   ],
   "classification": "PROVEN",
   "failed_count": 0,
-  "generated_count": 1,
+  "generated_count": 2,
   "generator": "hunyuan3d_mini_turbo",
   "octree_ladder": "384:3000,320:2000,256:1500",
   "planned_asset_count": 2,
@@ -205,7 +287,7 @@
     "weights": true
   },
   "schema_version": "generated_asset_manifest_v1",
-  "skipped_count": 1,
+  "skipped_count": 0,
   "source_image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
   "steps": 5,
   "triangle_budget": 150000

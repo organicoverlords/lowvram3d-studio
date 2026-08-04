@@ -2,16 +2,16 @@
   "actor_count": 5,
   "actors": [
     {
-      "cluster_depth_m": 14.4,
-      "cluster_pixel_count": 466647,
+      "cluster_depth_m": 14.398,
+      "cluster_pixel_count": 466646,
       "component_id": 0,
       "confidence": 0.942,
       "instance_index": 0,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        1640.0,
-        -76.39,
+        1639.8,
+        -76.37,
         -160.2
       ],
       "mean_colour_srgb": [
@@ -32,8 +32,8 @@
       "semantic_label": "tree",
       "separable": true,
       "size_m": [
-        11.387,
-        28.752,
+        11.385,
+        28.749,
         11.654
       ],
       "source_bbox_norm_xyxy": [
@@ -44,7 +44,7 @@
       ]
     },
     {
-      "cluster_depth_m": 3.253,
+      "cluster_depth_m": 3.254,
       "cluster_pixel_count": 347,
       "component_id": 1,
       "confidence": 0.942,
@@ -52,9 +52,9 @@
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        343.84,
-        -187.82,
-        -222.07
+        343.94,
+        -187.92,
+        -222.12
       ],
       "mean_colour_srgb": [
         35,
@@ -62,7 +62,7 @@
         29
       ],
       "observed_fraction": 0.9618,
-      "refined_shift_m": 1.0718,
+      "refined_shift_m": 1.0714,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -73,9 +73,9 @@
       "semantic_label": "tree",
       "separable": true,
       "size_m": [
-        7.976,
-        7.976,
-        4.422
+        7.974,
+        7.974,
+        4.42
       ],
       "source_bbox_norm_xyxy": [
         0.21892,
@@ -108,8 +108,8 @@
       "region_id": "terrain_grass_009",
       "semantic_label": "grass",
       "size_m": [
-        8.762,
-        9.408,
+        8.763,
+        9.409,
         0.2
       ],
       "sized_at": "measured_points",
@@ -126,9 +126,9 @@
       "kind": "structure",
       "layer_type": "architecture",
       "location_cm": [
-        1152.9,
-        80.56,
-        -161.24
+        1152.8,
+        80.54,
+        -161.19
       ],
       "mean_colour_srgb": [
         44,
@@ -136,8 +136,8 @@
         32
       ],
       "observed_fraction": 1.0,
-      "projected_scale_ratio": 1.404,
-      "refined_shift_m": 2.2693,
+      "projected_scale_ratio": 1.405,
+      "refined_shift_m": 2.2695,
       "region_bbox_norm_xyxy": [
         0.2942,
         0.5101,
@@ -163,9 +163,9 @@
       "kind": "ground_plane",
       "layer_type": "terrain",
       "location_cm": [
-        6962.2,
-        6610.4,
-        -1431.3
+        6951.6,
+        6602.9,
+        -1429.0
       ],
       "mean_colour_srgb": [
         61,
@@ -182,8 +182,8 @@
       "region_id": "terrain_field_029",
       "semantic_label": "field",
       "size_m": [
-        198.976,
-        168.16,
+        198.878,
+        167.89,
         0.2
       ],
       "sized_at": "measured_points",
@@ -196,7 +196,7 @@
     }
   ],
   "aspect_ratio": 1.3333333333333333,
-  "camera_fov_x_deg": 92.88072928447795,
+  "camera_fov_x_deg": 92.86779693466511,
   "classification": "PROVEN",
   "excluded_regions": [
     {

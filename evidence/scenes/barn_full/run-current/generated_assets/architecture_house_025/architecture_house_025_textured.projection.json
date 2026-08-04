@@ -1,22 +1,26 @@
 {
   "classification": "PROVEN",
   "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\crop.png",
+  "facing_min": 0.2,
   "fill_rgb": [
     44.1,
     38.1,
     32.4
   ],
+  "flat_filled_face_count": 90159,
   "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
   "mask_coverage": 0.1427,
-  "observed_from": "single view; sides stretch along the projection axis",
+  "observed_from": "single view; faces below the facing threshold are flat-filled rather than smeared, so textured_face_fraction is the share of this mesh's appearance that was actually observed",
   "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
-  "output_bytes": 16441032,
+  "output_bytes": 4578404,
   "projection": "object_space_front_minus_z",
   "schema_version": "crop_projection_v1",
   "texture_size": [
-    950,
+    958,
     950
   ],
-  "triangles": 149997,
-  "vertices": 449917
+  "textured_face_count": 59585,
+  "textured_face_fraction": 0.3979,
+  "triangles": 149744,
+  "vertices": 126895
 }
