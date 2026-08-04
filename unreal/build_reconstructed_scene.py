@@ -128,6 +128,19 @@ subsystem.new_level(MAP_PATH)
 
 actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 
+# new_level() on an existing path loads it rather than replacing it, so a second
+# run would stack another mesh and camera on the first. Re-running a builder
+# must converge on one scene, not accumulate copies -- the same defect left the
+# hybrid map with four competing directional lights.
+SHELL_LABEL = f"{SCENE_ID}_ReconstructedMesh"
+CAMERA_LABEL = f"{SCENE_ID}_Camera_Source"
+removed = []
+for actor in list(actor_subsystem.get_all_level_actors()):
+    if str(actor.get_actor_label()) in (SHELL_LABEL, CAMERA_LABEL):
+        removed.append(str(actor.get_actor_label()))
+        actor_subsystem.destroy_actor(actor)
+report["removed_stale_actors"] = removed
+
 shell = actor_subsystem.spawn_actor_from_object(
     mesh, unreal.Vector(0, 0, 0), unreal.Rotator(0, 0, 0))
 shell.set_actor_label(f"{SCENE_ID}_ReconstructedMesh")
