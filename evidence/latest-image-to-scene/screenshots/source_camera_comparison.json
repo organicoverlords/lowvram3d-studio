@@ -1,0 +1,51 @@
+{
+  "aspect_is_4_3": true,
+  "aspect_ratio": 1.3333333333333333,
+  "best_orientation": "identity",
+  "comparison_png": "evidence\\latest-image-to-scene\\screenshots\\source_camera_comparison.png",
+  "comparison_sha256": "4b692fce64c7b6f25b41d8447ef4ac059bd1163b7d9ac2b07d189141391861e7",
+  "difference_png": "evidence\\latest-image-to-scene\\screenshots\\source_camera_difference.png",
+  "dimensions": [
+    1448,
+    1086
+  ],
+  "mean_abs_difference": 71.13646794630472,
+  "non_dark_fraction": 0.33405446516691595,
+  "orientation_scores": {
+    "hflip": {
+      "combined": 0.6797340585731169,
+      "correlation": 0.22845190499994936,
+      "edge_iou": 0.05966132487323409,
+      "silhouette_iou": 0.39162082869993337
+    },
+    "identity": {
+      "combined": 1.7288890128528687,
+      "correlation": 0.7417129364735735,
+      "edge_iou": 0.24148310519690416,
+      "silhouette_iou": 0.7456929711823909
+    },
+    "rot180": {
+      "combined": 0.0206969950767035,
+      "correlation": -0.26241320743862395,
+      "edge_iou": 0.055425770383774005,
+      "silhouette_iou": 0.22768443213155345
+    },
+    "vflip": {
+      "combined": 0.16573687705512102,
+      "correlation": -0.16946919975940744,
+      "edge_iou": 0.0566778767343214,
+      "silhouette_iou": 0.27852820008020707
+    }
+  },
+  "p50_abs_difference": 70.0,
+  "p95_abs_difference": 123.0,
+  "render": "evidence\\latest-image-to-scene\\screenshots\\source_camera_clean.png",
+  "render_luma_std": 27.671222489657406,
+  "render_mean_luma": 19.000880111514707,
+  "render_sha256": "be8e1ecc8a82ef76baa342818178c2d042079ba0c93ef308a742692274b815c8",
+  "rgb_range": [
+    0,
+    171
+  ],
+  "source": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png"
+}

@@ -15,6 +15,7 @@ Both are loopback-only and require the editor to be running.
 
 from .bridge import Bridge, BridgeError, discover_port
 from .editor_mcp import EditorMCP, EditorMCPError
+from .viewport import Viewport, look_at_rotation
 
 __all__ = [
     "Bridge",
@@ -22,4 +23,6 @@ __all__ = [
     "discover_port",
     "EditorMCP",
     "EditorMCPError",
+    "Viewport",
+    "look_at_rotation",
 ]
