@@ -47,19 +47,39 @@ if ($DecodedBuildText -notmatch 'JUNGLE_BUILD_INTERNAL_UNREAL_GUARD_DELEGATED=PR
 }
 Write-Host 'JUNGLE_DECODED_BUILD_GUARD_CHECKED_IN_PATCH=PROVEN'
 
+$OffscreenCapturePatchScript = Join-Path $RepoRoot 'scripts\procedural_jungle\patch_v3_offscreen_capture.py'
+if (-not (Test-Path -LiteralPath $OffscreenCapturePatchScript -PathType Leaf)) {
+    throw "Off-screen capture patch script is missing: $OffscreenCapturePatchScript"
+}
+& $Python $OffscreenCapturePatchScript --root $ExtractRoot
+if ($LASTEXITCODE -ne 0) {
+    throw "V3 off-screen capture source patch failed with exit code $LASTEXITCODE"
+}
+$ProofDirectorSource = Join-Path $ExtractRoot 'project_template\Source\ProceduralJungle58\JungleProofDirector.cpp'
+$ProofDirectorText = Get-Content -LiteralPath $ProofDirectorSource -Raw
+if ($ProofDirectorText -notmatch 'SceneCapture2D_RenderTarget_PNG' -or
+    $ProofDirectorText -notmatch 'JUNGLE_OFFSCREEN_CAPTURE_NONBLACK_FRACTION') {
+    throw 'Off-screen capture source markers are missing after checked-in patch'
+}
+Write-Host 'JUNGLE_V3_OFFSCREEN_CAPTURE_PATCH=PROVEN'
+
 '@
 $PatchedSource = $SourceText.Replace($Anchor, $Anchor + "`n" + $Insertion.TrimEnd())
 if ($PatchedSource -notmatch 'JUNGLE_DECODED_BUILD_GUARD_CHECKED_IN_PATCH=PROVEN') {
     throw 'Checked-in decoded-guard patch insertion marker is missing'
 }
+if ($PatchedSource -notmatch 'JUNGLE_V3_OFFSCREEN_CAPTURE_PATCH=PROVEN') {
+    throw 'Checked-in off-screen capture patch insertion marker is missing'
+}
 
-$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-v3-declaration-anchor-$Head"
+$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-v3-offscreen-$Head"
 if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
-$PatchedWrapper = Join-Path $TempRoot 'run-procedural-jungle-v3-declaration-anchor.ps1'
+$PatchedWrapper = Join-Path $TempRoot 'run-procedural-jungle-v3-offscreen.ps1'
 [IO.File]::WriteAllText($PatchedWrapper, $PatchedSource, (New-Object Text.UTF8Encoding($false)))
 
 Write-Host "JUNGLE_V3_COEXISTENCE_WRAPPER_SOURCE=$SourceCommit"
 Write-Host 'JUNGLE_V3_COEXISTENCE_DECLARATION_INJECTION=PROVEN'
+Write-Host 'JUNGLE_V3_OFFSCREEN_CAPTURE_INJECTION=PROVEN'
 & powershell -NoProfile -ExecutionPolicy Bypass -File $PatchedWrapper -ExpectedBranch $ExpectedBranch
-if ($LASTEXITCODE -ne 0) { throw "Declaration-anchor V3 wrapper failed with exit code $LASTEXITCODE" }
+if ($LASTEXITCODE -ne 0) { throw "Offscreen-capture V3 wrapper failed with exit code $LASTEXITCODE" }
