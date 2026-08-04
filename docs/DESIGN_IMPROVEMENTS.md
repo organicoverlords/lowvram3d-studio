@@ -27,15 +27,35 @@ news: the fixes are modular and individually testable.
 
 ---
 
-## 1. Instance segmentation — fixes the worst defect
+## 1. Instance segmentation — retracted as the top item
 
-**Defect it fixes.** SegFormer returns one mask per *class*. Every tree in the
-photograph is a single "tree" region, which is why the conditioning crop was a
-wall of foliage running off its own frame on two sides, why the generator
-returned a 1.96 x 1.13 x 0.17 m slab, and why placement had to invent instances
-by k-means over a semantic blob. It is also why a tree-trunk shadow could be
-promoted to a building: with no instance boundary, "is this one thing?" is never
-asked.
+> **Superseded by measurement.** This section was written before anyone looked
+> at the photograph. SAM 2.1 tiny was downloaded and run, and its masks plotted
+> over the region, which is when the premise collapsed: the "tree line" is **one
+> wind-swept tree** arching over the barn, plus one small tree at the right.
+>
+> There was nothing to instance-segment. Connected components already declines
+> to split that tree, and SAM declines too, at every threshold tried — both are
+> right. The defect was never missing instance segmentation; it was that
+> clustering *invented* twelve instances from a pixel budget, and every symptom
+> below followed from that one number.
+>
+> Fixed by emitting one instance per connected component. SAM is downloaded and
+> works with no install, and remains the right tool for a scene that genuinely
+> contains several touching objects — but it is not what was wrong here, and
+> shipping it would have papered over the real bug.
+>
+> Kept, unedited below, because the reasoning was sound and the conclusion was
+> still wrong. The pipeline had three independent symptoms and I inferred a
+> cause from them instead of opening the image.
+
+**Defect it was thought to fix.** SegFormer returns one mask per *class*. Every
+tree in the photograph is a single "tree" region, which is why the conditioning
+crop was a wall of foliage running off its own frame on two sides, why the
+generator returned a 1.96 x 1.13 x 0.17 m slab, and why placement had to invent
+instances by k-means over a semantic blob. It is also why a tree-trunk shadow
+could be promoted to a building: with no instance boundary, "is this one thing?"
+is never asked.
 
 ### Option A — SAM 2.1 tiny automatic masks, intersected with the SegFormer class map (recommended)
 
@@ -136,9 +156,21 @@ certified a world-space-wrong mesh twice in this project.
 
 ## Order
 
-1 first: it is the largest measured defect, the cheapest option is 0.5 GB and
-Apache-2.0, and both 2 and 4 get better inputs once regions are instances rather
-than class blobs.
+~~1 first~~ — retracted, see above. 1 was ranked top from three symptoms that
+shared a cause nobody had checked. Remaining order: **2** (amodal completion,
+which subsumes the `trunk_support` hack), then **3** (multi-view texturing,
+already installed), with **4** done.
+
+## The lesson worth keeping
+
+Three separate diagnostics — crop border contact, projected scale disagreement,
+and pairwise overlap — each independently pointed at the vegetation region, and
+each produced a plausible, self-consistent story about instance segmentation.
+All three were downstream of one wrong number: a cluster count taken from the
+pixel budget. Opening the image took two minutes and settled what a day of
+inference had got wrong.
+
+Agreement between measurements is not evidence when they share an input.
 
 ## Sources
 
