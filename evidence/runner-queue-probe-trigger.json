@@ -1,5 +1,5 @@
 {
-  "purpose": "Refresh the queue state for the beveled robe bust diagnostic run 30928837224.",
-  "target_run_id": 30928837224,
-  "requested_at": "2026-08-04T19:28:00+03:00"
+  "purpose": "Locate the post-build diagnostic with the face lowered onto a raised single-piece robe and no exposed neck.",
+  "target_head_sha": "b3a0e658b9bf8e752a8e687435ebcd3850de528e",
+  "requested_at": "2026-08-04T19:46:00+03:00"
 }
