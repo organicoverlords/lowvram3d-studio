@@ -72,6 +72,20 @@ def principled(name: str, color: tuple[float, float, float, float], roughness: f
     return material
 
 
+def unlit(name: str, color: tuple[float, float, float, float]) -> bpy.types.Material:
+    material = bpy.data.materials.get(name) or bpy.data.materials.new(name)
+    material.use_nodes = True
+    nodes = material.node_tree.nodes
+    links = material.node_tree.links
+    nodes.clear()
+    output = nodes.new("ShaderNodeOutputMaterial")
+    emission = nodes.new("ShaderNodeEmission")
+    emission.inputs["Color"].default_value = color
+    emission.inputs["Strength"].default_value = 1.0
+    links.new(emission.outputs["Emission"], output.inputs["Surface"])
+    return material
+
+
 def sphere(name: str, location: Vector, scale: tuple[float, float, float], material: bpy.types.Material) -> bpy.types.Object:
     bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, location=location)
     obj = bpy.context.object
@@ -93,28 +107,15 @@ def silhouette_mesh(
     material: bpy.types.Material,
 ) -> bpy.types.Object:
     outline = [
-        (-0.54, -0.20),
-        (-0.50, 0.24),
-        (-0.38, 0.58),
-        (-0.18, 0.76),
-        (0.05, 0.82),
-        (0.28, 0.70),
-        (0.46, 0.43),
-        (0.54, 0.08),
-        (0.48, -0.30),
-        (0.29, -0.48),
-        (0.00, -0.54),
-        (-0.30, -0.44),
+        (-0.54, -0.20), (-0.50, 0.24), (-0.38, 0.58), (-0.18, 0.76),
+        (0.05, 0.82), (0.28, 0.70), (0.46, 0.43), (0.54, 0.08),
+        (0.48, -0.30), (0.29, -0.48), (0.00, -0.54), (-0.30, -0.44),
     ]
     vertices = [(center.x, y, center.z)]
-    vertices.extend(
-        (center.x + width * x, y, center.z + height * z) for x, z in outline
-    )
+    vertices.extend((center.x + width * x, y, center.z + height * z) for x, z in outline)
     faces = []
     for index in range(len(outline)):
-        current = index + 1
-        following = (index + 1) % len(outline) + 1
-        faces.append((0, current, following))
+        faces.append((0, index + 1, (index + 1) % len(outline) + 1))
     mesh = bpy.data.meshes.new(f"MESH_{name}")
     mesh.from_pydata(vertices, [], faces)
     mesh.update()
@@ -145,15 +146,10 @@ def render(scene: bpy.types.Scene, output: Path) -> None:
 
 
 def hide_original_character_shell() -> None:
-    names = [
-        "CHAR_Antinous_HairCap",
-        "CHAR_Antinous_Neck",
-        "CHAR_Antinous_Torso",
-        "CHAR_Antinous_Shoulder_L",
-        "CHAR_Antinous_Shoulder_R",
-        "COSTUME_GoldNeckTrim",
-    ]
-    for name in names:
+    for name in [
+        "CHAR_Antinous_HairCap", "CHAR_Antinous_Neck", "CHAR_Antinous_Torso",
+        "CHAR_Antinous_Shoulder_L", "CHAR_Antinous_Shoulder_R", "COSTUME_GoldNeckTrim",
+    ]:
         obj = bpy.data.objects.get(name)
         if obj is not None:
             obj.hide_render = True
@@ -214,63 +210,55 @@ def main() -> int:
     width = max(maximum.x - minimum.x, 0.1)
     front_y = center.y
 
-    robe = principled("MAT_FACEPLATE_V6_ROBE", (0.003, 0.0035, 0.005, 1.0), 0.88)
-    skin = principled("MAT_FACEPLATE_V6_SKIN", (0.135, 0.064, 0.055, 1.0), 0.60)
-    hair = principled("MAT_FACEPLATE_V6_HAIR", (0.002, 0.001, 0.0007, 1.0), 0.62)
+    robe = principled("MAT_FACEPLATE_V7_ROBE", (0.003, 0.0035, 0.005, 1.0), 0.88)
+    skin = principled("MAT_FACEPLATE_V7_SKIN", (0.135, 0.064, 0.055, 1.0), 0.60)
+    hair = unlit("MAT_FACEPLATE_V7_HAIR_UNLIT", (0.002, 0.001, 0.0007, 1.0))
 
     face_plate.location.y -= height * 0.035
     neck = sphere(
-        "DIAG_V6_Neck",
+        "DIAG_V7_Neck",
         Vector((center.x, front_y + height * 0.34, minimum.z - height * 0.22)),
-        (width * 0.18, height * 0.11, height * 0.29),
-        skin,
+        (width * 0.18, height * 0.11, height * 0.29), skin,
     )
     torso = sphere(
-        "DIAG_V6_Torso",
+        "DIAG_V7_Torso",
         Vector((center.x, front_y + height * 0.52, minimum.z - height * 0.82)),
-        (width * 1.00, height * 0.31, height * 0.59),
-        robe,
+        (width * 1.00, height * 0.31, height * 0.59), robe,
     )
     shoulder_left = sphere(
-        "DIAG_V6_Shoulder_L",
+        "DIAG_V7_Shoulder_L",
         Vector((center.x - width * 0.77, front_y + height * 0.48, minimum.z - height * 0.69)),
-        (width * 0.47, height * 0.23, height * 0.33),
-        robe,
+        (width * 0.47, height * 0.23, height * 0.33), robe,
     )
     shoulder_right = sphere(
-        "DIAG_V6_Shoulder_R",
+        "DIAG_V7_Shoulder_R",
         Vector((center.x + width * 0.77, front_y + height * 0.48, minimum.z - height * 0.69)),
-        (width * 0.47, height * 0.23, height * 0.33),
-        robe,
+        (width * 0.47, height * 0.23, height * 0.33), robe,
     )
     render(scene, output_dir / "variant_02_natural_bust.png")
 
     backplate = silhouette_mesh(
-        "DIAG_V6_HairHeadSilhouette",
-        center=Vector((center.x, front_y, center.z + height * 0.03)),
-        width=width * 1.04,
-        height=height * 1.04,
-        y=front_y + height * 0.055,
+        "DIAG_V7_HairHeadSilhouette",
+        center=Vector((center.x, front_y, center.z + height * 0.025)),
+        width=width * 0.62,
+        height=height * 0.70,
+        y=front_y + height * 0.050,
         material=hair,
     )
     ear_left = sphere(
-        "DIAG_V6_Ear_L",
-        Vector((center.x - width * 0.50, front_y + height * 0.10, center.z - height * 0.01)),
-        (width * 0.075, height * 0.042, height * 0.125),
-        skin,
+        "DIAG_V7_Ear_L",
+        Vector((center.x - width * 0.31, front_y + height * 0.09, center.z - height * 0.015)),
+        (width * 0.052, height * 0.038, height * 0.105), skin,
     )
     ear_right = sphere(
-        "DIAG_V6_Ear_R",
-        Vector((center.x + width * 0.50, front_y + height * 0.10, center.z - height * 0.01)),
-        (width * 0.075, height * 0.042, height * 0.125),
-        skin,
+        "DIAG_V7_Ear_R",
+        Vector((center.x + width * 0.31, front_y + height * 0.09, center.z - height * 0.015)),
+        (width * 0.052, height * 0.038, height * 0.105), skin,
     )
     area_light(
-        "DIAG_V6_FrontFill",
+        "DIAG_V7_FrontFill",
         Vector((center.x + width * 1.2, front_y - height * 2.4, center.z + height * 1.1)),
-        260.0,
-        (0.72, 0.78, 1.0),
-        height * 2.0,
+        220.0, (0.72, 0.78, 1.0), height * 2.0,
         Vector((center.x, center.y, center.z - height * 0.18)),
     )
     camera.data.dof.use_dof = False
@@ -288,7 +276,7 @@ def main() -> int:
         "variant_policy": {
             "variant_01": "derived face plate only",
             "variant_02": "face plate with true 3D neck and robe only",
-            "variant_03": "variant 02 plus a thin dark head/hair silhouette and small ears behind the face",
+            "variant_03": "variant 02 plus visible-alpha-sized unlit hair/head silhouette and small ears",
         },
     }
     (output_dir / "diagnostic.json").write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
