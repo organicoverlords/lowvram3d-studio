@@ -1,0 +1,6 @@
+{
+  "request": "render the feathered public-reference head on an opaque scene-matched camera-space card and test placement independently of FaceVerse transforms",
+  "visual_gate": "manual inspection required; v13 transparent shader rejected",
+  "branch": "agent/blender-beggars-scene-20260804",
+  "requested_at": "2026-08-04T06:30:00Z"
+}
