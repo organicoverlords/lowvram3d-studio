@@ -1,5 +1,5 @@
 {
-  "purpose": "Locate the full Beggars scene build using the alpha-aligned robe and stable clean sprite remapping.",
-  "target_head_sha": "a492f02e6a64da14a82681894a0ae70014a752ba",
-  "requested_at": "2026-08-04T19:57:00+03:00"
+  "purpose": "Locate the Blender 5 compositor-head v15 retry and current self-hosted queue owner.",
+  "target_head_sha": "e853a781ac3b043178fe9395609c64964b908692",
+  "requested_at": "2026-08-04T20:34:00Z"
 }
