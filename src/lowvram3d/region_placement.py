@@ -69,8 +69,48 @@ def _footprint(region: dict[str, Any], fov_x: float, aspect: float
     return centre, width, height
 
 
-def place(segmentation: dict[str, Any], fov_x_deg: float | None = None
-          ) -> dict[str, Any]:
+def scatter_offsets(mask_path: Path | None, bbox: list[float], count: int
+                    ) -> list[float] | None:
+    """Where along a scatter region's width its instances should actually stand.
+
+    Spreading instances evenly across the bounding box puts them wherever the
+    box reaches, including columns the region does not occupy. On this barn
+    scene the tree line's box spans the barn, so an even spread planted a tree
+    inside the building -- the trees are *behind* it, and the pixels say so.
+
+    Sampling the mask's column distribution at even quantiles instead places
+    instances only where the region was actually observed, and concentrates
+    them where it is densest. Returns offsets in 0..1 across the bbox width, or
+    None when there is no mask to consult.
+    """
+    if mask_path is None or not Path(mask_path).is_file():
+        return None
+    try:
+        import numpy as np
+        from PIL import Image
+    except Exception:
+        return None
+
+    mask = np.asarray(Image.open(mask_path).convert("L")) >= 128
+    height, width = mask.shape
+    x0 = int(round(bbox[0] * width))
+    x1 = max(x0 + 1, int(round(bbox[2] * width)))
+    columns = mask[:, x0:x1].sum(axis=0).astype(float)
+    total = columns.sum()
+    if total <= 0:
+        return None
+
+    # Even quantiles of the column mass: dense parts of the line get more
+    # instances, and empty columns get none.
+    cumulative = np.cumsum(columns) / total
+    targets = (np.arange(count) + 0.5) / count
+    indices = np.searchsorted(cumulative, targets)
+    span = max(1, x1 - x0 - 1)
+    return [float(min(index, span)) / span for index in indices]
+
+
+def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
+          mask_dir: Path | str | None = None) -> dict[str, Any]:
     aspect = segmentation["image_dimensions"][0] / segmentation["image_dimensions"][1]
     fov_x = float(fov_x_deg or segmentation.get("camera", {}).get("fov_x_deg") or 90.0)
 
@@ -129,10 +169,15 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None
 
         elif layer in SCATTER_TARGET:
             count = SCATTER_TARGET[layer]
+            observed = scatter_offsets(
+                Path(mask_dir) / f"{region['id']}.png" if mask_dir else None,
+                bbox, count)
             for index in range(count):
                 # Deterministic spread across the footprint; no RNG so a rerun
-                # reproduces the same scene.
-                t = (index + 0.5) / count
+                # reproduces the same scene. Where the region's mask is
+                # available the spread follows the pixels it actually occupies
+                # instead of its bounding box.
+                t = observed[index] if observed else (index + 0.5) / count
                 offset = (t - 0.5) * width
                 jitter = ((index * 37) % 11 - 5) / 10.0
                 # A scatter region's bbox covers the whole tree line, so the
@@ -140,8 +185,10 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None
                 # the slice of the image it actually stands in, which is a crop
                 # of one subject and the right input for a generator.
                 slice_width = (bbox[2] - bbox[0]) / count
-                instance_bbox = [bbox[0] + index * slice_width, bbox[1],
-                                 bbox[0] + (index + 1) * slice_width, bbox[3]]
+                slice_centre = bbox[0] + t * (bbox[2] - bbox[0])
+                instance_bbox = [
+                    max(bbox[0], slice_centre - slice_width * 0.5), bbox[1],
+                    min(bbox[2], slice_centre + slice_width * 0.5), bbox[3]]
                 actors.append({
                     **common,
                     "kind": "scatter_instance",

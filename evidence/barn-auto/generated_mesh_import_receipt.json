@@ -1,29 +1,55 @@
 {
   "classification": "PROVEN",
   "failures": [],
-  "imported_count": 1,
+  "imported_count": 2,
   "meshes": {
     "architecture_house_025": {
       "classification": "PROVEN",
       "destination": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025",
       "extent_cm": [
-        98.53092956542969,
-        98.6366081237793,
-        37.155540466308594
+        98.63754272460938,
+        73.77582931518555,
+        38.4134578704834
       ],
-      "glb": "C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/evidence/barn-auto/generated_assets/architecture_house_025/architecture_house_025_lod.glb",
-      "glb_bytes": 12596724,
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+      "glb_bytes": 12599040,
       "imported_object_paths": [
         "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod"
       ],
       "nanite_disabled": true,
       "nanite_enabled": false,
       "package_name": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod",
+      "replaced_stale_import": "untagged",
       "reused_existing": false,
       "schema_version": "generated_mesh_import_v1",
+      "source_sha256": "a3173f9bcb3b24c74ca899a026aba5679ecd86ab296851a3616d393ccf9884ab",
       "static_mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod",
-      "triangles": 149967,
-      "vertices": 449841
+      "triangles": 149998,
+      "vertices": 449920
+    },
+    "vegetation_tree_004": {
+      "classification": "PROVEN",
+      "destination": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004",
+      "extent_cm": [
+        87.47581481933594,
+        73.53034210205078,
+        98.42292404174805
+      ],
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+      "glb_bytes": 12591932,
+      "imported_object_paths": [
+        "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_lod/StaticMeshes/vegetation_tree_004_lod.vegetation_tree_004_lod"
+      ],
+      "nanite_disabled": true,
+      "nanite_enabled": false,
+      "package_name": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_lod/StaticMeshes/vegetation_tree_004_lod",
+      "replaced_stale_import": "untagged",
+      "reused_existing": false,
+      "schema_version": "generated_mesh_import_v1",
+      "source_sha256": "4ecb40a1f97ea540e09ec2fbd26c47533d8462828f4dea1ee19131210a1608b3",
+      "static_mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_lod/StaticMeshes/vegetation_tree_004_lod.vegetation_tree_004_lod",
+      "triangles": 149898,
+      "vertices": 449676
     }
   },
   "package_root": "/Game/AgentProof/BarnGen",

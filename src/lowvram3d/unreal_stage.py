@@ -55,6 +55,16 @@ def _bridge():
     return Bridge()
 
 
+def _is_handler_timeout(exc: Exception) -> bool:
+    """Did the editor run out of handler time, or did the script fail?
+
+    The bridge reports both as the same exception type, and treating a script
+    error as a timeout means waiting out the whole settle window for work that
+    was never started.
+    """
+    return "timed out" in str(exc).lower()
+
+
 def import_generated_meshes(generated_assets: dict[str, Any],
                             package_root: str,
                             timeout: float = 900.0,
@@ -84,13 +94,24 @@ def import_generated_meshes(generated_assets: dict[str, Any],
 
     for asset in assets:
         destination = f"{package_root}/GeneratedMeshes/{asset['asset_id']}"
-        request = {"glb": asset["glb"], "destination": destination}
+        # The editor resolves a relative path against the project directory.
+        request = {"glb": str(Path(asset["glb"]).resolve()),
+                   "destination": destination}
         code = MESH_IMPORTER.read_text(encoding="utf-8")
         try:
             bridge.python("MESH_IMPORT_REQUEST = " + json.dumps(request),
                           "MESH_IMPORT_REQUEST", timeout=120.0)
             result = bridge.python_json(code, "result", timeout=timeout)
         except Exception as exc:
+            # Only a *timeout* means "still working". Anything else is a real
+            # error, and polling through it waits half an hour for a mesh that
+            # will never appear -- which is exactly what a relative GLB path,
+            # unresolvable from the editor's own directory, did here.
+            if not _is_handler_timeout(exc):
+                receipt["failures"].append({
+                    "asset_id": asset["asset_id"], "glb": request["glb"],
+                    "error": f"{type(exc).__name__}: {exc}"})
+                continue
             # The editor is still importing. Poll in *query-only* mode: asking
             # the importer again would start a second import of the same file
             # on every poll, which is worse than waiting.
@@ -173,8 +194,16 @@ def build_scene(placement: dict[str, Any], scene_id: str,
 
 def capture_scene(output: Path, scene_id: str, fov_deg: float,
                   width: int = 1280, height: int = 720,
+                  location: tuple[float, float, float] = (0.0, 0.0, 0.0),
+                  rotation: tuple[float, float, float] = (0.0, 0.0, 0.0),
                   timeout: float = 600.0) -> dict[str, Any]:
-    """Render the built scene from its own camera, as evidence it exists."""
+    """Render the built scene, by default from its own source camera.
+
+    `location` is (x, y, z) in centimetres and `rotation` is (pitch, yaw, roll)
+    in degrees, so a caller can also take the off-axis views that are the one
+    metric both pipelines have to satisfy -- and which the source camera, by
+    construction, cannot provide.
+    """
     try:
         bridge = _bridge()
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -185,8 +214,10 @@ def capture_scene(output: Path, scene_id: str, fov_deg: float,
         result = bridge.call("capture_scene_png", {
             "outputPath": str(output), "width": int(width), "height": int(height),
             "fov": float(fov_deg), "world": "editor",
-            "location": {"x": 0.0, "y": 0.0, "z": 0.0},
-            "rotation": {"pitch": 0.0, "yaw": 0.0, "roll": 0.0},
+            "location": {"x": float(location[0]), "y": float(location[1]),
+                         "z": float(location[2])},
+            "rotation": {"pitch": float(rotation[0]), "yaw": float(rotation[1]),
+                         "roll": float(rotation[2])},
         }, timeout=timeout)
         result["available"] = True
         return result

@@ -222,7 +222,8 @@ else:
 
 camera = actor_subsystem.spawn_actor_from_class(
     unreal.CameraActor, unreal.Vector(0, 0, 0),
-    unreal.Rotator(0.0, SOURCE_CAMERA_YAW, 0.0))
+    # unreal.Rotator is (roll, pitch, yaw); named so this cannot be misread.
+    unreal.Rotator(roll=0.0, pitch=0.0, yaw=SOURCE_CAMERA_YAW))
 camera.set_actor_label(f"{SCENE_ID}_Camera_Source")
 camera_component = camera.get_component_by_class(unreal.CameraComponent)
 camera_component.set_editor_property("field_of_view", FOV)

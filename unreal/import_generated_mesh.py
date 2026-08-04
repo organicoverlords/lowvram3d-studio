@@ -18,6 +18,7 @@ Configure with a `MESH_IMPORT_REQUEST` global holding `glb` and `destination`.
     python -m uemcp python @unreal/import_generated_mesh.py --json
 """
 
+import hashlib
 import json
 import os
 
@@ -26,6 +27,7 @@ import unreal
 REQUEST = globals().get("MESH_IMPORT_REQUEST") or {}
 GLB_PATH = REQUEST["glb"]
 DESTINATION = REQUEST["destination"]
+SOURCE_TAG = "lowvram3d.source_sha256"
 
 report = {"schema_version": "generated_mesh_import_v1",
           "glb": GLB_PATH, "destination": DESTINATION}
@@ -33,6 +35,13 @@ report = {"schema_version": "generated_mesh_import_v1",
 if not os.path.isfile(GLB_PATH):
     raise RuntimeError("generated mesh not found: " + str(GLB_PATH))
 report["glb_bytes"] = os.path.getsize(GLB_PATH)
+
+digest = hashlib.sha256()
+with open(GLB_PATH, "rb") as handle:
+    for block in iter(lambda: handle.read(1 << 20), b""):
+        digest.update(block)
+SOURCE_SHA256 = digest.hexdigest()
+report["source_sha256"] = SOURCE_SHA256
 
 
 def find_static_mesh(path):
@@ -49,10 +58,19 @@ if REQUEST.get("query_only"):
     # here would queue a fresh copy of the one already running, every poll.
     report["query_only"] = True
     mesh = existing
-elif existing is not None and not REQUEST.get("force_reimport"):
+elif (existing is not None and not REQUEST.get("force_reimport")
+      and str(unreal.EditorAssetLibrary.get_metadata_tag(existing, SOURCE_TAG))
+      == SOURCE_SHA256):
+    # Reuse only when the asset came from *this* file. Regenerating a mesh
+    # keeps its filename, so matching on path alone silently keeps the previous
+    # generation: a scene rendered with a mesh that had been replaced an hour
+    # earlier, and nothing in any receipt said so.
     mesh = existing
     report["reused_existing"] = True
 else:
+    if existing is not None:
+        report["replaced_stale_import"] = str(
+            unreal.EditorAssetLibrary.get_metadata_tag(existing, SOURCE_TAG)) or "untagged"
     task = unreal.AssetImportTask()
     task.set_editor_property("filename", GLB_PATH)
     task.set_editor_property("destination_path", DESTINATION)
@@ -75,6 +93,7 @@ if bool(settings.get_editor_property("enabled")):
     settings.set_editor_property("enabled", False)
     mesh.set_editor_property("nanite_settings", settings)
     report["nanite_disabled"] = True
+unreal.EditorAssetLibrary.set_metadata_tag(mesh, SOURCE_TAG, SOURCE_SHA256)
 unreal.EditorAssetLibrary.save_loaded_asset(mesh)
 
 extent = mesh.get_bounds().box_extent

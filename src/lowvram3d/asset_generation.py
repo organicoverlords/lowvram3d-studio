@@ -338,7 +338,12 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
              settle_seconds: float = DEFAULT_SETTLE_SECONDS,
              timeout: float = 1800.0) -> dict[str, Any]:
     """Crop, generate and verify one mesh per eligible region."""
-    output_dir = Path(output_dir)
+    # Absolute from here on. These paths are handed to the Unreal editor, which
+    # resolves a relative one against its *own* project directory -- so a
+    # perfectly good mesh reports as "not found" from a different working
+    # directory than the one that wrote it.
+    output_dir = Path(output_dir).resolve()
+    image = Path(image).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
     def mask_for(region_id: str) -> Path | None:

@@ -3,21 +3,89 @@
   "camera_fov_deg": 92.87311873027492,
   "camera_label": "barn_gen_Camera_Source",
   "classification": "PROVEN",
-  "generated_actor_count": 1,
+  "generated_actor_count": 3,
+  "generated_actors": [
+    {
+      "kind": "scatter_instance",
+      "label": "vegetation_tree_004_00",
+      "layer": "vegetation",
+      "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_lod/StaticMeshes/vegetation_tree_004_lod.vegetation_tree_004_lod",
+      "placed_size_m": [
+        11.42,
+        13.58,
+        15.28
+      ],
+      "requested_size_m": [
+        2.33,
+        2.33,
+        15.28
+      ],
+      "source": "generated",
+      "uniform_scale": 7.76378
+    },
+    {
+      "kind": "scatter_instance",
+      "label": "vegetation_tree_004_06",
+      "layer": "vegetation",
+      "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_lod/StaticMeshes/vegetation_tree_004_lod.vegetation_tree_004_lod",
+      "placed_size_m": [
+        11.42,
+        13.58,
+        15.28
+      ],
+      "requested_size_m": [
+        2.33,
+        2.33,
+        15.28
+      ],
+      "source": "generated",
+      "uniform_scale": 7.76378
+    },
+    {
+      "kind": "structure",
+      "label": "architecture_house_025",
+      "layer": "architecture",
+      "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod",
+      "placed_size_m": [
+        8.98,
+        12.01,
+        4.68
+      ],
+      "requested_size_m": [
+        8.62,
+        14.36,
+        4.68
+      ],
+      "source": "generated",
+      "uniform_scale": 6.0875
+    }
+  ],
   "generated_import_failures": [],
   "generated_mesh_yaw_deg": -90.0,
   "generated_meshes": {
     "architecture_house_025": {
       "extent_cm": [
-        98.53092956542969,
-        98.6366081237793,
-        37.155540466308594
+        98.63754272460938,
+        73.77582931518555,
+        38.4134578704834
       ],
       "path": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod",
-      "triangles": 149967
+      "triangles": 149998
+    },
+    "vegetation_tree_004": {
+      "extent_cm": [
+        87.47581481933594,
+        73.53034210205078,
+        98.42292404174805
+      ],
+      "path": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_lod/StaticMeshes/vegetation_tree_004_lod.vegetation_tree_004_lod",
+      "triangles": 149898
     }
   },
   "geometry_source": "mixed",
+  "instance_stride": {
+    "vegetation_tree_004": 6
+  },
   "kinds": [
     "ground_plane",
     "scatter_instance",
@@ -29,9 +97,62 @@
     "vegetation"
   ],
   "map": "/Game/AgentProof/BarnGen/Maps/L_barn_gen",
-  "primitive_actor_count": 15,
-  "removed_stale_actors": 20,
+  "primitive_actor_count": 3,
+  "removed_stale_actors": 10,
   "scene_id": "barn_gen",
   "schema_version": "structural_build_receipt_v2",
-  "spawned_count": 16
+  "skipped_instance_count": 10,
+  "skipped_instances": [
+    {
+      "instance_index": 1,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    },
+    {
+      "instance_index": 2,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    },
+    {
+      "instance_index": 3,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    },
+    {
+      "instance_index": 4,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    },
+    {
+      "instance_index": 5,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    },
+    {
+      "instance_index": 7,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    },
+    {
+      "instance_index": 8,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    },
+    {
+      "instance_index": 9,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    },
+    {
+      "instance_index": 10,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    },
+    {
+      "instance_index": 11,
+      "reason": "generated mesh is 6x wider than the slice placement sized for a primitive",
+      "region_id": "vegetation_tree_004"
+    }
+  ],
+  "spawned_count": 6
 }
