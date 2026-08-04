@@ -1,0 +1,319 @@
+{
+  "actor_count": 16,
+  "actors": [
+    {
+      "confidence": 0.809,
+      "instance_index": 0,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1269.0949999999998,
+        -1397.6532595976623,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 1,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1405.739,
+        -1165.0054341148957,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 2,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1542.3829999999998,
+        -932.3576086321289,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 3,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1303.2559999999999,
+        -699.7097831493622,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 4,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1439.8999999999999,
+        -467.0619576665956,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 5,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1576.544,
+        -234.41413218382888,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 6,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1337.417,
+        -1.766306701062259,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 7,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1474.061,
+        230.88151878170456,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 8,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1610.7050000000002,
+        463.52934426447143,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 9,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1371.578,
+        696.1771697472379,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 10,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1508.222,
+        928.8249952300047,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.809,
+      "instance_index": 11,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1269.0949999999998,
+        1161.4728207127716,
+        -505.97117099570903
+      ],
+      "observed_fraction": 0.9618,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.3264782548276672,
+        2.3264782548276672,
+        15.285870520521176
+      ]
+    },
+    {
+      "confidence": 0.787,
+      "kind": "ground_plane",
+      "layer_type": "terrain",
+      "location_cm": [
+        232.39999999999998,
+        0.0,
+        -183.26704711347713
+      ],
+      "observed_fraction": 1.0,
+      "region_id": "terrain_grass_009",
+      "semantic_label": "grass",
+      "size_m": [
+        8.765,
+        4.887121256359389,
+        0.2
+      ]
+    },
+    {
+      "assumption": "building depth inferred from width",
+      "confidence": 0.582,
+      "kind": "structure",
+      "layer_type": "architecture",
+      "location_cm": [
+        1353.1000000000001,
+        132.59672623677397,
+        -255.447877637476
+      ],
+      "observed_fraction": 1.0,
+      "region_id": "architecture_house_025",
+      "semantic_label": "house",
+      "size_m": [
+        8.618218120728352,
+        14.363696867880588,
+        4.6778759213145165
+      ]
+    },
+    {
+      "assumption": "building depth inferred from width",
+      "confidence": 0.518,
+      "kind": "structure",
+      "layer_type": "architecture",
+      "location_cm": [
+        1586.4,
+        -772.9576964820197,
+        -224.68148838180414
+      ],
+      "observed_fraction": 1.0,
+      "region_id": "architecture_hovel_079",
+      "semantic_label": "hovel",
+      "size_m": [
+        4.18738239371701,
+        6.978970656195016,
+        6.290080866279017
+      ]
+    },
+    {
+      "confidence": 0.509,
+      "kind": "ground_plane",
+      "layer_type": "terrain",
+      "location_cm": [
+        6955.200000000001,
+        6383.533055045458,
+        -2050.204481592387
+      ],
+      "observed_fraction": 0.9949,
+      "region_id": "terrain_field_029",
+      "semantic_label": "field",
+      "size_m": [
+        199.129,
+        18.589690715918834,
+        0.2
+      ]
+    }
+  ],
+  "aspect_ratio": 1.3333333333333333,
+  "camera_fov_x_deg": 92.87311873027492,
+  "classification": "PROVEN",
+  "kinds": [
+    "ground_plane",
+    "scatter_instance",
+    "structure"
+  ],
+  "schema_version": "region_placement_v1",
+  "skipped_regions": [
+    "sky_sky_002"
+  ]
+}

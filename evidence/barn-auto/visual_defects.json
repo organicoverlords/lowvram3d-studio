@@ -1,0 +1,21 @@
+{
+  "classification": "PROVEN",
+  "defects": [
+    {
+      "automatic_repair_safe": false,
+      "defect_id": "missing_source_view_render",
+      "repair_owner": "unreal_assembly|source_view_validation",
+      "severity": "high",
+      "stage": "source_view_validation"
+    },
+    {
+      "automatic_repair_safe": false,
+      "defect_id": "missing_offset_views",
+      "repair_owner": "unseen_world_completion",
+      "severity": "high",
+      "stage": "offset_view_validation"
+    }
+  ],
+  "repair_routes": "pipeline_state.repair_routes",
+  "schema_version": "visual_defects_v1"
+}

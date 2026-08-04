@@ -1,0 +1,21 @@
+{
+  "available": true,
+  "camera_fov_deg": 92.87311873027492,
+  "camera_label": "barn_auto_Camera_Source",
+  "classification": "PROVEN",
+  "kinds": [
+    "ground_plane",
+    "scatter_instance",
+    "structure"
+  ],
+  "layers": [
+    "architecture",
+    "terrain",
+    "vegetation"
+  ],
+  "map": "/Game/AgentProof/BarnAuto/Maps/L_barn_auto",
+  "removed_stale_actors": 0,
+  "scene_id": "barn_auto",
+  "schema_version": "structural_build_receipt_v1",
+  "spawned_count": 16
+}

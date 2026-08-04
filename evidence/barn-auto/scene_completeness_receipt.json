@@ -1,0 +1,144 @@
+{
+  "all_major_regions_accounted_for": false,
+  "classification": "PARTIAL",
+  "interactive_regions_require_geometry_collision_navigation": true,
+  "regions": [
+    {
+      "collision_policy": "none",
+      "completion_state": "planned_or_validated",
+      "confidence": 0.809,
+      "evidence_source": [
+        "source_image"
+      ],
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "vegetation",
+      "material_policy": "local_material",
+      "navigation_policy": "ignored",
+      "region_id": "vegetation_tree_004",
+      "repair_owner": "vegetation",
+      "representation": "UNRESOLVED",
+      "responsible_builder": "vegetation",
+      "semantic_class": "vegetation",
+      "source_shell_only": false,
+      "spec_reference": "vegetation_tree_004",
+      "validation_method": "scene_spec_and_layer_receipt"
+    },
+    {
+      "collision_policy": "none",
+      "completion_state": "planned_or_validated",
+      "confidence": 0.795,
+      "evidence_source": [
+        "source_image"
+      ],
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "sky",
+      "material_policy": "local_material",
+      "navigation_policy": "ignored",
+      "region_id": "sky_sky_002",
+      "repair_owner": "environment",
+      "representation": "UNRESOLVED",
+      "responsible_builder": "environment",
+      "semantic_class": "sky_or_ceiling",
+      "source_shell_only": false,
+      "spec_reference": "sky_sky_002",
+      "validation_method": "scene_spec_and_layer_receipt"
+    },
+    {
+      "collision_policy": "none",
+      "completion_state": "planned_or_validated",
+      "confidence": 0.787,
+      "evidence_source": [
+        "source_image"
+      ],
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "terrain",
+      "material_policy": "local_material",
+      "navigation_policy": "ignored",
+      "region_id": "terrain_grass_009",
+      "repair_owner": "terrain",
+      "representation": "UNRESOLVED",
+      "responsible_builder": "terrain",
+      "semantic_class": "terrain",
+      "source_shell_only": false,
+      "spec_reference": "terrain_grass_009",
+      "validation_method": "scene_spec_and_layer_receipt"
+    },
+    {
+      "collision_policy": "none",
+      "completion_state": "planned_or_validated",
+      "confidence": 0.582,
+      "evidence_source": [
+        "source_image"
+      ],
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "architecture",
+      "material_policy": "local_material",
+      "navigation_policy": "ignored",
+      "region_id": "architecture_house_025",
+      "repair_owner": "architecture",
+      "representation": "UNRESOLVED",
+      "responsible_builder": "architecture",
+      "semantic_class": "architecture",
+      "source_shell_only": false,
+      "spec_reference": "architecture_house_025",
+      "validation_method": "scene_spec_and_layer_receipt"
+    },
+    {
+      "collision_policy": "none",
+      "completion_state": "planned_or_validated",
+      "confidence": 0.518,
+      "evidence_source": [
+        "source_image"
+      ],
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "architecture",
+      "material_policy": "local_material",
+      "navigation_policy": "ignored",
+      "region_id": "architecture_hovel_079",
+      "repair_owner": "architecture",
+      "representation": "UNRESOLVED",
+      "responsible_builder": "architecture",
+      "semantic_class": "architecture",
+      "source_shell_only": false,
+      "spec_reference": "architecture_hovel_079",
+      "validation_method": "scene_spec_and_layer_receipt"
+    },
+    {
+      "collision_policy": "none",
+      "completion_state": "planned_or_validated",
+      "confidence": 0.509,
+      "evidence_source": [
+        "source_image"
+      ],
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "terrain",
+      "material_policy": "local_material",
+      "navigation_policy": "ignored",
+      "region_id": "terrain_field_029",
+      "repair_owner": "terrain",
+      "representation": "UNRESOLVED",
+      "responsible_builder": "terrain",
+      "semantic_class": "terrain",
+      "source_shell_only": false,
+      "spec_reference": "terrain_field_029",
+      "validation_method": "scene_spec_and_layer_receipt"
+    }
+  ],
+  "scene_id": "barn_auto",
+  "schema_version": "scene_completeness_receipt_v1",
+  "unresolved_regions": [
+    "vegetation_tree_004",
+    "sky_sky_002",
+    "terrain_grass_009",
+    "architecture_house_025",
+    "architecture_hovel_079",
+    "terrain_field_029"
+  ],
+  "visual_shell_not_counted_as_editable": true
+}

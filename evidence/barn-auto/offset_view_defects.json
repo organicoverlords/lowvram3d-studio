@@ -1,0 +1,13 @@
+{
+  "classification": "NOT_PROVEN",
+  "defects": [
+    {
+      "automatic_repair_safe": false,
+      "defect_id": "missing_offset_views",
+      "repair_owner": "unseen_world_completion",
+      "severity": "high",
+      "stage": "offset_view_validation"
+    }
+  ],
+  "schema_version": "offset_view_defects_v1"
+}

@@ -16,6 +16,8 @@ from typing import Any, Callable
 
 from .scene_completeness import audit_scene_completeness
 from .depth_stage import reconstruct_depth
+from .region_placement import place as place_regions
+from .unreal_stage import build_scene, capture_scene
 from .scene_analysis import analyze_image
 from .scene_paths import derive_scene_paths
 from .scene_registry import builder_manifest
@@ -128,6 +130,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             _write_json(evidence / "depth_reconstruction_receipt.json", depth_receipt)
         spec = analyze_image(image, args.scene_id, dimensions,
                              depth_receipt=depth_receipt)
+    # Automatic Unreal build. The pipeline used to stop at plans and manifests
+    # and leave the editor half to be run by hand, which is how "the scene was
+    # built" came to mean "a manifest said it would be".
+    placement = None
+    if depth_receipt and depth_receipt.get("segmentation"):
+        placement = place_regions(
+            depth_receipt["segmentation"],
+            (depth_receipt.get("camera") or {}).get("fov_x_deg"))
+        _write_json(evidence / "region_placement.json", placement)
+
     output_map = args.output_map or paths["map"]
     if spec.get("source", {}).get("sha256") != image_hash:
         if spec.get("source", {}).get("sha256") is not None:
@@ -300,8 +312,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     all_layers_proven = all(layer_classes.get(name) == "PROVEN" for name in ("terrain", "architecture", "water", "bridge", "vegetation", "environment"))
     state["layer_receipts"] = layer_classes
     state["composition_manifest_hash"] = composition_manifest.get("manifest_hash")
-    state["classification"] = "PARTIAL"
-    state["next_action"] = "RUN_GAMEPLAY_AND_VISUAL_VALIDATION" if all_layers_proven else "RUN_BOUNDED_UNREAL_LAYER_BUILDERS"
+    # Build the scene in the editor for real, then render it. Degrades visibly
+    # when no editor is reachable so a headless run still produces its plans.
+    unreal_receipt = {"available": False, "reason": "no placement to build"}
+    if placement and placement.get("actors"):
+        unreal_receipt = build_scene(placement, args.scene_id, args.output_root)
+        _write_json(evidence / "unreal_build_receipt.json", unreal_receipt)
+        if unreal_receipt.get("available"):
+            shot = capture_scene(evidence / "screenshots" / "structural_scene.png",
+                                 args.scene_id,
+                                 float(unreal_receipt.get("camera_fov_deg", 90.0)))
+            _write_json(evidence / "structural_capture_receipt.json", shot)
+            unreal_receipt["capture"] = shot
+    state["unreal_build"] = {k: v for k, v in unreal_receipt.items() if k != "capture"}
+
+    built = bool(unreal_receipt.get("available") and unreal_receipt.get("spawned_count"))
+    state["classification"] = "SCENE_BUILT" if built else "PARTIAL"
+    state["next_action"] = ("REPLACE_PRIMITIVES_WITH_GENERATED_ASSETS" if built
+                            else "RUN_GAMEPLAY_AND_VISUAL_VALIDATION" if all_layers_proven
+                            else "RUN_BOUNDED_UNREAL_LAYER_BUILDERS")
     _write_json(state_path, state)
     report = [
         f"# {args.scene_id} Image-to-Scene Pipeline",

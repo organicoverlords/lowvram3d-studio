@@ -1,0 +1,102 @@
+{
+  "classification": "SCENE_BUILT",
+  "composition_manifest_hash": "7ffc57a122aba16f2c32faa69833e56b8623ec7e97b861e3659991545d6e795f",
+  "disable_neural": false,
+  "enable_pcg": false,
+  "gpu_work_requested": false,
+  "graph_hash": "fad5aa6b614ce1b8286966b01a96aef4afa7ad63c4f42bb3c276dae6e75745bb",
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+  "input_hashes": {
+    "builder_manifest": "a47090951680ef3bf416e052133cd45e4e496f25ec57795793e50c26bd1954e1",
+    "representation_manifest": "7115229f162a18546e2b03821600e19eb7fe8d9bb13acf475033b757b2cc100b",
+    "scene_spec": "a6003eb15e5cb26d3b42a0ef0b69e8271a7eb27794d36cbad7cdb0906e4a10cd",
+    "source_image": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b"
+  },
+  "input_kind": "scene",
+  "layer_receipts": {},
+  "max_triangles": 1500000,
+  "max_vram_mb": 6144,
+  "next_action": "REPLACE_PRIMITIVES_WITH_GENERATED_ASSETS",
+  "output_map": "C:/Program Files/Git/Game/AgentProof/BarnAuto/barn_auto/Maps/L_barn_auto_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "preview",
+  "repair_routes": {
+    "floating_architecture": "scene_graph_construction|architecture_generation",
+    "grey_default_material": "material_generation|material_harmonization",
+    "incorrect_object_classification": "semantic_segmentation|instance_decomposition",
+    "navmesh_crossing_water": "gameplay_planning|navigation_generation",
+    "offset_view_hole": "unseen_world_completion|world_continuation",
+    "source_silhouette_mismatch": "camera_estimation|representation_selection|terrain_generation|architecture_generation",
+    "vegetation_in_water": "vegetation_planning|vegetation_generation"
+  },
+  "resume": false,
+  "scene_id": "barn_auto",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "ccce20416573fc69191abf0cd4d35be48ef493286577966d912b22e7553a0773",
+      "input_hash": "45dff04cbdc1515a1a72e5ce1a488c1c85780d681a2d1369cfbe60eb222b30d8",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\architecture_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "completeness": {
+      "classification": "PARTIAL",
+      "config_hash": "bd0d0a16daf6893d8ec9249093b19013c167c29f7fd174589ed589052e482a37",
+      "input_hash": "8654042e3e4e77ae4b68932e40d4b6ad5f78b3287e2184b1928ea0007fbf95c8",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\scene_completeness_receipt.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "scene_composition": {
+      "classification": "PROVEN",
+      "config_hash": "aa091b4984e4ac586de1e34602f13d5cfd0b3a2629347206f5565ba28588bae1",
+      "input_hash": "05b30ec9a903bfc982889b99f91ce06862abfcafff8a366ca26df9cbe2e3c92a",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\scene_content_manifest.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "acacc04da7b4fa18a2673766a3312d7e3a8d6a537e67626d2105ba6385da7cba",
+      "input_hash": "45dff04cbdc1515a1a72e5ce1a488c1c85780d681a2d1369cfbe60eb222b30d8",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\terrain_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "c127d7194d17e5eb596b8823cddb6aeb73044d4b5aebb47c5b8d97f7eb02b73f",
+      "input_hash": "45dff04cbdc1515a1a72e5ce1a488c1c85780d681a2d1369cfbe60eb222b30d8",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\vegetation_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    }
+  },
+  "started_at": "2026-08-04T06:30:11.237256+00:00",
+  "unreal_build": {
+    "available": true,
+    "camera_fov_deg": 92.87311873027492,
+    "camera_label": "barn_auto_Camera_Source",
+    "classification": "PROVEN",
+    "kinds": [
+      "ground_plane",
+      "scatter_instance",
+      "structure"
+    ],
+    "layers": [
+      "architecture",
+      "terrain",
+      "vegetation"
+    ],
+    "map": "/Game/AgentProof/BarnAuto/Maps/L_barn_auto",
+    "removed_stale_actors": 0,
+    "scene_id": "barn_auto",
+    "schema_version": "structural_build_receipt_v1",
+    "spawned_count": 16
+  },
+  "updated_at": "2026-08-04T06:30:11.237256+00:00"
+}

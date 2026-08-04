@@ -1,0 +1,6 @@
+{
+  "classification": "NOT_APPLICABLE",
+  "layer": "architecture",
+  "reason": "semantic analysis has not selected this fixture-specific planner",
+  "schema_version": "scene_layer_plan_v1"
+}
