@@ -109,16 +109,41 @@ photograph's own edge.
 
 ---
 
-## 3. Multi-view texturing — fixes the stretched sides
+## 3. Multi-view texturing — the right fix, with a bad track record here
 
-**Defect it fixes.** `project_crop_texture.py` projects one view along object
-space −Z, so every surface not facing the camera smears. The receipt already
-admits this: `"observed_from": "single view; sides stretch along the projection
-axis"`.
+**Defect it fixes.** `project_crop_texture.py` projected one view along object
+space −Z onto *every* face, so surfaces perpendicular to the camera got a few
+pixels stretched down their whole length and the back got the front painted on
+it. Those faces are now flat-filled instead, which stops the pipeline asserting
+appearance it never observed — but it does not create the missing appearance.
 
-MV-Adapter TG2MV is already installed and already has its FP32 conditioning
-encoder fix. This is wiring, not new capability. Hunyuan3D-Paint is the
-alternative but is a second large model to host on the same card.
+**How much is missing, measured twice, independently:**
+
+| asset | metric | observed |
+|---|---|---|
+| barn (this session) | faces facing the conditioning camera | **39.8 %** |
+| ship (`20260803-ship-production-texture.json`) | directly observed texels of owned area | **19.0 %** |
+
+Different assets and different units, same conclusion: a single view sees a
+minority of a closed surface, and everything else is synthesis.
+
+**Why this is not just wiring.** An earlier version of this section said MV-
+Adapter TG2MV was installed and ready. The models are indeed local and the
+config is complete, but the record says otherwise about readiness:
+
+- the last recorded run is `EXECUTED_384_QA_REJECTED`;
+- the ship receipt's own root cause reads *"5 of the 6 conditioning views are
+  mirrored fills at confidence 0"* — MV-Adapter was not producing usable novel
+  views, and a fallback filled them;
+- that projection run took **190 minutes**.
+
+So the honest position: multi-view is the correct fix for the largest remaining
+defect, it is the reason this lane exists, and it has never yet worked on this
+machine. It should be approached as a debugging project with its own budget,
+not as a step in a scene run. The FP32 conditioning encoder and the fp16 cuDNN
+convolution defect are both known and recorded, which is where to start.
+
+Hunyuan3D-Paint is the alternative and is a second large model on the same card.
 
 ---
 
