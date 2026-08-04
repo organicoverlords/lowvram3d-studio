@@ -1,5 +1,5 @@
 {
-  "purpose": "Identify the current self-hosted runner owner before guarded Blender v7 run 30878169523 is assigned.",
-  "guarded_blender_v7_run_id": 30878169523,
-  "requested_at": "2026-08-04T07:41:00+03:00"
+  "purpose": "Refresh the Actions queue census to locate the isolated Blender FaceVerse v8 run without touching its trigger path.",
+  "v8_trigger_commit": "868df458166863de56d38b07e246f40c40316ef0",
+  "requested_at": "2026-08-04T07:52:00+03:00"
 }
