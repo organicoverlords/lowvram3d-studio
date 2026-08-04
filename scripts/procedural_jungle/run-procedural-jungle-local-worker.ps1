@@ -14,8 +14,6 @@ $Head = (git rev-parse HEAD).Trim()
 if ($Remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $Remote" }
 if ($Branch -ne $ExpectedBranch) { throw "Branch mismatch: $Branch" }
 
-# Preserve the previously proven bootstrap byte-for-byte as the source of truth,
-# then inject only the fixes evidenced by workflow run 30861450720 and its reruns.
 $BaselineCommit = 'bdf71585456e0c97aa77234f1bc01a7cf67c7bf4'
 $BaselineBlob = '39fed93175360450c99891fbdf61ba0ba1d7ed71'
 $BootstrapPath = 'scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1'
@@ -26,10 +24,10 @@ if ($LASTEXITCODE -ne 0 -or $ActualBaselineBlob -ne $BaselineBlob) {
     throw "Baseline bootstrap identity mismatch: expected=$BaselineBlob actual=$ActualBaselineBlob"
 }
 
-$WrapperTemp = Join-Path $env:RUNNER_TEMP "procedural-jungle-bootstrap-$Head"
+$WrapperTemp = Join-Path $env:RUNNER_TEMP "procedural-jungle-diagnostic-$Head"
 if (Test-Path -LiteralPath $WrapperTemp) { Remove-Item -LiteralPath $WrapperTemp -Recurse -Force }
 New-Item -ItemType Directory -Path $WrapperTemp -Force | Out-Null
-$PatchedBootstrap = Join-Path $WrapperTemp 'run-procedural-jungle-local-worker-patched.ps1'
+$PatchedBootstrap = Join-Path $WrapperTemp 'run-procedural-jungle-local-worker-diagnostic.ps1'
 $BaselineLines = @(& git show "$BaselineCommit`:$BootstrapPath")
 if ($LASTEXITCODE -ne 0 -or $BaselineLines.Count -lt 10) { throw 'Could not read the proven baseline bootstrap' }
 $BaselineText = $BaselineLines -join "`n"
@@ -40,126 +38,46 @@ if ($MarkerMatches.Count -ne 1) {
     throw "Could not prove unique bootstrap insertion marker; matches=$($MarkerMatches.Count)"
 }
 
-$EvidenceFixes = @'
-# Workflow run 30861450720 proved that generated materials are created correctly,
-# but load_asset logs a hard error when probing a path that does not exist yet.
-# Guard every assignment-form loader call with the same receiver's existence test.
-$SceneScript = Join-Path $SourceRoot 'unreal\procedural_jungle\build_unreal_scene.py'
-if (-not (Test-Path -LiteralPath $SceneScript)) { throw "Decoded Unreal scene script missing: $SceneScript" }
-$SceneText = Get-Content -LiteralPath $SceneScript -Raw
-$AssetLoadCandidatePattern = '(?m)^[ \t]*[A-Za-z_][A-Za-z0-9_]*[ \t]*=[^\r\n]*\.load_asset\([^\r\n]*$'
-$AssetLoadCandidates = @([regex]::Matches($SceneText, $AssetLoadCandidatePattern))
-$AssetLoadPattern = '(?m)^(?<indent>[ \t]*)(?<lhs>[A-Za-z_][A-Za-z0-9_]*)[ \t]*=[ \t]*(?<receiver>[A-Za-z_][A-Za-z0-9_.]*)\.load_asset\((?<arg>.+)\)[ \t]*$'
-$AssetLoadMatches = @([regex]::Matches($SceneText, $AssetLoadPattern))
-if ($AssetLoadCandidates.Count -lt 1 -or $AssetLoadCandidates.Count -gt 16) {
-    throw "Unexpected assignment-form load_asset candidate count: $($AssetLoadCandidates.Count)"
+$Diagnostic = @'
+$BuildScript = Join-Path $SourceRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
+if (-not (Test-Path -LiteralPath $BuildScript -PathType Leaf)) {
+    throw "Decoded jungle build script missing: $BuildScript"
 }
-if ($AssetLoadMatches.Count -ne $AssetLoadCandidates.Count) {
-    $CandidateText = ($AssetLoadCandidates | ForEach-Object { $_.Value.Trim() }) -join ' | '
-    throw "Not every assignment-form load_asset call has a simple dotted receiver: matches=$($AssetLoadMatches.Count) candidates=$($AssetLoadCandidates.Count) lines=$CandidateText"
-}
-$AssetLoadEvaluator = [Text.RegularExpressions.MatchEvaluator]{
-    param([Text.RegularExpressions.Match]$Match)
-    $Indent = $Match.Groups['indent'].Value
-    $Left = $Match.Groups['lhs'].Value
-    $Receiver = $Match.Groups['receiver'].Value
-    $Argument = $Match.Groups['arg'].Value.Trim()
-    return "$Indent$Left = $Receiver.load_asset($Argument) if $Receiver.does_asset_exist($Argument) else None"
-}
-$SceneText = [regex]::Replace($SceneText, $AssetLoadPattern, $AssetLoadEvaluator)
-$RemainingUnguardedLoads = @([regex]::Matches($SceneText, $AssetLoadPattern))
-if ($RemainingUnguardedLoads.Count -ne 0) {
-    throw "Unguarded assignment-form load_asset calls remain after patch: $($RemainingUnguardedLoads.Count)"
-}
-Set-Content -LiteralPath $SceneScript -Value $SceneText -Encoding utf8
-Write-Host 'UNREAL_ASSET_LOAD_GUARD_PATCH=PROVEN'
-Write-Host "UNREAL_ASSET_LOADS_GUARDED=$($AssetLoadMatches.Count)"
-
-# The same run proved every HISM was Static while JunglePopulationActor.SceneRoot
-# remained Movable, so PIE refused all attachments. Keep vegetation static for
-# performance and make the one population root Static before project compilation.
-$PopulationCppFiles = @(
-    Get-ChildItem -LiteralPath $SourceRoot -Recurse -File -Filter '*.cpp' -ErrorAction Stop |
-        Where-Object { (Get-Content -LiteralPath $_.FullName -Raw) -match 'JunglePopulationActor' }
+$BuildLines = @(Get-Content -LiteralPath $BuildScript)
+Write-Host "JUNGLE_BUILD_SCRIPT_LINE_COUNT=$($BuildLines.Count)"
+$Needles = @(
+    'No valid tactical red panda GLB was found',
+    'rig_animate_panda.py',
+    'tactical_red_panda_walk.fbx',
+    'panda_source.json'
 )
-if ($PopulationCppFiles.Count -lt 1 -or $PopulationCppFiles.Count -gt 3) {
-    throw "Unexpected JunglePopulationActor source count: $($PopulationCppFiles.Count)"
-}
-$RootPattern = '(?m)^(?<indent>[ \t]*)(?<root>[A-Za-z_][A-Za-z0-9_]*)[ \t]*=[ \t]*CreateDefaultSubobject<USceneComponent>\(TEXT\("SceneRoot"\)\);[ \t]*$'
-$RootMatchTotal = 0
-foreach ($PopulationCpp in $PopulationCppFiles) {
-    $CppText = Get-Content -LiteralPath $PopulationCpp.FullName -Raw
-    $RootMatches = [regex]::Matches($CppText, $RootPattern)
-    if ($RootMatches.Count -eq 0) { continue }
-    if ($RootMatches.Count -ne 1) {
-        throw "Ambiguous SceneRoot constructor in $($PopulationCpp.FullName); matches=$($RootMatches.Count)"
-    }
-    if ($CppText -match 'SceneRoot[^\r\n]*SetMobility\(EComponentMobility::Static\)') {
-        throw "Population SceneRoot already has a static mobility assignment: $($PopulationCpp.FullName)"
-    }
-    $RootEvaluator = [Text.RegularExpressions.MatchEvaluator]{
-        param([Text.RegularExpressions.Match]$Match)
-        $Indent = $Match.Groups['indent'].Value
-        $Root = $Match.Groups['root'].Value
-        return $Match.Value + "`r`n" + $Indent + $Root + '->SetMobility(EComponentMobility::Static);'
-    }
-    $CppText = [regex]::Replace($CppText, $RootPattern, $RootEvaluator, 1)
-    Set-Content -LiteralPath $PopulationCpp.FullName -Value $CppText -Encoding utf8
-    $RootMatchTotal++
-}
-if ($RootMatchTotal -ne 1) { throw "Could not prove one JunglePopulationActor SceneRoot patch; matches=$RootMatchTotal" }
-Write-Host 'JUNGLE_POPULATION_STATIC_ROOT_PATCH=PROVEN'
-
-# A separate image-to-3D lane may move the benchmark candidate while this workflow
-# is queued. Restore the canonical source only from another byte-identical copy.
-$CanonicalPandaPath = 'C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\bar_local_closure_v1\tactical_red_panda_scout_bar_repaired.glb'
-$ExpectedPandaSha = '78c55133165e931bc8d6765610a679d1d18badcdc178820a69e31b7b32bcbfb8'
-$ExpectedPandaBytes = 50244400
-function Test-ProvenPandaSource {
-    param([string]$Path)
-    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
-    $Item = Get-Item -LiteralPath $Path
-    if ([int64]$Item.Length -ne [int64]$ExpectedPandaBytes) { return $false }
-    $Hash = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
-    return $Hash -eq $ExpectedPandaSha
-}
-if (-not (Test-ProvenPandaSource -Path $CanonicalPandaPath)) {
-    $SizedCandidates = @(
-        Get-ChildItem -LiteralPath 'C:\AI' -Recurse -File -Filter '*.glb' -ErrorAction SilentlyContinue |
-            Where-Object {
-                [int64]$_.Length -eq [int64]$ExpectedPandaBytes -and
-                $_.FullName -ne $CanonicalPandaPath
-            }
-    )
-    $VerifiedCandidates = @()
-    foreach ($Candidate in $SizedCandidates) {
-        $CandidateHash = (Get-FileHash -LiteralPath $Candidate.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($CandidateHash -eq $ExpectedPandaSha) {
-            $VerifiedCandidates += $Candidate.FullName
+$MatchedIndexes = New-Object System.Collections.Generic.List[int]
+for ($Index = 0; $Index -lt $BuildLines.Count; $Index++) {
+    foreach ($Needle in $Needles) {
+        if ($BuildLines[$Index] -like "*$Needle*") {
+            $MatchedIndexes.Add($Index)
+            break
         }
     }
-    if ($VerifiedCandidates.Count -lt 1) {
-        $SizedPaths = ($SizedCandidates | ForEach-Object { $_.FullName }) -join ' | '
-        throw "The canonical panda source is missing and no byte-identical GLB exists under C:\AI. size-matched=$($SizedCandidates.Count) paths=$SizedPaths"
-    }
-    $ChosenPandaCopy = $VerifiedCandidates | Sort-Object | Select-Object -First 1
-    New-Item -ItemType Directory -Path (Split-Path -Parent $CanonicalPandaPath) -Force | Out-Null
-    Copy-Item -LiteralPath $ChosenPandaCopy -Destination $CanonicalPandaPath -Force
-    if (-not (Test-ProvenPandaSource -Path $CanonicalPandaPath)) {
-        throw "Restored panda source failed exact hash validation: $CanonicalPandaPath"
-    }
-    Write-Host 'PANDA_SOURCE_EXACT_COPY_RESTORED=PROVEN'
-    Write-Host "PANDA_SOURCE_RESTORED_FROM=$ChosenPandaCopy"
 }
-Write-Host 'PANDA_SOURCE_EXACT_HASH=PROVEN'
+if ($MatchedIndexes.Count -lt 1) {
+    throw 'Could not locate panda-selection markers in decoded build script'
+}
+$Start = [Math]::Max(0, (($MatchedIndexes | Measure-Object -Minimum).Minimum - 35))
+$End = [Math]::Min($BuildLines.Count - 1, (($MatchedIndexes | Measure-Object -Maximum).Maximum + 55))
+Write-Host "JUNGLE_BUILD_DIAGNOSTIC_RANGE=$($Start + 1)-$($End + 1)"
+for ($Index = $Start; $Index -le $End; $Index++) {
+    Write-Host ('JUNGLE_BUILD_LINE_{0:D4}={1}' -f ($Index + 1), $BuildLines[$Index])
+}
+throw 'JUNGLE_BUILD_DIAGNOSTIC_CAPTURED'
 '@
 
-$PatchedText = $BaselineText.Replace($InsertionMarker, $EvidenceFixes + "`n`n" + $InsertionMarker)
+$PatchedText = $BaselineText.Replace($InsertionMarker, $Diagnostic + "`n`n" + $InsertionMarker)
 Set-Content -LiteralPath $PatchedBootstrap -Value $PatchedText -Encoding utf8
 Write-Host "BOOTSTRAP_BASELINE_COMMIT=$BaselineCommit"
 Write-Host "BOOTSTRAP_BASELINE_BLOB=$BaselineBlob"
-Write-Host 'RUN11_EVIDENCE_FIX_INJECTION=PROVEN'
+Write-Host 'JUNGLE_BUILD_DIAGNOSTIC_INJECTION=PROVEN'
 
 & $PatchedBootstrap -ExpectedBranch $ExpectedBranch
 $WorkerExit = $LASTEXITCODE
-if ($WorkerExit -ne 0) { throw "Patched direct worker failed with exit code $WorkerExit" }
+if ($WorkerExit -ne 0) { throw "Diagnostic direct worker exited with code $WorkerExit" }
