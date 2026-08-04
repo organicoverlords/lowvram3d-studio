@@ -1,9 +1,9 @@
-run=46
-requested=2026-08-04T18:27:00+03:00
+run=47
+requested=2026-08-04T18:33:00+03:00
 mode=github-self-hosted-v3-visual-overhaul
-repair_commit=711fcb29bda02d7ac642eefee939043755da23b5
-repair_scope=exact-historical-character-guard-and-write-line-byte-patch
-pinned_worker_source=0b30584a12ffc5b961a0890a851aca82d6b381fb
+repair_commit=5394bb8d92fffff4220a32e5cde7f9500d44225a
+repair_scope=replace-entire-installer-assembly-block-with-byte-and-sha-gates
+safe_preflight_source=5ee2f112714d451f22fee8e7ab337ef766804f9c
 installer_sha256=8caff1745534e6c73ae21b86a6cb5ee035bad5512741a1c5561bc3b649a348d5
 codex=false
 claude=false
