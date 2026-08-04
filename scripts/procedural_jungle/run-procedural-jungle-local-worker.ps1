@@ -30,9 +30,19 @@ if ($LASTEXITCODE -ne 0 -or $SourceLines.Count -lt 100) {
 }
 $SourceText = ($SourceLines -join "`n") + "`n"
 
-$AppendPattern = '(?m)^if \(\$InstallerText\.Length -eq 46900\) \{ \$InstallerText \+= "`n" \}\r?\n'
-$LengthPattern = '(?m)^if \(\$InstallerText\.Length -ne 46901\) \{ throw "V3 installer byte-safe text length mismatch: expected=46901 actual=\$\(\$InstallerText\.Length\)" \}\r?\n'
+$AppendCondition = '$InstallerText.Length -eq 46900'
+$CharacterGuardCondition = '$InstallerText.Length -ne 46901'
 $WriteLine = '[IO.File]::WriteAllText($Installer, $InstallerText, $Utf8NoBom)'
+
+$AppendCount = [regex]::Matches($SourceText, [regex]::Escape($AppendCondition)).Count
+$CharacterGuardCount = [regex]::Matches($SourceText, [regex]::Escape($CharacterGuardCondition)).Count
+$WriteCount = [regex]::Matches($SourceText, [regex]::Escape($WriteLine)).Count
+if ($AppendCount -ne 1) { throw "Pinned append-condition count is not one: $AppendCount" }
+if ($CharacterGuardCount -ne 1) { throw "Pinned character-guard count is not one: $CharacterGuardCount" }
+if ($WriteCount -ne 1) { throw "Pinned WriteAllText count is not one: $WriteCount" }
+
+$PatchedText = $SourceText.Replace($AppendCondition, '$false')
+$PatchedText = $PatchedText.Replace($CharacterGuardCondition, '$false')
 $ByteCheck = @'
 [IO.File]::WriteAllText($Installer, $InstallerText, $Utf8NoBom)
 $InstallerByteLength = ([IO.File]::ReadAllBytes($Installer)).Length
@@ -40,22 +50,10 @@ if ($InstallerByteLength -ne 46901) {
     throw "V3 installer UTF-8 byte length mismatch: expected=46901 actual=$InstallerByteLength"
 }
 '@
-
-if ([regex]::Matches($SourceText, $AppendPattern).Count -ne 1) {
-    throw 'Pinned worker append-line match count is not exactly one'
-}
-if ([regex]::Matches($SourceText, $LengthPattern).Count -ne 1) {
-    throw 'Pinned worker character-length guard match count is not exactly one'
-}
-if (($SourceText.Split($WriteLine).Count - 1) -ne 1) {
-    throw 'Pinned worker WriteAllText match count is not exactly one'
-}
-
-$PatchedText = [regex]::Replace($SourceText, $AppendPattern, '', 1)
-$PatchedText = [regex]::Replace($PatchedText, $LengthPattern, '', 1)
 $PatchedText = $PatchedText.Replace($WriteLine, $ByteCheck.TrimEnd())
-if ($PatchedText -match 'InstallerText\.Length -ne 46901' -or $PatchedText -match 'InstallerText\.Length -eq 46900') {
-    throw 'Character-count installer guard remains after patching'
+
+if ($PatchedText.Contains($AppendCondition) -or $PatchedText.Contains($CharacterGuardCondition)) {
+    throw 'A character-count installer condition remains after patching'
 }
 if ($PatchedText -notmatch 'InstallerByteLength -ne 46901') {
     throw 'UTF-8 byte-length installer guard was not installed'
@@ -68,6 +66,7 @@ $PatchedWorker = Join-Path $TempRoot 'run-procedural-jungle-v3-bytefixed.ps1'
 [IO.File]::WriteAllText($PatchedWorker, $PatchedText, (New-Object Text.UTF8Encoding($false)))
 
 Write-Host "JUNGLE_V3_PINNED_WORKER_SOURCE=$SourceCommit"
+Write-Host 'JUNGLE_V3_CHARACTER_GUARDS_DISABLED=PROVEN'
 Write-Host 'JUNGLE_V3_UTF8_BYTE_LENGTH_GUARD_PATCH=PROVEN'
 & powershell -NoProfile -ExecutionPolicy Bypass -File $PatchedWorker -ExpectedBranch $ExpectedBranch
 if ($LASTEXITCODE -ne 0) { throw "Byte-fixed V3 worker failed with exit code $LASTEXITCODE" }
