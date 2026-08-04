@@ -1,6 +1,7 @@
 {
-  "purpose": "Dispatch one landmark-driven canonical face visual diagnostic and register its exact GitHub Actions run ID.",
-  "renderer_commit": "e3d078cdd0d91ffb314a11234ccb5e486fc07d81",
-  "workflow_commit": "1270dec11564520f4dde1512502dff7dce282849",
-  "requested_at": "2026-08-04T03:17:00+03:00"
+  "purpose": "Dispatch one projective-textured canonical face visual diagnostic and register its exact GitHub Actions run ID.",
+  "renderer_commit": "b926a5086d61a5292a33921b8d31b5ecbf204288",
+  "runner_patch_commit": "d81ae639f436c7f03c4d00a35affca4d2fff1a48",
+  "workflow_commit": "db7529384b7b880d17db1a737d6f3a10c3683761",
+  "requested_at": "2026-08-04T03:39:00+03:00"
 }
