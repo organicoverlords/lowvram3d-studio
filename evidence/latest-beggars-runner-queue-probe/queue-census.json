@@ -1,26 +1,26 @@
 {
-  "active_run_count": 3,
+  "active_run_count": 2,
   "classification": "QUEUE_CENSUS_PROVEN",
-  "observed_at": "2026-08-04T15:25:22Z",
+  "observed_at": "2026-08-04T15:39:32Z",
   "runs": [
     {
       "conclusion": null,
-      "created_at": "2026-08-04T15:25:14Z",
+      "created_at": "2026-08-04T15:39:19Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "e7960edbdffa81622232ec0cc6143a2d7a159790",
+      "head_sha": "fd69fcd1ba7ab9db27d94e61b14613ffd3df90f8",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 92041704208,
+          "id": 92045765794,
           "labels": [
             "ubuntu-latest"
           ],
           "name": "inspect-queue",
           "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000021965",
-          "started_at": "2026-08-04T15:25:17Z",
+          "runner_name": "GitHub Actions 1000021970",
+          "started_at": "2026-08-04T15:39:23Z",
           "status": "in_progress",
           "steps": [
             {
@@ -56,64 +56,33 @@
           ]
         }
       ],
-      "name": "Beggars runner queue probe 30924051286",
+      "name": "Beggars runner queue probe 30925242610",
       "path": ".github/workflows/beggars-runner-queue-probe.yml",
-      "run_id": 30924051286,
+      "run_id": 30925242610,
       "status": "in_progress",
-      "updated_at": "2026-08-04T15:25:17Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30924051286"
+      "updated_at": "2026-08-04T15:39:24Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925242610"
     },
     {
       "conclusion": null,
-      "created_at": "2026-08-04T15:24:45Z",
+      "created_at": "2026-08-04T15:38:58Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "de80d4729983fae3ca73533b0582a3f7565235c1",
+      "head_sha": "7cced4c1d727b63a53a03535f5226958ba57c819",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 92041558186,
+          "id": 92045704628,
           "labels": [
             "self-hosted",
             "Windows",
             "X64"
           ],
-          "name": "build-photoreal-meme-recreation-v2",
-          "runner_group_name": null,
-          "runner_name": null,
-          "started_at": "2026-08-04T15:24:46Z",
-          "status": "queued",
-          "steps": []
-        }
-      ],
-      "name": "Beggars meme recreation v2 30924008509",
-      "path": ".github/workflows/beggars-scene-local-worker-v2.yml",
-      "run_id": 30924008509,
-      "status": "queued",
-      "updated_at": "2026-08-04T15:24:45Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30924008509"
-    },
-    {
-      "conclusion": null,
-      "created_at": "2026-08-04T15:22:38Z",
-      "event": "pull_request",
-      "head_branch": "feature/procedural-jungle-playable-20260804",
-      "head_sha": "00ee645449ccc577837f510f779dfc6b2e02f3dc",
-      "jobs": [
-        {
-          "completed_at": null,
-          "conclusion": null,
-          "id": 92040934097,
-          "labels": [
-            "self-hosted",
-            "Windows",
-            "X64"
-          ],
-          "name": "build-and-prove",
+          "name": "diagnose",
           "runner_group_name": "Default",
           "runner_name": "LOWVRAM3D-KONE",
-          "started_at": "2026-08-04T15:24:26Z",
+          "started_at": "2026-08-04T15:39:08Z",
           "status": "in_progress",
           "steps": [
             {
@@ -124,55 +93,37 @@
             },
             {
               "conclusion": "success",
-              "name": "Checkout exact jungle branch",
+              "name": "Checkout diagnostic source",
               "number": 2,
               "status": "completed"
             },
             {
-              "conclusion": "success",
-              "name": "Verify trusted repository and branch",
+              "conclusion": null,
+              "name": "Render post-build variants",
               "number": 3,
-              "status": "completed"
-            },
-            {
-              "conclusion": "failure",
-              "name": "Run deterministic direct worker",
-              "number": 4,
-              "status": "completed"
-            },
-            {
-              "conclusion": "skipped",
-              "name": "Gate acceptance evidence",
-              "number": 5,
-              "status": "completed"
-            },
-            {
-              "conclusion": "skipped",
-              "name": "Commit compact proof",
-              "number": 6,
-              "status": "completed"
-            },
-            {
-              "conclusion": "success",
-              "name": "Upload proof artifacts",
-              "number": 7,
-              "status": "completed"
+              "status": "in_progress"
             },
             {
               "conclusion": null,
-              "name": "Post Checkout exact jungle branch",
-              "number": 14,
-              "status": "in_progress"
+              "name": "Upload post-build diagnostic",
+              "number": 4,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Post Checkout diagnostic source",
+              "number": 8,
+              "status": "pending"
             }
           ]
         }
       ],
-      "name": "Jungle PR 15 walking panda",
-      "path": ".github/workflows/procedural-jungle-pr-local-worker.yml",
-      "run_id": 30923829327,
+      "name": "Beggars faceplate v3 diagnostic 30925213051",
+      "path": ".github/workflows/beggars-faceplate-v3-diagnostic.yml",
+      "run_id": 30925213051,
       "status": "in_progress",
-      "updated_at": "2026-08-04T15:24:27Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30923829327"
+      "updated_at": "2026-08-04T15:39:09Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925213051"
     }
   ]
 }
