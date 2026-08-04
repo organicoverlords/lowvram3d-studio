@@ -1,26 +1,26 @@
 {
-  "active_run_count": 1,
+  "active_run_count": 2,
   "classification": "QUEUE_CENSUS_PROVEN",
-  "observed_at": "2026-08-04T04:53:19Z",
+  "observed_at": "2026-08-04T15:21:40Z",
   "runs": [
     {
       "conclusion": null,
-      "created_at": "2026-08-04T04:53:13Z",
+      "created_at": "2026-08-04T15:21:31Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "85518023a4a7126c4fe19f6ddd70b297916e54d8",
+      "head_sha": "3d42c7e0d6a97d5e98fbf6550dd19be723679ade",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 91896074306,
+          "id": 92040601414,
           "labels": [
             "ubuntu-latest"
           ],
           "name": "inspect-queue",
           "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000021901",
-          "started_at": "2026-08-04T04:53:15Z",
+          "runner_name": "GitHub Actions 1000021962",
+          "started_at": "2026-08-04T15:21:33Z",
           "status": "in_progress",
           "steps": [
             {
@@ -56,12 +56,128 @@
           ]
         }
       ],
-      "name": "Beggars runner queue probe 30878982177",
+      "name": "Beggars runner queue probe 30923731995",
       "path": ".github/workflows/beggars-runner-queue-probe.yml",
-      "run_id": 30878982177,
+      "run_id": 30923731995,
       "status": "in_progress",
-      "updated_at": "2026-08-04T04:53:16Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30878982177"
+      "updated_at": "2026-08-04T15:21:34Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30923731995"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-04T15:20:49Z",
+      "event": "push",
+      "head_branch": "agent/blender-beggars-scene-20260804",
+      "head_sha": "6f625c9f1f6f7ad4afb159640981253c90753f91",
+      "jobs": [
+        {
+          "completed_at": null,
+          "conclusion": null,
+          "id": 92040401024,
+          "labels": [
+            "self-hosted",
+            "Windows",
+            "X64"
+          ],
+          "name": "build-photoreal-meme-recreation-v2",
+          "runner_group_name": "Default",
+          "runner_name": "LOWVRAM3D-KONE",
+          "started_at": "2026-08-04T15:21:27Z",
+          "status": "in_progress",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": null,
+              "name": "Checkout exact dedicated branch",
+              "number": 2,
+              "status": "in_progress"
+            },
+            {
+              "conclusion": null,
+              "name": "Ensure pinned 3DDFA runtime dependencies",
+              "number": 3,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Apply Blender Eevee runtime compatibility",
+              "number": 4,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Apply bounded visual repair",
+              "number": 5,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Build derived masked face atlas route",
+              "number": 6,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Keep atlas on original dense topology",
+              "number": 7,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Build tracked derived face-plate runtime",
+              "number": 8,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Apply Blender 5.2 face-plate Action compatibility",
+              "number": 9,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Apply neutral fixed face-plate visual v2",
+              "number": 10,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Run memory-bounded reconstruction and Blender build",
+              "number": 11,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Validate outputs and publish compact evidence",
+              "number": 12,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Upload Blender recreation artifact",
+              "number": 13,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Post Checkout exact dedicated branch",
+              "number": 26,
+              "status": "pending"
+            }
+          ]
+        }
+      ],
+      "name": "Beggars meme recreation v2 30923672871",
+      "path": ".github/workflows/beggars-scene-local-worker-v2.yml",
+      "run_id": 30923672871,
+      "status": "in_progress",
+      "updated_at": "2026-08-04T15:21:28Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30923672871"
     }
   ]
 }
