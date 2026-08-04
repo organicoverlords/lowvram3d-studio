@@ -1,6 +1,8 @@
 name: Beggars canonical face diagnostic
 run-name: Beggars canonical face diagnostic ${{ github.run_id }}
 
+# visual-retry: 2026-08-04T03:12:00+03:00
+
 on:
   workflow_dispatch:
   push:
