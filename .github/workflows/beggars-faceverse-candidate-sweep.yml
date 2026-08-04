@@ -1,0 +1,145 @@
+name: Beggars FaceVerse candidate sweep
+run-name: Beggars FaceVerse candidate sweep ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - tools/beggars_scene/run_faceverse_v4_candidate_sweep.py
+      - .github/workflows/beggars-faceverse-candidate-sweep.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-faceverse-candidate-sweep
+  cancel-in-progress: true
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish exact run identity
+        run: |
+          set -euo pipefail
+          evidence='evidence/latest-beggars-faceverse-candidate-sweep'
+          mkdir -p "$evidence"
+          jq -n \
+            --argjson run_id '${{ github.run_id }}' \
+            --arg head_sha '${{ github.sha }}' \
+            --arg branch '${{ github.ref_name }}' \
+            --arg url 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+            '{classification:"RUN_REGISTERED",workflow_run_id:$run_id,status:"in_progress",conclusion:null,head_sha:$head_sha,head_branch:$branch,url:$url}' \
+            > "$evidence/run-registration.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$evidence/run-registration.json"
+          git commit -m 'evidence(scene): register FaceVerse candidate sweep ${{ github.run_id }}'
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if git push origin HEAD:agent/blender-beggars-scene-20260804; then exit 0; fi
+            test "$attempt" -lt 4
+            sleep 2
+          done
+
+  sweep:
+    needs: register
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact sweep source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify cached FaceVerse runtime and GPU availability
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $python = 'C:\AI\LowVRAM3D-cache\faceverse-v4\venv-py39-cu118\Scripts\python.exe'
+          $source = 'C:\AI\LowVRAM3D-cache\faceverse-v4\source-19c67cc4d7234b1ea7d55a185a2cb55fd49bb877'
+          $model = 'C:\AI\LowVRAM3D-cache\faceverse-v4\models\faceverse_v4_2.npy'
+          $checkpoint = 'C:\AI\LowVRAM3D-cache\faceverse-v4\models\faceverse_resnet50.pth'
+          $landmarker = 'C:\AI\LowVRAM3D-cache\faceverse-v4\models\face_landmarker.task'
+          foreach ($required in @($python, $source, $model, $checkpoint, $landmarker)) {
+            if (-not (Test-Path -LiteralPath $required)) { throw "Sweep input missing: $required" }
+          }
+          $gpuLine = (& nvidia-smi --query-compute-apps=used_memory --format=csv,noheader,nounits 2>$null | Out-String).Trim()
+          $gpuUsed = 0
+          if ($gpuLine) {
+            foreach ($line in $gpuLine -split "`r?`n") {
+              $value = 0
+              if ([int]::TryParse($line.Trim(), [ref]$value)) { $gpuUsed += $value }
+            }
+          }
+          Write-Host "GPU_USED_MIB=$gpuUsed"
+          if ($gpuUsed -ge 4800) { throw "GPU_BUSY: $gpuUsed MiB" }
+          & $python -I -u -X faulthandler -c "import torch; assert torch.__version__.startswith('2.5.1'), torch.__version__; assert torch.version.cuda == '11.8', torch.version.cuda; assert torch.cuda.is_available(); print('FACEVERSE_SWEEP_CUDA_RUNTIME=PROVEN',torch.__version__,torch.cuda.get_device_name(0))"
+          if ($LASTEXITCODE -ne 0) { throw 'FaceVerse sweep CUDA runtime validation failed' }
+          & $python -m py_compile tools\beggars_scene\run_faceverse_v4_candidate_sweep.py
+          if ($LASTEXITCODE -ne 0) { throw 'FaceVerse candidate sweep source failed compilation' }
+          "SWEEP_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "SWEEP_SOURCE=$source" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "SWEEP_MODEL=$model" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "SWEEP_CHECKPOINT=$checkpoint" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "SWEEP_LANDMARKER=$landmarker" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Render public-frame candidate comparisons
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\faceverse-candidate-sweep-${{ github.run_id }}"
+          $clip = Join-Path $output 'public_reference.mp4'
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          curl.exe -L --fail --retry 3 --retry-delay 2 --output $clip 'https://media.tenor.com/e8wT4qAP6zwAAAPo/somebody-get-these-beggars-out-of-here-the-odyssey.mp4'
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $clip)) { throw 'Could not download public reference clip' }
+          $previousNoUser = $env:PYTHONNOUSERSITE
+          $previousPath = $env:PYTHONPATH
+          $previousUnbuffered = $env:PYTHONUNBUFFERED
+          $previousPipNoIndex = $env:PIP_NO_INDEX
+          $previousUvOffline = $env:UV_OFFLINE
+          try {
+            $env:PYTHONNOUSERSITE = '1'
+            $env:PYTHONPATH = ''
+            $env:PYTHONUNBUFFERED = '1'
+            $env:PIP_NO_INDEX = '1'
+            $env:UV_OFFLINE = '1'
+            & $env:SWEEP_PYTHON -I -u -X faulthandler tools\beggars_scene\run_faceverse_v4_candidate_sweep.py `
+              --faceverse-root $env:SWEEP_SOURCE `
+              --model-npy $env:SWEEP_MODEL `
+              --checkpoint $env:SWEEP_CHECKPOINT `
+              --landmarker $env:SWEEP_LANDMARKER `
+              --clip $clip `
+              --output-dir $output `
+              --frames '12,14,16,18,19,21,23,25,27,29,31,33,35,37,39,41' `
+              --device auto
+            if ($LASTEXITCODE -ne 0) { throw "FaceVerse candidate sweep failed with exit code $LASTEXITCODE" }
+          }
+          finally {
+            $env:PYTHONNOUSERSITE = $previousNoUser
+            $env:PYTHONPATH = $previousPath
+            $env:PYTHONUNBUFFERED = $previousUnbuffered
+            $env:PIP_NO_INDEX = $previousPipNoIndex
+            $env:UV_OFFLINE = $previousUvOffline
+            Remove-Item -LiteralPath $clip -Force -ErrorAction SilentlyContinue
+          }
+          "FACEVERSE_SWEEP_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Upload candidate visual comparisons
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-faceverse-candidate-sweep-${{ github.run_id }}
+          path: |
+            ${{ env.FACEVERSE_SWEEP_OUTPUT }}/faceverse_candidate_sweep.jpg
+            ${{ env.FACEVERSE_SWEEP_OUTPUT }}/faceverse_candidate_sweep.json
+            ${{ env.FACEVERSE_SWEEP_OUTPUT }}/candidate_*_compare.jpg
+          if-no-files-found: error
+          retention-days: 7
