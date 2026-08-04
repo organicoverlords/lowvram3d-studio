@@ -4,206 +4,110 @@ param(
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
 $RepoRoot = (git rev-parse --show-toplevel).Trim()
 if (-not $RepoRoot) { throw 'Not inside the expected Git repository' }
 Set-Location -LiteralPath $RepoRoot
 $Remote = (git config --get remote.origin.url).Trim()
 $Branch = (git branch --show-current).Trim()
 $Head = (git rev-parse HEAD).Trim()
-$Status = @(git status --short)
 if ($Remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $Remote" }
 if ($Branch -ne $ExpectedBranch) { throw "Branch mismatch: $Branch" }
-if ($Status.Count -ne 0) { throw "Checkout is dirty before worker bootstrap: $($Status -join '; ')" }
-$BundleDir = Join-Path $RepoRoot 'worker-bundles\procedural-jungle-direct-worker'
-$BundleParts = @(Get-ChildItem -LiteralPath $BundleDir -Filter 'chunk-*.b64' -File | Sort-Object Name)
-if ($BundleParts.Count -lt 1) { throw "Worker bundle chunks are missing: $BundleDir" }
-$ExpectedSha = 'ae5a81fab6be79dac7b58bcf383679abacb4da47e6a25a9ca36258c23fcfac2d'
-$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-$Head"
-if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
-New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
-$ZipPath = Join-Path $TempRoot 'worker.zip'
-$Base64 = (($BundleParts | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }) -join '') -replace '\s',''
-[IO.File]::WriteAllBytes($ZipPath, [Convert]::FromBase64String($Base64))
-$ActualSha = (Get-FileHash -LiteralPath $ZipPath -Algorithm SHA256).Hash.ToLowerInvariant()
-if ($ActualSha -ne $ExpectedSha) { throw "Worker bundle hash mismatch: $ActualSha" }
-$SourceRoot = Join-Path $TempRoot 'source'
-Expand-Archive -LiteralPath $ZipPath -DestinationPath $SourceRoot -Force
-$Entry = Join-Path $SourceRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
-if (-not (Test-Path -LiteralPath $Entry)) { throw "Decoded worker entrypoint is missing: $Entry" }
-$EntryText = Get-Content -LiteralPath $Entry -Raw
 
-# A separate Unreal project may already be open interactively. Never close it or
-# touch its files. Permit coexistence only when no running process references the
-# dedicated ProceduralJungle58 target project. The decoded worker otherwise has a
-# conservative blanket refusal that would block safe isolated commandlets.
-$TargetProjectRoot = 'C:\Users\Lauri\Desktop\ProceduralJungle58'
-$UnrealProcesses = @(
-    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -in @('UnrealEditor.exe', 'UnrealEditor-Cmd.exe') }
-)
-$TargetProcesses = @(
-    $UnrealProcesses | Where-Object {
-        $_.CommandLine -and $_.CommandLine.IndexOf($TargetProjectRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0
-    }
-)
-if ($TargetProcesses.Count -gt 0) {
-    throw "Target ProceduralJungle58 project is already open; refusing concurrent mutation. PID(s): $($TargetProcesses.ProcessId -join ',')"
-}
-if ($UnrealProcesses.Count -gt 0) {
-    $Pattern = '(?ms)^\s*if\s*\(\$[A-Za-z_][A-Za-z0-9_]*\.Count\s*-gt\s*0\)\s*\{\s*throw\s*"Unreal Editor is already running; refusing to interfere with PID\(s\):[^\"]*"\s*\}\s*'
-    $Matches = [regex]::Matches($EntryText, $Pattern)
-    if ($Matches.Count -ne 1) {
-        throw "Could not prove a unique Unreal coexistence guard in decoded worker; matches=$($Matches.Count)"
-    }
-    $Replacement = "Write-Warning 'Unrelated Unreal Editor process detected; continuing only with the isolated ProceduralJungle58 project.'`r`n"
-    $EntryText = [regex]::Replace($EntryText, $Pattern, $Replacement, 1)
-    Write-Host "UNRELATED_UNREAL_COEXISTENCE=AUTHORIZED"
-    Write-Host "UNRELATED_UNREAL_PID=$($UnrealProcesses.ProcessId -join ',')"
+# Preserve the previously proven bootstrap byte-for-byte as the source of truth,
+# then inject only the two fixes evidenced by workflow run 30861450720.
+$BaselineCommit = 'bdf71585456e0c97aa77234f1bc01a7cf67c7bf4'
+$BaselineBlob = '39fed93175360450c99891fbdf61ba0ba1d7ed71'
+$BootstrapPath = 'scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1'
+& git merge-base --is-ancestor $BaselineCommit HEAD
+if ($LASTEXITCODE -ne 0) { throw "Baseline commit is not an ancestor of HEAD: $BaselineCommit" }
+$ActualBaselineBlob = (& git rev-parse "$BaselineCommit`:$BootstrapPath").Trim()
+if ($LASTEXITCODE -ne 0 -or $ActualBaselineBlob -ne $BaselineBlob) {
+    throw "Baseline bootstrap identity mismatch: expected=$BaselineBlob actual=$ActualBaselineBlob"
 }
 
-# Blender 5.2 stores keyed F-curves in layered Action channel bags instead of
-# exposing Action.fcurves directly. Preserve the existing generated walk keys and
-# only make the interpolation traversal compatible with both APIs.
-$RigScript = Join-Path $SourceRoot 'blender\procedural_jungle\rig_animate_panda.py'
-if (-not (Test-Path -LiteralPath $RigScript)) { throw "Decoded panda rig script missing: $RigScript" }
-$RigText = Get-Content -LiteralPath $RigScript -Raw
-$LegacyCurveLoopPattern = '(?m)^    for fcurve in action\.fcurves:\s*$'
-$LegacyCurveLoopMatches = [regex]::Matches($RigText, $LegacyCurveLoopPattern)
-if ($LegacyCurveLoopMatches.Count -ne 1) {
-    throw "Could not prove unique legacy Action.fcurves loop; matches=$($LegacyCurveLoopMatches.Count)"
+$WrapperTemp = Join-Path $env:RUNNER_TEMP "procedural-jungle-bootstrap-$Head"
+if (Test-Path -LiteralPath $WrapperTemp) { Remove-Item -LiteralPath $WrapperTemp -Recurse -Force }
+New-Item -ItemType Directory -Path $WrapperTemp -Force | Out-Null
+$PatchedBootstrap = Join-Path $WrapperTemp 'run-procedural-jungle-local-worker-patched.ps1'
+$BaselineLines = @(& git show "$BaselineCommit`:$BootstrapPath")
+if ($LASTEXITCODE -ne 0 -or $BaselineLines.Count -lt 10) { throw 'Could not read the proven baseline bootstrap' }
+$BaselineText = $BaselineLines -join "`n"
+
+$InsertionMarker = '# Windows PowerShell 5 turns native stderr into terminating error records under'
+$MarkerMatches = [regex]::Matches($BaselineText, [regex]::Escape($InsertionMarker))
+if ($MarkerMatches.Count -ne 1) {
+    throw "Could not prove unique bootstrap insertion marker; matches=$($MarkerMatches.Count)"
 }
-$LayeredCurveLoop = @'
-    action_curves = list(getattr(action, "fcurves", []))
-    if not action_curves:
-        for layer in getattr(action, "layers", []):
-            for strip in getattr(layer, "strips", []):
-                for channelbag in getattr(strip, "channelbags", []):
-                    action_curves.extend(getattr(channelbag, "fcurves", []))
-    for fcurve in action_curves:
+
+$EvidenceFixes = @'
+# Workflow run 30861450720 proved that generated materials are created correctly,
+# but EditorAssetSubsystem.load_asset logs a hard error when probing a path that
+# does not exist yet. Guard those probes with does_asset_exist so first creation
+# is clean while existing-asset update behavior remains unchanged.
+$SceneScript = Join-Path $SourceRoot 'unreal\procedural_jungle\build_unreal_scene.py'
+if (-not (Test-Path -LiteralPath $SceneScript)) { throw "Decoded Unreal scene script missing: $SceneScript" }
+$SceneText = Get-Content -LiteralPath $SceneScript -Raw
+$AssetLoadPattern = '(?im)^(?<indent>[ \t]*)(?<lhs>[A-Za-z_][A-Za-z0-9_]*)[ \t]*=[ \t]*(?<receiver>[A-Za-z_][A-Za-z0-9_]*asset[A-Za-z0-9_]*)\.load_asset\((?<arg>[^()\r\n]+)\)[ \t]*$'
+$AssetLoadMatches = [regex]::Matches($SceneText, $AssetLoadPattern)
+if ($AssetLoadMatches.Count -lt 1 -or $AssetLoadMatches.Count -gt 16) {
+    throw "Unexpected unguarded EditorAssetSubsystem load count: $($AssetLoadMatches.Count)"
+}
+$AssetLoadEvaluator = [Text.RegularExpressions.MatchEvaluator]{
+    param([Text.RegularExpressions.Match]$Match)
+    $Indent = $Match.Groups['indent'].Value
+    $Left = $Match.Groups['lhs'].Value
+    $Receiver = $Match.Groups['receiver'].Value
+    $Argument = $Match.Groups['arg'].Value.Trim()
+    return "$Indent$Left = $Receiver.load_asset($Argument) if $Receiver.does_asset_exist($Argument) else None"
+}
+$SceneText = [regex]::Replace($SceneText, $AssetLoadPattern, $AssetLoadEvaluator)
+Set-Content -LiteralPath $SceneScript -Value $SceneText -Encoding utf8
+Write-Host 'UNREAL_ASSET_LOAD_GUARD_PATCH=PROVEN'
+Write-Host "UNREAL_ASSET_LOADS_GUARDED=$($AssetLoadMatches.Count)"
+
+# The same run proved every HISM was Static while JunglePopulationActor.SceneRoot
+# remained Movable, so PIE refused all attachments. Keep vegetation static for
+# performance and make the one population root Static before project compilation.
+$PopulationCppFiles = @(
+    Get-ChildItem -LiteralPath $SourceRoot -Recurse -File -Filter '*.cpp' -ErrorAction Stop |
+        Where-Object { (Get-Content -LiteralPath $_.FullName -Raw) -match 'JunglePopulationActor' }
+)
+if ($PopulationCppFiles.Count -lt 1 -or $PopulationCppFiles.Count -gt 3) {
+    throw "Unexpected JunglePopulationActor source count: $($PopulationCppFiles.Count)"
+}
+$RootPattern = '(?m)^(?<indent>[ \t]*)(?<root>[A-Za-z_][A-Za-z0-9_]*)[ \t]*=[ \t]*CreateDefaultSubobject<USceneComponent>\(TEXT\("SceneRoot"\)\);[ \t]*$'
+$RootMatchTotal = 0
+foreach ($PopulationCpp in $PopulationCppFiles) {
+    $CppText = Get-Content -LiteralPath $PopulationCpp.FullName -Raw
+    $RootMatches = [regex]::Matches($CppText, $RootPattern)
+    if ($RootMatches.Count -eq 0) { continue }
+    if ($RootMatches.Count -ne 1) {
+        throw "Ambiguous SceneRoot constructor in $($PopulationCpp.FullName); matches=$($RootMatches.Count)"
+    }
+    if ($CppText -match 'SceneRoot[^\r\n]*SetMobility\(EComponentMobility::Static\)') {
+        throw "Population SceneRoot already has a static mobility assignment: $($PopulationCpp.FullName)"
+    }
+    $RootEvaluator = [Text.RegularExpressions.MatchEvaluator]{
+        param([Text.RegularExpressions.Match]$Match)
+        $Indent = $Match.Groups['indent'].Value
+        $Root = $Match.Groups['root'].Value
+        return $Match.Value + "`r`n" + $Indent + $Root + '->SetMobility(EComponentMobility::Static);'
+    }
+    $CppText = [regex]::Replace($CppText, $RootPattern, $RootEvaluator, 1)
+    Set-Content -LiteralPath $PopulationCpp.FullName -Value $CppText -Encoding utf8
+    $RootMatchTotal++
+}
+if ($RootMatchTotal -ne 1) { throw "Could not prove one JunglePopulationActor SceneRoot patch; matches=$RootMatchTotal" }
+Write-Host 'JUNGLE_POPULATION_STATIC_ROOT_PATCH=PROVEN'
 '@
-$RigText = [regex]::Replace($RigText, $LegacyCurveLoopPattern, $LayeredCurveLoop, 1)
-Set-Content -LiteralPath $RigScript -Value $RigText -Encoding utf8
-Write-Host 'BLENDER_52_ACTION_CURVES_PATCH=PROVEN'
 
-# Unreal 5.8 rejects older target defaults when the generated editor target
-# shares build products with UnrealEditor. Upgrade every decoded target template
-# to the engine-requested V7 defaults before the project is materialized.
-$UnrealTargetFiles = @(
-    Get-ChildItem -LiteralPath $SourceRoot -Recurse -File -Filter '*.Target.cs' -ErrorAction Stop
-)
-if ($UnrealTargetFiles.Count -lt 2 -or $UnrealTargetFiles.Count -gt 4) {
-    throw "Unexpected decoded Unreal target count: $($UnrealTargetFiles.Count)"
-}
-$BuildSettingsPattern = 'DefaultBuildSettings\s*=\s*BuildSettingsVersion\.V\d+\s*;'
-$PatchedTargetCount = 0
-foreach ($TargetFile in $UnrealTargetFiles) {
-    $TargetText = Get-Content -LiteralPath $TargetFile.FullName -Raw
-    $TargetMatches = [regex]::Matches($TargetText, $BuildSettingsPattern)
-    if ($TargetMatches.Count -ne 1) {
-        throw "Could not prove unique build settings declaration in $($TargetFile.FullName); matches=$($TargetMatches.Count)"
-    }
-    $TargetText = [regex]::Replace($TargetText, $BuildSettingsPattern, 'DefaultBuildSettings = BuildSettingsVersion.V7;', 1)
-    Set-Content -LiteralPath $TargetFile.FullName -Value $TargetText -Encoding utf8
-    $PatchedTargetCount++
-}
-Write-Host 'UNREAL_58_BUILD_SETTINGS_PATCH=PROVEN'
-Write-Host "UNREAL_TARGETS_PATCHED=$PatchedTargetCount"
+$PatchedText = $BaselineText.Replace($InsertionMarker, $EvidenceFixes + "`n`n" + $InsertionMarker)
+Set-Content -LiteralPath $PatchedBootstrap -Value $PatchedText -Encoding utf8
+Write-Host "BOOTSTRAP_BASELINE_COMMIT=$BaselineCommit"
+Write-Host "BOOTSTRAP_BASELINE_BLOB=$BaselineBlob"
+Write-Host 'RUN11_EVIDENCE_FIX_INJECTION=PROVEN'
 
-# Windows PowerShell 5 turns native stderr into terminating error records under
-# ErrorActionPreference=Stop. Blender 5.2 emits benign warnings on stderr. Compile
-# a tiny native forwarder so PowerShell passes every argument—including the `--`
-# Python boundary—unchanged to Blender. The forwarder merges both streams into
-# stdout and exits with Blender's exact exit code.
-$BlenderExe = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
-if (-not (Test-Path -LiteralPath $BlenderExe)) { throw "Blender executable missing: $BlenderExe" }
-$BlenderForwarder = Join-Path $TempRoot 'BlenderNativeForwarder.exe'
-$BlenderExeForCode = $BlenderExe.Replace('\', '\\').Replace('"', '\"')
-$ForwarderSource = @"
-using System;
-using System.Diagnostics;
-using System.Text;
-
-public static class BlenderNativeForwarder
-{
-    private static string Quote(string value)
-    {
-        if (value == null) return "\"\"";
-        if (value.Length > 0 && value.IndexOfAny(new[] { ' ', '\t', '\n', '\v', '\"' }) < 0)
-            return value;
-        var builder = new StringBuilder();
-        builder.Append('\"');
-        int slashes = 0;
-        foreach (char character in value)
-        {
-            if (character == '\\')
-            {
-                slashes++;
-            }
-            else if (character == '\"')
-            {
-                builder.Append('\\', slashes * 2 + 1);
-                builder.Append('\"');
-                slashes = 0;
-            }
-            else
-            {
-                builder.Append('\\', slashes);
-                slashes = 0;
-                builder.Append(character);
-            }
-        }
-        builder.Append('\\', slashes * 2);
-        builder.Append('\"');
-        return builder.ToString();
-    }
-
-    public static int Main(string[] args)
-    {
-        var arguments = new StringBuilder();
-        for (int index = 0; index < args.Length; index++)
-        {
-            if (index > 0) arguments.Append(' ');
-            arguments.Append(Quote(args[index]));
-        }
-        var info = new ProcessStartInfo
-        {
-            FileName = "$BlenderExeForCode",
-            Arguments = arguments.ToString(),
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        };
-        using (var process = new Process { StartInfo = info })
-        {
-            process.OutputDataReceived += (sender, eventArgs) => { if (eventArgs.Data != null) Console.Out.WriteLine(eventArgs.Data); };
-            process.ErrorDataReceived += (sender, eventArgs) => { if (eventArgs.Data != null) Console.Out.WriteLine(eventArgs.Data); };
-            if (!process.Start()) return 126;
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
-            return process.ExitCode;
-        }
-    }
-}
-"@
-Add-Type -TypeDefinition $ForwarderSource -Language CSharp -OutputAssembly $BlenderForwarder -OutputType ConsoleApplication
-if (-not (Test-Path -LiteralPath $BlenderForwarder)) { throw 'Blender native forwarder compilation produced no executable' }
-$BlenderCallPattern = '&\s*\$Blender\b'
-$BlenderCallCount = [regex]::Matches($EntryText, $BlenderCallPattern).Count
-if ($BlenderCallCount -lt 2 -or $BlenderCallCount -gt 4) {
-    throw "Unexpected decoded Blender invocation count: $BlenderCallCount"
-}
-$EscapedForwarder = $BlenderForwarder.Replace("'", "''")
-$EntryText = [regex]::Replace($EntryText, $BlenderCallPattern, "& '$EscapedForwarder'")
-Set-Content -LiteralPath $Entry -Value $EntryText -Encoding utf8
-Write-Host 'BLENDER_NATIVE_FORWARDER=PROVEN'
-Write-Host "BLENDER_CALLS_PATCHED=$BlenderCallCount"
-
-Write-Host "DIRECT_WORKER_BUNDLE_SHA256=$ActualSha"
-Write-Host 'CODEX_INVOKED=NO'
-Write-Host 'CLAUDE_INVOKED=NO'
-Write-Host 'MAGICMUSIC_INVOKED=NO'
-& $Entry -ExpectedBranch $ExpectedBranch -SourceRoot $SourceRoot
+& $PatchedBootstrap -ExpectedBranch $ExpectedBranch
 $WorkerExit = $LASTEXITCODE
-if ($WorkerExit -ne 0) { throw "Direct worker entrypoint failed with exit code $WorkerExit" }
+if ($WorkerExit -ne 0) { throw "Patched direct worker failed with exit code $WorkerExit" }
