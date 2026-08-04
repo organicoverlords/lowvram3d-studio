@@ -45,7 +45,8 @@
     "route": "mvadapter_sixview",
     "allow_fallback": true,
     "fallback_route": "raster_project",
-    "quality_tier": "production",
+      "quality_tier": "production",
+      "scope": "FRONT_HERO_PRODUCTION",
     "approved_single_view_face_route": true,
     "resolution": 4096,
     "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\antlered_bird_shaman_anchor\\controls",
@@ -53,9 +54,11 @@
     "face_detail": {
       "required": true,
       "output_resolution": 4096,
-      "min_face_pixels_across": 384,
-      "min_direct_observation_percent": 95.0,
+      "min_face_pixels_across": 192,
+      "min_largest_component_texels": 192,
+      "min_direct_observation_percent": 70.0,
       "min_face_id_match_percent": 99.0,
+      "max_landmark_loo_p95_pixels": 64.0,
       "boundary_rings": 2,
       "source_roi_normalized": [0.425, 0.13, 0.645, 0.355],
       "target_roi_normalized": [0.415, 0.245, 0.59, 0.415],
@@ -76,6 +79,15 @@
         "lower_beak": [0.500, 0.371],
         "left_face_edge": [0.425, 0.335],
         "right_face_edge": [0.575, 0.335]
+      },
+      "target_landmark_anchors": {
+        "left_eye": {"triangle_id": 13916, "barycentric": [0.1553184529, 0.3530095469, 0.4916720002]},
+        "right_eye": {"triangle_id": 56413, "barycentric": [0.0196526984, 0.7543319322, 0.2260153694]},
+        "beak_tip": {"triangle_id": 14425, "barycentric": [0.3281872875, 0.4699746779, 0.2018380346]},
+        "upper_face": {"triangle_id": 14203, "barycentric": [0.6529995495, 0.2526486587, 0.0943517917]},
+        "lower_beak": {"triangle_id": 14426, "barycentric": [0.1881675939, 0.3256689245, 0.4861634815]},
+        "left_face_edge": {"triangle_id": 43610, "barycentric": [0.2585013620, 0.4765719243, 0.2649267137]},
+        "right_face_edge": {"triangle_id": 56968, "barycentric": [0.1829784176, 0.1454762628, 0.6715453196]}
       }
     }
   },

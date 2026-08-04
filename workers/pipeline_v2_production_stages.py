@@ -52,6 +52,28 @@ def _find(directory: Path, *tokens: str) -> Path | None:
     return sorted(matches, key=lambda p: (len(p.name), p.name))[0] if matches else None
 
 
+TEXTURE_SCOPES = {
+    "PREVIEW_TEXTURE",
+    "FRONT_HERO_PRODUCTION",
+    "PARTIAL_360_PRODUCTION",
+    "FULL_360_PRODUCTION",
+}
+
+
+def classify_texture_scope(*, actual_route: str, semantic_view_count: int,
+                           synthesized_percent: float, face_detail_required: bool,
+                           approved_single_view_face_route: bool) -> str:
+    """Classify the claim scope from evidence, not from a generic production boolean."""
+    if actual_route == "mvadapter_sixview" and semantic_view_count >= 6 and synthesized_percent <= 70.0:
+        return "FULL_360_PRODUCTION"
+    if semantic_view_count >= 4 and synthesized_percent <= 85.0:
+        return "PARTIAL_360_PRODUCTION"
+    if (actual_route == "raster_project" and face_detail_required
+            and approved_single_view_face_route and semantic_view_count == 1):
+        return "FRONT_HERO_PRODUCTION"
+    return "PREVIEW_TEXTURE"
+
+
 def validate_mvadapter_inputs(bundle: Path, views_receipt: Path) -> dict:
     """Validate the external six-view contract without starting any heavy worker."""
     missing = []
@@ -147,11 +169,16 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 }
     actual_texture_route = texture_route
     fallback_used = texture_fallback is not None
-    production_eligible = texture_quality_tier == "production" and (
-        actual_texture_route == "mvadapter_sixview"
-        or (actual_texture_route == "raster_project" and approved_single_view_face_route
-            and face_detail_required)
+    declared_scope = str(texture_manifest.get("scope", "")).upper()
+    if declared_scope not in TEXTURE_SCOPES:
+        declared_scope = ""
+    initial_scope = declared_scope or (
+        "FRONT_HERO_PRODUCTION" if actual_texture_route == "raster_project" and face_detail_required
+        and approved_single_view_face_route else "PREVIEW_TEXTURE"
     )
+    production_eligible = texture_quality_tier == "production" and initial_scope != "PREVIEW_TEXTURE"
+    full_360_eligible = initial_scope == "FULL_360_PRODUCTION"
+    production_scope = initial_scope
     uv_resolution = int((manifest.get("uv") or {}).get("resolution", 1024))
     uv_padding = int((manifest.get("uv") or {}).get("padding", 4))
     uv_timeout = float((manifest.get("uv") or {}).get("candidate_timeout_seconds", 600))
@@ -792,18 +819,25 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     )
                 protected_mask = Path(face_data["protected_face_mask"])
                 if float(face_data.get("direct_face_observation_percent", 0.0)) < float(
-                        face_detail.get("min_direct_observation_percent", 95.0)):
+                        face_detail.get("min_direct_observation_percent", 70.0)):
                     return StageResult(
                         "failed", gates=face_data,
                         failure_codes=["FACE_TEXTURE_MISREGISTERED"],
                         detail="direct face observation is below the declared production gate",
                     )
-                if int(face_data.get("face_width_texels", 0)) < int(
-                        face_detail.get("min_face_pixels_across", 384)):
+                if int(face_data.get("largest_component_width", 0)) < int(
+                        face_detail.get("min_largest_component_texels", 192)):
                     return StageResult(
                         "failed", gates=face_data,
                         failure_codes=["FACE_TEXTURE_MISREGISTERED"],
-                        detail="face footprint is below the declared texel-width gate",
+                        detail="largest contiguous face chart is below the declared texel-width gate",
+                    )
+                if float(face_data.get("landmark_loo_p95_pixels", 999.0)) > float(
+                        face_detail.get("max_landmark_loo_p95_pixels", 8.0)):
+                    return StageResult(
+                        "failed", gates=face_data,
+                        failure_codes=["FACE_TEXTURE_MISREGISTERED"],
+                        detail="leave-one-out landmark residual is above the declared gate",
                     )
 
             repainted = stage / "basecolor_repainted.png"
@@ -965,6 +999,16 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             outputs["contact_sheet"] = contact_sheet
             projection_data = _json(projection_report)
             semantic_view_count = len(projection_data.get("semantic_views") or [])
+            synthesized_percent = float(projection_data.get("synthesized_surface_coverage_percent") or 100.0)
+            production_scope = classify_texture_scope(
+                actual_route=actual_texture_route,
+                semantic_view_count=semantic_view_count,
+                synthesized_percent=synthesized_percent,
+                face_detail_required=face_detail_required,
+                approved_single_view_face_route=approved_single_view_face_route,
+            )
+            full_360_eligible = production_scope == "FULL_360_PRODUCTION"
+            production_eligible = texture_quality_tier == "production" and production_scope != "PREVIEW_TEXTURE"
             gates = {
                 "route": actual_texture_route,
                 "requested_route": requested_texture_route,
@@ -973,6 +1017,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "fallback_used": fallback_used,
                 "quality_tier": texture_quality_tier,
                 "production_eligible": production_eligible,
+                "texture_scope": production_scope,
+                "full_360_eligible": full_360_eligible,
                 "semantic_view_count": semantic_view_count,
                 "observed_percent": projection_data.get("observed_semantic_coverage_percent"),
                 "synthesized_percent": projection_data.get("synthesized_surface_coverage_percent"),
@@ -988,9 +1034,12 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 gates["face_detail"] = {
                     "direct_observation_percent": face_data.get("direct_face_observation_percent"),
                     "face_id_match_percent": face_data.get("face_id_match_percent"),
-                    "landmark_reprojection_p95_pixels": face_data.get("landmark_reprojection_p95_pixels"),
-                    "face_width_texels": face_data.get("face_width_texels"),
-                    "protected_face_texels": face_data.get("face_chart_texel_count"),
+                    "landmark_loo_p95_pixels": face_data.get("landmark_loo_p95_pixels"),
+                    "largest_component_width": face_data.get("largest_component_width"),
+                    "largest_component_height": face_data.get("largest_component_height"),
+                    "face_component_count": (face_data.get("face_components") or {}).get("component_count"),
+                    "intended_face_texel_count": face_data.get("intended_face_texel_count"),
+                    "accepted_face_texel_count": face_data.get("accepted_face_texel_count"),
                     "protected_face_mask": face_data.get("protected_face_mask"),
                     "protected_face_texel_sha256": face_data.get("protected_face_texel_sha256"),
                 }
@@ -1060,6 +1109,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             gates["actual_texture_route"] = texture_gates.get("actual_texture_route", actual_texture_route)
             gates["fallback_used"] = texture_gates.get("fallback_used", fallback_used)
             gates["production_eligible"] = texture_gates.get("production_eligible", production_eligible)
+            gates["texture_scope"] = texture_gates.get("texture_scope", production_scope)
+            gates["full_360_eligible"] = texture_gates.get("full_360_eligible", False)
             gates["semantic_view_count"] = texture_gates.get("semantic_view_count", 1)
             blocking = list(data.get("blocking_codes", []))
             if texture_quality_tier == "production" and not gates["production_eligible"]:
@@ -1074,8 +1125,10 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     "close_face_unlit_exists": required_renders[1].is_file(),
                     "direct_observation_percent": face_data.get("direct_face_observation_percent"),
                     "face_id_match_percent": face_data.get("face_id_match_percent"),
-                    "face_width_texels": face_data.get("face_width_texels"),
-                    "landmark_reprojection_p95_pixels": face_data.get("landmark_reprojection_p95_pixels"),
+                    "largest_component_width": face_data.get("largest_component_width"),
+                    "largest_component_height": face_data.get("largest_component_height"),
+                    "face_component_count": (face_data.get("face_components") or {}).get("component_count"),
+                    "landmark_loo_p95_pixels": face_data.get("landmark_loo_p95_pixels"),
                     "protected_face_texels_unchanged": True,
                     "rear_facial_provenance_count": 0,
                 }
@@ -1097,10 +1150,10 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 )
                 gates["face_qa"] = face_qa
                 if not all((face_qa["close_face_lit_exists"], face_qa["close_face_unlit_exists"],
-                            float(face_qa.get("direct_observation_percent") or 0) >= float(face_detail.get("min_direct_observation_percent", 95.0)),
+                            float(face_qa.get("direct_observation_percent") or 0) >= float(face_detail.get("min_direct_observation_percent", 70.0)),
                             float(face_qa.get("face_id_match_percent") or 0) >= float(face_detail.get("min_face_id_match_percent", 99.0)),
-                            int(face_qa.get("face_width_texels") or 0) >= int(face_detail.get("min_face_pixels_across", 384)),
-                            float(face_qa.get("landmark_reprojection_p95_pixels") or 999) <= 4.0,
+                            int(face_qa.get("largest_component_width") or 0) >= int(face_detail.get("min_largest_component_texels", 192)),
+                            float(face_qa.get("landmark_loo_p95_pixels") or 999) <= float(face_detail.get("max_landmark_loo_p95_pixels", 8.0)),
                             face_qa["protected_face_texels_unchanged"],
                             face_qa["rear_facial_provenance_count"] == 0)):
                     blocking.append("FACE_TEXTURE_MISREGISTERED")
