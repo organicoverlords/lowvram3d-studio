@@ -46,6 +46,7 @@ from typing import Any
 REPO = Path(__file__).resolve().parents[2]
 WORKER = REPO / "workers" / "mini_turbo_generate.py"
 DECIMATOR = REPO / "workers" / "decimate_mesh.py"
+PREVIEWER = REPO / "workers" / "preview_generated_mesh.py"
 
 # Mini Turbo samples a 384^3 volume whatever the subject, so a single building
 # comes back at ~1.7 M triangles. That is grid resolution, not detail, and it
@@ -286,6 +287,26 @@ def _decimate(glb: Path, budget: int) -> tuple[Path, dict[str, Any]]:
                  "stderr_tail": (completed.stderr or "")[-400:]}
 
 
+def _preview(glb: Path, destination: Path) -> dict[str, Any]:
+    """Render the asset on its own so it can be judged apart from the scene.
+
+    Never fatal: a missing preview costs a look, not an asset.
+    """
+    receipt_path = destination.with_suffix(".json")
+    completed = subprocess.run(
+        [sys.executable, str(PREVIEWER), "--glb", str(glb),
+         "--out", str(destination), "--receipt", str(receipt_path)],
+        capture_output=True, text=True)
+    if completed.returncode != 0 or not receipt_path.is_file():
+        return {"preview_error": (completed.stderr or "")[-300:]}
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    return {"preview_png": str(destination),
+            "mesh_bodies": receipt.get("body_count"),
+            "mesh_watertight": receipt.get("watertight"),
+            "mesh_extent": receipt.get("extent"),
+            "view_coverage": receipt.get("view_coverage")}
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -426,6 +447,7 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
                     (a.get("peak_vram_mb") or 0)
                     for a in worker_result.get("attempts", [{}])) or None,
                 "generation_seconds": worker_result.get("generation_seconds"),
+                **_preview(usable, asset_dir / "preview.png"),
             })
         else:
             entry["status"] = "failed"
