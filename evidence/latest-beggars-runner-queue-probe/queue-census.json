@@ -1,26 +1,26 @@
 {
   "active_run_count": 2,
   "classification": "QUEUE_CENSUS_PROVEN",
-  "observed_at": "2026-08-04T15:39:32Z",
+  "observed_at": "2026-08-04T15:44:56Z",
   "runs": [
     {
       "conclusion": null,
-      "created_at": "2026-08-04T15:39:19Z",
+      "created_at": "2026-08-04T15:44:39Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "fd69fcd1ba7ab9db27d94e61b14613ffd3df90f8",
+      "head_sha": "d7c66d4e5cf039e6c68b4a07efc53c33d46aeb52",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 92045765794,
+          "id": 92047303935,
           "labels": [
             "ubuntu-latest"
           ],
           "name": "inspect-queue",
           "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000021970",
-          "started_at": "2026-08-04T15:39:23Z",
+          "runner_name": "GitHub Actions 1000021973",
+          "started_at": "2026-08-04T15:44:49Z",
           "status": "in_progress",
           "steps": [
             {
@@ -56,24 +56,24 @@
           ]
         }
       ],
-      "name": "Beggars runner queue probe 30925242610",
+      "name": "Beggars runner queue probe 30925694668",
       "path": ".github/workflows/beggars-runner-queue-probe.yml",
-      "run_id": 30925242610,
+      "run_id": 30925694668,
       "status": "in_progress",
-      "updated_at": "2026-08-04T15:39:24Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925242610"
+      "updated_at": "2026-08-04T15:44:49Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925694668"
     },
     {
       "conclusion": null,
-      "created_at": "2026-08-04T15:38:58Z",
+      "created_at": "2026-08-04T15:44:21Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "7cced4c1d727b63a53a03535f5226958ba57c819",
+      "head_sha": "7343fc9c475f126d626152eed40b4ed425570925",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 92045704628,
+          "id": 92047217484,
           "labels": [
             "self-hosted",
             "Windows",
@@ -82,7 +82,7 @@
           "name": "diagnose",
           "runner_group_name": "Default",
           "runner_name": "LOWVRAM3D-KONE",
-          "started_at": "2026-08-04T15:39:08Z",
+          "started_at": "2026-08-04T15:44:24Z",
           "status": "in_progress",
           "steps": [
             {
@@ -118,12 +118,12 @@
           ]
         }
       ],
-      "name": "Beggars faceplate v3 diagnostic 30925213051",
+      "name": "Beggars faceplate v3 diagnostic 30925669455",
       "path": ".github/workflows/beggars-faceplate-v3-diagnostic.yml",
-      "run_id": 30925213051,
+      "run_id": 30925669455,
       "status": "in_progress",
-      "updated_at": "2026-08-04T15:39:09Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925213051"
+      "updated_at": "2026-08-04T15:44:25Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925669455"
     }
   ]
 }
