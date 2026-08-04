@@ -22,7 +22,7 @@ from PIL import Image
 
 from build_mvadapter_cpu_controls import PROJECTION_SPAN
 from fast_texture_projection import bind_texture, immutable_buffer_hashes, rasterise_atlas
-from mesh_io import read_glb
+from mesh_io import read_glb, triangle_components
 
 # Top and bottom see the character at a grazing angle over most of its body, so their
 # observations are kept but discounted relative to the four horizontal cameras.
@@ -132,22 +132,37 @@ def bilinear(image: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
     return top * (1 - fy) + bottom * fy
 
 
-def push_pull_fill(colour: np.ndarray, filled: np.ndarray, rounds: int = 256):
-    """Grow observed colour outward one ring at a time; returns the synthesized mask."""
+def push_pull_fill(colour: np.ndarray, filled: np.ndarray, rounds: int = 256,
+                   domain: np.ndarray | None = None,
+                   labels: np.ndarray | None = None):
+    """Grow colour by explicit in-bounds neighbours within one surface domain.
+
+    ``domain`` confines completion to geometry-bearing or chart-padding texels.  ``labels``
+    prevents a donor crossing between disconnected UV/3D components.  Slicing is used instead
+    of ``np.roll`` so atlas edges can never wrap into one another.
+    """
     synthesized = np.zeros(filled.shape, bool)
-    current = filled.copy()
+    allowed = np.ones(filled.shape, bool) if domain is None else np.asarray(domain, bool)
+    if labels is not None and np.asarray(labels).shape != filled.shape:
+        raise ValueError("labels must match filled shape")
+    current = filled & allowed
     output = colour.copy()
     for _ in range(rounds):
-        if current.all():
+        if np.all(current[allowed]):
             break
         neighbour_sum = np.zeros(colour.shape, np.float64)
         neighbour_count = np.zeros(filled.shape, np.float64)
-        for shift, axis in ((1, 0), (-1, 0), (1, 1), (-1, 1)):
-            rolled_colour = np.roll(output, shift, axis=axis)
-            rolled_mask = np.roll(current, shift, axis=axis)
-            neighbour_sum += rolled_colour * rolled_mask[..., None]
-            neighbour_count += rolled_mask
-        grow = (~current) & (neighbour_count > 0)
+        for source, target in (((slice(1, None), slice(None)), (slice(None, -1), slice(None))),
+                               ((slice(None, -1), slice(None)), (slice(1, None), slice(None))),
+                               ((slice(None), slice(1, None)), (slice(None), slice(None, -1))),
+                               ((slice(None), slice(None, -1)), (slice(None), slice(1, None)))):
+            source_mask = current[source]
+            valid = source_mask & allowed[target]
+            if labels is not None:
+                valid &= labels[source] == labels[target]
+            neighbour_sum[target] += output[source] * valid[..., None]
+            neighbour_count[target] += valid
+        grow = allowed & (~current) & (neighbour_count > 0)
         if not grow.any():
             break
         output[grow] = (neighbour_sum[grow]
@@ -155,6 +170,24 @@ def push_pull_fill(colour: np.ndarray, filled: np.ndarray, rounds: int = 256):
         synthesized |= grow
         current |= grow
     return output, synthesized, current
+
+
+def expand_label_domain(labels: np.ndarray, rounds: int) -> np.ndarray:
+    """Build bounded chart-padding labels without crossing atlas edges."""
+    result = np.asarray(labels, dtype=np.int32).copy()
+    for _ in range(max(0, int(rounds))):
+        grown = result.copy()
+        for source, target in (((slice(1, None), slice(None)), (slice(None, -1), slice(None))),
+                               ((slice(None, -1), slice(None)), (slice(1, None), slice(None))),
+                               ((slice(None), slice(1, None)), (slice(None), slice(None, -1))),
+                               ((slice(None), slice(None, -1)), (slice(None), slice(1, None)))):
+            target_empty = result[target] < 0
+            source_valid = result[source] >= 0
+            grown[target] = np.where(target_empty & source_valid, result[source], grown[target])
+        if np.array_equal(grown, result):
+            break
+        result = grown
+    return result
 
 
 def main() -> int:
@@ -209,6 +242,9 @@ def main() -> int:
     owned_count = int(owned.sum())
     if not owned_count:
         raise RuntimeError("MULTIVIEW_PROJECTION_ATLAS_EMPTY")
+    components, _ = triangle_components(positions, tris)
+    surface_labels = np.full((size, size), -1, np.int32)
+    surface_labels[owned] = components[owner[owned]]
 
     corners = tris[owner[owned]]
     wa = weights[owned][:, 0][:, None]
@@ -328,24 +364,36 @@ def main() -> int:
     observation_map = np.zeros((size, size), np.int16)
     observation_map[owned] = observation_count
 
-    atlas, synthesized_mask, resolved = push_pull_fill(atlas, filled)
+    atlas, synthesized_mask, resolved = push_pull_fill(
+        atlas, filled, domain=owned, labels=surface_labels)
     # Only geometry-bearing texels count; the empty gutter is not "unresolved surface".
     synthesized_on_surface = synthesized_mask & owned
     unresolved = owned & ~resolved
 
     # A one-texel bleed past every chart edge stops bilinear sampling from pulling in the
     # gutter and darkening every seam.
-    bled, _bleed_mask, _ = push_pull_fill(atlas, resolved, rounds=args.edge_bleed)
+    padding_labels = expand_label_domain(surface_labels, args.edge_bleed)
+    bled, _bleed_mask, _ = push_pull_fill(
+        atlas, resolved, rounds=args.edge_bleed,
+        domain=padding_labels >= 0, labels=padding_labels)
     atlas_image = Image.fromarray(np.clip(bled, 0, 255).astype(np.uint8))
     atlas_path = output_dir / "panda_multiview_basecolor.png"
     atlas_image.save(atlas_path)
 
     seam = np.zeros((size, size), bool)
-    for shift, axis in ((1, 0), (-1, 0), (1, 1), (-1, 1)):
-        seam |= owned & (np.roll(ownership, shift, axis=axis) != ownership) & (
-            np.roll(owned, shift, axis=axis))
+    for source, target in (((slice(1, None), slice(None)), (slice(None, -1), slice(None))),
+                           ((slice(None, -1), slice(None)), (slice(1, None), slice(None))),
+                           ((slice(None), slice(1, None)), (slice(None), slice(None, -1))),
+                           ((slice(None), slice(None, -1)), (slice(None), slice(1, None)))):
+        seam[target] |= owned[target] & owned[source] & (ownership[target] != ownership[source])
+    triangle_map = np.zeros((size, size), np.uint32)
+    triangle_map[owned] = owner[owned].astype(np.uint32) + 1
+    island_map = np.zeros((size, size), np.uint32)
+    island_map[owned] = surface_labels[owned].astype(np.uint32) + 1
     for name, array, mode in (
             ("ownership_map.png", ((ownership + 1) * 40).astype(np.uint8), "L"),
+            ("triangle_id_map.png", np.clip(triangle_map % 256, 0, 255).astype(np.uint8), "L"),
+            ("uv_island_map.png", np.clip(island_map % 256, 0, 255).astype(np.uint8), "L"),
             ("observed_coverage_mask.png", (filled * 255).astype(np.uint8), "L"),
             ("synthesized_coverage_mask.png", (synthesized_on_surface * 255).astype(np.uint8), "L"),
             ("confidence_map.png", (np.clip(confidence_map, 0, 1) * 255).astype(np.uint8), "L"),
@@ -357,7 +405,10 @@ def main() -> int:
     output_glb = Path(args.output_glb)
     before = immutable_buffer_hashes(mesh)
     atlas_bytes = atlas_path.read_bytes()
-    bind_texture(mesh, output_glb, atlas_bytes)
+    textured_triangles = np.zeros(len(tris), dtype=bool)
+    textured_triangles[owner[owned][observed]] = True
+    bind_texture(mesh, output_glb, atlas_bytes,
+                 textured_triangles=textured_triangles)
     after = immutable_buffer_hashes(output_glb)
 
     def percent(count: int) -> float:
@@ -390,6 +441,8 @@ def main() -> int:
         "geometry_buffers_before": before,
         "geometry_buffers_after": after,
         "geometry_unchanged": before == after,
+        "textured_triangles": int(textured_triangles.sum()),
+        "textured_triangle_fraction": round(float(textured_triangles.mean()), 6),
         "coverage": coverage,
         "gates": {
             "depth_tolerance": args.depth_tolerance,
@@ -400,7 +453,8 @@ def main() -> int:
         },
         "per_view": diagnostics,
         "maps": {name: str(output_dir / name) for name in (
-            "ownership_map.png", "observed_coverage_mask.png", "synthesized_coverage_mask.png",
+            "ownership_map.png", "triangle_id_map.png", "uv_island_map.png",
+            "observed_coverage_mask.png", "synthesized_coverage_mask.png",
             "confidence_map.png", "seam_map.png", "multiview_coverage_mask.png")},
     }
     Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")

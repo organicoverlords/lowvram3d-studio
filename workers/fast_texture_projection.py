@@ -29,6 +29,7 @@ reaching the hull.
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import struct
@@ -111,8 +112,54 @@ def immutable_buffer_hashes(path: Path) -> dict:
     }
 
 
-def bind_texture(input_glb: Path, output_glb: Path, png: bytes) -> int:
-    """Append the atlas and bind it as baseColorTexture, leaving every geometry buffer alone."""
+def _accessor_array(gltf: dict, blob: bytes, index: int) -> np.ndarray:
+    """Read an integer accessor without applying node transforms."""
+    accessor = gltf["accessors"][index]
+    view = gltf["bufferViews"][accessor["bufferView"]]
+    component_dtype = {5121: "<u1", 5123: "<u2", 5125: "<u4"}
+    component_width = {5121: 1, 5123: 2, 5125: 4}[accessor["componentType"]]
+    type_width = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}[accessor["type"]]
+    stride = int(view.get("byteStride") or component_width * type_width)
+    start = int(view.get("byteOffset", 0) + accessor.get("byteOffset", 0))
+    count = int(accessor["count"])
+    raw = np.frombuffer(blob, dtype=np.uint8,
+                        count=stride * max(count - 1, 0) + component_width * type_width,
+                        offset=start)
+    if stride != component_width * type_width:
+        raw = np.lib.stride_tricks.as_strided(
+            raw, shape=(count, component_width * type_width), strides=(stride, 1)).copy()
+    # The caller may append new accessors to ``blob`` after reading this array.  Return an
+    # owning copy so the ndarray cannot keep an export on the resizable bytearray.
+    return raw.reshape(-1).view(component_dtype[accessor["componentType"]]).reshape(
+        count, type_width).copy()
+
+
+def _append_index_accessor(gltf: dict, blob: bytearray, indices: np.ndarray) -> int:
+    values = np.asarray(indices, dtype=np.uint32).reshape(-1)
+    while len(blob) % 4:
+        blob.append(0)
+    offset = len(blob)
+    blob.extend(values.tobytes())
+    gltf.setdefault("bufferViews", []).append({
+        "buffer": 0, "byteOffset": offset, "byteLength": int(values.nbytes), "target": 34963})
+    view = len(gltf["bufferViews"]) - 1
+    gltf.setdefault("accessors", []).append({
+        "bufferView": view, "componentType": 5125, "count": int(values.size),
+        "type": "SCALAR", "min": [int(values.min())] if values.size else [0],
+        "max": [int(values.max())] if values.size else [0]})
+    return len(gltf["accessors"]) - 1
+
+
+def bind_texture(input_glb: Path, output_glb: Path, png: bytes,
+                 textured_triangles: np.ndarray | None = None,
+                 wrap: int = 10497) -> int:
+    """Bind an atlas only to active/provenance-valid geometry.
+
+    Neutral synthesis materials must not receive the atlas globally: overlapping UV triangles
+    on rear geometry would otherwise display the frontal face.  With a triangle mask, mixed
+    primitives are split into atlas-textured and original-material primitives without changing
+    vertex, normal, UV, or triangle values.
+    """
     gltf, original = _read_glb(input_glb)
     blob = bytearray(original)
     while len(blob) % 4:
@@ -122,13 +169,13 @@ def bind_texture(input_glb: Path, output_glb: Path, png: bytes) -> int:
     gltf.setdefault("bufferViews", []).append(
         {"buffer": 0, "byteOffset": offset, "byteLength": len(png)})
     view_index = len(gltf["bufferViews"]) - 1
-
     images = gltf.setdefault("images", [])
     images.append({"bufferView": view_index, "mimeType": "image/png", "name": "basecolor"})
     image_index = len(images) - 1
     samplers = gltf.setdefault("samplers", [])
     if not samplers:
-        samplers.append({"magFilter": 9729, "minFilter": 9987, "wrapS": 10497, "wrapT": 10497})
+        samplers.append({"magFilter": 9729, "minFilter": 9987,
+                         "wrapS": wrap, "wrapT": wrap})
     textures = gltf.setdefault("textures", [])
     textures.append({"sampler": 0, "source": image_index})
     texture_index = len(textures) - 1
@@ -139,14 +186,82 @@ def bind_texture(input_glb: Path, output_glb: Path, png: bytes) -> int:
         for mesh in gltf.get("meshes", []):
             for primitive in mesh.get("primitives", []):
                 primitive.setdefault("material", 0)
+
+    def active(material: dict) -> bool:
+        return bool(material.get("pbrMetallicRoughness", {}).get("baseColorTexture"))
+
+    active_index = next((i for i, material in enumerate(materials) if active(material)), 0)
+    atlas_material = copy.deepcopy(materials[active_index])
+    pbr = atlas_material.setdefault("pbrMetallicRoughness", {})
+    pbr["baseColorTexture"] = {"index": texture_index}
+    pbr["baseColorFactor"] = [1.0, 1.0, 1.0, 1.0]
+    pbr.setdefault("metallicFactor", 0.0)
+    pbr.setdefault("roughnessFactor", 0.85)
+    atlas_material["name"] = "ProjectedAtlasProvenance"
+    materials.append(atlas_material)
+    atlas_material_index = len(materials) - 1
+    neutral_index = next((i for i, material in enumerate(materials[:atlas_material_index])
+                          if not active(material)), None)
+    if neutral_index is None:
+        neutral_material = copy.deepcopy(materials[active_index])
+        neutral_pbr = neutral_material.setdefault("pbrMetallicRoughness", {})
+        neutral_pbr.pop("baseColorTexture", None)
+        neutral_pbr["baseColorFactor"] = [0.2, 0.22, 0.18, 1.0]
+        neutral_material["name"] = "NeutralUnobservedSurface"
+        materials.append(neutral_material)
+        neutral_index = len(materials) - 1
+
+    mask = None if textured_triangles is None else np.asarray(textured_triangles, dtype=bool)
+    if mask is not None and mask.ndim != 1:
+        raise ValueError("textured_triangles must be one-dimensional")
+    cursor = 0
     bound = 0
-    for material in materials:
-        pbr = material.setdefault("pbrMetallicRoughness", {})
-        pbr["baseColorTexture"] = {"index": texture_index}
-        pbr["baseColorFactor"] = [1.0, 1.0, 1.0, 1.0]
-        pbr.setdefault("metallicFactor", 0.0)
-        pbr.setdefault("roughnessFactor", 0.85)
-        bound += 1
+    for mesh in gltf.get("meshes", []):
+        rewritten = []
+        for primitive in mesh.get("primitives", []):
+            if int(primitive.get("mode", 4)) != 4 or "indices" not in primitive:
+                rewritten.append(primitive)
+                continue
+            indices = _accessor_array(gltf, blob, int(primitive["indices"])).reshape(-1)
+            triangle_count = indices.size // 3
+            if mask is None:
+                part = copy.deepcopy(primitive)
+                if active(materials[int(part.get("material", 0))]):
+                    part["material"] = atlas_material_index
+                    bound += 1
+                rewritten.append(part)
+                cursor += triangle_count
+                continue
+            if cursor + triangle_count > mask.size:
+                raise ValueError("textured_triangles shorter than GLB triangle stream")
+            local = mask[cursor:cursor + triangle_count]
+            cursor += triangle_count
+            if local.all():
+                part = copy.deepcopy(primitive)
+                part["material"] = atlas_material_index
+                rewritten.append(part)
+                bound += 1
+            elif not local.any():
+                part = copy.deepcopy(primitive)
+                if active(materials[int(part.get("material", 0))]):
+                    part["material"] = int(neutral_index)
+                rewritten.append(part)
+            else:
+                base = copy.deepcopy(primitive)
+                for selected, material_index in ((local, atlas_material_index),
+                                                 (~local, int(neutral_index) if active(materials[int(primitive.get("material", 0))])
+                                                  else int(primitive.get("material", 0)))):
+                    values = indices.reshape(-1, 3)[selected].reshape(-1)
+                    if values.size == 0:
+                        continue
+                    part = copy.deepcopy(base)
+                    part["indices"] = _append_index_accessor(gltf, blob, values)
+                    part["material"] = material_index
+                    rewritten.append(part)
+                    bound += int(material_index == atlas_material_index)
+        mesh["primitives"] = rewritten
+    if mask is not None and cursor != mask.size:
+        raise ValueError("textured_triangles longer than GLB triangle stream")
 
     gltf["buffers"][0]["byteLength"] = len(blob)
     json_bytes = json.dumps(gltf, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
@@ -185,33 +300,55 @@ def _tier_split(areas: np.ndarray) -> list[tuple[np.ndarray, int]]:
 
 
 def rasterise_atlas(uv: np.ndarray, triangles: np.ndarray, size: int) -> tuple[np.ndarray, np.ndarray]:
-    """Per-texel triangle ownership and barycentric weights, by tiered supersampling."""
+    """Return deterministic ownership and barycentrics evaluated at texel centres.
+
+    The former implementation scattered a supersampling grid into integer pixels and kept
+    whichever triangle/sample happened to write last.  That loses the correspondence between
+    an atlas texel and its UV position, especially on the many small charts in this asset: the
+    resulting atlas showed long streaks and source details were painted into the wrong texels.
+
+    A texel must be sampled at its own centre.  Rasterising each triangle over its clipped UV
+    bounding box is a little more CPU work than the old scatter, but it is deterministic,
+    rejects out-of-range UVs instead of clipping them to an atlas edge, and stores barycentrics
+    that reconstruct the actual texel-centre UV.  UV charts are expected not to overlap; on a
+    shared chart seam the first triangle in source order wins deterministically.
+    """
     owner = np.full((size, size), -1, np.int32)
     weights = np.zeros((size, size, 2), np.float32)
 
-    px = uv[triangles] * float(size)          # (T, 3, 2) in texel units
-    edge1 = px[:, 1] - px[:, 0]
-    edge2 = px[:, 2] - px[:, 0]
-    areas = 0.5 * np.abs(edge1[:, 0] * edge2[:, 1] - edge1[:, 1] * edge2[:, 0])
+    px = uv[triangles].astype(np.float64) * float(size)  # (T, 3, 2) in texel units
+    for triangle_id, corners in enumerate(px):
+        origin, corner_a, corner_b = corners
+        low = np.floor(np.minimum.reduce(corners)).astype(np.int64)
+        high = np.ceil(np.maximum.reduce(corners)).astype(np.int64) - 1
+        x0, x1 = max(0, int(low[0])), min(size - 1, int(high[0]))
+        y0, y1 = max(0, int(low[1])), min(size - 1, int(high[1]))
+        if x0 > x1 or y0 > y1:
+            continue
 
-    for selected, steps in _tier_split(areas):
-        bary = _barycentric_grid(steps)                       # (S, 2)
-        for start in range(0, selected.size, 200_000):        # bound peak memory, not per-triangle
-            batch = selected[start:start + 200_000]
-            origin = px[batch, 0][:, None, :]                 # (B, 1, 2)
-            e1 = edge1[batch][:, None, :]
-            e2 = edge2[batch][:, None, :]
-            wa = bary[None, :, 0, None]
-            wb = bary[None, :, 1, None]
-            points = origin + e1 * wa + e2 * wb               # (B, S, 2)
-            xs = np.clip(points[..., 0].astype(np.int32), 0, size - 1)
-            ys = np.clip(points[..., 1].astype(np.int32), 0, size - 1)
-            ids = np.repeat(batch[:, None], bary.shape[0], axis=1)
-            owner[ys.ravel(), xs.ravel()] = ids.ravel()
-            weights[ys.ravel(), xs.ravel(), 0] = np.broadcast_to(
-                bary[None, :, 0], ids.shape).ravel()
-            weights[ys.ravel(), xs.ravel(), 1] = np.broadcast_to(
-                bary[None, :, 1], ids.shape).ravel()
+        grid_x, grid_y = np.meshgrid(
+            np.arange(x0, x1 + 1, dtype=np.float64) + 0.5,
+            np.arange(y0, y1 + 1, dtype=np.float64) + 0.5,
+        )
+        edge_a = corner_a - origin
+        edge_b = corner_b - origin
+        delta_x = grid_x - origin[0]
+        delta_y = grid_y - origin[1]
+        denominator = edge_a[0] * edge_b[1] - edge_a[1] * edge_b[0]
+        if abs(denominator) <= 1e-12:
+            continue
+        weight_a = (delta_x * edge_b[1] - delta_y * edge_b[0]) / denominator
+        weight_b = (edge_a[0] * delta_y - edge_a[1] * delta_x) / denominator
+        inside = ((weight_a >= -1e-7) & (weight_b >= -1e-7)
+                  & (weight_a + weight_b <= 1.0000001))
+        free = inside & (owner[y0:y1 + 1, x0:x1 + 1] < 0)
+        if not free.any():
+            continue
+        tile_owner = owner[y0:y1 + 1, x0:x1 + 1]
+        tile_weights = weights[y0:y1 + 1, x0:x1 + 1]
+        tile_owner[free] = triangle_id
+        tile_weights[free, 0] = weight_a[free]
+        tile_weights[free, 1] = weight_b[free]
     return owner, weights
 
 

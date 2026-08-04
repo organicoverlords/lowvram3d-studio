@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+from collections import deque
 from pathlib import Path
 
 import bpy
@@ -30,6 +31,7 @@ VIEWS = (
 #: Close-ups as (name, yaw, pitch, height fraction from the model's base, framing width).
 CLOSEUPS = (
     ("face", 0.0, 5.0, 0.86, 0.42),
+    ("rear_head", 180.0, 5.0, 0.86, 0.42),
     ("equipment", 200.0, 10.0, 0.60, 0.60),
     ("tail", 300.0, -5.0, 0.30, 0.55),
     ("repaired_bar_region", 0.0, -30.0, 0.12, 0.70),
@@ -38,6 +40,7 @@ CLOSEUPS = (
 
 def texture_report(objects) -> dict:
     images, materials = set(), set()
+    active_images = {}
     for obj in objects:
         for slot in obj.material_slots:
             material = slot.material
@@ -50,11 +53,46 @@ def texture_report(objects) -> dict:
                 if node.type == "TEX_IMAGE" and node.image is not None:
                     images.add((node.image.name, tuple(node.image.size),
                                 bool(node.image.has_data)))
+            active = active_base_color_image(material)
+            active_images[material.name] = {
+                "name": active.name if active is not None else None,
+                "size": list(active.size) if active is not None else None,
+                "has_data": bool(active is not None and active.has_data),
+            }
     return {
         "materials": sorted(materials),
         "images": [{"name": n, "size": list(s), "has_data": d} for n, s, d in sorted(images)],
-        "base_colour_image_resolved": any(d and s[0] > 0 for _n, s, d in images),
+        "active_base_color_images": active_images,
+        "base_colour_image_resolved": any(v["has_data"] and v["size"][0] > 0
+                                            for v in active_images.values() if v["size"]),
     }
+
+
+def active_base_color_node(material):
+    """Resolve the TEX_IMAGE feeding Principled Base Color, never the first image node."""
+    if material is None or not material.use_nodes:
+        return None
+    nodes = material.node_tree.nodes
+    principled = next((node for node in nodes if node.type == "BSDF_PRINCIPLED"), None)
+    if principled is None or "Base Color" not in principled.inputs:
+        return None
+    queue = deque(link.from_node for link in principled.inputs["Base Color"].links)
+    visited = set()
+    while queue:
+        node = queue.popleft()
+        if node.name in visited:
+            continue
+        visited.add(node.name)
+        if node.type == "TEX_IMAGE" and node.image is not None:
+            return node
+        for socket in node.inputs:
+            queue.extend(link.from_node for link in socket.links)
+    return None
+
+
+def active_base_color_image(material):
+    node = active_base_color_node(material)
+    return node.image if node is not None else None
 
 
 def make_unlit(objects) -> int:
@@ -71,8 +109,7 @@ def make_unlit(objects) -> int:
                 continue
             nodes = material.node_tree.nodes
             links = material.node_tree.links
-            source = next((n for n in nodes if n.type == "TEX_IMAGE" and n.image is not None),
-                          None)
+            source = active_base_color_node(material)
             output = next((n for n in nodes if n.type == "OUTPUT_MATERIAL"), None)
             if output is None:
                 continue
@@ -80,6 +117,10 @@ def make_unlit(objects) -> int:
             emission.inputs["Strength"].default_value = 1.0
             if source is not None:
                 links.new(source.outputs["Color"], emission.inputs["Color"])
+            else:
+                principled = next((node for node in nodes if node.type == "BSDF_PRINCIPLED"), None)
+                if principled is not None and "Base Color" in principled.inputs:
+                    emission.inputs["Color"].default_value = principled.inputs["Base Color"].default_value
             links.new(emission.outputs["Emission"], output.inputs["Surface"])
             converted += 1
     return converted

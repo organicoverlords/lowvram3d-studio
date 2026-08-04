@@ -26,7 +26,7 @@ from PIL import Image
 
 from build_mvadapter_cpu_controls import PROJECTION_SPAN
 from fast_texture_projection import bind_texture, immutable_buffer_hashes, rasterise_atlas
-from mesh_io import read_glb
+from mesh_io import read_glb, triangle_components
 from multiview_texture_projection import (
     SEMANTIC_RELIABILITY,
     apply_registration,
@@ -52,6 +52,42 @@ def sha256_file(path: Path) -> str:
 
 def sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
+
+
+def textured_triangle_mask(cache: dict, observed: np.ndarray) -> np.ndarray:
+    """Mark triangles whose own UV texels have a direct valid source observation.
+
+    The GLB can contain overlapping UV surfaces.  A colour synthesized for one owner chart
+    must not activate the same atlas on an unobserved overlapping triangle, especially a rear
+    neutral shell.  Material assignment therefore follows direct triangle provenance, not just
+    whether an atlas texel eventually received a filled colour.
+    """
+    mask = np.zeros(len(cache["tris"]), dtype=bool)
+    owner_triangles = cache["owner"][cache["owned"]]
+    observed = np.asarray(observed, dtype=bool)
+    if observed.shape != owner_triangles.shape:
+        raise ValueError("observed shape does not match atlas ownership")
+    direct = np.asarray(cache["confidence"], dtype=np.float32) > 0
+    if direct.shape[1] != owner_triangles.size:
+        raise ValueError("confidence shape does not match atlas ownership")
+    source_views = np.zeros((len(cache["tris"]), direct.shape[0]), dtype=bool)
+    for slot in range(direct.shape[0]):
+        source_views[np.unique(owner_triangles[direct[slot]]), slot] = True
+    mask[np.any(source_views, axis=1)] = True
+
+    # Overlapping UV shells are the failure mode this mask exists to prevent.  A rear/side
+    # triangle whose own view did not provide a direct sample must not inherit a frontal atlas
+    # texel just because another shell owns that UV coordinate.  The visible-triangle arrays
+    # are generated with the existing controls and are treated as negative evidence only; they
+    # do not alter camera semantics or create new views.
+    semantics = cache["semantics"]
+    for semantic in ("rear", "left", "right"):
+        if semantic not in cache.get("visible_triangles", {}):
+            continue
+        slot = semantics.index(semantic)
+        visible = cache["visible_triangles"][semantic]
+        mask[visible & ~source_views[:, slot]] = False
+    return mask
 
 
 def box_blur(image: np.ndarray, radius: int) -> np.ndarray:
@@ -98,6 +134,9 @@ def build_cache(mesh: Path, bundle: Path, receipt: dict, atlas_size: int,
     owned = owner >= 0
     if not owned.any():
         raise RuntimeError("FUSION_ATLAS_EMPTY")
+    components, _ = triangle_components(positions, tris)
+    surface_labels = np.full((atlas_size, atlas_size), -1, np.int32)
+    surface_labels[owned] = components[owner[owned]]
     corners = tris[owner[owned]]
     wa = weights[owned][:, 0][:, None]
     wb = weights[owned][:, 1][:, None]
@@ -113,15 +152,23 @@ def build_cache(mesh: Path, bundle: Path, receipt: dict, atlas_size: int,
     low = np.zeros((len(views), count, 3), np.float32)
     high = np.zeros((len(views), count, 3), np.float32)
     confidence = np.zeros((len(views), count), np.float32)
+    depth_delta_stack = np.full((len(views), count), np.inf, np.float32)
     facing_stack = np.zeros((len(views), count), np.float32)
     detail_stack = np.zeros((len(views), count), np.float32)
     screen_stack = np.zeros((len(views), count, 2), np.float32)
     semantics, diagnostics = [], []
+    visible_triangles = {}
 
     for slot, view in enumerate(views):
         index = int(view["index"])
         semantic = semantic_of(view)
         prefix = file_prefix(view)
+        visible_path = bundle / f"{prefix}_visible_triangles.npy"
+        if visible_path.is_file():
+            visible = np.asarray(np.load(visible_path), dtype=bool)
+            if visible.shape != (len(tris),):
+                raise RuntimeError(f"FUSION_VISIBLE_TRIANGLE_SHAPE:{semantic}")
+            visible_triangles[semantic] = visible
         image_path = generated.get(f"view_{index}_{semantic}.png")
         if image_path is None or not Path(image_path).is_file():
             raise RuntimeError(f"FUSION_VIEW_MISSING:{index}:{semantic}")
@@ -150,6 +197,7 @@ def build_cache(mesh: Path, bundle: Path, receipt: dict, atlas_size: int,
         in_mask = control_mask[cy, cx] & in_bounds
         buffered = control_depth[cy, cx]
         depth_delta = np.abs(depth - buffered)
+        depth_delta_stack[slot] = depth_delta.astype(np.float32)
         unoccluded = np.isfinite(buffered) & (depth_delta <= depth_tolerance)
         facing = -(texel_normal @ direction)
         front_facing = facing > min_facing
@@ -180,10 +228,12 @@ def build_cache(mesh: Path, bundle: Path, receipt: dict, atlas_size: int,
 
     return {
         "owner": owner, "owned": owned, "atlas_size": atlas_size,
-        "low": low, "high": high, "confidence": confidence, "facing": facing_stack,
+        "low": low, "high": high, "confidence": confidence, "depth_delta": depth_delta_stack,
+        "facing": facing_stack,
         "detail": detail_stack, "screen": screen_stack, "semantics": semantics,
         "diagnostics": diagnostics, "contract": contract, "uv": uv, "tris": tris,
-        "render_size": render,
+        "render_size": render, "surface_labels": surface_labels,
+        "visible_triangles": visible_triangles,
     }
 
 
@@ -236,8 +286,14 @@ def regularise(ownership: np.ndarray, owned: np.ndarray, decisive: np.ndarray,
         votes = {}
         for dy in range(-radius, radius + 1):
             for dx in range(-radius, radius + 1):
-                shifted_owner = np.roll(np.roll(ownership, dy, axis=0), dx, axis=1)
-                shifted_island = np.roll(np.roll(islands, dy, axis=0), dx, axis=1)
+                source_y = slice(max(0, -dy), min(ownership.shape[0], ownership.shape[0] - dy))
+                target_y = slice(max(0, dy), min(ownership.shape[0], ownership.shape[0] + dy))
+                source_x = slice(max(0, -dx), min(ownership.shape[1], ownership.shape[1] - dx))
+                target_x = slice(max(0, dx), min(ownership.shape[1], ownership.shape[1] + dx))
+                shifted_owner = np.full(ownership.shape, -1, np.int16)
+                shifted_island = np.full(islands.shape, -1, np.int32)
+                shifted_owner[target_y, target_x] = ownership[source_y, source_x]
+                shifted_island[target_y, target_x] = islands[source_y, source_x]
                 same = (shifted_island == islands) & (shifted_owner >= 0)
                 for value in np.unique(shifted_owner[same]):
                     if value < 0:
@@ -335,11 +391,13 @@ def fuse(cache: dict, regions: dict, mode: str, ratio: float, margin: float,
         blend_count = compatible.sum(axis=0)
 
     colour = np.where(observed[:, None], colour, 0.0)
+    leader_depth_error = cache["depth_delta"][leader, columns]
     return {
         "colour": colour, "observed": observed, "ownership": ownership,
         "ownership_map": ownership_map, "raw_ownership_map": raw_ownership_map,
         "decisive_map": decisive_map, "protected_map": protected_map,
         "leader_confidence": leader_confidence, "ratio_value": ratio_value,
+        "leader_depth_error": leader_depth_error,
         "blend_count": blend_count, "regularisation": regularisation,
         "winner_take_all_fraction": float(decisive_flat[observed].mean()) if observed.any() else 0.0,
         "observation_count": (cache["confidence"] > 0).sum(axis=0),
