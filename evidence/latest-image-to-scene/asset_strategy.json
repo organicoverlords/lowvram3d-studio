@@ -1,0 +1,83 @@
+{
+  "asset_search_may_not_block_smoke": true,
+  "classification": "PROVEN",
+  "records": [
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "source_projection",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "source_shell",
+      "scale_suitability": "uncertain",
+      "silhouette_suitability": "source_supported",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    },
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "visual_shell_fallback",
+      "collision_suitability": "walkable",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "castle_core",
+      "scale_suitability": "scene_contract",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    },
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "visual_shell_fallback",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "water_channels",
+      "scale_suitability": "uncertain",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    },
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "visual_shell_fallback",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "vegetation",
+      "scale_suitability": "uncertain",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    },
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "visual_shell_fallback",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "sky",
+      "scale_suitability": "uncertain",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    }
+  ],
+  "schema_version": "asset_strategy_v1",
+  "strategies": [
+    "reuse_project_asset",
+    "reuse_engine_asset",
+    "procedural_unreal_primitives",
+    "procedural_unreal_mesh",
+    "procedural_blender_mesh",
+    "image_conditioned_generation",
+    "approved_asset_library",
+    "source_projection",
+    "visual_shell_fallback"
+  ]
+}

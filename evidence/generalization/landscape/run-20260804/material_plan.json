@@ -1,0 +1,15 @@
+{
+  "classification": "PROVEN",
+  "default_grey_allowed": false,
+  "global_fallback": "neutral_local_material",
+  "regions": [
+    {
+      "fallback": "local_material",
+      "material_family": "local_material",
+      "observed": true,
+      "region_id": "visual_shell_001",
+      "semantic_class": "visual_shell"
+    }
+  ],
+  "schema_version": "scene_material_analysis_v1"
+}

@@ -1,120 +1,140 @@
 {
+  "available_builder_count": 9,
   "classification": "PROVEN",
   "filename_not_used_for_selection": true,
-  "scene_id": "castlegrounds_hybrid_authoritative_v1",
-  "schema_version": "scene_builder_manifest_v1",
+  "schema_version": "builder_manifest_v2",
   "selected": {
     "architecture": {
-      "capability": {
-        "actor_types": [
-          "StaticMeshActor"
-        ],
+      "contract": {
+        "builder_id": "architecture",
         "collision_policy": "blocking_by_region",
         "fallback": "conservative_blocker",
-        "layer_type": "architecture",
-        "material_policy": "stone_or_local",
+        "input_contract": [
+          "regions",
+          "scene_graph"
+        ],
+        "material_policy": "local_architecture",
         "navigation_policy": "walkable_openings",
-        "optional_inputs": [
-          "landmarks"
+        "output_types": [
+          "StaticMeshActor"
         ],
         "proof_gates": [
           "geometry",
           "collision"
         ],
         "representations": [
-          "editable_geometry",
-          "procedural_module"
-        ],
-        "required_inputs": [
-          "regions"
+          "modular_architecture",
+          "editable_mesh"
         ],
         "resource_budget": {
           "triangles": 200000
-        }
+        },
+        "semantic_classes": [
+          "architecture",
+          "interior_structure",
+          "wall",
+          "roof",
+          "tower",
+          "opening"
+        ]
       },
-      "reason": "scene_spec_semantics",
+      "estimated_budget": {
+        "triangles": 200000
+      },
+      "reason": "SceneSpec semantics and representation",
       "region_ids": [
         "castle_core"
       ]
     },
-    "background_geometry": {
-      "capability": {
-        "actor_types": [
-          "StaticMeshActor"
-        ],
+    "background": {
+      "contract": {
+        "builder_id": "background",
         "collision_policy": "none",
         "fallback": "visual_shell",
-        "layer_type": "background_geometry",
+        "input_contract": [
+          "regions",
+          "visibility"
+        ],
         "material_policy": "background",
         "navigation_policy": "ignored",
-        "optional_inputs": [
-          "depth_bands"
+        "output_types": [
+          "StaticMeshActor"
         ],
         "proof_gates": [
           "coverage"
         ],
         "representations": [
-          "visual_shell",
-          "editable_geometry"
-        ],
-        "required_inputs": [
-          "regions"
+          "background_card",
+          "visual_shell"
         ],
         "resource_budget": {
           "triangles": 100000
-        }
+        },
+        "semantic_classes": [
+          "background_geometry"
+        ]
       },
-      "reason": "source_shell_or_distant_region",
+      "estimated_budget": {
+        "triangles": 100000
+      },
+      "reason": "SceneSpec semantics and representation",
       "region_ids": [
         "source_shell"
       ]
     },
-    "sky_or_ceiling": {
-      "capability": {
-        "actor_types": [
-          "SkyAtmosphere",
-          "ExponentialHeightFog"
-        ],
+    "environment": {
+      "contract": {
+        "builder_id": "environment",
         "collision_policy": "none",
         "fallback": "flat_environment",
-        "layer_type": "sky_or_ceiling",
-        "material_policy": "environment",
-        "navigation_policy": "ignored",
-        "optional_inputs": [
+        "input_contract": [
+          "regions",
           "camera"
         ],
+        "material_policy": "environment",
+        "navigation_policy": "ignored",
+        "output_types": [
+          "SkyAtmosphere",
+          "DirectionalLight",
+          "ExponentialHeightFog"
+        ],
         "proof_gates": [
-          "environment"
+          "environment",
+          "lighting"
         ],
         "representations": [
-          "sky",
-          "visual_shell",
-          "editable_geometry"
-        ],
-        "required_inputs": [
-          "regions"
+          "sky_environment",
+          "visual_shell"
         ],
         "resource_budget": {
-          "triangles": 10000
-        }
+          "draw_calls": 10
+        },
+        "semantic_classes": [
+          "sky_or_ceiling",
+          "lighting_source"
+        ]
       },
-      "reason": "scene_spec_semantics",
+      "estimated_budget": {
+        "draw_calls": 10
+      },
+      "reason": "SceneSpec semantics and representation",
       "region_ids": [
         "sky"
       ]
     },
     "vegetation": {
-      "capability": {
-        "actor_types": [
-          "StaticMeshActor"
-        ],
+      "contract": {
+        "builder_id": "vegetation",
         "collision_policy": "none",
         "fallback": "visual_shell",
-        "layer_type": "vegetation",
+        "input_contract": [
+          "regions",
+          "visibility"
+        ],
         "material_policy": "biome_local",
         "navigation_policy": "ignored",
-        "optional_inputs": [
-          "landmarks"
+        "output_types": [
+          "StaticMeshActor"
         ],
         "proof_gates": [
           "population",
@@ -122,54 +142,60 @@
         ],
         "representations": [
           "procedural_population",
-          "procedural_module"
-        ],
-        "required_inputs": [
-          "regions"
+          "procedural_mesh"
         ],
         "resource_budget": {
           "instances": 1000
-        }
+        },
+        "semantic_classes": [
+          "vegetation"
+        ]
       },
-      "reason": "scene_spec_semantics",
+      "estimated_budget": {
+        "instances": 1000
+      },
+      "reason": "SceneSpec semantics and representation",
       "region_ids": [
         "vegetation"
       ]
     },
     "water": {
-      "capability": {
-        "actor_types": [
-          "StaticMeshActor"
-        ],
+      "contract": {
+        "builder_id": "water",
         "collision_policy": "none",
         "fallback": "visual_shell",
-        "layer_type": "water",
+        "input_contract": [
+          "regions",
+          "visibility"
+        ],
         "material_policy": "water",
         "navigation_policy": "excluded",
-        "optional_inputs": [
-          "splines"
+        "output_types": [
+          "StaticMeshActor"
         ],
         "proof_gates": [
           "visibility",
           "exclusion"
         ],
         "representations": [
-          "gameplay_proxy",
-          "procedural_module"
-        ],
-        "required_inputs": [
-          "regions"
+          "water_surface",
+          "spline_structure"
         ],
         "resource_budget": {
           "triangles": 20000
-        }
+        },
+        "semantic_classes": [
+          "water"
+        ]
       },
-      "reason": "scene_spec_semantics",
+      "estimated_budget": {
+        "triangles": 20000
+      },
+      "reason": "SceneSpec semantics and representation",
       "region_ids": [
         "water_channels"
       ]
     }
   },
-  "selection_source": "SceneSpec regions, representation, semantic_class, tags, and explicit layer_type",
-  "unknown_semantics": []
+  "selection_source": "SceneSpec semantic classes and representation manifest"
 }

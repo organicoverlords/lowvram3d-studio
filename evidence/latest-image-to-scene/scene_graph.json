@@ -1,0 +1,126 @@
+{
+  "classification": "PROVEN",
+  "edges": [
+    {
+      "confidence": 0.5,
+      "evidence": "semantic_adjacency",
+      "fallback": "unresolved",
+      "source": "crossing_002",
+      "target": "water_003",
+      "type": "crosses"
+    },
+    {
+      "confidence": 0.5,
+      "evidence": "semantic_adjacency",
+      "fallback": "unresolved",
+      "source": "crossing_002",
+      "target": "water_spline_001",
+      "type": "crosses"
+    },
+    {
+      "confidence": 0.6,
+      "evidence": "scene_spec.splines",
+      "fallback": "bounded_crossing",
+      "source": "crossing_002",
+      "target": "water_003",
+      "type": "spans"
+    },
+    {
+      "confidence": 0.6,
+      "evidence": "scene_spec.splines",
+      "fallback": "bounded_crossing",
+      "source": "crossing_002",
+      "target": "water_spline_001",
+      "type": "spans"
+    }
+  ],
+  "nodes": [
+    {
+      "confidence": 0.99,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "background_geometry_001",
+      "semantic_class": "background_geometry",
+      "source_id": "source_shell"
+    },
+    {
+      "confidence": 0.72,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "interactive",
+      "id": "architecture_002",
+      "semantic_class": "architecture",
+      "source_id": "castle_core"
+    },
+    {
+      "confidence": 0.68,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "water_003",
+      "semantic_class": "water",
+      "source_id": "water_channels"
+    },
+    {
+      "confidence": 0.55,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "vegetation_region_004",
+      "semantic_class": "vegetation",
+      "source_id": "vegetation"
+    },
+    {
+      "confidence": 0.95,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "background_geometry_005",
+      "semantic_class": "sky_or_ceiling",
+      "source_id": "sky"
+    },
+    {
+      "confidence": 0.6,
+      "evidence": [
+        "scene_spec.splines"
+      ],
+      "gameplay_role": "visual",
+      "id": "water_spline_001",
+      "semantic_class": "water",
+      "source_id": "river_main"
+    },
+    {
+      "confidence": 0.6,
+      "evidence": [
+        "scene_spec.splines"
+      ],
+      "gameplay_role": "interactive",
+      "id": "crossing_002",
+      "semantic_class": "crossing",
+      "source_id": "bridge_axis_main"
+    }
+  ],
+  "relationship_types": [
+    "sits_on",
+    "attached_to",
+    "inside",
+    "contains",
+    "spans",
+    "crosses",
+    "connects",
+    "occludes",
+    "behind",
+    "in_front_of",
+    "grows_on",
+    "supported_by",
+    "adjacent_to"
+  ],
+  "schema_version": "scene_graph_v1",
+  "uncertainty_policy": "unsupported relationships remain unresolved"
+}

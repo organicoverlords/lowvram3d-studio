@@ -1,14 +1,34 @@
 {
   "classification": "PARTIAL",
+  "disable_neural": true,
+  "enable_pcg": false,
   "gpu_work_requested": false,
+  "graph_hash": "fad5aa6b614ce1b8286966b01a96aef4afa7ad63c4f42bb3c276dae6e75745bb",
   "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
   "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+  "input_hashes": {
+    "builder_manifest": "0611fe42706db2ca5341dcea8b09832a526ef9660eeb03ca6b5b20d8290f3c50",
+    "representation_manifest": "6c09232726d8be53d4547303f151f5b531b9322aee4961d5f37676c8f3e24bf3",
+    "scene_spec": "7af38aac74a86abb5aded196ca64ec2b96d194712b8c99f8aeacc39fcce9817c",
+    "source_image": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b"
+  },
   "input_kind": "scene",
   "layer_receipts": {},
+  "max_triangles": 1500000,
+  "max_vram_mb": 6144,
   "next_action": "RUN_BOUNDED_UNREAL_LAYER_BUILDERS",
   "output_map": "/Game/GeneratedScenes/treesandbarn/treesandbarn/Maps/L_treesandbarn_Generated",
   "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
   "quality_tier": "smoke",
+  "repair_routes": {
+    "floating_architecture": "scene_graph_construction|architecture_generation",
+    "grey_default_material": "material_generation|material_harmonization",
+    "incorrect_object_classification": "semantic_segmentation|instance_decomposition",
+    "navmesh_crossing_water": "gameplay_planning|navigation_generation",
+    "offset_view_hole": "unseen_world_completion|world_continuation",
+    "source_silhouette_mismatch": "camera_estimation|representation_selection|terrain_generation|architecture_generation",
+    "vegetation_in_water": "vegetation_planning|vegetation_generation"
+  },
   "resume": true,
   "scene_id": "treesandbarn",
   "schema_version": "image_to_scene_pipeline_state_v1",
@@ -16,29 +36,37 @@
   "stages": {
     "architecture_plan": {
       "classification": "NOT_APPLICABLE",
-      "input_sha256": "d4224aeb29c5d8299fdc0d1ac8547429e691bd4412a992c6837174f7ebd11401",
+      "config_hash": "ccce20416573fc69191abf0cd4d35be48ef493286577966d912b22e7553a0773",
+      "input_hash": "6bcb80962351febce07a19bd44cbd9099d5404cd2d6b0b7c812497f3c038e2bd",
       "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\treesandbarn\\run-20260804\\architecture_plan.json",
-      "reused": false
+      "reused": false,
+      "stage_version": "1.0.0"
     },
     "completeness": {
       "classification": "PROVEN",
-      "input_sha256": "f88788428ab095965f836762e0712475973623fe7c900a4705147b2613f5ba36",
+      "config_hash": "bd0d0a16daf6893d8ec9249093b19013c167c29f7fd174589ed589052e482a37",
+      "input_hash": "b626b311673a05e3ada69b33963b7ae4e20506565a185ca39b37642ef40862a9",
       "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\treesandbarn\\run-20260804\\scene_completeness_receipt.json",
-      "reused": false
+      "reused": true,
+      "stage_version": "1.0.0"
     },
     "terrain_plan": {
       "classification": "NOT_APPLICABLE",
-      "input_sha256": "d4224aeb29c5d8299fdc0d1ac8547429e691bd4412a992c6837174f7ebd11401",
+      "config_hash": "acacc04da7b4fa18a2673766a3312d7e3a8d6a537e67626d2105ba6385da7cba",
+      "input_hash": "6bcb80962351febce07a19bd44cbd9099d5404cd2d6b0b7c812497f3c038e2bd",
       "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\treesandbarn\\run-20260804\\terrain_plan.json",
-      "reused": false
+      "reused": false,
+      "stage_version": "1.0.0"
     },
     "vegetation_plan": {
       "classification": "NOT_APPLICABLE",
-      "input_sha256": "d4224aeb29c5d8299fdc0d1ac8547429e691bd4412a992c6837174f7ebd11401",
+      "config_hash": "c127d7194d17e5eb596b8823cddb6aeb73044d4b5aebb47c5b8d97f7eb02b73f",
+      "input_hash": "6bcb80962351febce07a19bd44cbd9099d5404cd2d6b0b7c812497f3c038e2bd",
       "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\treesandbarn\\run-20260804\\vegetation_plan.json",
-      "reused": false
+      "reused": false,
+      "stage_version": "1.0.0"
     }
   },
   "started_at": "2026-08-04T01:42:58.717913+00:00",
-  "updated_at": "2026-08-04T01:52:48.258167+00:00"
+  "updated_at": "2026-08-04T02:17:30.730647+00:00"
 }

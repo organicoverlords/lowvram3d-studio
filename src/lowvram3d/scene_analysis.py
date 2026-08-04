@@ -15,6 +15,23 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _quality_metrics(path: Path, dimensions: tuple[int, int]) -> dict[str, Any]:
+    try:
+        from PIL import Image, ImageStat
+        image = Image.open(path).convert("RGB")
+        stat = ImageStat.Stat(image)
+        return {
+            "decode": "PROVEN",
+            "dimensions_px": [int(image.width), int(image.height)],
+            "mean_rgb": [round(float(value), 4) for value in stat.mean],
+            "stddev_rgb": [round(float(value), 4) for value in stat.stddev],
+            "alpha_present": "A" in Image.open(path).getbands(),
+            "exposure_uncertainty": "NOT_ESTIMATED",
+        }
+    except Exception as exc:
+        return {"decode": "NOT_PROVEN", "dimensions_px": [int(dimensions[0]), int(dimensions[1])], "error": type(exc).__name__}
+
+
 def analyze_image(path: str | Path, scene_id: str, dimensions: tuple[int, int], mode: str = "cpu_bootstrap") -> dict[str, Any]:
     source = Path(path)
     if not source.is_file():
@@ -22,14 +39,24 @@ def analyze_image(path: str | Path, scene_id: str, dimensions: tuple[int, int], 
     width, height = (int(dimensions[0]), int(dimensions[1]))
     if width <= 0 or height <= 0:
         raise ValueError("image dimensions must be positive")
+    quality = _quality_metrics(source, (width, height))
     return {
-        "schema_version": "scene_analysis_v1",
+        "schema_version": "analysis_bundle_v1",
         "classification": "PROVEN",
         "scene_id": str(scene_id),
         "analysis_mode": mode,
-        "source": {"path": str(source.resolve()), "sha256": _sha256(source), "dimensions_px": [width, height]},
-        "camera": {"contract_status": "REQUIRES_ANALYSIS", "projection": "perspective", "source_view_id": "source"},
+        "source": {"path": str(source.resolve()), "sha256": _sha256(source), "dimensions_px": [width, height], "kind": "single_image"},
+        "image_quality": quality,
+        "camera": {"contract_status": "REQUIRES_ANALYSIS", "projection": "perspective", "source_view_id": "source", "hypothesis": "unresolved_single_view_camera", "uncertainty": 1.0},
+        "depth": {"representation": "unknown_depth_bands", "confidence": 0.0, "uncertainty": "requires_depth_estimator"},
+        "surface_orientation": {"representation": "unknown_normals_or_slopes", "confidence": 0.0, "uncertainty": "requires_surface_estimator"},
         "regions": [{"id": "visual_shell_001", "layer_type": "visual_shell", "representation": "visual_shell", "confidence": 0.5, "bbox_norm_xyxy": [0.0, 0.0, 1.0, 1.0], "uncertainty": "semantic_analysis_not_instantiated"}],
+        "object_instances": [],
+        "structural_features": [],
+        "material_regions": [],
+        "visibility": [{"region_id": "visual_shell_001", "classification": "fully_visible", "completion_policy": "visual_shell_only"}],
+        "support_relationships": [],
+        "world_scale": {"status": "UNRESOLVED", "units": "meters", "confidence": 0.0},
         "depth_bands": [{"id": "unknown_001", "near_m": 0.1, "far_m": 100.0, "confidence": 0.2}],
         "coordinate_system": {"units": "meters", "up_axis": "Z", "handedness": "right"},
         "uncertainties": [{"id": "semantic_bootstrap", "description": "CPU bootstrap has not inferred reliable semantic regions", "fallback": "visual_shell_and_unresolved", "severity": "high"}],

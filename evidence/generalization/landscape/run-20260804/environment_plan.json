@@ -1,0 +1,7 @@
+{
+  "atmosphere": {},
+  "classification": "PROVEN",
+  "fallback": "lightweight_sky_and_fog",
+  "lighting": {},
+  "schema_version": "environment_plan_v1"
+}

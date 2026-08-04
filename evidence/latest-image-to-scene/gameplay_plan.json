@@ -1,0 +1,8 @@
+{
+  "classification": "PROVEN",
+  "fallback": "bounded_gameplay_proxy",
+  "interactive_regions": [
+    "castle_core"
+  ],
+  "schema_version": "gameplay_plan_v1"
+}

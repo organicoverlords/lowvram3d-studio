@@ -6,6 +6,7 @@ from pathlib import Path
 from lowvram3d.scene_registry import builder_manifest, select_builders
 from lowvram3d.scene_paths import derive_scene_paths
 from lowvram3d.scene_validation import validate_scene_plan
+from lowvram3d.builders.registry import builder_manifest, select_builders as select_generic_builders
 
 
 def _spec(regions):
@@ -65,3 +66,18 @@ def test_object_image_is_not_selected_as_scene_builder():
     result = validate_scene_plan(spec, manifest)
     assert result["selected_builder_count"] == 0
     assert result["gpu_work_requested"] is False
+
+
+def test_builder_registry_changes_with_scene_semantics():
+    water_architecture = _spec([{"id": "water", "layer_type": "water"}, {"id": "building", "layer_type": "architecture"}])
+    indoor = _spec([{"id": "room", "layer_type": "interior_structure"}, {"id": "ceiling", "layer_type": "sky_or_ceiling"}])
+    assert set(select_generic_builders(water_architecture)) != set(select_generic_builders(indoor))
+    assert builder_manifest(indoor)["filename_not_used_for_selection"] is True
+
+
+def test_generic_production_modules_have_no_fixture_identifiers():
+    root = Path(__file__).resolve().parents[1] / "src" / "lowvram3d"
+    generic = [path for path in root.rglob("*.py") if "fixture" not in path.name and path.name not in {"scene_gameplay_proxy.py", "scene_hybrid.py", "scene_splines.py"}]
+    forbidden = ("Castlegrounds", "castle_proxy", "castle_core", "castle_base", "lighthouse_top", "river_main", "bridge_axis_main", "L_Castlegrounds_Hybrid_V1", "ImageToSceneSmoke_20260803")
+    text = "\n".join(path.read_text(encoding="utf-8") for path in generic)
+    assert not any(token in text for token in forbidden)

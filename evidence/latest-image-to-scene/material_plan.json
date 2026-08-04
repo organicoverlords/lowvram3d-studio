@@ -1,0 +1,43 @@
+{
+  "classification": "PROVEN",
+  "default_grey_allowed": false,
+  "global_fallback": "neutral_local_material",
+  "regions": [
+    {
+      "fallback": "local_material",
+      "material_family": "local_material",
+      "observed": true,
+      "region_id": "source_shell",
+      "semantic_class": "unknown"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "local_architecture",
+      "observed": true,
+      "region_id": "castle_core",
+      "semantic_class": "architecture"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "water",
+      "observed": true,
+      "region_id": "water_channels",
+      "semantic_class": "water"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "biome_local",
+      "observed": true,
+      "region_id": "vegetation",
+      "semantic_class": "vegetation"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "environment",
+      "observed": true,
+      "region_id": "sky",
+      "semantic_class": "sky_or_ceiling"
+    }
+  ],
+  "schema_version": "scene_material_analysis_v1"
+}

@@ -1,0 +1,18 @@
+{
+  "classification": "PROVEN",
+  "full_reconstruction_claim": false,
+  "policy": "source-visible fidelity with conservative bounded completion",
+  "records": [
+    {
+      "completion_policy": "visual_shell_only",
+      "confidence": 0.5,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": false,
+      "region_id": "visual_shell_001",
+      "source_visible_evidence": true,
+      "visibility": "fully_visible"
+    }
+  ],
+  "schema_version": "visibility_manifest_v1"
+}

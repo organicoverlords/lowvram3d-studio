@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from .scene_spec import validate_scene_spec
-from .scene_registry import select_builders
+from .builders.registry import select_builders as select_generic_builders
+from .scene_graph import inferred_semantic
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -25,7 +26,7 @@ def audit_scene_completeness(spec: Mapping[str, Any], receipts: Mapping[str, Map
     if not validation["scene_spec_valid"]:
         raise ValueError(f"SceneSpec invalid: {validation['errors']}")
     receipts = receipts or {}
-    selected = select_builders(spec)
+    selected = select_generic_builders(spec)
     proven_layers = {name for name, receipt in receipts.items() if receipt.get("classification") == "PROVEN"}
     proven_layers.update({
         alias
@@ -36,9 +37,11 @@ def audit_scene_completeness(spec: Mapping[str, Any], receipts: Mapping[str, Map
     entries = []
     for region in spec.get("regions", []):
         region_id = str(region.get("id"))
+        semantic_class = inferred_semantic(region)
         layer_type = str(region.get("layer_type") or region.get("layer") or "")
         if not layer_type:
             layer_type = next((name for name, details in selected.items() if region_id in details.get("region_ids", [])), "background_geometry")
+        responsible_builder = next((name for name, details in selected.items() if region_id in details.get("region_ids", [])), "background")
         if str(region.get("representation")) in {"visual_shell", "source_visible_shell"}:
             representation = "VISUAL_SHELL"
         elif layer_type in proven_layers:
@@ -50,8 +53,18 @@ def audit_scene_completeness(spec: Mapping[str, Any], receipts: Mapping[str, Map
         entries.append({
             "region_id": region_id,
             "spec_reference": region_id,
+            "semantic_class": semantic_class,
             "layer_type": layer_type,
             "representation": representation,
+            "evidence_source": region.get("evidence", ["source_image"]),
+            "responsible_builder": responsible_builder,
+            "material_policy": region.get("material_policy", "local_material"),
+            "collision_policy": region.get("collision", "blocking" if region.get("interactive") or region.get("walkable") else "none"),
+            "navigation_policy": region.get("navigation", "walkable" if region.get("walkable") else "ignored"),
+            "confidence": float(region.get("confidence", 0.5)),
+            "completion_state": "source_visible" if representation == "VISUAL_SHELL" else "planned_or_validated",
+            "validation_method": region.get("validation_method", "scene_spec_and_layer_receipt"),
+            "repair_owner": region.get("repair_owner", responsible_builder),
             "independent_geometry": representation in {"EDITABLE_GEOMETRY", "GAMEPLAY_PROXY", "WATER", "PROCEDURAL_POPULATION"},
             "interactive_complete": (
                 (representation in {"EDITABLE_GEOMETRY", "WATER", "PROCEDURAL_POPULATION"} and not bool(region.get("interactive")))

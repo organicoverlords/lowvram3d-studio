@@ -1,14 +1,34 @@
 {
   "classification": "PARTIAL",
+  "disable_neural": true,
+  "enable_pcg": false,
   "gpu_work_requested": false,
+  "graph_hash": "fad5aa6b614ce1b8286966b01a96aef4afa7ad63c4f42bb3c276dae6e75745bb",
   "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\landscape.png",
   "image_sha256": "19863d0be2dd9c14a2bc8338dadb3e2521a15fa28a45416963621ab0e2f805ec",
+  "input_hashes": {
+    "builder_manifest": "0611fe42706db2ca5341dcea8b09832a526ef9660eeb03ca6b5b20d8290f3c50",
+    "representation_manifest": "6c09232726d8be53d4547303f151f5b531b9322aee4961d5f37676c8f3e24bf3",
+    "scene_spec": "54bd9a504e212f8884eba9f4073d59796436f64dd07d92c5ca86fe46550c1359",
+    "source_image": "19863d0be2dd9c14a2bc8338dadb3e2521a15fa28a45416963621ab0e2f805ec"
+  },
   "input_kind": "scene",
   "layer_receipts": {},
+  "max_triangles": 1500000,
+  "max_vram_mb": 6144,
   "next_action": "RUN_BOUNDED_UNREAL_LAYER_BUILDERS",
   "output_map": "/Game/GeneratedScenes/landscape/landscape/Maps/L_landscape_Generated",
   "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
   "quality_tier": "smoke",
+  "repair_routes": {
+    "floating_architecture": "scene_graph_construction|architecture_generation",
+    "grey_default_material": "material_generation|material_harmonization",
+    "incorrect_object_classification": "semantic_segmentation|instance_decomposition",
+    "navmesh_crossing_water": "gameplay_planning|navigation_generation",
+    "offset_view_hole": "unseen_world_completion|world_continuation",
+    "source_silhouette_mismatch": "camera_estimation|representation_selection|terrain_generation|architecture_generation",
+    "vegetation_in_water": "vegetation_planning|vegetation_generation"
+  },
   "resume": true,
   "scene_id": "landscape",
   "schema_version": "image_to_scene_pipeline_state_v1",
@@ -16,29 +36,37 @@
   "stages": {
     "architecture_plan": {
       "classification": "NOT_APPLICABLE",
-      "input_sha256": "e01139b9b61a2126ce10b5764931a803ad0a150a1ba513fc34d42f71d6d77f26",
+      "config_hash": "ccce20416573fc69191abf0cd4d35be48ef493286577966d912b22e7553a0773",
+      "input_hash": "4dd7fad66d8fd5674a48dbdb2539b54b29a6c599f125524a0ec346366b01a366",
       "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\landscape\\run-20260804\\architecture_plan.json",
-      "reused": false
+      "reused": false,
+      "stage_version": "1.0.0"
     },
     "completeness": {
       "classification": "PROVEN",
-      "input_sha256": "c494f5ec1d45fe860a53e509196074eb46c14c21364f4897ebc05c8fc8f2655f",
+      "config_hash": "bd0d0a16daf6893d8ec9249093b19013c167c29f7fd174589ed589052e482a37",
+      "input_hash": "810f8a78df7c2b97b761a8b0c3f543c0da4450135066f939f536068f219c5e84",
       "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\landscape\\run-20260804\\scene_completeness_receipt.json",
-      "reused": false
+      "reused": true,
+      "stage_version": "1.0.0"
     },
     "terrain_plan": {
       "classification": "NOT_APPLICABLE",
-      "input_sha256": "e01139b9b61a2126ce10b5764931a803ad0a150a1ba513fc34d42f71d6d77f26",
+      "config_hash": "acacc04da7b4fa18a2673766a3312d7e3a8d6a537e67626d2105ba6385da7cba",
+      "input_hash": "4dd7fad66d8fd5674a48dbdb2539b54b29a6c599f125524a0ec346366b01a366",
       "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\landscape\\run-20260804\\terrain_plan.json",
-      "reused": false
+      "reused": false,
+      "stage_version": "1.0.0"
     },
     "vegetation_plan": {
       "classification": "NOT_APPLICABLE",
-      "input_sha256": "e01139b9b61a2126ce10b5764931a803ad0a150a1ba513fc34d42f71d6d77f26",
+      "config_hash": "c127d7194d17e5eb596b8823cddb6aeb73044d4b5aebb47c5b8d97f7eb02b73f",
+      "input_hash": "4dd7fad66d8fd5674a48dbdb2539b54b29a6c599f125524a0ec346366b01a366",
       "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\landscape\\run-20260804\\vegetation_plan.json",
-      "reused": false
+      "reused": false,
+      "stage_version": "1.0.0"
     }
   },
   "started_at": "2026-08-04T01:42:58.986922+00:00",
-  "updated_at": "2026-08-04T01:52:48.622326+00:00"
+  "updated_at": "2026-08-04T02:17:31.078004+00:00"
 }

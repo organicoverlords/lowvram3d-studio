@@ -1,0 +1,487 @@
+{
+  "camera": {
+    "envelope": {
+      "max_pitch_deg": 3.0,
+      "max_translation_m": 2.0,
+      "max_yaw_deg": 5.0
+    },
+    "required_views": [
+      {
+        "far_m": 500.0,
+        "field_of_view_deg": 66.50838470458984,
+        "id": "source",
+        "look_at_m": [
+          -6.798699363224801e-17,
+          -1.0,
+          -5.551115123125783e-17
+        ],
+        "near_m": 0.1,
+        "position_m": [
+          -1.4999749120901782e-16,
+          2.7755575615628914e-17,
+          -2.220446049250313e-16
+        ],
+        "principal_point_norm": [
+          0.5,
+          0.5
+        ],
+        "projection": "perspective",
+        "purpose": "source_match"
+      },
+      {
+        "far_m": 500.0,
+        "field_of_view_deg": 66.50838470458984,
+        "id": "offset_left",
+        "look_at_m": [
+          -1.0,
+          -1.0,
+          2.649934634551198e-17
+        ],
+        "near_m": 0.1,
+        "position_m": [
+          -1.0000000000000002,
+          -5.4254921961140895e-17,
+          -1.400341073482615e-16
+        ],
+        "principal_point_norm": [
+          0.5,
+          0.5
+        ],
+        "projection": "perspective",
+        "purpose": "offset_parallax"
+      },
+      {
+        "far_m": 500.0,
+        "field_of_view_deg": 66.50838470458984,
+        "id": "offset_right",
+        "look_at_m": [
+          0.9999999999999999,
+          -0.9999999999999999,
+          -1.3752164880802764e-16
+        ],
+        "near_m": 0.1,
+        "position_m": [
+          0.9999999999999999,
+          1.0976607319239872e-16,
+          -3.040551025018011e-16
+        ],
+        "principal_point_norm": [
+          0.5,
+          0.5
+        ],
+        "projection": "perspective",
+        "purpose": "offset_parallax"
+      }
+    ],
+    "source_camera": {
+      "far_m": 500.0,
+      "field_of_view_deg": 66.50838470458984,
+      "id": "source",
+      "look_at_m": [
+        -6.798699363224801e-17,
+        -1.0,
+        -5.551115123125783e-17
+      ],
+      "near_m": 0.1,
+      "position_m": [
+        -1.4999749120901782e-16,
+        2.7755575615628914e-17,
+        -2.220446049250313e-16
+      ],
+      "principal_point_norm": [
+        0.5,
+        0.5
+      ],
+      "projection": "perspective",
+      "purpose": "source_match"
+    }
+  },
+  "classification": "PROVEN",
+  "depth": {
+    "confidence": 0.5,
+    "representation": "scene_spec_depth_bands"
+  },
+  "material_regions": [
+    {
+      "fallback": "local_material",
+      "material_family": "local_material",
+      "observed": true,
+      "region_id": "source_shell",
+      "semantic_class": "unknown"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "local_architecture",
+      "observed": true,
+      "region_id": "castle_core",
+      "semantic_class": "architecture"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "water",
+      "observed": true,
+      "region_id": "water_channels",
+      "semantic_class": "water"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "biome_local",
+      "observed": true,
+      "region_id": "vegetation",
+      "semantic_class": "vegetation"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "environment",
+      "observed": true,
+      "region_id": "sky",
+      "semantic_class": "sky_or_ceiling"
+    }
+  ],
+  "object_instances": [
+    {
+      "collision": "none",
+      "id": "source_mesh_v2",
+      "lod_policy": "nanite",
+      "material_policy": "unlit_projection",
+      "navigation": "ignored",
+      "region_id": "source_shell",
+      "representation": "visual_shell",
+      "semantic_class": "source_visible_shell",
+      "source_uri": "C:\\AI\\ScenePipelineSmoke\\20260803\\castlegrounds\\castlegrounds_source_mesh_v2.glb",
+      "tags": [
+        "proven_import",
+        "source_camera_locked",
+        "authoritative_camera_bound",
+        "proven_unreal_import"
+      ],
+      "transform": {
+        "rotation_deg_xyz": [
+          0,
+          0,
+          0
+        ],
+        "scale_xyz": [
+          1,
+          1,
+          1
+        ],
+        "translation_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triangle_budget": 374959
+    },
+    {
+      "collision": "custom_proxy",
+      "id": "castle_proxy",
+      "lod_policy": "generated_lods",
+      "material_policy": "engine_material",
+      "navigation": "walkable",
+      "region_id": "castle_core",
+      "representation": "gameplay_proxy",
+      "semantic_class": "castle",
+      "tags": [
+        "replaceable",
+        "gameplay",
+        "placement_unproven",
+        "not_promoted"
+      ],
+      "transform": {
+        "rotation_deg_xyz": [
+          0,
+          0,
+          0
+        ],
+        "scale_xyz": [
+          1,
+          1,
+          1
+        ],
+        "translation_m": [
+          10,
+          28,
+          4
+        ]
+      },
+      "triangle_budget": 50000
+    },
+    {
+      "collision": "simple",
+      "id": "bridge_tile",
+      "lod_policy": "generated_lods",
+      "material_policy": "engine_material",
+      "navigation": "walkable",
+      "region_id": "castle_core",
+      "representation": "procedural_module",
+      "semantic_class": "bridge_module",
+      "tags": [
+        "shape_grammar",
+        "gameplay",
+        "placement_unproven",
+        "not_promoted"
+      ],
+      "transform": {
+        "rotation_deg_xyz": [
+          0,
+          0,
+          0
+        ],
+        "scale_xyz": [
+          1,
+          1,
+          1
+        ],
+        "translation_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triangle_budget": 5000
+    },
+    {
+      "collision": "none",
+      "id": "grass_cluster",
+      "lod_policy": "none",
+      "material_policy": "engine_material",
+      "navigation": "ignored",
+      "region_id": "vegetation",
+      "representation": "procedural_module",
+      "semantic_class": "grass",
+      "tags": [
+        "decorative",
+        "gpu_safe",
+        "placement_unproven",
+        "not_promoted"
+      ],
+      "transform": {
+        "rotation_deg_xyz": [
+          0,
+          0,
+          0
+        ],
+        "scale_xyz": [
+          1,
+          1,
+          1
+        ],
+        "translation_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      "triangle_budget": 48
+    }
+  ],
+  "regions": [
+    {
+      "confidence": 0.99,
+      "depth_band": "foreground",
+      "id": "source_shell",
+      "interactive": false,
+      "label": "source-visible reconstructed surface",
+      "representation": "visual_shell",
+      "tags": [
+        "source_locked"
+      ],
+      "walkable": false
+    },
+    {
+      "bbox_norm_xyxy": [
+        0.38,
+        0.18,
+        0.72,
+        0.72
+      ],
+      "confidence": 0.72,
+      "depth_band": "castle",
+      "id": "castle_core",
+      "interactive": true,
+      "label": "castle and lighthouse gameplay area",
+      "representation": "editable_mesh",
+      "tags": [
+        "hero_structure"
+      ],
+      "walkable": true
+    },
+    {
+      "confidence": 0.68,
+      "depth_band": "water",
+      "id": "water_channels",
+      "interactive": false,
+      "label": "water channels",
+      "representation": "gameplay_proxy",
+      "tags": [
+        "water",
+        "exclusion"
+      ],
+      "walkable": false
+    },
+    {
+      "confidence": 0.55,
+      "depth_band": "foreground",
+      "id": "vegetation",
+      "interactive": false,
+      "label": "decorative vegetation",
+      "representation": "procedural_population",
+      "tags": [
+        "decorative"
+      ],
+      "walkable": false
+    },
+    {
+      "confidence": 0.95,
+      "id": "sky",
+      "interactive": false,
+      "label": "sky and clouds",
+      "representation": "sky",
+      "tags": [
+        "background"
+      ],
+      "walkable": false
+    }
+  ],
+  "scene_id": "castlegrounds",
+  "schema_version": "analysis_bundle_v1",
+  "source": {
+    "dimensions_px": [
+      1448,
+      1086
+    ],
+    "kind": "image",
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\castlegrounds.png",
+    "sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba"
+  },
+  "structural_features": [
+    {
+      "id": "lighthouse_top",
+      "role": "camera_calibration",
+      "source_uv_norm": [
+        0.58,
+        0.19
+      ],
+      "tolerance_px": 38.0,
+      "world_m": [
+        12.0,
+        25.0,
+        49.0
+      ]
+    },
+    {
+      "id": "castle_base",
+      "role": "layout_anchor",
+      "world_m": [
+        10.0,
+        28.0,
+        5.0
+      ]
+    },
+    {
+      "id": "foreground_cliff",
+      "role": "qa_anchor",
+      "world_m": [
+        -22.0,
+        31.0,
+        16.0
+      ]
+    }
+  ],
+  "support_relationships": [
+    {
+      "confidence": 0.5,
+      "evidence": "semantic_adjacency",
+      "fallback": "unresolved",
+      "source": "crossing_002",
+      "target": "water_003",
+      "type": "crosses"
+    },
+    {
+      "confidence": 0.5,
+      "evidence": "semantic_adjacency",
+      "fallback": "unresolved",
+      "source": "crossing_002",
+      "target": "water_spline_001",
+      "type": "crosses"
+    },
+    {
+      "confidence": 0.6,
+      "evidence": "scene_spec.splines",
+      "fallback": "bounded_crossing",
+      "source": "crossing_002",
+      "target": "water_003",
+      "type": "spans"
+    },
+    {
+      "confidence": 0.6,
+      "evidence": "scene_spec.splines",
+      "fallback": "bounded_crossing",
+      "source": "crossing_002",
+      "target": "water_spline_001",
+      "type": "spans"
+    }
+  ],
+  "surface_orientation": {
+    "confidence": 0.0,
+    "representation": "not_supplied"
+  },
+  "visibility": [
+    {
+      "completion_policy": "visual_shell_only",
+      "confidence": 0.99,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": false,
+      "region_id": "source_shell",
+      "source_visible_evidence": true,
+      "visibility": "fully_visible"
+    },
+    {
+      "completion_policy": "gameplay_boundary",
+      "confidence": 0.72,
+      "decorative": false,
+      "gameplay_only": true,
+      "hidden_geometry_inferred": true,
+      "region_id": "castle_core",
+      "source_visible_evidence": true,
+      "visibility": "partially_occluded"
+    },
+    {
+      "completion_policy": "conservative_extrusion",
+      "confidence": 0.68,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": true,
+      "region_id": "water_channels",
+      "source_visible_evidence": false,
+      "visibility": "ambiguous"
+    },
+    {
+      "completion_policy": "conservative_extrusion",
+      "confidence": 0.55,
+      "decorative": true,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": true,
+      "region_id": "vegetation",
+      "source_visible_evidence": false,
+      "visibility": "ambiguous"
+    },
+    {
+      "completion_policy": "conservative_extrusion",
+      "confidence": 0.95,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": true,
+      "region_id": "sky",
+      "source_visible_evidence": false,
+      "visibility": "ambiguous"
+    }
+  ],
+  "world_scale": {
+    "status": "PROVEN",
+    "units": "meters"
+  }
+}

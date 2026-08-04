@@ -4,7 +4,7 @@
   "gpu_work_requested": false,
   "max_triangles": 1500000,
   "max_vram_mb": 6144,
-  "requested_triangle_budget": 330000,
+  "requested_triangle_budget": 0,
   "scene_spec_errors": [],
   "scene_spec_valid": true,
   "schema_version": "scene_plan_validation_v1",

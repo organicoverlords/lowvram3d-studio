@@ -11,6 +11,10 @@ REPRESENTATIONS = ("visual_shell", "editable_mesh", "procedural_mesh", "modular_
 def choose_representation(region: Mapping[str, Any], visibility: Mapping[str, Any] | None = None, budgets: Mapping[str, Any] | None = None) -> list[str]:
     visibility = visibility or {}
     semantic = str(region.get("semantic_class") or region.get("layer_type") or "unknown").lower()
+    if semantic == "unknown":
+        text = " ".join((str(region.get("id", "")), str(region.get("label", "")), str(region.get("depth_band", "")), str(region.get("representation", "")), *(str(tag) for tag in region.get("tags", [])))).lower()
+        semantic = "water" if "water" in text else "vegetation" if any(token in text for token in ("vegetation", "grass", "tree", "decorative")) else "architecture" if any(token in text for token in ("castle", "architecture", "hero_structure")) else "sky_or_ceiling" if any(token in text for token in ("sky", "cloud", "background")) else "background_geometry" if "shell" in text else semantic
+    semantic = {"castle": "architecture", "bridge_module": "crossing", "grass": "vegetation", "tree": "vegetation", "forest": "vegetation", "sky": "sky_or_ceiling", "source_visible_shell": "background_geometry"}.get(semantic, semantic)
     confidence = float(region.get("confidence", 0.5))
     interactive = bool(region.get("interactive") or region.get("walkable"))
     source_important = bool(region.get("source_camera_important", True))

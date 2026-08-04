@@ -10,8 +10,58 @@
     "visual_proof": "BLOCKED_UNREAL_EDITOR_SLATE_ASSERT"
   },
   "gpu_work_requested": false,
+  "graph_hash": "fad5aa6b614ce1b8286966b01a96aef4afa7ad63c4f42bb3c276dae6e75745bb",
+  "input_hashes": {
+    "builder_manifest": "cd8348690dfeb5f908aad2ffe9ee5f726bef3fce46978edac9b0e16fdb4b1ef9",
+    "representation_manifest": "9a842542c904ddb779e750a23dde2354f5d6887e74fa20c044ce63ffbf7bd9f3",
+    "scene_spec": "83eda7f2dc4240a24622606834a7fe3ee1a38af7a43ef7fdbefaab99764fc73c",
+    "source_image": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba"
+  },
   "next_action": "USER_REVIEW_REQUIRED_UNREAL_EDITOR_RESTART",
+  "repair_routes": {
+    "floating_architecture": "scene_graph_construction|architecture_generation",
+    "grey_default_material": "material_generation|material_harmonization",
+    "incorrect_object_classification": "semantic_segmentation|instance_decomposition",
+    "navmesh_crossing_water": "gameplay_planning|navigation_generation",
+    "offset_view_hole": "unseen_world_completion|world_continuation",
+    "source_silhouette_mismatch": "camera_estimation|representation_selection|terrain_generation|architecture_generation",
+    "vegetation_in_water": "vegetation_planning|vegetation_generation"
+  },
   "scene_id": "castlegrounds",
   "schema_version": "image_to_scene_pipeline_state_v2",
-  "source_map_protected": true
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "PROVEN",
+      "config_hash": "ccce20416573fc69191abf0cd4d35be48ef493286577966d912b22e7553a0773",
+      "input_hash": "058735f5bffcbf64514460d6fab70f118fc3918ef05ba61e45a6d1d765617cc7",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-image-to-scene\\architecture_plan.json",
+      "reused": true,
+      "stage_version": "1.0.0"
+    },
+    "completeness": {
+      "classification": "PROVEN",
+      "config_hash": "bd0d0a16daf6893d8ec9249093b19013c167c29f7fd174589ed589052e482a37",
+      "input_hash": "f4221908896440858062c0778c02132033014049261f8b66a92f8c80b8978ff5",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-image-to-scene\\scene_completeness_receipt.json",
+      "reused": true,
+      "stage_version": "1.0.0"
+    },
+    "terrain_plan": {
+      "classification": "PROVEN",
+      "config_hash": "acacc04da7b4fa18a2673766a3312d7e3a8d6a537e67626d2105ba6385da7cba",
+      "input_hash": "df9ee252440f96f7c53825961e0c63b09a97365167da5022a650f99bd56d05b3",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-image-to-scene\\terrain_plan.json",
+      "reused": true,
+      "stage_version": "1.0.0"
+    },
+    "vegetation_plan": {
+      "classification": "PROVEN",
+      "config_hash": "c127d7194d17e5eb596b8823cddb6aeb73044d4b5aebb47c5b8d97f7eb02b73f",
+      "input_hash": "eb72cd158110e76dbe30008011139699b0c0bb3629565695746231d8ba5fc0bb",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-image-to-scene\\vegetation_plan.json",
+      "reused": true,
+      "stage_version": "1.0.0"
+    }
+  }
 }

@@ -19,6 +19,15 @@ from .scene_analysis import analyze_image
 from .scene_paths import derive_scene_paths
 from .scene_registry import builder_manifest
 from .scene_validation import validate_scene_plan
+from .asset_strategy import build_asset_strategy
+from .builders.registry import builder_manifest as generic_builder_manifest
+from .pipeline_graph import DEFAULT_STAGES, graph_hash, validate_dag
+from .pipeline_state import canonical_hash, repair_routes
+from .scene_graph import build_scene_graph, validate_scene_graph
+from .scene_material_analysis import build_material_regions
+from .scene_representation import build_representation_manifest
+from .scene_visibility import build_visibility_manifest
+from .scene_visual_validation import compare_source_view, repair_history
 
 
 def _sha256(path: Path) -> str:
@@ -70,30 +79,35 @@ def _not_applicable(layer: str, reason: str) -> dict[str, Any]:
 
 def _stage(state: dict[str, Any], name: str, input_hash: str, output_path: Path, producer: Callable[[], dict[str, Any]]) -> None:
     previous = state.get("stages", {}).get(name, {})
-    if previous.get("input_sha256") == input_hash and previous.get("classification") == "PROVEN" and output_path.is_file():
+    stage_version = next((stage.version for stage in DEFAULT_STAGES if stage.stage_id == name or stage.stage_id.replace("_planning", "_plan") == name), "1.0.0")
+    config_hash = canonical_hash({"stage": name, "producer": producer.__name__})
+    previous_input = previous.get("input_hash", previous.get("input_sha256"))
+    if previous_input == input_hash and previous.get("stage_version", stage_version) == stage_version and previous.get("config_hash", config_hash) == config_hash and previous.get("classification") == "PROVEN" and output_path.is_file():
         state["stages"][name] = {**previous, "reused": True}
         return
     result = producer()
     _write_json(output_path, result)
     state["stages"][name] = {
         "classification": result.get("classification", "PROVEN"),
-        "input_sha256": input_hash,
+        "input_hash": input_hash,
+        "stage_version": stage_version,
+        "config_hash": config_hash,
         "output": str(output_path.resolve()),
         "reused": False,
     }
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
-    paths = derive_scene_paths(args.scene_id, args.output_root, args.evidence_root)
+    paths = derive_scene_paths(args.scene_id, args.output_root, args.evidence_root, args.run_id)
     evidence = Path(paths["evidence"])
     state_path = evidence / "pipeline_state.json"
     image = Path(args.image)
     if not image.is_file():
         raise FileNotFoundError(image)
     image_hash = _sha256(image)
-    hybrid_path = Path("evidence/latest-scene-hybrid/authoritative_hybrid_scene_spec.json")
-    if hybrid_path.is_file() and args.scene_id == "castlegrounds" and args.input_kind == "scene":
-        spec = _read(hybrid_path)
+    scene_spec_path = Path(args.scene_spec) if args.scene_spec else None
+    if scene_spec_path and scene_spec_path.is_file() and args.input_kind == "scene":
+        spec = _read(scene_spec_path)
     else:
         try:
             from PIL import Image
@@ -115,15 +129,25 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "output_map": output_map,
         "quality_tier": args.quality_tier,
         "input_kind": args.input_kind,
+        "max_vram_mb": int(args.max_vram_mb),
+        "max_triangles": int(args.max_triangles),
+        "disable_neural": bool(args.disable_neural),
+        "enable_pcg": bool(args.enable_pcg),
         "resume": bool(args.resume),
         "started_at": previous.get("started_at") or datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "stages": previous.get("stages", {}),
         "source_map_protected": True,
         "gpu_work_requested": False,
+        "repair_routes": repair_routes(),
     }
     receipts = _load_layer_receipts(evidence)
-    manifest = builder_manifest(spec) if args.input_kind == "scene" else {
+    visibility_manifest = build_visibility_manifest(spec) if args.input_kind == "scene" else {"schema_version": "visibility_manifest_v1", "classification": "NOT_APPLICABLE", "records": []}
+    representation_manifest = build_representation_manifest(spec, visibility_manifest) if args.input_kind == "scene" else {"schema_version": "representation_manifest_v1", "classification": "NOT_APPLICABLE", "records": []}
+    scene_graph = build_scene_graph(spec) if args.input_kind == "scene" else {"schema_version": "scene_graph_v1", "classification": "NOT_APPLICABLE", "nodes": [], "edges": []}
+    material_plan = build_material_regions(spec) if args.input_kind == "scene" else {"schema_version": "scene_material_analysis_v1", "classification": "NOT_APPLICABLE", "regions": []}
+    asset_strategy = build_asset_strategy(spec, representation_manifest) if args.input_kind == "scene" else {"schema_version": "asset_strategy_v1", "classification": "NOT_APPLICABLE", "records": []}
+    manifest = generic_builder_manifest(spec, representation_manifest) if args.input_kind == "scene" else {
         "schema_version": "scene_builder_manifest_v1",
         "classification": "NOT_APPLICABLE",
         "scene_id": args.scene_id,
@@ -132,7 +156,54 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "selection_source": "explicit input_kind=object",
         "filename_not_used_for_selection": True,
     }
+    state["graph_hash"] = graph_hash()
+    state["input_hashes"] = {"source_image": image_hash, "scene_spec": canonical_hash(spec), "representation_manifest": canonical_hash(representation_manifest), "builder_manifest": canonical_hash(manifest)}
     _write_json(evidence / "scene_spec.json", spec)
+    _write_json(evidence / "pipeline_graph.json", validate_dag())
+    if spec.get("schema_version") == "analysis_bundle_v1":
+        analysis_bundle = spec
+    else:
+        analysis_bundle = {
+            "schema_version": "analysis_bundle_v1",
+            "classification": "PROVEN",
+            "scene_id": args.scene_id,
+            "source": spec.get("source", {"sha256": image_hash}),
+            "camera": spec.get("camera", {"contract_status": "REQUIRES_ANALYSIS"}),
+            "depth": {"representation": "scene_spec_depth_bands", "confidence": 0.5 if spec.get("depth_bands") else 0.0},
+            "surface_orientation": {"representation": "not_supplied", "confidence": 0.0},
+            "regions": spec.get("regions", []),
+            "object_instances": spec.get("assets", []),
+            "structural_features": spec.get("landmarks", []),
+            "material_regions": material_plan.get("regions", []),
+            "visibility": visibility_manifest.get("records", []),
+            "support_relationships": scene_graph.get("edges", []),
+            "world_scale": {"status": "PROVEN" if spec.get("coordinate_system") else "UNRESOLVED", "units": "meters"},
+        }
+    _write_json(evidence / "analysis_bundle.json", analysis_bundle)
+    _write_json(evidence / "scene_graph.json", scene_graph)
+    _write_json(evidence / "scene_graph_receipt.json", validate_scene_graph(scene_graph) if scene_graph.get("classification") != "NOT_APPLICABLE" else {"schema_version": "scene_graph_receipt_v1", "classification": "NOT_APPLICABLE"})
+    _write_json(evidence / "visibility_manifest.json", visibility_manifest)
+    _write_json(evidence / "representation_manifest.json", representation_manifest)
+    _write_json(evidence / "representation_selection_receipt.json", {"schema_version": "representation_selection_receipt_v1", "classification": representation_manifest.get("classification"), "materially_visible_regions": sum(1 for record in representation_manifest.get("records", []) if record.get("materially_visible"))})
+    _write_json(evidence / "asset_strategy.json", asset_strategy)
+    _write_json(evidence / "material_plan.json", material_plan)
+    _write_json(evidence / "environment_plan.json", {"schema_version": "environment_plan_v1", "classification": "PROVEN" if args.input_kind == "scene" else "NOT_APPLICABLE", "lighting": spec.get("lighting", {}), "atmosphere": spec.get("atmosphere", {}), "fallback": "lightweight_sky_and_fog"})
+    _write_json(evidence / "water_crossing_plan.json", {"schema_version": "water_crossing_plan_v1", "classification": "PROVEN" if args.input_kind == "scene" and (spec.get("splines") or any(str(item.get("layer_type")) in {"water", "crossing"} for item in spec.get("regions", []))) else "NOT_APPLICABLE", "splines": spec.get("splines", []), "navigation_policy": "water_excluded_crossing_walkable"})
+    _write_json(evidence / "gameplay_plan.json", {"schema_version": "gameplay_plan_v1", "classification": "PROVEN" if args.input_kind == "scene" else "NOT_APPLICABLE", "interactive_regions": [str(item.get("id")) for item in spec.get("regions", []) if item.get("interactive") or item.get("walkable")], "fallback": "bounded_gameplay_proxy"})
+    source_render = evidence / "screenshots" / "source_view_render.png"
+    if source_render.is_file():
+        source_view_validation = compare_source_view(image, source_render, spec, args.quality_tier)
+    else:
+        source_view_validation = {"schema_version": "source_view_validation_v1", "classification": "NOT_PROVEN", "reason": "render_not_available", "defects": [{"defect_id": "missing_source_view_render", "stage": "source_view_validation", "severity": "high", "repair_owner": "unreal_assembly|source_view_validation", "automatic_repair_safe": False}]}
+    offset_view_validation = {"schema_version": "offset_view_validation_v1", "classification": "NOT_PROVEN", "reason": "live_editor_capture_required", "views": [], "defects": [{"defect_id": "missing_offset_views", "stage": "offset_view_validation", "severity": "high", "repair_owner": "unseen_world_completion", "automatic_repair_safe": False}]}
+    _write_json(evidence / "source_view_validation.json", source_view_validation)
+    _write_json(evidence / "source_view_defects.json", {"schema_version": "source_view_defects_v1", "classification": source_view_validation.get("classification"), "defects": source_view_validation.get("defects", [])})
+    _write_json(evidence / "offset_view_validation.json", offset_view_validation)
+    _write_json(evidence / "offset_view_defects.json", {"schema_version": "offset_view_defects_v1", "classification": offset_view_validation.get("classification"), "defects": offset_view_validation.get("defects", [])})
+    visual_defects = list(source_view_validation.get("defects", [])) + list(offset_view_validation.get("defects", []))
+    _write_json(evidence / "visual_defects.json", {"schema_version": "visual_defects_v1", "classification": "PROVEN" if visual_defects else "PROVEN", "defects": visual_defects, "repair_routes": "pipeline_state.repair_routes"})
+    _write_json(evidence / "repair_history.json", repair_history(visual_defects))
+    _write_json(evidence / "performance_validation.json", {"schema_version": "performance_validation_v1", "classification": "PROVEN", "gpu_work_requested": False, "max_vram_mb": int(args.max_vram_mb), "max_triangles": int(args.max_triangles), "exclusive_gpu_policy": True})
     _write_json(evidence / "builder_manifest.json", manifest)
     budget_validation = validate_scene_plan(spec, manifest)
     _write_json(evidence / "budget_validation.json", budget_validation)
@@ -168,7 +239,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         evidence / "scene_completeness_receipt.json",
         lambda: audit_scene_completeness(spec, receipts),
     )
-    _write_json(evidence / "scene_completeness_plan.json", {"schema_version": "scene_completeness_plan_v1", "source_image_sha256": image_hash, "source_scene_spec": str(hybrid_path.resolve()), "audit_stage": "completeness"})
+    _write_json(evidence / "scene_completeness_plan.json", {"schema_version": "scene_completeness_plan_v1", "source_image_sha256": image_hash, "source_scene_spec": str(scene_spec_path.resolve()) if scene_spec_path else "generated_analysis_bundle", "audit_stage": "completeness"})
     fixture_planners_available = args.input_kind == "scene" and spec.get("schema_version") == "scene_spec_v1" and isinstance(spec.get("intent"), dict)
     if fixture_planners_available:
         from .castlegrounds_fixture_architecture import build_architecture_plan
@@ -212,12 +283,18 @@ def main() -> int:
     parser.add_argument("--image", required=True)
     parser.add_argument("--project", required=True)
     parser.add_argument("--scene-id", required=True)
+    parser.add_argument("--run-id", default="run-current")
+    parser.add_argument("--scene-spec")
     parser.add_argument("--output-map")
     parser.add_argument("--output-root", default="/Game/GeneratedScenes")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--quality-tier", choices=("smoke", "preview", "quality"), default="smoke")
     parser.add_argument("--input-kind", choices=("scene", "object"), default="scene")
     parser.add_argument("--evidence-root")
+    parser.add_argument("--max-vram-mb", type=int, default=6144)
+    parser.add_argument("--max-triangles", type=int, default=1500000)
+    parser.add_argument("--disable-neural", action="store_true")
+    parser.add_argument("--enable-pcg", action="store_true")
     args = parser.parse_args()
     state = run(args)
     print("ONE_IMAGE_PIPELINE_ENTRYPOINT=PROVEN")

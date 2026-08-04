@@ -13,10 +13,10 @@ def safe_scene_id(scene_id: str) -> str:
     return value
 
 
-def derive_scene_paths(scene_id: str, output_root: str = "/Game/GeneratedScenes", evidence_root: str | Path | None = None) -> dict[str, str]:
+def derive_scene_paths(scene_id: str, output_root: str = "/Game/GeneratedScenes", evidence_root: str | Path | None = None, run_id: str = "run-current") -> dict[str, str]:
     safe = safe_scene_id(scene_id)
     root = output_root.rstrip("/")
-    evidence = Path(evidence_root) if evidence_root is not None else Path("evidence") / "scenes" / safe
+    evidence = Path(evidence_root) if evidence_root is not None else Path("evidence") / "scenes" / safe / safe_scene_id(run_id)
     return {
         "scene_root": f"{root}/{safe}",
         "map": f"{root}/{safe}/Maps/L_{safe}_Generated",
@@ -24,4 +24,5 @@ def derive_scene_paths(scene_id: str, output_root: str = "/Game/GeneratedScenes"
         "materials": f"{root}/{safe}/Materials",
         "pcg": f"{root}/{safe}/PCG",
         "evidence": str(evidence),
+        "run_id": safe_scene_id(run_id),
     }

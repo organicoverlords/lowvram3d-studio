@@ -24,6 +24,7 @@ def classification(name: str) -> str:
 
 
 visual = "BLOCKED_UNREAL_EDITOR_SLATE_ASSERT" if (IMAGE_EVIDENCE / "editor_crash_receipt.json").is_file() else "NOT_PROVEN"
+existing_state = read("pipeline_state.json")
 gates = {
     "scene_spec_and_builder_plan": classification("scene_completeness_receipt.json"),
     "complete_scene_layers": classification("layer_validation_receipt.json"),
@@ -77,6 +78,10 @@ report += [
     "next_action": "USER_REVIEW_REQUIRED_UNREAL_EDITOR_RESTART" if visual.startswith("BLOCKED") else "USER_REVIEW_REQUIRED",
     "source_map_protected": True,
     "gpu_work_requested": False,
+    "graph_hash": existing_state.get("graph_hash"),
+    "input_hashes": existing_state.get("input_hashes", {}),
+    "stages": existing_state.get("stages", {}),
+    "repair_routes": existing_state.get("repair_routes", {}),
     "gates": gates,
 }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 (GEN_EVIDENCE / "SUMMARY.md").write_text("# Generalization Evidence\n\n`GENERIC_ONE_IMAGE_TO_SCENE_PIPELINE_PARTIAL`\n\nObject images `baatti.jpg` and `panda.jpg` are excluded from scene evidence. `treesandbarn` and `landscape` are CPU bootstrap/resume dry runs only.\n", encoding="utf-8")

@@ -1,0 +1,21 @@
+{
+  "schema_version": "live_editor_capture_recovery_v1",
+  "classification": "PATCHED_NOT_LIVE_VERIFIED",
+  "observed_crash": "Assertion failed: bWasFound in SlateApplication.cpp line 3315",
+  "failed_route": "bridge capture_screenshot target=pie, Slate-backed window capture",
+  "root_cause_assessment": "Slate widget/window path was unavailable during the screenshot request; the crash is not evidence of scene geometry failure",
+  "replacement_route": "unreal.AutomationLibrary.take_high_res_screenshot",
+  "replacement_properties": {
+    "game_viewport": true,
+    "editor_ui": false,
+    "slate_window_capture": false,
+    "fresh_process_required_before_test": true
+  },
+  "official_references": [
+    "https://dev.epicgames.com/documentation/en-us/unreal-engine/taking-screenshots-in-unreal-engine",
+    "https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/class/AutomationLibrary",
+    "https://dev.epicgames.com/documentation/en-us/unreal-engine/API/Runtime/Engine/FScreenshotRequest/RequestScreenshot"
+  ],
+  "verification": "BLOCKED_EDITOR_NOT_RUNNING",
+  "no_automatic_editor_restart": true
+}

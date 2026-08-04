@@ -1,0 +1,71 @@
+{
+  "classification": "PROVEN",
+  "records": [
+    {
+      "confidence": 0.99,
+      "fallback": "visual_shell",
+      "materially_visible": true,
+      "region_id": "source_shell",
+      "representations": [
+        "visual_shell",
+        "background_card"
+      ],
+      "selected": "visual_shell",
+      "semantic_class": "unknown",
+      "source_camera_important": true
+    },
+    {
+      "confidence": 0.72,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "castle_core",
+      "representations": [
+        "editable_mesh",
+        "modular_architecture",
+        "gameplay_proxy"
+      ],
+      "selected": "editable_mesh",
+      "semantic_class": "unknown",
+      "source_camera_important": true
+    },
+    {
+      "confidence": 0.68,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "water_channels",
+      "representations": [
+        "gameplay_proxy",
+        "water_surface"
+      ],
+      "selected": "gameplay_proxy",
+      "semantic_class": "unknown",
+      "source_camera_important": true
+    },
+    {
+      "confidence": 0.55,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "vegetation",
+      "representations": [
+        "procedural_population"
+      ],
+      "selected": "procedural_population",
+      "semantic_class": "unknown",
+      "source_camera_important": true
+    },
+    {
+      "confidence": 0.95,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "sky",
+      "representations": [
+        "sky_environment"
+      ],
+      "selected": "sky_environment",
+      "semantic_class": "unknown",
+      "source_camera_important": true
+    }
+  ],
+  "schema_version": "representation_manifest_v1",
+  "selection_policy": "semantic class, confidence, visibility, gameplay role, camera importance, and budgets"
+}

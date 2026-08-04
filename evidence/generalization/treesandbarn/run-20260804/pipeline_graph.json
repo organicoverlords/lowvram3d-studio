@@ -1,0 +1,1579 @@
+{
+  "classification": "PROVEN",
+  "errors": [],
+  "schema_version": "pipeline_graph_v1",
+  "stage_count": 48,
+  "stages": [
+    {
+      "dependencies": [],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "run_initialization.json"
+      ],
+      "proof_gates": [
+        "RUN_INITIALIZATION_PROVEN"
+      ],
+      "repair_targets": [
+        "run_initialization"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "run_initialization",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "run_initialization"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "source_image_audit.json"
+      ],
+      "proof_gates": [
+        "SOURCE_IMAGE_AUDIT_PROVEN"
+      ],
+      "repair_targets": [
+        "source_image_audit"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": true,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "source_image_audit",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "source_image_audit"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "camera_estimation.json"
+      ],
+      "proof_gates": [
+        "CAMERA_ESTIMATION_PROVEN"
+      ],
+      "repair_targets": [
+        "camera_estimation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": true,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "camera_estimation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "camera_estimation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "depth_estimation.json"
+      ],
+      "proof_gates": [
+        "DEPTH_ESTIMATION_PROVEN"
+      ],
+      "repair_targets": [
+        "depth_estimation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": true,
+        "max_vram_mb": 6144,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "depth_estimation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "depth_estimation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "surface_orientation.json"
+      ],
+      "proof_gates": [
+        "SURFACE_ORIENTATION_PROVEN"
+      ],
+      "repair_targets": [
+        "surface_orientation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "surface_orientation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "surface_orientation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "semantic_segmentation.json"
+      ],
+      "proof_gates": [
+        "SEMANTIC_SEGMENTATION_PROVEN"
+      ],
+      "repair_targets": [
+        "semantic_segmentation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": true,
+        "max_vram_mb": 6144,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "semantic_segmentation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "semantic_segmentation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "instance_decomposition.json"
+      ],
+      "proof_gates": [
+        "INSTANCE_DECOMPOSITION_PROVEN"
+      ],
+      "repair_targets": [
+        "instance_decomposition"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "instance_decomposition",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "instance_decomposition"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "structural_feature_extraction.json"
+      ],
+      "proof_gates": [
+        "STRUCTURAL_FEATURE_EXTRACTION_PROVEN"
+      ],
+      "repair_targets": [
+        "structural_feature_extraction"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "structural_feature_extraction",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "structural_feature_extraction"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "material_region_analysis.json"
+      ],
+      "proof_gates": [
+        "MATERIAL_REGION_ANALYSIS_PROVEN"
+      ],
+      "repair_targets": [
+        "material_region_analysis"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "material_region_analysis",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "material_region_analysis"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "scene_type_classification.json"
+      ],
+      "proof_gates": [
+        "SCENE_TYPE_CLASSIFICATION_PROVEN"
+      ],
+      "repair_targets": [
+        "scene_type_classification"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "scene_type_classification",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "semantic_segmentation",
+        "instance_decomposition",
+        "structural_feature_extraction",
+        "material_region_analysis"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "scene_graph_construction.json"
+      ],
+      "proof_gates": [
+        "SCENE_GRAPH_CONSTRUCTION_PROVEN"
+      ],
+      "repair_targets": [
+        "scene_graph_construction"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": true,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "scene_graph_construction",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_graph_construction"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "world_scale_inference.json"
+      ],
+      "proof_gates": [
+        "WORLD_SCALE_INFERENCE_PROVEN"
+      ],
+      "repair_targets": [
+        "world_scale_inference"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "world_scale_inference",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "world_scale_inference"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "visibility_occlusion_analysis.json"
+      ],
+      "proof_gates": [
+        "VISIBILITY_OCCLUSION_ANALYSIS_PROVEN"
+      ],
+      "repair_targets": [
+        "visibility_occlusion_analysis"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "visibility_occlusion_analysis",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "visibility_occlusion_analysis"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "unseen_world_completion.json"
+      ],
+      "proof_gates": [
+        "UNSEEN_WORLD_COMPLETION_PROVEN"
+      ],
+      "repair_targets": [
+        "unseen_world_completion"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "unseen_world_completion",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_graph_construction",
+        "world_scale_inference",
+        "visibility_occlusion_analysis",
+        "unseen_world_completion"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "representation_selection.json"
+      ],
+      "proof_gates": [
+        "REPRESENTATION_SELECTION_PROVEN"
+      ],
+      "repair_targets": [
+        "representation_selection"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "representation_selection",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "representation_selection"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "scene_completeness.json"
+      ],
+      "proof_gates": [
+        "SCENE_COMPLETENESS_PROVEN"
+      ],
+      "repair_targets": [
+        "scene_completeness"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "scene_completeness",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_completeness",
+        "representation_selection"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "asset_strategy.json"
+      ],
+      "proof_gates": [
+        "ASSET_STRATEGY_PROVEN"
+      ],
+      "repair_targets": [
+        "asset_strategy"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": true,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "asset_strategy",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "terrain_planning.json"
+      ],
+      "proof_gates": [
+        "TERRAIN_PLANNING_PROVEN"
+      ],
+      "repair_targets": [
+        "terrain_planning"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "terrain_planning",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "architecture_planning.json"
+      ],
+      "proof_gates": [
+        "ARCHITECTURE_PLANNING_PROVEN"
+      ],
+      "repair_targets": [
+        "architecture_planning"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "architecture_planning",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "path_water_crossing_planning.json"
+      ],
+      "proof_gates": [
+        "PATH_WATER_CROSSING_PLANNING_PROVEN"
+      ],
+      "repair_targets": [
+        "path_water_crossing_planning"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "path_water_crossing_planning",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "vegetation_planning.json"
+      ],
+      "proof_gates": [
+        "VEGETATION_PLANNING_PROVEN"
+      ],
+      "repair_targets": [
+        "vegetation_planning"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "vegetation_planning",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "gameplay_planning.json"
+      ],
+      "proof_gates": [
+        "GAMEPLAY_PLANNING_PROVEN"
+      ],
+      "repair_targets": [
+        "gameplay_planning"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "gameplay_planning",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_completeness",
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "visual_shell_generation.json"
+      ],
+      "proof_gates": [
+        "VISUAL_SHELL_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "visual_shell_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": true,
+        "requires_unreal": false
+      },
+      "stage_id": "visual_shell_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_completeness",
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "terrain_generation.json"
+      ],
+      "proof_gates": [
+        "TERRAIN_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "terrain_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "terrain_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_completeness",
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "architecture_generation.json"
+      ],
+      "proof_gates": [
+        "ARCHITECTURE_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "architecture_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "architecture_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_completeness",
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "water_generation.json"
+      ],
+      "proof_gates": [
+        "WATER_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "water_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "water_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_completeness",
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "crossing_generation.json"
+      ],
+      "proof_gates": [
+        "CROSSING_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "crossing_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "crossing_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_completeness",
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "hero_object_generation.json"
+      ],
+      "proof_gates": [
+        "HERO_OBJECT_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "hero_object_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "hero_object_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_completeness",
+        "asset_strategy"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "vegetation_generation.json"
+      ],
+      "proof_gates": [
+        "VEGETATION_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "vegetation_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "vegetation_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "terrain_generation",
+        "architecture_generation",
+        "water_generation",
+        "crossing_generation",
+        "vegetation_generation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "world_continuation.json"
+      ],
+      "proof_gates": [
+        "WORLD_CONTINUATION_PROVEN"
+      ],
+      "repair_targets": [
+        "world_continuation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "world_continuation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "world_continuation",
+        "material_region_analysis"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "material_generation.json"
+      ],
+      "proof_gates": [
+        "MATERIAL_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "material_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": true,
+        "max_vram_mb": 6144,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "material_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "material_generation",
+        "visual_shell_generation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "material_harmonization.json"
+      ],
+      "proof_gates": [
+        "MATERIAL_HARMONIZATION_PROVEN"
+      ],
+      "repair_targets": [
+        "material_harmonization"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": true,
+        "requires_unreal": false
+      },
+      "stage_id": "material_harmonization",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "scene_graph_construction"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "lighting_inference.json"
+      ],
+      "proof_gates": [
+        "LIGHTING_INFERENCE_PROVEN"
+      ],
+      "repair_targets": [
+        "lighting_inference"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "lighting_inference",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "lighting_inference"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "atmosphere_generation.json"
+      ],
+      "proof_gates": [
+        "ATMOSPHERE_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "atmosphere_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "atmosphere_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "visual_shell_generation",
+        "terrain_generation",
+        "architecture_generation",
+        "water_generation",
+        "crossing_generation",
+        "vegetation_generation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "unreal_import.json"
+      ],
+      "proof_gates": [
+        "UNREAL_IMPORT_PROVEN"
+      ],
+      "repair_targets": [
+        "unreal_import"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "unreal_import",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "unreal_import",
+        "material_harmonization",
+        "atmosphere_generation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "unreal_assembly.json"
+      ],
+      "proof_gates": [
+        "UNREAL_ASSEMBLY_PROVEN"
+      ],
+      "repair_targets": [
+        "unreal_assembly"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "unreal_assembly",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "unreal_assembly",
+        "gameplay_planning"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "collision_generation.json"
+      ],
+      "proof_gates": [
+        "COLLISION_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "collision_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "collision_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "collision_generation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "navigation_generation.json"
+      ],
+      "proof_gates": [
+        "NAVIGATION_GENERATION_PROVEN"
+      ],
+      "repair_targets": [
+        "navigation_generation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "navigation_generation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "navigation_generation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "runtime_setup.json"
+      ],
+      "proof_gates": [
+        "RUNTIME_SETUP_PROVEN"
+      ],
+      "repair_targets": [
+        "runtime_setup"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "runtime_setup",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "runtime_setup"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "structural_validation.json"
+      ],
+      "proof_gates": [
+        "STRUCTURAL_VALIDATION_PROVEN"
+      ],
+      "repair_targets": [
+        "structural_validation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "structural_validation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "structural_validation",
+        "camera_estimation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "source_view_validation.json"
+      ],
+      "proof_gates": [
+        "SOURCE_VIEW_VALIDATION_PROVEN"
+      ],
+      "repair_targets": [
+        "source_view_validation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "source_view_validation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "source_view_validation",
+        "world_continuation",
+        "unseen_world_completion"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "offset_view_validation.json"
+      ],
+      "proof_gates": [
+        "OFFSET_VIEW_VALIDATION_PROVEN"
+      ],
+      "repair_targets": [
+        "offset_view_validation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "offset_view_validation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "navigation_generation",
+        "runtime_setup"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "gameplay_validation.json"
+      ],
+      "proof_gates": [
+        "GAMEPLAY_VALIDATION_PROVEN"
+      ],
+      "repair_targets": [
+        "gameplay_validation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": true,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": true
+      },
+      "stage_id": "gameplay_validation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "source_view_validation",
+        "offset_view_validation",
+        "gameplay_validation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "visual_defect_detection.json"
+      ],
+      "proof_gates": [
+        "VISUAL_DEFECT_DETECTION_PROVEN"
+      ],
+      "repair_targets": [
+        "visual_defect_detection"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": true,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "visual_defect_detection",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "structural_validation",
+        "gameplay_validation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "performance_validation.json"
+      ],
+      "proof_gates": [
+        "PERFORMANCE_VALIDATION_PROVEN"
+      ],
+      "repair_targets": [
+        "performance_validation"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "performance_validation",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "visual_defect_detection",
+        "performance_validation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "automatic_repair.json"
+      ],
+      "proof_gates": [
+        "AUTOMATIC_REPAIR_PROVEN"
+      ],
+      "repair_targets": [
+        "automatic_repair"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "automatic_repair",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "automatic_repair",
+        "performance_validation"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "final_packaging.json"
+      ],
+      "proof_gates": [
+        "FINAL_PACKAGING_PROVEN"
+      ],
+      "repair_targets": [
+        "final_packaging"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "final_packaging",
+      "version": "1.0.0"
+    },
+    {
+      "dependencies": [
+        "final_packaging"
+      ],
+      "invalidation_rules": [
+        "version_or_input_hash_changed",
+        "upstream_stage_changed"
+      ],
+      "produced_outputs": [
+        "cross_scene_regression.json"
+      ],
+      "proof_gates": [
+        "CROSS_SCENE_REGRESSION_PROVEN"
+      ],
+      "repair_targets": [
+        "cross_scene_regression"
+      ],
+      "required_inputs": [
+        "scene_spec",
+        "source_sha256"
+      ],
+      "resource_requirements": {
+        "cpu_inference": false,
+        "exclusive_gpu": false,
+        "gpu_inference": false,
+        "max_vram_mb": 0,
+        "requires_blender": false,
+        "requires_unreal": false
+      },
+      "stage_id": "cross_scene_regression",
+      "version": "1.0.0"
+    }
+  ]
+}

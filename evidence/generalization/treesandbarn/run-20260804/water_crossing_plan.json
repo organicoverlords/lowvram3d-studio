@@ -1,0 +1,6 @@
+{
+  "classification": "NOT_APPLICABLE",
+  "navigation_policy": "water_excluded_crossing_walkable",
+  "schema_version": "water_crossing_plan_v1",
+  "splines": []
+}
