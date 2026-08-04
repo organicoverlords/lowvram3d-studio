@@ -1,0 +1,7 @@
+{
+  "purpose": "Render canonical-coordinate FaceVerse v6 still variants for visual acceptance before any animation rerender.",
+  "exporter_commit": "fbe1324a2653dbcd24253547d688deb7ecc32124",
+  "blender_diagnostic_commit": "0a4218b667e248ebd4d4238c0c22c4d186b1b674",
+  "workflow_commit": "c4b31f1dfd7d191539bc9284e5618d9024a41a74",
+  "requested_at": "2026-08-04T06:51:00+03:00"
+}
