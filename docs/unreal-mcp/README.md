@@ -163,6 +163,47 @@ own thread, so waiting is free.
 > and writes immediately, sidestepping the probe entirely) rather than the
 > `mcp__unreal-engine__*` tools.
 
+### Port 8000 is never listening, even with `bAutoStartServer=True`
+
+`UModelContextProtocolSettings` is declared
+`UCLASS(config=EditorPerProjectUserSettings)` in the
+**`ModelContextProtocolEngine`** module. A block placed in `DefaultEditor.ini`,
+or under a `[/Script/ModelContextProtocol....]` section, parses without error
+and is **silently ignored** — the server then never binds and the port looks
+dead for no visible reason.
+
+The only file and section the engine reads:
+
+```ini
+; Config/DefaultEditorPerProjectUserSettings.ini
+[/Script/ModelContextProtocolEngine.ModelContextProtocolSettings]
+bAutoStartServer=True
+ServerPortNumber=8000
+ServerUrlPath=/mcp
+```
+
+Command-line `-ModelContextProtocolStartServer` forces it on regardless.
+
+### `mcp__unreal-engine__*` tools time out after exactly 30 s
+
+Distinct from the reconnect storm above, and it survives the probe fix. The npm
+client stamps every command with a `correlationId` and resolves its promise
+only when a response carries the same id back. This plugin build has **no
+`correlationId` handling at all**, so the reply is never matched and the client
+times out on every call.
+
+The npm package (0.1.25, the latest published) is older than the installed
+plugin. Until they are reconciled, use `uemcp`, which does not depend on
+correlation.
+
+### A modal dialog freezes every tool call
+
+Editor modals block the game thread, and MCP tool calls execute there — so a
+dialog waiting for a click stalls every surface at once. `UE_MCP_Bridge`
+installs a `ModalMessageDialog` hook to mitigate this, but if calls hang with
+the editor otherwise healthy, look at the editor window for a dialog before
+investigating anything else.
+
 ### Duplicate MCP servers pile up
 
 `npx -y <package>` re-resolves from the network on every launch and leaks a
