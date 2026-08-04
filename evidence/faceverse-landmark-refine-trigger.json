@@ -1,0 +1,7 @@
+{
+  "purpose": "Run the bounded multi-frame dense-landmark identity refinement and visually compare it against the proven fused baseline.",
+  "optimizer_commit": "bf2e1ef2f21ac227715095d094ed0436edcf7dd0",
+  "compatibility_commit": "1e2756c699e84e983dc8bb337b107812ed76414a",
+  "workflow_commit": "7d7bb15f65f4fd6c6b2416fd0916a00d7cf9fe17",
+  "requested_at": "2026-08-04T06:44:00+03:00"
+}
