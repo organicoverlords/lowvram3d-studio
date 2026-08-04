@@ -132,18 +132,30 @@ that is neither — all three checked up front by `resolve_runtime()`, which nam
 what is missing. If the weights are absent, look in the parallel `hub\` HF tree
 before re-downloading 3.8 GB.
 
-**This GPU faults on the second generation of a run.** Across three independent
-runs the first asset generates cleanly and later ones die with `CUDA error:
-misaligned address` inside a Linear on the second diffusion step. Each asset is
-already its own process, so it is not a leaked context. This GTX 1660 SUPER has
-form — fp16 cuDNN convolution on it produces NaN often enough to be disabled
-elsewhere in the project.
+**The `CUDA error: misaligned address` was VRAM headroom, and it is diagnosed.**
 
-Mitigations in place: a settle pause between assets, and a retry that re-runs in
-a fresh process further down the octree ladder (the worker's own ladder only
-handles OOM, and the CUDA context is unusable after this fault anyway). It is not
-a fix. Last full run: 2 of 3 assets generated, the third exhausted all three
-rungs.
+Assets after the first kept dying with a misaligned address inside a Linear on
+the second diffusion step, which reads like a driver defect. It is not. The crop
+that failed all three ladder rungs as the *second* asset generated cleanly at
+full resolution as the **first** asset of a cold run — 416 k triangles at a
+4,597 MB peak — so the input was never the problem.
+
+The card is 6 GB. Mini Turbo peaks at **4,597–5,017 MB** at octree 384 (measured,
+three runs). **A running Unreal editor holds about 2 GB of the same card**, and
+this pipeline drives both. With the editor up, `nvidia-smi` reports ~3,980 MB
+free, which is less than the top rung needs. Short of memory, this GPU does not
+reliably raise `OutOfMemoryError` — it faults.
+
+So generation now reads free VRAM before each asset, waits for headroom, and
+**drops ladder rungs it has measured evidence it cannot afford** — with the
+editor running it starts at 320, which is the rung that actually succeeded in
+that state. Only rungs with a measured peak are ever dropped; the lower ones are
+left unmeasured rather than guessed. The receipt records free VRAM per asset, so
+a future failure is attributable rather than mysterious.
+
+The structural point for anyone extending this: **the two halves of this
+pipeline compete for one 6 GB card.** Generating while driving the editor is the
+constraint, not a flaw in Mini Turbo.
 
 ---
 
@@ -226,9 +238,12 @@ else had failed.
    the reconstruction path had to correct for the opposite).
 
    Next would be multi-view: the back and sides are currently smeared.
-3. **The CUDA fault** in §4. Worth one experiment: generate the same asset twice
-   in a row in one run and see whether the *second* attempt fails, which would
-   separate "GPU state" from "this particular input".
+3. **Recover the top octree rung.** The fault in §4 is understood and mitigated
+   by dropping to 320 when the editor is up, which costs geometry resolution.
+   Closing the editor for the generation phase, or ordering all generation
+   before the pipeline first touches Unreal, would buy back octree 384 — and the
+   pipeline already generates before importing, so this is mostly about not
+   leaving an editor open during a run.
 4. **A/splats needs a UE plugin.** Unchanged. Installing one is a project
    change, so ask first.
 5. **`mcp__unreal-engine__*` correlationId mismatch** — unchanged; use `uemcp`.

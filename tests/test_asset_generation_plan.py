@@ -16,7 +16,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from lowvram3d.asset_generation import (  # noqa: E402
-    MIN_CROP_ASPECT, _widen_to_aspect, plan)
+    MEASURED_PEAK_VRAM_MB, MIN_CROP_ASPECT, _widen_to_aspect,
+    ladder_for_headroom, plan)
 from lowvram3d.region_placement import place  # noqa: E402
 
 
@@ -98,6 +99,42 @@ def test_widening_never_escapes_the_region():
 def test_widening_leaves_a_healthy_window_alone():
     bbox = [0.3, 0.5, 0.8, 0.75]
     assert _widen_to_aspect(bbox, [0.0, 0.0, 1.0, 1.0]) == bbox
+
+
+LADDER = "384:3000,320:2000,256:1500"
+
+
+def test_full_ladder_survives_when_the_card_has_room():
+    assert ladder_for_headroom(LADDER, 6000) == (LADDER, [])
+
+
+def test_unaffordable_top_rung_is_dropped():
+    """Starting a rung without the memory for it costs the whole generation.
+
+    On this card it does not fail as OutOfMemoryError -- it fails as a
+    misaligned address minutes in, having spent the run.
+    """
+    ladder, dropped = ladder_for_headroom(LADDER, 3980)
+    assert ladder == "320:2000,256:1500"
+    assert [d["rung"] for d in dropped] == ["384:3000"]
+    assert dropped[0]["free_mb"] == 3980
+
+
+def test_rungs_with_no_measured_peak_are_never_dropped():
+    """Only drop a rung there is evidence against."""
+    assert 320 not in MEASURED_PEAK_VRAM_MB
+    ladder, _ = ladder_for_headroom(LADDER, 10)
+    assert ladder.startswith("320:")
+
+
+def test_unreadable_vram_leaves_the_ladder_alone():
+    assert ladder_for_headroom(LADDER, None) == (LADDER, [])
+
+
+def test_the_ladder_is_never_emptied():
+    """Better to fail honestly at the smallest rung than to skip the asset."""
+    ladder, _ = ladder_for_headroom("384:3000", 100)
+    assert ladder == "384:3000"
 
 
 def test_every_generated_actor_is_accounted_for():

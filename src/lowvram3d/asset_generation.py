@@ -57,17 +57,27 @@ PROJECTOR = REPO / "workers" / "project_crop_texture.py"
 # indistinguishable from a failed one. Reduce before the mesh leaves this stage.
 DEFAULT_TRIANGLE_BUDGET = 150_000
 
-# Observed on this GTX 1660 SUPER, across two independent runs: the first asset
-# of a run generates cleanly and every asset after it dies with `CUDA error:
-# misaligned address` inside a Linear on the second diffusion step. Each asset
-# is already its own process, so this is not a leaked context -- it looks like
-# the card itself needing to settle after ten minutes at 100%. This GPU has
-# form: fp16 cuDNN convolution on it produces NaN often enough to be disabled
-# elsewhere in the project.
+# On this 6 GB GTX 1660 SUPER, assets after the first in a run kept dying with
+# `CUDA error: misaligned address` inside a Linear on the second diffusion step.
+# The crop that failed all three ladder rungs as the second asset then generated
+# cleanly at full resolution as the *first* asset of a cold run, 416 k triangles
+# at a 4,597 MB peak -- so it is not the input.
 #
-# A pause between assets is the cheap thing to try. It is not a fix, and the
-# retry ladder still carries the load if it does not help.
+# It is headroom. Mini Turbo peaks around 4.6 GB, a running Unreal editor holds
+# roughly 2 GB of the same card, and this pipeline drives both. When the margin
+# disappears the failure does not always present as OutOfMemoryError; it comes
+# back as a misaligned address, which reads like a driver bug and is not.
+#
+# So: wait for real headroom before starting, rather than waiting a fixed time
+# and hoping. The pause is the fallback for when free VRAM cannot be read.
 DEFAULT_SETTLE_SECONDS = 45.0
+# Measured peaks per octree rung, from this project's own receipts. Only 384 has
+# been observed enough times to trust (4,597 / 5,017 / 5,017 MB across three
+# runs); the lower rungs are left unmeasured on purpose rather than guessed, so
+# the gate only ever drops a rung it has evidence against.
+MEASURED_PEAK_VRAM_MB = {384: 5200}
+REQUIRED_FREE_VRAM_MB = 5200
+VRAM_WAIT_SECONDS = 240.0
 
 # Mini Turbo is installed standalone: its own Python, hy3dgen as a source tree
 # on PYTHONPATH, and weights under a model root that is not either of those.
@@ -247,6 +257,76 @@ def _crop(image_path: Path, bbox: list[float], destination: Path,
     return result
 
 
+def free_vram_mb() -> int | None:
+    """Free VRAM on the first GPU, or None if it cannot be read."""
+    try:
+        completed = subprocess.run(
+            ["nvidia-smi", "--query-gpu=memory.free", "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if completed.returncode != 0:
+        return None
+    first = (completed.stdout or "").strip().splitlines()
+    try:
+        return int(first[0].strip())
+    except (IndexError, ValueError):
+        return None
+
+
+def wait_for_vram(required_mb: int, timeout: float,
+                  poll: float = 15.0) -> dict[str, Any]:
+    """Wait until the card has room, and report what happened either way.
+
+    Proceeding without headroom does not fail cleanly on this GPU -- it fails as
+    a misaligned address several minutes into the run, which costs the whole
+    generation and looks like a driver defect.
+    """
+    start = time.monotonic()
+    initial = free_vram_mb()
+    if initial is None:
+        return {"checked": False, "reason": "nvidia-smi unavailable"}
+    free = initial
+    while free < required_mb and time.monotonic() - start < timeout:
+        time.sleep(poll)
+        free = free_vram_mb() or free
+    return {
+        "checked": True,
+        "required_mb": required_mb,
+        "free_mb_before": initial,
+        "free_mb_at_start": free,
+        "waited_seconds": round(time.monotonic() - start, 1),
+        # Recorded rather than fatal: a run that proceeds short on VRAM should
+        # say so, so a later failure is attributable instead of mysterious.
+        "sufficient": bool(free >= required_mb),
+    }
+
+
+def ladder_for_headroom(octree_ladder: str, free_mb: int | None) -> tuple[str, list]:
+    """Drop ladder rungs this card demonstrably cannot afford right now.
+
+    Starting a rung without the memory for it does not fail cleanly here -- it
+    fails as a misaligned address minutes in, having spent the whole generation.
+    Dropping it up front costs resolution instead of the asset.
+
+    Only rungs with a measured peak are ever dropped.
+    """
+    rungs = [rung.strip() for rung in octree_ladder.split(",") if rung.strip()]
+    if free_mb is None:
+        return octree_ladder, []
+    kept, dropped = [], []
+    for rung in rungs:
+        resolution = int(rung.partition(":")[0])
+        needed = MEASURED_PEAK_VRAM_MB.get(resolution)
+        if kept or needed is None or free_mb >= needed:
+            kept.append(rung)
+        else:
+            dropped.append({"rung": rung, "needs_mb": needed, "free_mb": free_mb})
+    # Never drop everything: if the card cannot afford any measured rung, keep
+    # the smallest and let it fail honestly rather than skipping the asset.
+    return ",".join(kept or rungs[-1:]), dropped
+
+
 def _is_retryable_cuda_fault(error: Any) -> bool:
     """Is this a CUDA fault worth retrying lower down the ladder?
 
@@ -404,11 +484,12 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
     for position, job in enumerate(jobs):
         if position and settle_seconds > 0:
             time.sleep(settle_seconds)
+        headroom = wait_for_vram(REQUIRED_FREE_VRAM_MB, VRAM_WAIT_SECONDS)
         asset_dir = output_dir / job["asset_id"]
         crop = _crop(Path(image), job["crop_bbox_norm_xyxy"],
                      asset_dir / "crop.png",
                      mask_for(job["region_id"]) if mask_dir else None)
-        entry = {**job, **crop}
+        entry = {**job, **crop, "vram_headroom": headroom}
         if crop["too_small"]:
             entry["status"] = "skipped"
             entry["reason"] = (
@@ -422,7 +503,11 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
         worker_result: dict[str, Any] = {}
         attempts: list[dict[str, Any]] = []
         timed_out = False
-        for ladder in _ladder_retries(octree_ladder):
+        affordable, dropped = ladder_for_headroom(
+            octree_ladder, headroom.get("free_mb_at_start"))
+        if dropped:
+            entry["dropped_octree_rungs"] = dropped
+        for ladder in _ladder_retries(affordable):
             command = [
                 runtime["interpreter"], str(WORKER),
                 "--image", str(asset_dir / "crop.png"),
