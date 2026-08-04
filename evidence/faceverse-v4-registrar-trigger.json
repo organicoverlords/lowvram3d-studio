@@ -1,7 +1,8 @@
 {
-  "purpose": "Dispatch exactly one branch-write-free FaceVerse v4 preflight using the cached environment and weights, then record its run ID externally.",
-  "workflow_commit": "7be0147a571bcac7a556d250aa70ceb528840aa8",
+  "purpose": "Dispatch exactly one branch-write-free FaceVerse v4 preflight with isolated Python startup and immutable CUDA Torch, then record its run ID externally.",
+  "workflow_commit": "bf81a8fb28ff1ca3662b1b148b46b6ccd621f73b",
+  "isolation_patch_commit": "a92df8d49052160e5e7deee43a4c9bd9c18486f8",
   "release_fallback_commit": "823140c119eb89cbd5a46d7ce5a47316d0fa4ff6",
-  "cached_weights_run": 30869754509,
-  "requested_at": "2026-08-04T05:07:00+03:00"
+  "failed_contaminated_run": 30870288168,
+  "requested_at": "2026-08-04T05:12:00+03:00"
 }
