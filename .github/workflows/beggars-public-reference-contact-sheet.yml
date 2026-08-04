@@ -1,0 +1,94 @@
+name: Beggars public reference contact sheet
+run-name: Beggars public reference contact sheet ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - tools/beggars_scene/build_public_clip_contact_sheet.py
+      - .github/workflows/beggars-public-reference-contact-sheet.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-public-reference-contact-sheet
+  cancel-in-progress: true
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish exact run identity
+        run: |
+          set -euo pipefail
+          evidence='evidence/latest-beggars-public-reference-contact-sheet'
+          mkdir -p "$evidence"
+          jq -n \
+            --argjson run_id '${{ github.run_id }}' \
+            --arg head_sha '${{ github.sha }}' \
+            --arg branch '${{ github.ref_name }}' \
+            --arg url 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+            '{classification:"RUN_REGISTERED",workflow_run_id:$run_id,status:"in_progress",conclusion:null,head_sha:$head_sha,head_branch:$branch,url:$url}' \
+            > "$evidence/run-registration.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$evidence/run-registration.json"
+          git commit -m 'evidence(scene): register public reference contact sheet ${{ github.run_id }}'
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if git push origin HEAD:agent/blender-beggars-scene-20260804; then exit 0; fi
+            test "$attempt" -lt 4
+            sleep 2
+          done
+
+  build-contact-sheet:
+    needs: register
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact contact-sheet source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
+          fetch-depth: 1
+
+      - name: Build numbered public-frame contact sheet
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\public-reference-contact-${{ github.run_id }}"
+          $clip = Join-Path $output 'public_reference.mp4'
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          curl.exe -L --fail --retry 3 --retry-delay 2 --output $clip 'https://media.tenor.com/e8wT4qAP6zwAAAPo/somebody-get-these-beggars-out-of-here-the-odyssey.mp4'
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $clip)) {
+            throw 'Could not download the public reference clip'
+          }
+          $python = 'C:\AI\LowVRAM3D-cache\faceverse-v4\venv-py39-cu118\Scripts\python.exe'
+          & $python -m py_compile tools\beggars_scene\build_public_clip_contact_sheet.py
+          if ($LASTEXITCODE -ne 0) { throw 'Contact-sheet source failed compilation' }
+          & $python tools\beggars_scene\build_public_clip_contact_sheet.py `
+            --clip $clip `
+            --output-dir $output `
+            --columns 6 `
+            --thumb-width 240
+          if ($LASTEXITCODE -ne 0) { throw 'Public-frame contact-sheet build failed' }
+          Remove-Item -LiteralPath $clip -Force
+          "BEGGARS_PUBLIC_CONTACT_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Upload public-frame review artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-public-reference-contact-${{ github.run_id }}
+          path: |
+            ${{ env.BEGGARS_PUBLIC_CONTACT_OUTPUT }}/public_reference_all_frames.jpg
+            ${{ env.BEGGARS_PUBLIC_CONTACT_OUTPUT }}/public_reference_frames.json
+          if-no-files-found: error
+          retention-days: 7
