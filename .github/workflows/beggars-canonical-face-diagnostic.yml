@@ -9,6 +9,7 @@ on:
     paths:
       - scripts/run-beggars-canonical-diagnostic.ps1
       - scripts/apply-beggars-canonical-runtime-compat.ps1
+      - scripts/apply-beggars-canonical-v3-import-compat.ps1
       - scripts/apply-beggars-canonical-v3-runner.ps1
       - tools/beggars_scene/build_canonical_face_sequence.py
       - blender/diagnose_beggars_canonical_face.py
@@ -79,6 +80,14 @@ jobs:
             throw "Canonical Blender compatibility failed with exit code $LASTEXITCODE"
           }
 
+      - name: Apply projective v3 import compatibility
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-canonical-v3-import-compat.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Canonical v3 import compatibility failed with exit code $LASTEXITCODE"
+          }
+
       - name: Route diagnostic through projective v3 renderer
         shell: powershell
         run: |
@@ -100,7 +109,7 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          git checkout -- blender\diagnose_beggars_canonical_face.py scripts\run-beggars-canonical-diagnostic.ps1
+          git checkout -- blender\diagnose_beggars_canonical_face.py blender\diagnose_beggars_canonical_face_v3.py scripts\run-beggars-canonical-diagnostic.ps1
           $evidence = 'evidence\latest-beggars-canonical-diagnostic'
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
           if ($env:CANONICAL_DIAGNOSTIC_OUTPUT -and (Test-Path -LiteralPath $env:CANONICAL_DIAGNOSTIC_OUTPUT)) {
