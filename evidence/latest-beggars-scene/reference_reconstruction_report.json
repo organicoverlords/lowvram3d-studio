@@ -1,16 +1,33 @@
 {
+  "appearance_policy": "Face-only masked atlas is derived locally; the source frame and clip remain private and excluded.",
   "classification": "PROVEN",
+  "derived_face_atlas": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\_reference_private\\face_albedo_atlas.png",
+  "derived_face_atlas_report": {
+    "atlas_size": [
+      1024,
+      1024
+    ],
+    "classification": "PROVEN",
+    "mask_coverage_fraction": 0.29364224137931033,
+    "policy": "DERIVED_FACE_ONLY_MASKED_ATLAS_NO_BACKGROUND_FRAME",
+    "source_crop": [
+      107,
+      98,
+      298,
+      271
+    ]
+  },
   "keyframe_index": 17,
-  "keyframe_output": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\_reference_private\\selected_keyframe.png",
+  "keyframe_output": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\_reference_private\\selected_keyframe.png",
   "keyframe_source_frame": 19,
-  "output_npz": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\_reference_private\\face_sequence.npz",
+  "output_npz": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\_reference_private\\face_sequence.npz",
   "reference_media_policy": "Extracted frames and source clip are local temporary inputs and must not be committed or uploaded.",
   "route": "YUNET_TRACK_PLUS_3DDFA_V2_ONNX",
   "sample_stride": 1,
   "sampled_fps": 10.0,
   "sampled_frame_count": 40,
   "smoothing": 0.68,
-  "source_clip": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\_reference_private\\download\\source.mp4",
+  "source_clip": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\_reference_private\\download\\source.mp4",
   "source_dimensions": [
     480,
     360

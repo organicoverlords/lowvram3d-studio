@@ -3,63 +3,63 @@
   "classification": "USER_VISUAL_REVIEW_REQUIRED",
   "files": [
     {
-      "bytes": 18929775,
+      "bytes": 19756873,
       "name": "beggars_photoreal_recreation.blend",
-      "sha256": "8e8c41c3fa564cfab37b3ea10663eb1946e77ce63ab58ebff9868a731b42321e"
+      "sha256": "bc20a00d6c4fc432e27c49038d21ffe46dde21f03dc9a8522eef38914f649dea"
     },
     {
-      "bytes": 1015942,
+      "bytes": 1028221,
       "name": "hero_clean_render.png",
-      "sha256": "8730cc28593bd4d681f108b4bff1ea49f9093a4f82897989f97c61ebac4061c9"
+      "sha256": "42776d1871b23e65317d695610722621cfc908004c779bccad0e8b9fc8948cdd"
     },
     {
-      "bytes": 976639,
+      "bytes": 982867,
       "name": "wide_scene_proof.png",
-      "sha256": "40aa76aa877e5c031ef90e6ecc4101df017f5be9acdb0a6413e2f8a97c4f7985"
+      "sha256": "e50b2fef2c584ac7c3d6f6480a4c30e8721579978d4189f644e5a9f257ac2f00"
     },
     {
       "bytes": 2672,
       "name": "scene_receipt.json",
-      "sha256": "a3fcdda474e215095549220e682f83fb214a061eaffa5989b8628dfd440e3ebe"
+      "sha256": "40aba4fc106751e341be424f10998714e13b019eaa5c3a2b1ebce37ee4e5f16a"
     },
     {
-      "bytes": 811167,
+      "bytes": 853687,
       "name": "beggars_photoreal_recreation.mp4",
-      "sha256": "20db290272010b3e71f34702ec26767739671b61f5ef8b1ddf0676dfe8d34fd8"
+      "sha256": "1f17e748a0df6bdaca3cbcb1e274aced4215618aa5e7bc83d53e428adb1acd1d"
     },
     {
-      "bytes": 2284674,
+      "bytes": 2285086,
       "name": "contact_sheet.png",
-      "sha256": "6bbb82a490a70a660deca6c6d05794042230480b750da178bcd88f94b812b88b"
+      "sha256": "f575a69809e12d8391c6c683c368c79ca22c8e3c77adb87b316bc0e08386e154"
     },
     {
-      "bytes": 999580,
+      "bytes": 1016455,
       "name": "proof_frame_01.png",
-      "sha256": "853a343b60cb5fbcf482d141f21c435c2f54cd58f0e7e94612a3ec38f3f8a878"
+      "sha256": "29d13829fc17cb08be17ae8a39a8f7f50a19bad5486ea661514902555ab6e293"
     },
     {
-      "bytes": 1016142,
+      "bytes": 1028222,
       "name": "proof_frame_02.png",
-      "sha256": "153dc4d128dea66777c8693e7f311c65c0bc889a264333001c2dfb1ca3faae92"
+      "sha256": "bc9a0b8c57df80a8c1864455ab60c583b5bf643a462be57cd8efe306a509e602"
     },
     {
-      "bytes": 1022840,
+      "bytes": 1037703,
       "name": "proof_frame_03.png",
-      "sha256": "df404c21a4f9c9ee204b43bb5f2684d3680ca0428ef054f411fb5a22e1f74b9b"
+      "sha256": "54468b071d647aee274782f84014ec14bf92c0fb608645122ff2a8423ac9602b"
     },
     {
-      "bytes": 966,
+      "bytes": 1546,
       "name": "reference_reconstruction_report.json",
-      "sha256": "19cc049d2606bc83d6cf59d0c0e453f3cc8bf9cff4e7687476d675f87da8df06"
+      "sha256": "a0271133c7574c34b84cad51e3d06fa29cb67f7f788dccf7e9025dae6185a668"
     },
     {
       "bytes": 1000,
       "name": "worker_receipt.json",
-      "sha256": "947276040268891a3dd4cda19c3cf104638d534e36d098c5bf96937260ca2dd8"
+      "sha256": "f22ce689b751b322077cb0a1ffa436a11d3631a4326caa65d44b9590996a0a6b"
     }
   ],
-  "head_sha": "3d96b29238d851ce532cf82e5c0535323dbc721c",
+  "head_sha": "2734d1597f176b559526381ec263734602f9c66e",
   "meme_clip_match": "NOT_PROVEN_PENDING_USER_REVIEW",
   "reference_media_in_artifact": false,
-  "workflow_run_id": "30886918464"
+  "workflow_run_id": "30888268493"
 }

@@ -4,10 +4,10 @@
   "automated_validation": "PROVEN",
   "claim_policy": "The scene, animation, renders and save/reload are machine-proven. Meme likeness and photoreal match remain NOT_PROVEN until user review.",
   "classification": "USER_VISUAL_REVIEW_REQUIRED",
-  "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\artifact\\contact_sheet.png",
+  "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\artifact\\contact_sheet.png",
   "face_triangles": 76073,
   "face_vertices": 38365,
-  "final_video": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\artifact\\beggars_photoreal_recreation.mp4",
+  "final_video": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\artifact\\beggars_photoreal_recreation.mp4",
   "final_video_metadata": {
     "duration_seconds": 4.0,
     "fps": 24.0,
@@ -25,15 +25,15 @@
   "hair_strands": 34,
   "likeness_match": "NOT_PROVEN_PENDING_USER_REVIEW",
   "outputs": {
-    "blend": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\artifact\\beggars_photoreal_recreation.blend",
-    "hero_render": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\artifact\\hero_clean_render.png",
+    "blend": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\artifact\\beggars_photoreal_recreation.blend",
+    "hero_render": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\artifact\\hero_clean_render.png",
     "proof_frames": [
-      "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\artifact\\proof_frame_01.png",
-      "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\artifact\\proof_frame_02.png",
-      "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\artifact\\proof_frame_03.png"
+      "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\artifact\\proof_frame_01.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\artifact\\proof_frame_02.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\artifact\\proof_frame_03.png"
     ],
-    "silent_video": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\artifact\\beggars_photoreal_recreation_silent.mp4",
-    "wide_render": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30886918464\\artifact\\wide_scene_proof.png"
+    "silent_video": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\artifact\\beggars_photoreal_recreation_silent.mp4",
+    "wide_render": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30888268493\\artifact\\wide_scene_proof.png"
   },
   "reference_media_packaged": false,
   "reference_media_uploaded": false,
@@ -69,7 +69,7 @@
   "source_of_truth": "the exact checked-out github.sha on the dedicated branch",
   "tracked_input_frames": 40,
   "workflow": {
-    "head_sha": "3d96b29238d851ce532cf82e5c0535323dbc721c",
-    "run_id": "30886918464"
+    "head_sha": "2734d1597f176b559526381ec263734602f9c66e",
+    "run_id": "30888268493"
   }
 }

@@ -2,15 +2,15 @@
     "classification":  "PROVEN",
     "repository":  "organicoverlords/lowvram3d-studio",
     "branch":  "agent/blender-beggars-scene-20260804",
-    "head_sha":  "3d96b29238d851ce532cf82e5c0535323dbc721c",
-    "workflow_run_id":  "30886918464",
+    "head_sha":  "2734d1597f176b559526381ec263734602f9c66e",
+    "workflow_run_id":  "30888268493",
     "blender":  "C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe",
     "python":  "C:\\AI\\LowVRAM3D-cache\\beggars-scene-v2\\venv\\Scripts\\python.exe",
-    "gpu_used_mib_at_start":  1903,
+    "gpu_used_mib_at_start":  1910,
     "reference_title":  "Somebody Get These Beggars Out Of Here The Odyssey GIF - Somebody get these beggars out of here The odyssey Robert pattinson - Discover \u0026 Share GIFs",
     "reference_candidate":  "https://tenor.com/view/somebody-get-these-beggars-out-of-here-the-odyssey-robert-pattinson-meme-gif-8920526825983044412",
     "reference_media_uploaded":  false,
     "actor_voice_cloned":  false,
     "render_scope":  "TRACKED_3D_FACE_PLUS_PROCEDURAL_BLENDER_SCENE",
-    "recorded_at":  "2026-08-04T07:20:10.2781502Z"
+    "recorded_at":  "2026-08-04T07:40:07.0472490Z"
 }
