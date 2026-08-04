@@ -31,8 +31,14 @@ $Anchor = @'
 $OwnedProjectRoot = 'C:\Users\Lauri\Desktop\ProceduralJungle58'
 $ProtectedProjectPath = 'C:\Users\Lauri\Desktop\UnrealAITest58\UnrealAITest58.uproject'
 '@.Trim()
-$AnchorCount = [regex]::Matches($SourceText, [regex]::Escape($Anchor)).Count
-if ($AnchorCount -ne 1) { throw "Protected-coexistence preflight anchor count is not exactly one: $AnchorCount" }
+$AnchorIndex = $SourceText.LastIndexOf($Anchor, [StringComparison]::Ordinal)
+if ($AnchorIndex -lt 0) { throw 'Protected-coexistence preflight anchor is missing' }
+$ExpectedPrefix = '$CoexistencePreflight = @''' + "`n"
+if ($AnchorIndex -lt $ExpectedPrefix.Length) { throw 'Protected-coexistence anchor has no room for its declaration prefix' }
+$ActualPrefix = $SourceText.Substring($AnchorIndex - $ExpectedPrefix.Length, $ExpectedPrefix.Length)
+if ($ActualPrefix -ne $ExpectedPrefix) {
+    throw "Protected-coexistence anchor is not inside the expected here-string declaration: $ActualPrefix"
+}
 
 $Insertion = @'
 $DecodedBuildPath = Join-Path $ExtractRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
@@ -51,7 +57,7 @@ if ($DecodedBuildText -notmatch 'JUNGLE_BUILD_INTERNAL_UNREAL_GUARD_DELEGATED=PR
 Write-Host 'JUNGLE_DECODED_BUILD_GUARD_CHECKED_IN_PATCH=PROVEN'
 
 '@
-$PatchedSource = $SourceText.Replace($Anchor, $Insertion.TrimEnd() + "`n" + $Anchor)
+$PatchedSource = $SourceText.Substring(0, $AnchorIndex) + $Insertion.TrimEnd() + "`n" + $SourceText.Substring($AnchorIndex)
 if ($PatchedSource -notmatch 'JUNGLE_DECODED_BUILD_GUARD_CHECKED_IN_PATCH=PROVEN') {
     throw 'Checked-in decoded-guard patch insertion marker is missing'
 }
