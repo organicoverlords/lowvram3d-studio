@@ -1,0 +1,88 @@
+name: Beggars Blender FaceVerse v14 preflight
+run-name: Beggars Blender FaceVerse v14 preflight ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - evidence/beggars-blender-faceverse-v14-trigger.json
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-blender-faceverse-v14-preflight
+  cancel-in-progress: true
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish exact run identity
+        run: |
+          set -euo pipefail
+          evidence='evidence/latest-beggars-blender-faceverse-v14-preflight'
+          mkdir -p "$evidence"
+          jq -n \
+            --argjson run_id '${{ github.run_id }}' \
+            --arg head_sha '${{ github.sha }}' \
+            --arg branch '${{ github.ref_name }}' \
+            --arg url 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+            '{classification:"RUN_REGISTERED",workflow_run_id:$run_id,status:"in_progress",conclusion:null,head_sha:$head_sha,head_branch:$branch,url:$url}' \
+            > "$evidence/run-registration.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$evidence/run-registration.json"
+          git commit -m 'evidence(scene): register opaque camera-head v14 ${{ github.run_id }}'
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if git push origin HEAD:agent/blender-beggars-scene-20260804; then exit 0; fi
+            test "$attempt" -lt 4
+            sleep 2
+          done
+
+  build-and-render:
+    needs: register
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 65
+    steps:
+      - name: Checkout exact opaque camera-head v14 source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
+          fetch-depth: 1
+
+      - name: Run opaque camera-space v14 preflight
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\run-beggars-blender-faceverse-v14-preflight.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Blender FaceVerse v14 preflight failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Upload opaque camera-head v14 preflight
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-blender-faceverse-v14-preflight-${{ github.run_id }}
+          path: |
+            ${{ env.B14_OUTPUT }}/beggars_photoreal_recreation.blend
+            ${{ env.B14_OUTPUT }}/hero_camera_head_render.png
+            ${{ env.B14_OUTPUT }}/camera_head_*.png
+            ${{ env.B14_OUTPUT }}/source_head_cutout.png
+            ${{ env.B14_OUTPUT }}/source_head_cutout_report.json
+            ${{ env.B14_OUTPUT }}/projected_keyframe_031.png
+            ${{ env.B14_OUTPUT }}/contact_sheet.png
+            ${{ env.B14_OUTPUT }}/scene_receipt.json
+            ${{ env.B14_OUTPUT }}/v14_visual_report.json
+            ${{ env.B14_OUTPUT }}/faceverse_model_space_sequence_report.json
+            ${{ env.B14_OUTPUT }}/projection_texture_report.json
+          if-no-files-found: warn
+          retention-days: 7
