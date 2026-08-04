@@ -35,7 +35,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $blender = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
-          $blend = 'C:\AI\LowVRAM3D-benchmarks\beggars-scene\run-30924008509\artifact\beggars_photoreal_recreation.blend'
+          $blend = 'C:\AI\LowVRAM3D-benchmarks\beggars-scene\run-30927552483\artifact\beggars_photoreal_recreation.blend'
           $output = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\faceplate-v3-diagnostic-${{ github.run_id }}"
           foreach ($required in @($blender,$blend,'blender\diagnose_beggars_faceplate_v3.py')) {
             if (-not (Test-Path -LiteralPath $required)) { throw "Faceplate v3 diagnostic input missing: $required" }
