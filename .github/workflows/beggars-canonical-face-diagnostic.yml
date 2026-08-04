@@ -1,14 +1,13 @@
 name: Beggars canonical face diagnostic
 run-name: Beggars canonical face diagnostic ${{ github.run_id }}
 
-# visual-retry: 2026-08-04T03:18:00+03:00
-
 on:
   workflow_dispatch:
   push:
     branches:
       - agent/blender-beggars-scene-20260804
     paths:
+      - scripts/run-beggars-canonical-diagnostic.ps1
       - tools/beggars_scene/build_canonical_face_sequence.py
       - blender/diagnose_beggars_canonical_face.py
       - .github/workflows/beggars-canonical-face-diagnostic.yml
@@ -38,7 +37,7 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $evidence = 'evidence\latest-beggars-canonical-diagnostic'
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-          $registration = [ordered]@{
+          [ordered]@{
             classification = 'RUN_REGISTERED'
             workflow_run_id = [long]'${{ github.run_id }}'
             status = 'in_progress'
@@ -46,8 +45,7 @@ jobs:
             head_sha = '${{ github.sha }}'
             head_branch = '${{ github.ref_name }}'
             url = 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          }
-          $registration | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'run-registration.json') -Encoding utf8
+          } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'run-registration.json') -Encoding utf8
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- (Join-Path $evidence 'run-registration.json')
@@ -69,73 +67,46 @@ jobs:
             throw "Runtime bootstrap failed with exit code $LASTEXITCODE"
           }
 
-      - name: Build canonical pose-decoupled sequence
+      - name: Rebuild track and render canonical variants
         shell: powershell
         run: |
-          $ErrorActionPreference = 'Stop'
-          $sourceRoot = 'C:\AI\LowVRAM3D-benchmarks\beggars-scene\run-30863735416\_reference_private'
-          $input = Join-Path $sourceRoot 'face_sequence.npz'
-          $thirdParty = Join-Path $sourceRoot '3DDFA_V2'
-          $bfm = Join-Path $thirdParty 'configs\bfm_noneck_v3.pkl'
-          $output = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\canonical-diagnostic-${{ github.run_id }}"
-          $canonical = Join-Path $output 'canonical_face_sequence.npz'
-          New-Item -ItemType Directory -Path $output -Force | Out-Null
-          foreach ($required in @($input, $thirdParty, $bfm)) {
-            if (-not (Test-Path -LiteralPath $required)) {
-              throw "Canonical diagnostic input is missing: $required"
-            }
-          }
-          $python = 'C:\AI\LowVRAM3D-cache\beggars-scene-v2\venv\Scripts\python.exe'
-          & $python tools\beggars_scene\build_canonical_face_sequence.py `
-            --input-npz $input `
-            --third-party-root $thirdParty `
-            --bfm-pkl $bfm `
-            --output-npz $canonical `
-            --output-report (Join-Path $output 'canonical_report.json')
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\run-beggars-canonical-diagnostic.ps1
           if ($LASTEXITCODE -ne 0) {
-            throw "Canonical sequence build failed with exit code $LASTEXITCODE"
-          }
-          "CANONICAL_DIAGNOSTIC_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
-          "CANONICAL_SEQUENCE=$canonical" | Add-Content -LiteralPath $env:GITHUB_ENV
-
-      - name: Render canonical face variants
-        shell: powershell
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $blender = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
-          & $blender --background --factory-startup `
-            --python blender\diagnose_beggars_canonical_face.py `
-            -- `
-            --sequence $env:CANONICAL_SEQUENCE `
-            --output-dir $env:CANONICAL_DIAGNOSTIC_OUTPUT
-          if ($LASTEXITCODE -ne 0) {
-            throw "Canonical Blender diagnostic failed with exit code $LASTEXITCODE"
+            throw "Canonical visual diagnostic failed with exit code $LASTEXITCODE"
           }
 
       - name: Commit compact canonical diagnostic receipts
+        if: always()
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
           $evidence = 'evidence\latest-beggars-canonical-diagnostic'
-          Copy-Item -LiteralPath (Join-Path $env:CANONICAL_DIAGNOSTIC_OUTPUT 'diagnostic.json') -Destination (Join-Path $evidence 'diagnostic.json') -Force
-          Copy-Item -LiteralPath (Join-Path $env:CANONICAL_DIAGNOSTIC_OUTPUT 'canonical_report.json') -Destination (Join-Path $evidence 'canonical_report.json') -Force
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          if ($env:CANONICAL_DIAGNOSTIC_OUTPUT -and (Test-Path -LiteralPath $env:CANONICAL_DIAGNOSTIC_OUTPUT)) {
+            Get-ChildItem -LiteralPath $env:CANONICAL_DIAGNOSTIC_OUTPUT -Filter '*.json' -File | ForEach-Object {
+              Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $evidence $_.Name) -Force
+            }
+          }
           git add -- $evidence
-          git commit -m "evidence(scene): record canonical face diagnostic ${{ github.run_id }}"
-          for ($attempt = 1; $attempt -le 4; $attempt++) {
-            git pull --rebase origin agent/blender-beggars-scene-20260804
-            if ($LASTEXITCODE -ne 0) { throw "Receipt rebase failed on attempt $attempt" }
-            git push origin HEAD:agent/blender-beggars-scene-20260804
-            if ($LASTEXITCODE -eq 0) { break }
-            if ($attempt -eq 4) { throw 'Could not publish canonical diagnostic receipts' }
-            Start-Sleep -Seconds 2
+          if (@(git diff --cached --name-only).Count -gt 0) {
+            git commit -m "evidence(scene): record canonical face diagnostic ${{ github.run_id }}"
+            for ($attempt = 1; $attempt -le 4; $attempt++) {
+              git pull --rebase origin agent/blender-beggars-scene-20260804
+              if ($LASTEXITCODE -ne 0) { throw "Receipt rebase failed on attempt $attempt" }
+              git push origin HEAD:agent/blender-beggars-scene-20260804
+              if ($LASTEXITCODE -eq 0) { break }
+              if ($attempt -eq 4) { throw 'Could not publish canonical diagnostic receipts' }
+              Start-Sleep -Seconds 2
+            }
           }
 
       - name: Upload canonical diagnostic renders
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: beggars-canonical-diagnostic-${{ github.run_id }}
           path: |
             ${{ env.CANONICAL_DIAGNOSTIC_OUTPUT }}/*.png
             ${{ env.CANONICAL_DIAGNOSTIC_OUTPUT }}/*.json
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
