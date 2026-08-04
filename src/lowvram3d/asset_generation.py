@@ -589,27 +589,20 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
                 "minimum to condition on")
             receipt["assets"].append(entry)
             continue
-        # Two independent signals for the same fact, kept separate on purpose.
-        # `separable` is what segmentation concluded from image connectivity
-        # before any crop existed; `unbounded_crop` is what the crop's own
-        # borders show. Either alone is enough to decline, and when they
-        # disagree that is worth seeing rather than silently resolving.
-        refusals = []
-        if job.get("separable") is False:
-            refusals.append(
-                "segmentation found this region to be one connected mass, so "
-                "these instances are slices of it rather than objects")
+        # Border contact is the only refusal, and it is empirical: it looks at
+        # the crop that is about to be sent. An earlier version also declined
+        # any region segmentation called one connected mass, on the reasoning
+        # that its instances were slices rather than objects. The instances
+        # were -- but the mass is an object, and cropping it whole gives a
+        # silhouette that clears its own frame on every side. Declining it was
+        # treating a symptom of the wrong crop as a property of the subject.
         if crop.get("unbounded_crop"):
-            refusals.append(
-                "the crop runs off its own edge on "
-                f"{', '.join(crop['unbounded_sides'])}")
-        if refusals:
             entry["status"] = "skipped"
-            entry["refusal_reasons"] = refusals
             entry["reason"] = (
-                "; ".join(refusals)
-                + ". A single-image generator handed a window into a larger "
-                  "mass returns a slab, so this region keeps its primitive.")
+                "crop runs off its own edge on "
+                f"{', '.join(crop['unbounded_sides'])} -- a cut-out of a larger "
+                "mass, not a subject. Generating from it yields a slab, so this "
+                "region keeps its primitive.")
             receipt["assets"].append(entry)
             continue
 

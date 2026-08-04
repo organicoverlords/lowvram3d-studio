@@ -64,35 +64,29 @@ def test_separate_objects_are_marked_separable():
     assert {c["component_id"] for c in clusters} == {0, 1}
 
 
-def test_slices_of_one_mass_are_not_marked_separable():
-    """Subdividing a hedge is a decomposition for placement, not instances.
+def test_one_mass_is_one_object_however_wide_it_is():
+    """The barn photograph is a single tree arching across the frame.
 
-    Downstream this is what tells the generator it is looking at a window into
-    a larger mass rather than at a subject, without having to rediscover it from
-    the crop's border contact.
+    Subdividing it produced twelve canopy slices, none of which was a subject,
+    and every downstream defect followed: a slab from a crop with no silhouette,
+    instanced twelve times, then reported as the scene's worst overlap.
     """
     shape = (60, 400)
     observed = mask(shape, (5, 5, 55, 395))
     clusters = cluster_region_points(depth_map(shape), None, observed,
                                      shape[1], shape[0])
-    assert len(clusters) > 1
-    assert not any(c["separable"] for c in clusters)
-    assert {c["component_id"] for c in clusters} == {0}
+    assert len(clusters) == 1
+    assert clusters[0]["separable"] is True
+    assert clusters[0]["aspect_lateral_over_height"] > 1.0
 
 
-def test_the_cluster_budget_is_shared_across_components():
+def test_each_mass_gets_exactly_one_instance():
     shape = (60, 400)
     observed = mask(shape, (5, 5, 55, 190), (5, 210, 55, 395))
     clusters = cluster_region_points(depth_map(shape), None, observed,
                                      shape[1], shape[0], max_clusters=6)
-    assert len(clusters) <= 6
-    # Neither mass may consume the whole budget and leave the other unsplit.
-    per_component = {}
-    for cluster in clusters:
-        per_component.setdefault(cluster["component_id"], 0)
-        per_component[cluster["component_id"]] += 1
-    assert len(per_component) == 2
-    assert min(per_component.values()) >= 1
+    assert len(clusters) == 2
+    assert {c["component_id"] for c in clusters} == {0, 1}
 
 
 def test_an_empty_mask_yields_nothing():

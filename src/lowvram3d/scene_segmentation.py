@@ -229,45 +229,41 @@ def _cluster_one_mass(points, selection, observed, width, height,
     return clusters
 
 
-def _slices_for_shape(points, piece):
-    """How many objects a connected mass plausibly contains, from its shape.
+def _shape_aspect(points, piece):
+    """Lateral extent over height for a connected mass, as a diagnostic.
 
-    The count used to come from pixel count alone, which meant any region with
-    enough pixels was diced -- a single clean tree became six clumps because it
-    was photographed close up. Pixel count measures how much of the image a
-    thing occupies, not how many things it is.
-
-    Shape does carry a signal: a tree is roughly as wide as it is tall, and a
-    hedge line is several times wider. Slicing by that ratio at least ties the
-    number of pieces to a measurement instead of to resolution. It is still a
-    decomposition rather than instance detection, which is why everything it
-    produces is marked `separable: false`.
+    Recorded rather than acted on. It used to drive a subdivision count, which
+    was wrong for the reason the whole subdivision was wrong: shape does not
+    tell you how many objects a mass contains. A single wind-swept tree leaning
+    across a frame is as wide as a row of them.
     """
     import numpy as np
 
     coords = points[piece]
     coords = coords[np.isfinite(coords).all(axis=1)]
     if len(coords) < MIN_CLUSTER_POINTS:
-        return 1
+        return None
     extent = _measured_extent(coords)["size"]
-    lateral = max(extent[0], extent[1])
-    upright = max(extent[2], 1e-3)
-    return max(1, int(round(lateral / upright)))
+    return round(max(extent[0], extent[1]) / max(extent[2], 1e-3), 3)
 
 
 def cluster_region_points(points, selection, observed, width, height,
                           max_clusters=MAX_CLUSTERS):
-    """Split a region into instances, saying which ones are actually instances.
+    """One connected mass is one object.
 
-    Connected components first, because that is measured: a tree with sky either
-    side of it is its own object, and the pipeline can say so without a model.
-    Only a component too large to be one thing is subdivided further, and those
-    slices are marked `separable: false` -- they are a decomposition of one mass
-    for placement, not objects in their own right.
+    This stage used to split a vegetation region into up to twelve clumps by
+    k-means over its points. Looking at the photograph the pipeline was built
+    against settles it: the "tree line" is a single wind-swept tree arching over
+    the barn, plus one small tree at the right. Twelve was never a count of
+    anything -- it came from the pixel budget -- and every downstream symptom
+    followed from it. The conditioning crop was a slice of canopy with no
+    silhouette, so the generator returned a 0.17 m slab; the slab was then
+    instanced twelve times; and the overlap audit's worst figure was those
+    twelve copies sitting inside each other.
 
-    Downstream this is what lets the generator refuse a crop with no subject and
-    the overlap audit stop counting a hedge against itself, both of which were
-    previously rediscovering the same fact from their own side.
+    Connected components is the measurement that was available all along. It
+    also correctly declines to split the big tree, because that tree really is
+    one connected mass -- what looked like a limitation was the right answer.
     """
     pieces = connected_components(observed)
     if not pieces:
@@ -280,13 +276,12 @@ def cluster_region_points(points, selection, observed, width, height,
         pixels = int(piece.sum())
         # Share the cluster budget by size, so one large mass does not consume
         # every slot and leave real separate objects unrepresented.
-        budget = max(1, int(round(max_clusters * pixels / max(total, 1))))
-        budget = min(budget, _slices_for_shape(points, piece))
-        found = _cluster_one_mass(points, selection, piece, width, height, budget)
+        found = _cluster_one_mass(points, selection, piece, width, height, 1)
         for cluster in found:
             cluster["component_id"] = component_id
             cluster["component_pixel_count"] = pixels
-            cluster["separable"] = bool(len(found) == 1)
+            cluster["aspect_lateral_over_height"] = _shape_aspect(points, piece)
+            cluster["separable"] = True
         clusters.extend(found)
     clusters.sort(key=lambda c: -c["pixel_count"])
     return clusters[:max_clusters]
