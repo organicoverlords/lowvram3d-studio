@@ -1,5 +1,5 @@
 {
-  "purpose": "Locate the push-triggered Beggars scene v2 run for neutral face-plate visual v2 commit 6f625c9f1f6f7ad4afb159640981253c90753f91.",
-  "target_head_sha": "6f625c9f1f6f7ad4afb159640981253c90753f91",
-  "requested_at": "2026-08-04T18:18:00+03:00"
+  "purpose": "Locate the Beggars scene v2 retry after fixing 5-column tracker box stabilization.",
+  "target_head_sha": "de80d4729983fae3ca73533b0582a3f7565235c1",
+  "requested_at": "2026-08-04T18:22:00+03:00"
 }
