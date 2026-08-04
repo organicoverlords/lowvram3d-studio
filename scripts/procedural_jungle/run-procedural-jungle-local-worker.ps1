@@ -130,6 +130,46 @@ Write-Host 'CODEX_INVOKED=FALSE'
 Write-Host 'CLAUDE_INVOKED=FALSE'
 Write-Host 'MAGICMUSIC_INVOKED=FALSE'
 
+$OwnedProjectRoot = 'C:\Users\Lauri\Desktop\ProceduralJungle58'
+$ProcessLogRoot = 'C:\AI\ProceduralJungle\20260804\logs'
+New-Item -ItemType Directory -Path $ProcessLogRoot -Force | Out-Null
+$ProcessLogPath = Join-Path $ProcessLogRoot 'unreal_process_preflight.log'
+$ExistingUnreal = @(Get-CimInstance Win32_Process -Filter "Name = 'UnrealEditor.exe'" -ErrorAction Stop)
+$ProcessLines = New-Object Collections.Generic.List[string]
+foreach ($Entry in $ExistingUnreal) {
+    $NativeProcess = Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue
+    $Responding = if ($NativeProcess) { [string]$NativeProcess.Responding } else { 'UNKNOWN' }
+    $WindowTitle = if ($NativeProcess) { [string]$NativeProcess.MainWindowTitle } else { '' }
+    $ProcessLines.Add(("PID={0};CREATED={1};RESPONDING={2};TITLE={3};PATH={4};COMMAND={5}" -f $Entry.ProcessId, $Entry.CreationDate, $Responding, $WindowTitle, $Entry.ExecutablePath, $Entry.CommandLine))
+}
+[IO.File]::WriteAllLines($ProcessLogPath, $ProcessLines, (New-Object Text.UTF8Encoding($false)))
+
+$UnownedUnreal = @($ExistingUnreal | Where-Object {
+    -not $_.CommandLine -or $_.CommandLine.IndexOf($OwnedProjectRoot, [StringComparison]::OrdinalIgnoreCase) -lt 0
+})
+if ($UnownedUnreal.Count -gt 0) {
+    $Ids = @($UnownedUnreal | ForEach-Object { $_.ProcessId }) -join ','
+    throw "Unrelated Unreal Editor process(es) are running; refusing to interfere. PID(s): $Ids. Evidence: $ProcessLogPath"
+}
+
+foreach ($Entry in $ExistingUnreal) {
+    $NativeProcess = Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue
+    if (-not $NativeProcess) { continue }
+    $RequestedClose = $false
+    if ($NativeProcess.MainWindowHandle -ne 0) {
+        $RequestedClose = $NativeProcess.CloseMainWindow()
+    }
+    $Deadline = (Get-Date).AddSeconds(20)
+    while ((Get-Date) -lt $Deadline -and (Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue)) {
+        Start-Sleep -Milliseconds 500
+    }
+    if (Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue) {
+        throw "Pipeline-owned Unreal Editor PID $($Entry.ProcessId) did not close gracefully; force termination is not authorized. CloseRequested=$RequestedClose Evidence=$ProcessLogPath"
+    }
+}
+Write-Host 'JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_V1=PROVEN'
+Write-Host "JUNGLE_EXISTING_UNREAL_PROCESS_COUNT=$($ExistingUnreal.Count)"
+
 $BuildPath = Join-Path $ExtractRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
 & powershell -NoProfile -ExecutionPolicy Bypass -File $BuildPath -SourceRoot $ExtractRoot
 if ($LASTEXITCODE -ne 0) { throw "Procedural-jungle V3 pipeline failed with exit code $LASTEXITCODE" }
