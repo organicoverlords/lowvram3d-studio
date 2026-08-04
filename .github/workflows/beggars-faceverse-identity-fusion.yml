@@ -88,26 +88,22 @@ jobs:
 
           $scriptPath = 'tools\beggars_scene\run_faceverse_v4_identity_fusion.py'
           $text = Get-Content -LiteralPath $scriptPath -Raw
-          $oldProjected = @'
-    points = projected.detach().cpu().numpy().astype(np.float32)
-'@.TrimEnd()
-          $newProjected = @'
-    points = (
-        projected.detach().cpu().numpy().astype(np.float32)
-        if isinstance(projected, torch.Tensor)
-        else np.asarray(projected, dtype=np.float32)
-    )
-'@.TrimEnd()
-          $oldColors = @'
-    base = pca_colors.detach().cpu().numpy().astype(np.float32)
-'@.TrimEnd()
-          $newColors = @'
-    base = (
-        pca_colors.detach().cpu().numpy().astype(np.float32)
-        if isinstance(pca_colors, torch.Tensor)
-        else np.asarray(pca_colors, dtype=np.float32)
-    )
-'@.TrimEnd()
+          $oldProjected = '    points = projected.detach().cpu().numpy().astype(np.float32)'
+          $newProjected = @(
+            '    points = ('
+            '        projected.detach().cpu().numpy().astype(np.float32)'
+            '        if isinstance(projected, torch.Tensor)'
+            '        else np.asarray(projected, dtype=np.float32)'
+            '    )'
+          ) -join "`n"
+          $oldColors = '    base = pca_colors.detach().cpu().numpy().astype(np.float32)'
+          $newColors = @(
+            '    base = ('
+            '        pca_colors.detach().cpu().numpy().astype(np.float32)'
+            '        if isinstance(pca_colors, torch.Tensor)'
+            '        else np.asarray(pca_colors, dtype=np.float32)'
+            '    )'
+          ) -join "`n"
           if (-not $text.Contains($oldProjected)) { throw 'Could not locate projected-array compatibility anchor' }
           if (-not $text.Contains($oldColors)) { throw 'Could not locate color-array compatibility anchor' }
           $text = $text.Replace($oldProjected, $newProjected).Replace($oldColors, $newColors)
