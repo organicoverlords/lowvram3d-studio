@@ -1,8 +1,8 @@
-run=37
-requested=2026-08-04T08:17:30+03:00
+run=38
+requested=2026-08-04T08:18:30+03:00
 mode=github-self-hosted-v3-visual-overhaul
-repair_commit=0bc78fc2e82cbacbc720523dee02e9fe70cd5ea7
-repair_scope=checksummed-v3-installer-dense-jungle-redesign
+repair_commit=0b30584a12ffc5b961a0890a851aca82d6b381fb
+repair_scope=normalize-installer-crlf-before-sha
 codex=false
 claude=false
 magicmusic=false
