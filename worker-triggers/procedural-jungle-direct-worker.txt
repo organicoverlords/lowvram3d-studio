@@ -1,8 +1,8 @@
-run=17
-requested=2026-08-04T03:58:00+03:00
+run=18
+requested=2026-08-04T04:04:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=0c975ad69eb5390bcc5d6d6cb17319b7af18b5e8
-repair_scope=proven-generated-panda-rig-reuse-and-unreal-repairs
+repair_commit=9d293ff814c5d6cd5d96196b40abd8d7c56d8b93
+repair_scope=cached-entry-panda-rig-reuse-and-unreal-repairs
 codex=false
 claude=false
 magicmusic=false
