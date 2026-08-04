@@ -23,6 +23,7 @@
         819,
         266
       ],
+      "decimated_glb": "evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
       "decimation": {
         "blender_exit_code": 0,
         "classification": "PROVEN",
@@ -47,7 +48,7 @@
         }
       ],
       "generation_seconds": 519.9,
-      "glb": "evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+      "glb": "evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
       "glb_bytes": 12599040,
       "glb_sha256": "a3173f9bcb3b24c74ca899a026aba5679ecd86ab296851a3616d393ccf9884ab",
       "layer_type": "architecture",
@@ -63,6 +64,9 @@
       "shared_across_instances": false,
       "status": "generated",
       "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:24<00:00,  2.58it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
+      "texture_projection": {
+        "textured": true
+      },
       "too_small": false,
       "triangles": 149998,
       "vertices": 634774
@@ -157,6 +161,7 @@
         364,
         819
       ],
+      "decimated_glb": "evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
       "decimation": {
         "blender_exit_code": 0,
         "classification": "PROVEN",
@@ -181,7 +186,7 @@
         }
       ],
       "generation_seconds": 1632.4,
-      "glb": "evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+      "glb": "evidence\\barn-auto\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
       "glb_bytes": 12591932,
       "glb_sha256": "4ecb40a1f97ea540e09ec2fbd26c47533d8462828f4dea1ee19131210a1608b3",
       "instance_count": 12,
@@ -198,6 +203,9 @@
       "shared_across_instances": true,
       "status": "generated",
       "stderr_tail": "2:58, 59.53s/it]\nDiffusion Sampling::  60%|######    | 3/5 [03:01<02:01, 60.71s/it]\nDiffusion Sampling::  80%|########  | 4/5 [04:01<01:00, 60.45s/it]\nDiffusion Sampling:: 100%|##########| 5/5 [05:00<00:00, 60.25s/it]\nDiffusion Sampling:: 100%|##########| 5/5 [05:00<00:00, 60.19s/it]\n2026-08-04 14:09:52,553 - hy3dgen.shapgen - INFO - FlashVDMVolumeDecoding Resolution: [79, 158, 316]\n\nFlashVDM Volume Decoding:   0%|          | 0/64 [00:00<?, ?it/s]\nFlashVDM Volume Decoding:  56%|#####6    | 36/64 [00:14<00:11,  2.43it/s]\nFlashVDM Volume Decoding: 100%|##########| 64/64 [00:14<00:00,  4.31it/s]\n",
+      "texture_projection": {
+        "textured": true
+      },
       "too_small": false,
       "triangles": 149898,
       "vertices": 1743639

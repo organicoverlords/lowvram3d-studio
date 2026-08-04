@@ -27,9 +27,10 @@ PYTHONPATH=src python -m lowvram3d.image_to_scene_pipeline \
 
 Ends with `PIPELINE_CLASSIFICATION=SCENE_BUILT_WITH_GENERATED_ASSETS`.
 
-Chain: image → MoGe-2 depth → SegFormer regions **+ per-region masks** →
-unprojected placement → **crop → matte → Mini Turbo → decimate → import** →
-spawned in Unreal → rendered. Every stage writes a receipt.
+Chain: image → MoGe-2 depth → SegFormer regions **+ per-region masks + geometric
+clustering** → unprojected placement → **crop → matte → Mini Turbo → decimate →
+project the crop as texture → import** → spawned in Unreal → rendered. Every
+stage writes a receipt.
 
 **The classification distinguishes generated from primitive.** `SCENE_BUILT` used
 to be true of a field of cubes; there are now three outcomes
@@ -184,9 +185,24 @@ else had failed.
      vegetation to the terrain would hide it; separating trunks would fix it.
    - The crop for a scatter region is still a chunk of hedge, so the mesh is a
      blob. Accurate to the input, and not a tree.
-2. **Texture the generated meshes.** They render as untextured grey. The source
-   crop and its mask are already on disk per asset; this is the same projection
-   problem the photometric lane already solved once.
+2. **Better texturing than a single-view projection.** `workers/project_crop_texture.py`
+   projects each asset's conditioning crop back onto it, along the mesh's own
+   −Z, mapping the front-facing bounding box to the crop. The generator aligns
+   its output to the conditioning view by construction, so this lands. UVs stay
+   in *object* space deliberately: a scatter region reuses one mesh across every
+   instance, and a world-space projection would need one baked copy per
+   instance.
+
+   The front of an object gets its real appearance and the sides stretch along
+   the projection axis. That is inherent to one view and is what
+   `offaxis_stability` exists to catch — it is not a claim the back was seen.
+   Filling the matte against the crop's mean colour rather than white matters:
+   white leaves a bright halo wherever the projection spills past the subject.
+
+   Textures import with sRGB already enabled here (checked, not assumed —
+   the reconstruction path had to correct for the opposite).
+
+   Next would be multi-view: the back and sides are currently smeared.
 3. **The CUDA fault** in §4. Worth one experiment: generate the same asset twice
    in a row in one run and see whether the *second* attempt fails, which would
    separate "GPU state" from "this particular input".

@@ -48,6 +48,7 @@ REPO = Path(__file__).resolve().parents[2]
 WORKER = REPO / "workers" / "mini_turbo_generate.py"
 DECIMATOR = REPO / "workers" / "decimate_mesh.py"
 PREVIEWER = REPO / "workers" / "preview_generated_mesh.py"
+PROJECTOR = REPO / "workers" / "project_crop_texture.py"
 
 # Mini Turbo samples a 384^3 volume whatever the subject, so a single building
 # comes back at ~1.7 M triangles. That is grid resolution, not detail, and it
@@ -300,6 +301,26 @@ def _decimate(glb: Path, budget: int) -> tuple[Path, dict[str, Any]]:
                  "stderr_tail": (completed.stderr or "")[-400:]}
 
 
+def _project_texture(glb: Path, crop: Path) -> tuple[Path, dict[str, Any]]:
+    """Project the conditioning crop back onto the mesh it produced.
+
+    Not fatal on failure: an untextured mesh is still correct geometry, and
+    saying so beats losing the asset.
+    """
+    textured = glb.with_name(glb.stem.replace("_lod", "") + "_textured.glb")
+    receipt_path = textured.with_suffix(".projection.json")
+    completed = subprocess.run(
+        [sys.executable, str(PROJECTOR), "--glb", str(glb), "--crop", str(crop),
+         "--output", str(textured), "--receipt", str(receipt_path)],
+        capture_output=True, text=True)
+    if completed.returncode != 0 or not textured.is_file():
+        return glb, {"classification": "FAILED", "textured": False,
+                     "stderr_tail": (completed.stderr or "")[-400:]}
+    receipt = (json.loads(receipt_path.read_text(encoding="utf-8"))
+               if receipt_path.is_file() else {})
+    return textured, {**receipt, "textured": True}
+
+
 def _preview(glb: Path, destination: Path) -> dict[str, Any]:
     """Render the asset on its own so it can be judged apart from the scene.
 
@@ -453,12 +474,17 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
         # Trust the artefact, not the exit code: this project has repeatedly
         # found green receipts over missing or empty outputs.
         if glb.is_file() and glb.stat().st_size > 4096 and worker_result.get("success"):
-            usable, decimation = _decimate(glb, triangle_budget)
+            reduced, decimation = _decimate(glb, triangle_budget)
+            # Texture after decimating: the decimator round-trips through
+            # Blender and would discard UVs applied before it.
+            usable, projection = _project_texture(reduced, asset_dir / "crop.png")
             entry.update({
                 "status": "generated",
                 "glb": str(usable),
                 "raw_glb": str(glb),
+                "decimated_glb": str(reduced),
                 "decimation": decimation,
+                "texture_projection": projection,
                 "glb_bytes": usable.stat().st_size,
                 "glb_sha256": _sha256(usable),
                 "vertices": worker_result.get("raw_vertices"),
