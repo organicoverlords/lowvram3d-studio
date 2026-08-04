@@ -1,7 +1,7 @@
 {
-  "purpose": "Dispatch exactly one FaceVerse v4 preflight after correcting the release-fallback literal patch, then record its run ID.",
+  "purpose": "Dispatch exactly one FaceVerse v4 preflight after correcting official-loader output-head validation, then record its run ID.",
   "workflow_commit": "2a145ab1142bb2ab1d24b252bf5d3b4a4fd6f704",
-  "release_fallback_commit": "bd1a0b3299bd069025b1d7e32a5b46b86b905c0a",
-  "cached_environment_run": 30868515985,
-  "requested_at": "2026-08-04T04:47:00+03:00"
+  "release_fallback_commit": "823140c119eb89cbd5a46d7ce5a47316d0fa4ff6",
+  "cached_weights_run": 30869754509,
+  "requested_at": "2026-08-04T04:55:00+03:00"
 }
