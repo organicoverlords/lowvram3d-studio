@@ -1,5 +1,5 @@
 {
-  "purpose": "Locate the faceplate diagnostic using a skin head shell and open-front hair shell.",
-  "target_head_sha": "7343fc9c475f126d626152eed40b4ed425570925",
-  "requested_at": "2026-08-04T18:45:00+03:00"
+  "purpose": "Locate the faceplate diagnostic with all support geometry behind the derived face surface.",
+  "target_head_sha": "964205536244726d1d453b0db5e5aa61e20b6c19",
+  "requested_at": "2026-08-04T18:50:00+03:00"
 }
