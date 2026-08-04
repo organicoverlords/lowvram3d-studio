@@ -1,0 +1,35 @@
+{
+  "claim": "Still renders only; animation and likeness are not proven.",
+  "classification": "USER_VISUAL_REVIEW_REQUIRED",
+  "diagnostic_workflow_run_id": "30865454750",
+  "feature_bounds": {
+    "x": [
+      -1.0557459592819214,
+      1.0547504425048828
+    ],
+    "y": [
+      -0.7268115878105164,
+      0.7867615222930908
+    ],
+    "z": [
+      -1.3202431201934814,
+      1.3889307975769043
+    ]
+  },
+  "keyframe_index": 17,
+  "outputs": [
+    "variant_a_canonical_face_only.png",
+    "variant_b_canonical_keyframe_features.png",
+    "variant_expression_17.png",
+    "variant_expression_24.png",
+    "variant_expression_34.png"
+  ],
+  "route": "POSE_DECOUPLED_CANONICAL_3DDFA_WITH_EXPLICIT_FEATURES",
+  "selected_expression_indices": [
+    17,
+    24,
+    34
+  ],
+  "triangle_count": 76073,
+  "vertex_count": 38365
+}
