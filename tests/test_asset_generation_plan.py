@@ -304,3 +304,31 @@ def test_every_generated_actor_is_accounted_for():
         assert job["actor_indices"]
         for index in job["actor_indices"]:
             assert actors[index]["region_id"] == job["region_id"]
+
+
+def test_a_region_of_slices_is_declined_before_the_gpu_is_touched():
+    """Segmentation already knew; generation should not have to rediscover it."""
+    spec = segmentation(
+        region("vegetation_tree_005", "vegetation", "tree", (0.0, 0.1, 0.9, 0.7)))
+    placement = place(spec)
+    for actor in placement["actors"]:
+        actor["separable"] = False
+    job = plan(placement)[0]
+    assert job["separable"] is False
+
+
+def test_one_separable_instance_does_not_condemn_its_region():
+    placement = place(segmentation(
+        region("architecture_house_004", "architecture", "house",
+               (0.3, 0.5, 0.8, 0.75))))
+    assert plan(placement)[0]["separable"] is True
+
+
+def test_a_region_from_an_older_run_still_generates():
+    """No `separable` key at all must behave as it did before it existed."""
+    placement = place(segmentation(
+        region("architecture_house_004", "architecture", "house",
+               (0.3, 0.5, 0.8, 0.75))))
+    for actor in placement["actors"]:
+        actor.pop("separable", None)
+    assert plan(placement)[0]["separable"] is True

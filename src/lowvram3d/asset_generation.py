@@ -209,9 +209,14 @@ def plan(placement: dict[str, Any]) -> list[dict[str, Any]]:
                 "crop_bbox_norm_xyxy": [float(v) for v in bbox],
                 "shared_across_instances": layer in SCATTER_LAYERS,
                 "actor_indices": [],
+                # Assume separable unless segmentation says otherwise, so a
+                # region from an older run behaves as it did before.
+                "separable": True,
             }
             jobs[region_id] = job
         job["actor_indices"].append(index)
+        if actor.get("separable") is False:
+            job["separable"] = False
 
     for job in jobs.values():
         if not job["shared_across_instances"]:
@@ -584,13 +589,27 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
                 "minimum to condition on")
             receipt["assets"].append(entry)
             continue
+        # Two independent signals for the same fact, kept separate on purpose.
+        # `separable` is what segmentation concluded from image connectivity
+        # before any crop existed; `unbounded_crop` is what the crop's own
+        # borders show. Either alone is enough to decline, and when they
+        # disagree that is worth seeing rather than silently resolving.
+        refusals = []
+        if job.get("separable") is False:
+            refusals.append(
+                "segmentation found this region to be one connected mass, so "
+                "these instances are slices of it rather than objects")
         if crop.get("unbounded_crop"):
+            refusals.append(
+                "the crop runs off its own edge on "
+                f"{', '.join(crop['unbounded_sides'])}")
+        if refusals:
             entry["status"] = "skipped"
+            entry["refusal_reasons"] = refusals
             entry["reason"] = (
-                "crop runs off its own edge on "
-                f"{', '.join(crop['unbounded_sides'])} -- a cut-out of a larger "
-                "mass, not a subject. Generating from it yields a slab, so this "
-                "region keeps its primitive.")
+                "; ".join(refusals)
+                + ". A single-image generator handed a window into a larger "
+                  "mass returns a slab, so this region keeps its primitive.")
             receipt["assets"].append(entry)
             continue
 

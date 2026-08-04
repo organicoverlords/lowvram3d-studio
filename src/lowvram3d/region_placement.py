@@ -328,6 +328,12 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
                     "source_bbox_norm_xyxy": cluster_bbox,
                     "cluster_pixel_count": cluster["pixel_count"],
                     "cluster_depth_m": cluster_depth.get("median"),
+                    # Whether this is an object or a slice of a larger mass.
+                    # Segmentation knows; without carrying it here, generation
+                    # has to rediscover it from the crop's borders and the
+                    # overlap audit from pairwise volumes.
+                    "separable": bool(cluster.get("separable", True)),
+                    "component_id": cluster.get("component_id"),
                     "location_cm": [centre_c[0] * CM_PER_M,
                                     centre_c[1] * CM_PER_M,
                                     base_z * CM_PER_M],
