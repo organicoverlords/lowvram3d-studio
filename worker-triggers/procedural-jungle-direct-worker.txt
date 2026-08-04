@@ -1,10 +1,10 @@
-run=16
-requested=2026-08-04T03:52:00+03:00
+run=17
+requested=2026-08-04T03:58:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=1130085ead97aebb3f7b33b140db4acd76559e4c
-repair_scope=decoded-panda-selection-diagnostic
+repair_commit=0c975ad69eb5390bcc5d6d6cb17319b7af18b5e8
+repair_scope=proven-generated-panda-rig-reuse-and-unreal-repairs
 codex=false
 claude=false
 magicmusic=false
 panda_walk=true
-classification_required=DIAGNOSTIC_ONLY
+classification_required=JUNGLE_PANDA_PLAYABLE_PROVEN
