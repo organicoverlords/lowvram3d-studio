@@ -1,7 +1,7 @@
 name: Beggars meme Blender recreation v2
 run-name: Beggars meme recreation v2 ${{ github.run_id }}
 
-# registration-trigger: 2026-08-04T10:36:00+03:00
+# registration-trigger: 2026-08-04T10:47:00+03:00
 
 on:
   workflow_dispatch:
@@ -15,9 +15,12 @@ on:
       - scripts/apply-beggars-visual-repair.ps1
       - scripts/apply-beggars-face-atlas-repair.ps1
       - scripts/apply-beggars-atlas-topology-compat.ps1
+      - scripts/apply-beggars-faceplate-runtime.ps1
+      - scripts/apply-beggars-faceplate-action-compat.ps1
       - scripts/finalize-beggars-scene-evidence.ps1
       - scripts/run-beggars-scene-v2.ps1
       - configs/scene/beggars_banquet_recreation_v1.json
+      - tools/beggars_scene/build_face_sprite_sheet.py
       - tools/beggars_scene/prepare_reference_sequence.py
       - tools/beggars_scene/package_results.py
       - blender/build_beggars_meme_scene.py
@@ -80,6 +83,22 @@ jobs:
           & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-atlas-topology-compat.ps1
           if ($LASTEXITCODE -ne 0) {
             throw "Atlas topology compatibility repair failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Build tracked derived face-plate runtime
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceplate-runtime.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Tracked derived face-plate runtime failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Apply Blender 5.2 face-plate Action compatibility
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceplate-action-compat.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Face-plate Action compatibility failed with exit code $LASTEXITCODE"
           }
 
       - name: Run memory-bounded reconstruction and Blender build
