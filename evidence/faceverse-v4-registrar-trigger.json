@@ -1,9 +1,9 @@
 {
-  "purpose": "Dispatch exactly one branch-write-free FaceVerse v4 preflight with isolated user-site, normal venv site initialization, faulthandler, and stage tracing.",
+  "purpose": "Dispatch exactly one branch-write-free FaceVerse v4 preflight with PowerShell-safe stage tracing, isolated user-site, normal venv site initialization, and faulthandler.",
   "workflow_commit": "fe802c2ce22b1bd9e1eb89aecd6c0a2ad66ab8e0",
   "isolation_patch_commit": "bb7c4c08c8501736024fd6ab06352cd64dcc77ac",
-  "stage_trace_commit": "e9629bf3ed2d1d206e9d57e10c859849bdb5d352",
+  "stage_trace_commit": "3373f4e525a9f5cc2efe7d134e9e9ac25d9d4411",
   "release_fallback_commit": "823140c119eb89cbd5a46d7ce5a47316d0fa4ff6",
-  "failed_overisolated_run": 30871096346,
-  "requested_at": "2026-08-04T05:19:00+03:00"
+  "failed_trace_generator_run": 30871521995,
+  "requested_at": "2026-08-04T05:24:00+03:00"
 }
