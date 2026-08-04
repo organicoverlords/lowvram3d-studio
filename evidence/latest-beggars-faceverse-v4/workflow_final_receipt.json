@@ -1,15 +1,15 @@
 ﻿{
     "classification":  "REJECTED",
-    "failure":  "Traceback (most recent call last):",
+    "failure":  "Could not download a valid FaceVerse v4 model file",
     "route":  "FACEVERSE_V4_RESNET50_SINGLE_FRAME_FULL_HEAD",
     "repository":  "organicoverlords/lowvram3d-studio",
     "branch":  "agent/blender-beggars-scene-20260804",
-    "head_sha":  "b058da835098862430e8f42aa96d626ea945d4e4",
-    "workflow_run_id":  "30868294529",
-    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30868294529",
-    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\faceverse-v4-preflight-30868294529",
+    "head_sha":  "2f562c21bd1816626f94427a91054f343c3f2605",
+    "workflow_run_id":  "30868515985",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30868515985",
+    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\faceverse-v4-preflight-30868515985",
     "source_commit":  "19c67cc4d7234b1ea7d55a185a2cb55fd49bb877",
     "reference_media_upload_scope":  "EXCLUDED",
     "reference_media_deleted":  true,
-    "recorded_at":  "2026-08-04T01:19:30.8266754Z"
+    "recorded_at":  "2026-08-04T01:38:18.5900090Z"
 }
