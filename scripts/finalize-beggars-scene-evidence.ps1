@@ -86,10 +86,19 @@ foreach ($name in @('scene_receipt.json','artifact_manifest.json','reference_rec
     Copy-Item -LiteralPath (Join-Path $artifactRoot $name) -Destination (Join-Path $evidence $name) -Force
 }
 
-& git update-index --no-assume-unchanged -- blender/build_beggars_meme_scene.py 2>$null
-& git checkout -- blender/build_beggars_meme_scene.py 2>$null
-if ($LASTEXITCODE -ne 0) {
-    throw 'Could not restore the runtime-patched Blender builder.'
+$runtimePatchedSources = @(
+    'blender/build_beggars_meme_scene.py',
+    'tools/beggars_scene/prepare_reference_sequence.py'
+)
+foreach ($source in $runtimePatchedSources) {
+    & git update-index --no-assume-unchanged -- $source 2>$null
+    & git checkout -- $source 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not restore runtime-patched source: $source"
+    }
+}
+if (@(& git status --porcelain -- $runtimePatchedSources).Count -gt 0) {
+    throw 'Runtime-patched Python sources remain dirty after restoration.'
 }
 
 git config user.name 'github-actions[bot]'
@@ -117,5 +126,6 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host 'BEGGARS_AUTOMATED_BUILD=PROVEN'
+Write-Host 'BEGGARS_RUNTIME_PATCH_RESTORE=PROVEN'
 Write-Host 'BEGGARS_EVIDENCE_PUSH_RACE_REPAIRED=PROVEN'
 Write-Host 'BEGGARS_VISUAL_MATCH=USER_REVIEW_REQUIRED'
