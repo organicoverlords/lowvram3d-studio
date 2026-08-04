@@ -15,7 +15,7 @@ $Head = (git rev-parse HEAD).Trim()
 $Status = @(git status --short)
 if ($Remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $Remote" }
 if ($Branch -ne $ExpectedBranch) { throw "Branch mismatch: $Branch" }
-if ($Status.Count -ne 0) { throw "Repository is dirty before V3 checked-in guard wrapper: $($Status -join '; ')" }
+if ($Status.Count -ne 0) { throw "Repository is dirty before V3 declaration-anchor wrapper: $($Status -join '; ')" }
 git fetch origin $Branch --quiet
 $RemoteHead = (git rev-parse "origin/$Branch").Trim()
 if ($Head -ne $RemoteHead) { throw "Checkout head differs from remote: $Head vs $RemoteHead" }
@@ -27,18 +27,9 @@ if ($LASTEXITCODE -ne 0 -or $SourceLines.Count -lt 150) {
     throw "Unable to recover protected-coexistence V3 wrapper from $SourceCommit"
 }
 $SourceText = ($SourceLines -join "`n") + "`n"
-$Anchor = @'
-$OwnedProjectRoot = 'C:\Users\Lauri\Desktop\ProceduralJungle58'
-$ProtectedProjectPath = 'C:\Users\Lauri\Desktop\UnrealAITest58\UnrealAITest58.uproject'
-'@.Trim()
-$AnchorIndex = $SourceText.LastIndexOf($Anchor, [StringComparison]::Ordinal)
-if ($AnchorIndex -lt 0) { throw 'Protected-coexistence preflight anchor is missing' }
-$ExpectedPrefix = '$CoexistencePreflight = @''' + "`n"
-if ($AnchorIndex -lt $ExpectedPrefix.Length) { throw 'Protected-coexistence anchor has no room for its declaration prefix' }
-$ActualPrefix = $SourceText.Substring($AnchorIndex - $ExpectedPrefix.Length, $ExpectedPrefix.Length)
-if ($ActualPrefix -ne $ExpectedPrefix) {
-    throw "Protected-coexistence anchor is not inside the expected here-string declaration: $ActualPrefix"
-}
+$Anchor = '$CoexistencePreflight = @'''
+$AnchorCount = [regex]::Matches($SourceText, [regex]::Escape($Anchor)).Count
+if ($AnchorCount -ne 1) { throw "Coexistence declaration anchor count is not exactly one: $AnchorCount" }
 
 $Insertion = @'
 $DecodedBuildPath = Join-Path $ExtractRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
@@ -57,18 +48,18 @@ if ($DecodedBuildText -notmatch 'JUNGLE_BUILD_INTERNAL_UNREAL_GUARD_DELEGATED=PR
 Write-Host 'JUNGLE_DECODED_BUILD_GUARD_CHECKED_IN_PATCH=PROVEN'
 
 '@
-$PatchedSource = $SourceText.Substring(0, $AnchorIndex) + $Insertion.TrimEnd() + "`n" + $SourceText.Substring($AnchorIndex)
+$PatchedSource = $SourceText.Replace($Anchor, $Anchor + "`n" + $Insertion.TrimEnd())
 if ($PatchedSource -notmatch 'JUNGLE_DECODED_BUILD_GUARD_CHECKED_IN_PATCH=PROVEN') {
     throw 'Checked-in decoded-guard patch insertion marker is missing'
 }
 
-$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-v3-checked-in-guard-$Head"
+$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-v3-declaration-anchor-$Head"
 if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
-$PatchedWrapper = Join-Path $TempRoot 'run-procedural-jungle-v3-checked-in-guard.ps1'
+$PatchedWrapper = Join-Path $TempRoot 'run-procedural-jungle-v3-declaration-anchor.ps1'
 [IO.File]::WriteAllText($PatchedWrapper, $PatchedSource, (New-Object Text.UTF8Encoding($false)))
 
 Write-Host "JUNGLE_V3_COEXISTENCE_WRAPPER_SOURCE=$SourceCommit"
-Write-Host 'JUNGLE_V3_CHECKED_IN_GUARD_PATCH_INJECTION=PROVEN'
+Write-Host 'JUNGLE_V3_COEXISTENCE_DECLARATION_INJECTION=PROVEN'
 & powershell -NoProfile -ExecutionPolicy Bypass -File $PatchedWrapper -ExpectedBranch $ExpectedBranch
-if ($LASTEXITCODE -ne 0) { throw "Checked-in-guard-patched V3 wrapper failed with exit code $LASTEXITCODE" }
+if ($LASTEXITCODE -ne 0) { throw "Declaration-anchor V3 wrapper failed with exit code $LASTEXITCODE" }
