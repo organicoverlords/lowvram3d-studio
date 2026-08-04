@@ -42,8 +42,8 @@ jobs:
               raise SystemExit(f"unexpected old length: {len(raw)}")
           if old_sha != expected_old_sha:
               raise SystemExit(f"unexpected old sha: {old_sha}")
-          if raw[offset - 8:offset + 12] != b"O4maLSWichtdn5U/zqHM8":
-              raise SystemExit(f"unexpected repair context: {raw[offset - 8:offset + 12]!r}")
+          if raw[offset - 8:offset + 13] != b"RO4maLSWichtdn5U/zqHM":
+              raise SystemExit(f"unexpected repair context: {raw[offset - 8:offset + 13]!r}")
 
           repaired = raw[:offset] + b"n" + raw[offset:]
           new_sha = hashlib.sha256(repaired).hexdigest()
@@ -51,8 +51,8 @@ jobs:
               raise SystemExit(f"unexpected repaired length: {len(repaired)}")
           if new_sha != expected_new_sha:
               raise SystemExit(f"unexpected repaired sha: {new_sha}")
-          if repaired[offset - 8:offset + 13] != b"O4maLSWnichtdn5U/zqHM8":
-              raise SystemExit("repaired context is incorrect")
+          if repaired[offset - 8:offset + 14] != b"RO4maLSWnichtdn5U/zqHM":
+              raise SystemExit(f"repaired context is incorrect: {repaired[offset - 8:offset + 14]!r}")
 
           path.write_bytes(repaired)
           print("JUNGLE_V3_FRAGMENT_ONE_BYTE_REPAIR=PROVEN")
