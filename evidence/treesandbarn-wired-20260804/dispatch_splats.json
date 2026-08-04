@@ -1,0 +1,52 @@
+{
+  "bet": "reproduce this photograph in 3D",
+  "completed_at": "2026-08-04T06:12:57.289227+00:00",
+  "detail": {
+    "camera": {
+      "aspect_ratio": 1.3333333333333333,
+      "fov_x_deg": 92.86937836256597,
+      "fov_y_deg": 76.51388996894626,
+      "projection": "perspective"
+    },
+    "classification": "PROVEN",
+    "depth_range": [
+      1.4128541946411133,
+      547.4515380859375
+    ],
+    "device": "cuda",
+    "disc_thickness_ratio": 0.25,
+    "grid_stride": 1,
+    "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+    "image_dimensions": [
+      1448,
+      1086
+    ],
+    "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+    "masked_pixel_fraction": 0.6956728274472697,
+    "model": "Ruicheng/moge-2-vitb-normal",
+    "notes": "depth-initialised, not multi-view optimised",
+    "opacity": 0.99,
+    "output_bytes": 74389901,
+    "output_ply": "C:\\AI\\ScenePipelineSmoke\\barn_dispatch\\barn_dispatch.ply",
+    "output_sha256": "a990b9cb63a224e2c634ae3217e8b635ad7764b6b392360e3e5191e3a9a9dce1",
+    "representation": "3d_gaussian_splats",
+    "schema_version": "splat_export_receipt_v1",
+    "sh_degree": 0,
+    "splat_count": 1093963
+  },
+  "graded_on": [
+    "source_view_similarity",
+    "offaxis_stability",
+    "unobserved_fraction"
+  ],
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "not_applicable": [
+    "navigable_fraction",
+    "actor_semantic_variety"
+  ],
+  "pipeline": "photometric.splats",
+  "scene_id": "barn_dispatch",
+  "schema_version": "pipeline_result_v1",
+  "summary": "MoGe point map as INRIA 3DGS splats; no connectivity, no smearing",
+  "work_dir": "C:\\AI\\ScenePipelineSmoke\\barn_dispatch"
+}
