@@ -17,7 +17,6 @@ $replacements = [ordered]@{
     'BLENDER_FACEVERSE_V6_REFINED_SAVE_RELOAD_STILLS' = 'BLENDER_FACEVERSE_V7_CONFORMING_HAIR_SAVE_RELOAD_STILLS'
     'BLENDER_FACEVERSE_V6_OUTPUT' = 'BLENDER_FACEVERSE_V7_OUTPUT'
     'Blender v6' = 'Blender v7'
-    'model-space Blender v6' = 'model-space Blender v7'
     'B6_OUTPUT' = 'B7_OUTPUT'
 }
 foreach ($entry in $replacements.GetEnumerator()) {
