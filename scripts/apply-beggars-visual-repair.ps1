@@ -49,49 +49,61 @@ function Replace-Required {
 }
 
 $subsurfaceReplacement = @'
-    set_input(bsdf, "Subsurface Weight", 0.035)
+    set_input(bsdf, "Subsurface Weight", 0.028)
     set_input(bsdf, "Subsurface Radius", (1.0, 0.42, 0.18))
 '@
 $colorReplacement = @'
     gamma = nodes.new("ShaderNodeGamma")
     gamma.inputs["Gamma"].default_value = 2.2
     tone = nodes.new("ShaderNodeHueSaturation")
-    tone.inputs["Saturation"].default_value = 0.84
-    tone.inputs["Value"].default_value = 0.94
+    tone.inputs["Saturation"].default_value = 0.72
+    tone.inputs["Value"].default_value = 0.82
     links.new(attribute.outputs["Color"], gamma.inputs["Color"])
     links.new(gamma.outputs["Color"], tone.inputs["Color"])
     links.new(tone.outputs["Color"], bsdf.inputs["Base Color"])
 '@
 
-Replace-Required '    set_input(bsdf, "Roughness", 0.46)' '    set_input(bsdf, "Roughness", 0.52)' 'FACE_ROUGHNESS_REPAIR'
-Replace-Required '    set_input(bsdf, "Specular IOR Level", 0.28)' '    set_input(bsdf, "Specular IOR Level", 0.34)' 'FACE_SPECULAR_REPAIR'
+Replace-Required '    set_input(bsdf, "Roughness", 0.46)' '    set_input(bsdf, "Roughness", 0.56)' 'FACE_ROUGHNESS_REPAIR'
+Replace-Required '    set_input(bsdf, "Specular IOR Level", 0.28)' '    set_input(bsdf, "Specular IOR Level", 0.30)' 'FACE_SPECULAR_REPAIR'
 Replace-Required '    set_input(bsdf, "Subsurface Weight", 0.055)' $subsurfaceReplacement 'FACE_SUBSURFACE_REPAIR'
 Replace-Required '    set_input(bsdf, "Emission Strength", 0.09)' '    set_input(bsdf, "Emission Strength", 0.0)' 'FACE_EMISSION_REMOVAL'
 Replace-Required '    links.new(attribute.outputs["Color"], bsdf.inputs["Base Color"])' $colorReplacement 'FACE_COLORSPACE_REPAIR'
-Replace-Required '    skin_average = np.clip(np.median(colors_rgb, axis=0), 0.05, 0.95)' '    skin_average = np.clip(np.median(colors_rgb, axis=0) ** 2.2, 0.03, 0.72)' 'NECK_COLORSPACE_REPAIR'
+Replace-Required '    skin_average = np.clip(np.median(colors_rgb, axis=0), 0.05, 0.95)' '    skin_average = np.clip(np.median(colors_rgb, axis=0) ** 2.2, 0.025, 0.60)' 'NECK_COLORSPACE_REPAIR'
+Replace-Required '    pixel_scale = 2.30 / face_height_pixels' '    pixel_scale = 2.00 / face_height_pixels' 'FACE_SCALE_REPAIR'
 
-Replace-Required '        (0.0, 0.34, 0.42),' '        (0.0, 0.88, 0.58),' 'HAIR_CAP_DEPTH_REPAIR'
-Replace-Required '        (1.04, 0.62, 1.16),' '        (1.02, 0.26, 1.10),' 'HAIR_CAP_THICKNESS_REPAIR'
-Replace-Required '    for index in range(86):' '    for index in range(42):' 'HAIR_DENSITY_REPAIR'
-Replace-Required '        angle = random.uniform(-math.pi * 0.92, math.pi * 0.92)' '        angle = random.uniform(-math.pi * 0.78, math.pi * 0.78)' 'HAIR_ARC_REPAIR'
-Replace-Required '        start_y = 0.00 + random.uniform(-0.06, 0.08)' '        start_y = 0.48 + random.uniform(0.00, 0.12)' 'HAIR_FRONT_OCCLUSION_REPAIR'
-Replace-Required '        end_y = start_y - random.uniform(0.04, 0.15)' '        end_y = start_y + random.uniform(0.03, 0.11)' 'HAIR_END_DEPTH_REPAIR'
-Replace-Required '            random.uniform(0.007, 0.013),' '            random.uniform(0.005, 0.009),' 'HAIR_STRAND_WIDTH_REPAIR'
+Replace-Required '        (0.0, 0.34, 0.42),' '        (0.0, 1.34, 0.62),' 'HAIR_CAP_DEPTH_REPAIR'
+Replace-Required '        (1.04, 0.62, 1.16),' '        (0.98, 0.14, 1.05),' 'HAIR_CAP_THICKNESS_REPAIR'
+Replace-Required '    for index in range(86):' '    for index in range(34):' 'HAIR_DENSITY_REPAIR'
+Replace-Required '        angle = random.uniform(-math.pi * 0.92, math.pi * 0.92)' '        angle = random.uniform(-math.pi * 0.72, math.pi * 0.72)' 'HAIR_ARC_REPAIR'
+Replace-Required '        start_y = 0.00 + random.uniform(-0.06, 0.08)' '        start_y = 1.08 + random.uniform(0.00, 0.12)' 'HAIR_FRONT_OCCLUSION_REPAIR'
+Replace-Required '        end_y = start_y - random.uniform(0.04, 0.15)' '        end_y = start_y + random.uniform(0.03, 0.10)' 'HAIR_END_DEPTH_REPAIR'
+Replace-Required '            random.uniform(0.007, 0.013),' '            random.uniform(0.004, 0.007),' 'HAIR_STRAND_WIDTH_REPAIR'
 
-Replace-Required '    camera_data.dof.aperture_fstop = 1.55' '    camera_data.dof.aperture_fstop = 1.25' 'HERO_DOF_REPAIR'
+Replace-Required '        (0.02, 0.36, -1.20),' '        (0.02, 0.82, -1.34),' 'NECK_DEPTH_REPAIR'
+Replace-Required '        (0.58, 0.46, 0.83),' '        (0.38, 0.24, 0.66),' 'NECK_SCALE_REPAIR'
+Replace-Required '    camera.location = (0.10, -8.15, -0.05)' '    camera.location = (0.10, -8.65, -0.02)' 'HERO_CAMERA_DISTANCE_REPAIR'
+Replace-Required '    camera_data.dof.aperture_fstop = 1.55' '    camera_data.dof.aperture_fstop = 1.20' 'HERO_DOF_REPAIR'
 Replace-Required '    wide_data.dof.aperture_fstop = 2.4' '    wide_data.dof.aperture_fstop = 1.8' 'WIDE_DOF_REPAIR'
-Replace-Required '        energy=1050.0,' '        energy=880.0,' 'KEY_ENERGY_REPAIR'
-Replace-Required '        color=(1.0, 0.17, 0.045),' '        color=(1.0, 0.42, 0.20),' 'KEY_COLOR_REPAIR'
-Replace-Required '        energy=620.0,' '        energy=260.0,' 'RIM_ENERGY_REPAIR'
-Replace-Required '        color=(1.0, 0.055, 0.015),' '        color=(1.0, 0.20, 0.07),' 'RIM_COLOR_REPAIR'
-Replace-Required '        energy=90.0,' '        energy=170.0,' 'FILL_ENERGY_REPAIR'
-Replace-Required '        color=(0.25, 0.08, 0.04),' '        color=(0.14, 0.18, 0.28),' 'FILL_COLOR_REPAIR'
+
+Replace-Required '        energy=1050.0,' '        energy=650.0,' 'KEY_ENERGY_REPAIR'
+Replace-Required '        color=(1.0, 0.17, 0.045),' '        color=(1.0, 0.72, 0.50),' 'KEY_COLOR_REPAIR'
+Replace-Required '        energy=620.0,' '        energy=160.0,' 'RIM_ENERGY_REPAIR'
+Replace-Required '        color=(1.0, 0.055, 0.015),' '        color=(1.0, 0.38, 0.16),' 'RIM_COLOR_REPAIR'
+Replace-Required '        energy=90.0,' '        energy=260.0,' 'FILL_ENERGY_REPAIR'
+Replace-Required '        color=(0.25, 0.08, 0.04),' '        color=(0.34, 0.44, 0.70),' 'FILL_COLOR_REPAIR'
+Replace-Required '            energy=420.0,' '            energy=90.0,' 'TORCH_ENERGY_REPAIR'
+Replace-Required '            color=(1.0, 0.12, 0.018),' '            color=(1.0, 0.32, 0.08),' 'TORCH_COLOR_REPAIR'
+Replace-Required '        emission_strength=18.0,' '        emission_strength=5.0,' 'BOKEH_EMISSION_REPAIR'
+Replace-Required '    silhouette = principled_material("MAT_Background_Suitor", (0.025, 0.010, 0.008, 1.0), 0.80)' '    silhouette = principled_material("MAT_Background_Suitor", (0.006, 0.003, 0.002, 1.0), 0.92)' 'BACKGROUND_SILHOUETTE_REPAIR'
 
 if ($content.Contains('(0.0, 0.34, 0.42)') -or $content.Contains('range(86)')) {
     throw 'The rejected face-occluding hair construction is still present.'
 }
 if (-not $content.Contains('gamma.inputs["Gamma"].default_value = 2.2')) {
     throw 'The face color-space repair is missing.'
+}
+if (-not $content.Contains('pixel_scale = 2.00 / face_height_pixels')) {
+    throw 'The corrected close-up scale is missing.'
 }
 
 [System.IO.File]::WriteAllText(
