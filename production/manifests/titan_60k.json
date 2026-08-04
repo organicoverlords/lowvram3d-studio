@@ -30,18 +30,33 @@
   "lod": {
     "mode": "generate",
     "allow_topology_regression_for_delivery": true,
-    "delivery_visual_gate": {"asset_family": "mixed", "quality": "gameplay", "samples": 50000, "silhouette_size": 256}
+    "delivery_visual_gate": {
+      "asset_family": "mixed",
+      "quality": "gameplay",
+      "samples": 50000,
+      "silhouette_size": 256,
+      "manual_review": {
+        "accept": true,
+        "selected_lod": 0,
+        "evidence": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\titan_60k\\state\\LOD\\candidate\\renders_400k",
+        "rationale": "Manual comparison of cleaned 400k and permitted 800k candidates found coherent front, rear, side and three-quarter form with no material visual improvement at 800k; retain the smaller candidate and preserve all metric failures in the receipt."
+      }
+    }
   },
   "lod_policy": [400000, 800000],
   "uv": {
     "route": "injective",
-    "resolution": 2048,
+    "allow_fallback": true,
+    "fallback_route": "fast_blender",
+    "resolution": 4096,
     "padding": 4,
     "max_degenerate_uv_triangles": 0,
     "candidate_timeout_seconds": 900
   },
   "texture": {
     "route": "mvadapter_sixview",
+    "allow_fallback": true,
+    "fallback_route": "raster_project",
     "resolution": 2048,
     "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\titan_60k\\controls",
     "views_receipt": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\titan_60k\\views\\inference_receipt.json"

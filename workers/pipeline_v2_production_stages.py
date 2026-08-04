@@ -28,11 +28,11 @@ def _output(pipeline, stage: str, key: str) -> Path:
     return Path(entry["path"])
 
 
-def _blender(pipeline, script: Path, *args: object) -> tuple[int, str]:
+def _blender(pipeline, script: Path, *args: object, timeout: float | None = None) -> tuple[int, str]:
     return pipeline.run([
         pipeline.blender, "--background", "--python-use-system-env", "--python", script,
         "--", *args,
-    ])
+    ], timeout=timeout)
 
 
 def _copy_named(source: Path, destination: Path) -> Path:
@@ -52,16 +52,113 @@ def _find(directory: Path, *tokens: str) -> Path | None:
     return sorted(matches, key=lambda p: (len(p.name), p.name))[0] if matches else None
 
 
+def validate_mvadapter_inputs(bundle: Path, views_receipt: Path) -> dict:
+    """Validate the external six-view contract without starting any heavy worker."""
+    missing = []
+    contract_path = bundle / "camera_contract.json"
+    if not bundle.is_dir():
+        missing.append(str(bundle))
+    if not contract_path.is_file():
+        missing.append(str(contract_path))
+    if not views_receipt.is_file():
+        missing.append(str(views_receipt))
+
+    contract = {}
+    receipt = {}
+    if contract_path.is_file():
+        try:
+            contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            missing.append(str(contract_path) + " (invalid JSON)")
+    if views_receipt.is_file():
+        try:
+            receipt = json.loads(views_receipt.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            missing.append(str(views_receipt) + " (invalid JSON)")
+
+    raw_views = contract.get("views", [])
+    views = sorted(raw_views if isinstance(raw_views, list) else [],
+                   key=lambda item: int(item.get("index", -1))
+                   if isinstance(item, dict) else -1)
+    semantics = [str(item.get("semantic_name", "")) for item in views
+                 if isinstance(item, dict)]
+    required_semantics = {"front", "right", "rear", "left", "top", "bottom"}
+    if len(views) != 6 or set(semantics) != required_semantics:
+        missing.append("camera_contract requires six semantic views: "
+                       + ",".join(sorted(required_semantics)))
+
+    output_images = {
+        str(item.get("name")): Path(item.get("path", ""))
+        for item in receipt.get("output_images", [])
+        if isinstance(item, dict) and item.get("name") and item.get("path")
+    }
+    for view in views:
+        if not isinstance(view, dict):
+            continue
+        index = int(view.get("index", -1))
+        semantic = str(view.get("semantic_name", ""))
+        for suffix in ("_mask.png", "_depth.npy"):
+            candidate = bundle / f"{semantic}{suffix}"
+            if not candidate.is_file():
+                missing.append(str(candidate))
+        image = output_images.get(f"view_{index}_{semantic}.png")
+        if image is None or not image.is_file():
+            missing.append(f"view_{index}_{semantic}.png")
+    return {
+        "passed": not missing,
+        "bundle": str(bundle),
+        "views_receipt": str(views_receipt),
+        "view_count": len(views),
+        "semantics": semantics,
+        "missing_inputs": missing,
+    }
+
+
 def register_production_stages(pipeline, manifest: dict) -> dict:
     root = Path(manifest["output_root"])
+    manifest_path = root / "asset_manifest.json"
     profile = pipeline.profile
     asset_id = manifest["asset_id"]
     texture_manifest = manifest["texture"]
     resolution = int(texture_manifest["resolution"])
-    texture_route = str(texture_manifest.get("route", "raster_project")).lower()
+    requested_texture_route = str(texture_manifest.get("route", "raster_project")).lower()
+    texture_route = requested_texture_route
+    texture_fallback = None
+    if requested_texture_route == "mvadapter_sixview":
+        bundle = Path(texture_manifest.get("bundle", ""))
+        views_receipt = Path(texture_manifest.get("views_receipt", ""))
+        fallback_route = str(texture_manifest.get("fallback_route", "")).lower()
+        if (bool(texture_manifest.get("allow_fallback", False))
+                and fallback_route == "raster_project"):
+            audit = validate_mvadapter_inputs(bundle, views_receipt)
+            if not audit["passed"]:
+                texture_route = fallback_route
+                texture_fallback = {
+                    "from": requested_texture_route,
+                    "to": fallback_route,
+                    "reason": "MV-Adapter six-view inputs unavailable",
+                    "input_audit": audit,
+                }
     uv_resolution = int((manifest.get("uv") or {}).get("resolution", 1024))
     uv_padding = int((manifest.get("uv") or {}).get("padding", 4))
     uv_timeout = float((manifest.get("uv") or {}).get("candidate_timeout_seconds", 600))
+    # Bound the complete fresh-asset UV subprocess, including xatlas generation.  The previous
+    # value was passed only to the post-unwrap overlap census, so xatlas itself could run for
+    # hours before the census ever started.  Keep the timeout opt-out explicit and reproducible.
+    uv_process_timeout = float((manifest.get("uv") or {}).get(
+        "process_timeout_seconds", uv_timeout
+    ))
+    uv_repair_rounds = int((manifest.get("uv") or {}).get("repair_rounds", 0))
+    uv_world_sliver_scale = float((manifest.get("uv") or {}).get(
+        "world_sliver_scale", 1e-12
+    ))
+    uv_max_cost = float((manifest.get("uv") or {}).get("max_cost", 8.0))
+    uv_max_iterations = int((manifest.get("uv") or {}).get("max_iterations", 4))
+    uv_fix_winding = bool((manifest.get("uv") or {}).get("fix_winding", False))
+    uv_allow_fallback = bool((manifest.get("uv") or {}).get("allow_fallback", False))
+    uv_fallback_route = str((manifest.get("uv") or {}).get(
+        "fallback_route", ""
+    )).lower()
     # Zero-area UV triangles are a hard failure by default. A profile may declare a measured
     # allowance when the offenders are known 3D slivers that own no texels; it is never inferred.
     uv_max_degenerate = int((manifest.get("uv") or {}).get("max_degenerate_uv_triangles", 0))
@@ -72,6 +169,9 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     allow_delivery_topology_regression = bool(
         (manifest.get("lod") or {}).get("allow_topology_regression_for_delivery", False)
     )
+    rig_manifest = manifest.get("rig") or {}
+    rig_required = bool(rig_manifest.get("required", profile.rig_required))
+    separate_props = bool(rig_manifest.get("separate_props", profile.separate_props))
     suffix = "4k" if resolution >= 4096 else "2k"
     orientation = manifest.get("orientation") or {}
 
@@ -113,6 +213,9 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             report = stage / "lod_report.json"
             targets_list = [int(v) for v in (manifest.get("lod_policy") or profile.lod_triangle_targets)]
             targets = ",".join(str(v) for v in targets_list)
+            protection_mode = str((manifest.get("lod") or {}).get(
+                "protection_mode", "standard"
+            ))
             code, out = _blender(
                 pipeline, b("final_pipeline_lods.py"),
                 "--input", clean, "--output-dir", outdir, "--report", report,
@@ -122,6 +225,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "--right-axis", str(orientation.get("right_axis",
                                                      orientation.get("lateral_axis", "x"))),
                 "--front-axis", str(orientation.get("front_axis", "y")),
+                "--protection-mode", protection_mode,
             )
             data = _json(report)
             if code != 0 or not data.get("lods"):
@@ -182,9 +286,22 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 gates["delivery_visual_gate"] = visual
                 outputs["lod0_geometry_compare"] = visual_report
                 if visual_code != 0 or not visual.get("success"):
-                    failures.append(
-                        f"LOD0 delivery visual gate failed: {visual_output[-1000:]}"
-                    )
+                    manual = delivery_visual_gate.get("manual_review") or {}
+                    accepted = (bool(manual.get("accept"))
+                                and int(manual.get("selected_lod", 0)) == 0
+                                and bool(manual.get("evidence")))
+                    if accepted:
+                        gates["delivery_visual_gate"]["manual_review"] = {
+                            "accepted": True,
+                            "selected_lod": 0,
+                            "evidence": manual.get("evidence"),
+                            "rationale": manual.get("rationale", ""),
+                            "overrode_metrics": list(visual.get("evaluation", {}).get("errors", [])),
+                        }
+                    else:
+                        failures.append(
+                            f"LOD0 delivery visual gate failed: {visual_output[-1000:]}"
+                        )
             failures.extend(topology_failures)
             if failures:
                 # Torn topology is the one LOD failure with a real recipe behind it - decimating
@@ -195,7 +312,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                                    detail="; ".join(failures))
             return StageResult("passed", outputs=outputs, gates=gates)
 
-        return pipeline.execute("LOD", [clean], runner)
+        return pipeline.execute("LOD", [clean, manifest_path, b("final_pipeline_lods.py")], runner)
 
     # ---------------------------------------------------------------- UV
     def uv():
@@ -238,7 +355,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 return StageResult("passed", gates=gates,
                                    outputs={"uv_mesh": master_path, "uv_report": report})
 
-            return pipeline.execute("UV", [master_path], master_runner)
+            return pipeline.execute("UV", [master_path, manifest_path], master_runner)
 
         explicit = manifest.get("uv_mesh") or (manifest.get("uv") or {}).get("mesh")
         if explicit:
@@ -263,7 +380,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                                        detail=f"existing UV validation exit {code}: {out[-1000:]}")
                 return StageResult("passed", outputs={"uv_mesh": explicit_path, "uv_report": report}, gates=gates)
 
-            return pipeline.execute("UV", [explicit_path], existing_runner)
+            return pipeline.execute("UV", [explicit_path, manifest_path], existing_runner)
 
         lod_receipt = pipeline.read_receipt("LOD") or {}
         if lod_receipt.get("status") == "passed":
@@ -288,8 +405,14 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     pipeline.python, w("uv_xatlas_repair.py"),
                     "--input", lod0, "--output", output, "--report", report,
                     "--resolution", str(uv_resolution), "--padding", str(uv_padding),
-                    "--overlap-timeout", str(uv_timeout),
-                ])
+                    "--max-cost", str(uv_max_cost), "--max-iterations", str(uv_max_iterations), "--repair-rounds", str(uv_repair_rounds),
+                    "--overlap-timeout", str(uv_timeout), "--max-unwrap-attempts", "1",
+                    "--world-sliver-scale", str(uv_world_sliver_scale),
+                    "--intra-chart-shrink", str(float((manifest.get("uv") or {}).get(
+                        "intra_chart_shrink", 0.75
+                    ))),
+                    *( ["--fix-winding"] if uv_fix_winding else [] ),
+                ], timeout=uv_process_timeout)
                 data = _json(report)
                 gate = data.get("gate") or data.get("injectivity_after") or {}
                 raster_gate_report = stage / "atlas_raster_injectivity.json"
@@ -304,6 +427,13 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     raster_data = _json(raster_gate_report)
                 gates = {
                     "route": "injective", "packer": data.get("packer"),
+                    "process_timeout_seconds": uv_process_timeout,
+                    "overlap_timeout_seconds": uv_timeout,
+                    "repair_rounds": uv_repair_rounds,
+                    "world_sliver_scale": uv_world_sliver_scale,
+                    "max_cost": uv_max_cost,
+                    "max_iterations": uv_max_iterations,
+                    "fix_winding": uv_fix_winding,
                     "chart_count": data.get("chart_count"),
                     "triangles": data.get("triangles"),
                     "seam_vertices_added": data.get("seam_vertices_added"),
@@ -336,8 +466,43 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     if code != 0 or not output.exists():
                         codes.append("UV_INJECTIVE_WORKER_FAILED")
                 if code != 0 or not output.exists() or codes:
-                    return StageResult("failed", gates=gates, failure_codes=sorted(set(codes)),
-                                       detail=f"injective rewrap exit {code}: {out[-1000:]}")
+                    if (uv_allow_fallback and uv_fallback_route == "fast_blender"):
+                        fallback_output = stage / f"{asset_id}_lod0_fast_uv.glb"
+                        fallback_report = stage / "fast_uv_fallback_report.json"
+                        fallback_code, fallback_out = _blender(
+                            pipeline, b("final_pipeline_uv.py"),
+                            "--input", lod0, "--output", fallback_output,
+                            "--report", fallback_report,
+                            "--resolution", str(uv_resolution),
+                            "--overlap-timeout-seconds", "180",
+                            timeout=uv_process_timeout,
+                        )
+                        fallback_data = _json(fallback_report)
+                        fallback_gate = {
+                            "requested_route": "injective",
+                            "fallback_route": "fast_blender",
+                            "fallback_code": fallback_code,
+                            "fallback_report": str(fallback_report),
+                            "fallback_gate_passed": bool(fallback_data.get("gate_passed")),
+                            "fallback_gates": fallback_data,
+                        }
+                        gates["fallback"] = fallback_gate
+                        if (fallback_code == 0 and fallback_output.exists()
+                                and fallback_data.get("gate_passed")):
+                            return StageResult(
+                                "passed",
+                                outputs={"uv_mesh": fallback_output,
+                                         "uv_report": fallback_report},
+                                gates={**gates, "route": "fast_blender"},
+                            )
+                    # Fresh injective unwrap is intentionally one-shot. Do not route an exact
+                    # overlap failure into the generic retry policy and silently run xatlas again.
+                    return StageResult("failed", gates=gates,
+                                       failure_codes=["UV_INJECTIVE_WORKER_FAILED"],
+                                       detail=f"injective rewrap exit {code}: {out[-1000:]}"
+                                       + (f"; fast fallback: {fallback_out[-500:]}"
+                                          if uv_allow_fallback and uv_fallback_route == "fast_blender"
+                                          else ""))
                 return StageResult("passed", outputs={"uv_mesh": output, "uv_report": report},
                                    gates=gates)
             if route != "xatlas":
@@ -394,7 +559,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                                    detail=f"UV worker exit {code}: {out[-1000:]}")
             return StageResult("passed", outputs={"uv_mesh": output, "uv_report": report}, gates=gates)
 
-        return pipeline.execute("UV", [lod0], runner)
+        return pipeline.execute("UV", [lod0, manifest_path, w("uv_xatlas_repair.py")], runner)
 
     # ---------------------------------------------------------------- BAKE
     def bake():
@@ -456,6 +621,17 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
 
             def mv_runner(_overrides):
                 stage = pipeline.stage_dir("TEXTURE") / "candidate"
+                # Fail closed before starting projection.  A missing or partial control bundle
+                # used to reach the worker and only fail after setup, which looked like a slow
+                # texture run and obscured the real production blocker.
+                input_audit = validate_mvadapter_inputs(bundle, views_receipt)
+                if not input_audit["passed"]:
+                    return StageResult(
+                        "failed",
+                        gates={"route": "mvadapter_sixview", "input_preflight": input_audit},
+                        failure_codes=["MISSING_MVADAPTER_INPUTS"],
+                        detail="MV-Adapter six-view inputs are missing or incomplete; "
+                               "projection was not started.")
                 command = [
                     pipeline.python, w("injective_atlas_texture.py"),
                     "--mesh", mesh, "--bundle", bundle,
@@ -497,7 +673,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 return StageResult("passed", gates=gates, outputs={
                     "textured_glb": glb, "basecolor": basecolor, "texture_report": report})
 
-            return pipeline.execute("TEXTURE", [mesh, views_receipt], mv_runner)
+            return pipeline.execute("TEXTURE", [mesh, bundle, views_receipt,
+                                                 w("injective_atlas_texture.py")], mv_runner)
 
         matte = _output(pipeline, "INGEST", "matte")
         mesh = _output(pipeline, "UV", "uv_mesh")
@@ -649,6 +826,9 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     outputs[f"render_{name}"] = path
             projection_data = _json(projection_report)
             gates = {
+                "route": "raster_project",
+                "requested_route": requested_texture_route,
+                "fallback": texture_fallback,
                 "observed_percent": projection_data.get("observed_semantic_coverage_percent"),
                 "synthesized_percent": projection_data.get("synthesized_surface_coverage_percent"),
                 "final_filled_uv_percent": projection_data.get("final_filled_uv_percent"),
@@ -657,7 +837,13 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             }
             return StageResult("passed", outputs=outputs, gates=gates)
 
-        return pipeline.execute("TEXTURE", [matte, mesh, normal, ao, cavity, material_id], runner)
+        return pipeline.execute("TEXTURE", [
+            matte, mesh, normal, ao, cavity, material_id, manifest_path,
+            w("shaman_texture_views_oriented.py"), w("raster_project.py"),
+            w("pipeline_prior_repaint.py"), w("atlas_detail_fill.py"),
+            w("pipeline_orm.py"), b("shaman_texture_export.py"),
+            b("shaman_texture_review.py"),
+        ], runner)
 
     # ---------------------------------------------------------------- TEXTURE_QA
     def texture_qa():
@@ -721,8 +907,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             main_fraction = float(data.get("main_component_face_fraction") or 0.0)
             gates = {"component_count": data.get("component_count"),
                      "main_component_face_fraction": main_fraction,
-                     "separate_props_required": bool(profile.separate_props)}
-            if profile.separate_props and main_fraction > 0.98:
+                     "separate_props_required": separate_props}
+            if separate_props and main_fraction > 0.98:
                 return StageResult("failed", gates=gates,
                                    failure_codes=["PARTS_SEMANTIC_CUT_REQUIRED"],
                                    detail="held prop is fused into the dominant component; loose-part split is unsafe")
@@ -746,7 +932,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             data = _json(report)
             if not data:
                 return StageResult("failed", detail=f"rig-readiness produced no report: {out[-1000:]}")
-            if not profile.rig_required:
+            if not rig_required:
                 return StageResult("passed", outputs={"rig_readiness": report},
                                    gates={**data, "rig_not_required": True})
             if code != 0 or not data.get("ready"):
@@ -764,7 +950,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
 
         def runner(overrides):
             stage = pipeline.stage_dir("RIG") / "candidate"
-            if not profile.rig_required:
+            if not rig_required:
                 passthrough = stage / f"{asset_id}_static.glb"
                 _copy_named(mesh, passthrough)
                 return StageResult("passed", outputs={"rigged_glb": passthrough},

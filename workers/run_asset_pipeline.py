@@ -114,11 +114,30 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def directory_sha256(path: Path) -> str:
+    """Return a deterministic fingerprint for a stage input directory.
+
+    Directory inputs used to hash as ``None``.  That made a stage appear unchanged even when a
+    control bundle was replaced in place, and made a missing bundle indistinguishable from an
+    unchanged one.  Include relative paths and file bytes so cached stages are invalidated by
+    real bundle changes without changing the stage's processing semantics.
+    """
+    digest = hashlib.sha256()
+    for child in sorted((p for p in path.rglob("*") if p.is_file()),
+                        key=lambda p: p.relative_to(path).as_posix()):
+        relative = child.relative_to(path).as_posix().encode("utf-8")
+        digest.update(len(relative).to_bytes(8, "big"))
+        digest.update(relative)
+        digest.update(bytes.fromhex(sha256(child)))
+    return digest.hexdigest()
+
+
 def hash_inputs(paths) -> dict:
     result = {}
     for path in paths:
         p = Path(path)
-        result[str(p)] = sha256(p) if p.is_file() else None
+        result[str(p)] = (sha256(p) if p.is_file() else
+                          directory_sha256(p) if p.is_dir() else None)
     return result
 
 

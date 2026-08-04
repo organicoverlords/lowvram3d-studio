@@ -126,8 +126,8 @@ def main() -> None:
                 "relative_diagonal_fraction": round(diagonal / max(scene_diagonal, 1e-9), 8),
             })
             protected = index in protected_components
-            remove = (not protected and separated and small_relative and high_or_outboard
-                      and unsupported)
+            remove = (not protected and separated and small_relative and unsupported
+                      and (high_or_outboard or source_score <= 0.0))
             if remove:
                 record["verdict"] = (
                     "removed: detached small component lacks direct/mirrored source-silhouette support"

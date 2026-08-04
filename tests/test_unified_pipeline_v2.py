@@ -2,7 +2,8 @@ import json
 
 import pytest
 
-from run_asset_pipeline import Pipeline, StageResult
+from run_asset_pipeline import Pipeline, StageResult, hash_inputs
+from pipeline_v2_production_stages import validate_mvadapter_inputs
 from unified_pipeline_v2 import CANONICAL_STAGES, normalize_manifest
 from uv_xatlas_isolated import PRESET_ORDER, choose_next
 
@@ -63,6 +64,30 @@ def test_resume_skips_unchanged_stage_and_invalidates_changed_input(tmp_path):
     source.write_bytes(b"two")
     pipeline.execute("FIXTURE", [source], runner)
     assert len(calls) == 2
+
+
+def test_directory_inputs_are_fingerprinted_for_resume(tmp_path):
+    bundle = tmp_path / "controls"
+    bundle.mkdir()
+    (bundle / "camera_contract.json").write_text("{}", encoding="utf-8")
+    first = hash_inputs([bundle])
+    (bundle / "front_mask.png").write_bytes(b"mask")
+    second = hash_inputs([bundle])
+    assert first[str(bundle)] != second[str(bundle)]
+
+
+def test_mvadapter_preflight_rejects_partial_external_bundle(tmp_path):
+    bundle = tmp_path / "controls"
+    bundle.mkdir()
+    views = ["front", "right", "rear", "left", "top", "bottom"]
+    (bundle / "camera_contract.json").write_text(json.dumps({
+        "views": [{"index": i, "semantic_name": name} for i, name in enumerate(views)]
+    }), encoding="utf-8")
+    receipt = tmp_path / "inference_receipt.json"
+    receipt.write_text(json.dumps({"output_images": []}), encoding="utf-8")
+    result = validate_mvadapter_inputs(bundle, receipt)
+    assert not result["passed"]
+    assert any("front_mask.png" in value for value in result["missing_inputs"])
 
 
 def test_xatlas_policy_is_isolated_and_stops_at_first_valid_preset():

@@ -139,8 +139,8 @@ def main() -> None:
                 "relative_diagonal_fraction": round(diagonal / max(scene_diagonal, 1e-9), 8),
             })
             protected = index in protected_components
-            is_shard = (not protected and separated and small_relative and high_or_outboard
-                        and unsupported)
+            is_shard = (not protected and separated and small_relative and unsupported
+                        and (high_or_outboard or float(support["support"]) <= 0.0))
             if not is_shard and small_relative:
                 record["preservation_reason"] = (
                     "small LOD feature retained: source-supported or not high/outboard"

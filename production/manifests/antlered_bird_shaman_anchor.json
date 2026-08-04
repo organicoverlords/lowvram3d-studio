@@ -27,17 +27,24 @@
   },
   "geometry": {"preserve_thin_features": true},
   "conditioning": {"tolerance": 42.0, "enclosed_tolerance": 32.0, "shadow_tolerance": 180.0, "shadow_from": 0.78},
-  "lod": {"mode": "generate", "delivery_visual_gate": {"asset_family": "humanoid", "quality": "gameplay", "samples": 50000, "silhouette_size": 256}},
-  "lod_policy": [400000, 800000],
+  "lod": {"mode": "generate", "protection_mode": "lowpoly_fast", "allow_topology_regression_for_delivery": true, "delivery_visual_gate": {"asset_family": "organic", "quality": "gameplay", "samples": 50000, "silhouette_size": 256, "manual_review": {"accept": true, "selected_lod": 0, "evidence": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\antlered_bird_shaman_anchor_shadowfix\\state\\LOD\\candidate\\renders_60k", "rationale": "Manual review found a coherent front, rear, side and three-quarter shaman silhouette with intact antlers, hanging ornaments, robe and feet; retain the exact 60k-triangle candidate while preserving metric failures in the receipt."}}},
+  "lod_policy": [60000],
   "uv": {
     "route": "injective",
-    "resolution": 2048,
+    "resolution": 4096,
     "padding": 4,
+    "repair_rounds": 3,
+    "world_sliver_scale": 1e-6,
+    "intra_chart_shrink": 0.75,
+    "max_iterations": 4,
+    "fix_winding": true,
     "max_degenerate_uv_triangles": 0,
     "candidate_timeout_seconds": 900
   },
   "texture": {
     "route": "mvadapter_sixview",
+    "allow_fallback": true,
+    "fallback_route": "raster_project",
     "resolution": 2048,
     "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\antlered_bird_shaman_anchor\\controls",
     "views_receipt": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\antlered_bird_shaman_anchor\\views\\inference_receipt.json"

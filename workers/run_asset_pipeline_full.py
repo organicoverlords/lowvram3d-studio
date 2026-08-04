@@ -7,12 +7,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 from pathlib import Path
 
 from run_asset_pipeline import Pipeline, STAGES, build_manifest
 from pipeline_v2_stages import register_stages as register_core_stages
-from pipeline_v2_production_stages import register_production_stages
+from pipeline_v2_production_stages import register_production_stages, validate_mvadapter_inputs
 from pipeline_v2_repair_policy import apply_repair_overrides
 
 
@@ -28,6 +29,8 @@ def main() -> None:
     parser.add_argument("--from-stage", default="INGEST")
     parser.add_argument("--to-stage", default="EXPORT")
     parser.add_argument("--existing-master", default="", help="skip GENERATE and adopt this GLB")
+    parser.add_argument("--preflight-only", action="store_true",
+                        help="validate external inputs without running a heavy stage")
     parser.add_argument("--write-manifest-only", action="store_true")
     args = parser.parse_args()
 
@@ -51,6 +54,51 @@ def main() -> None:
     print(f"ASSET {manifest['asset_id']} profile={manifest['profile']}", flush=True)
     if args.write_manifest_only:
         return
+
+    if args.preflight_only:
+        checks = {
+            "source": {
+                "path": manifest.get("source", {}).get("path", ""),
+                "exists": Path(manifest.get("source", {}).get("path", "")).is_file(),
+            },
+            "python": {"path": args.python, "available": bool(
+                Path(args.python).is_file() or shutil.which(args.python)
+            )},
+            "blender": {"path": args.blender, "available": bool(
+                Path(args.blender).is_file() or shutil.which(args.blender)
+            )},
+        }
+        texture = manifest.get("texture") or {}
+        if str(texture.get("route", "")).lower() == "mvadapter_sixview":
+            mvadapter = validate_mvadapter_inputs(
+                Path(texture.get("bundle", "")),
+                Path(texture.get("views_receipt", "")),
+            )
+            fallback = str(texture.get("fallback_route", "")).lower()
+            if (not mvadapter["passed"] and bool(texture.get("allow_fallback", False))
+                    and fallback == "raster_project"):
+                checks["mvadapter_sixview"] = {
+                    **mvadapter,
+                    "passed": True,
+                    "fallback_route": fallback,
+                    "fallback_reason": "MV-Adapter inputs unavailable; deterministic projection will run",
+                }
+            else:
+                checks["mvadapter_sixview"] = mvadapter
+        passed = all(
+            bool(value.get("exists", value.get("available", value.get("passed", False))))
+            for value in checks.values()
+        )
+        receipt = {
+            "asset_id": manifest["asset_id"],
+            "passed": passed,
+            "checks": checks,
+            "heavy_work_started": False,
+        }
+        preflight_path = root / "preflight_receipt.json"
+        preflight_path.write_text(json.dumps(receipt, indent=2), encoding="utf-8")
+        print(f"PREFLIGHT_RESULT passed={passed} receipt={preflight_path}", flush=True)
+        raise SystemExit(0 if passed else 1)
 
     pipeline = Pipeline(manifest, root, args.python, args.blender)
     stages = register_core_stages(pipeline, manifest, existing_master=args.existing_master)
