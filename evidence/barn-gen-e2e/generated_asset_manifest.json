@@ -1,0 +1,110 @@
+{
+  "actors_served": 1,
+  "assets": [
+    {
+      "actor_indices": [
+        13
+      ],
+      "asset_id": "architecture_house_025",
+      "crop_bbox_norm_xyxy": [
+        0.2942,
+        0.5101,
+        0.799,
+        0.7293
+      ],
+      "crop_box_px": [
+        382,
+        540,
+        1201,
+        806
+      ],
+      "crop_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\crop.png",
+      "crop_size_px": [
+        819,
+        266
+      ],
+      "decimation": {
+        "blender_exit_code": 0,
+        "classification": "PROVEN",
+        "decimated": true,
+        "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+        "input_triangles": 1270496,
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+        "output_bytes": 12598532,
+        "output_triangles": 149996,
+        "ratio": 0.118064,
+        "reduction": 0.8819,
+        "schema_version": "mesh_decimation_v1",
+        "target_triangles": 150000
+      },
+      "exit_code": 0,
+      "generation_attempts": [
+        {
+          "error": null,
+          "exit_code": 0,
+          "octree_ladder": "384:3000,320:2000,256:1500",
+          "outcome": "ok"
+        }
+      ],
+      "generation_seconds": 786.9,
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+      "glb_bytes": 12598532,
+      "glb_sha256": "c8121806d4031c24a8b4c2b1b5c7a50e27bc8060892779049deded6d02dd2693",
+      "layer_type": "architecture",
+      "mask_coverage": 0.5913,
+      "mask_png": "evidence\\barn-gen-e2e\\depth\\region_masks\\architecture_house_025.png",
+      "matte": "segmentation_mask",
+      "mesh_bodies": 14,
+      "mesh_extent": [
+        1.9728,
+        0.7684,
+        1.4759
+      ],
+      "mesh_watertight": false,
+      "octree_resolution": 384,
+      "peak_vram_mb": 5017,
+      "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\preview.png",
+      "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+      "raw_triangles": 1270496,
+      "region_id": "architecture_house_025",
+      "semantic_label": "house",
+      "shared_across_instances": false,
+      "status": "generated",
+      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [01:16<00:00,  1.19s/it]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
+      "too_small": false,
+      "triangles": 149996,
+      "vertices": 634924,
+      "view_coverage": {
+        "front": 0.2684,
+        "side": 0.2708,
+        "three_quarter": 0.2979,
+        "top": 0.4192
+      }
+    }
+  ],
+  "classification": "PROVEN",
+  "failed_count": 0,
+  "generated_count": 1,
+  "generator": "hunyuan3d_mini_turbo",
+  "octree_ladder": "384:3000,320:2000,256:1500",
+  "planned_asset_count": 1,
+  "runtime": {
+    "available": true,
+    "interpreter": "C:\\AI\\HY3D2\\python_standalone\\python.exe",
+    "model_root": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct",
+    "source_tree": "C:\\AI\\HY3D2\\Hunyuan3D-2",
+    "subfolder": "hunyuan3d-dit-v2-mini-turbo",
+    "weights": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\\model.fp16.safetensors"
+  },
+  "runtime_checks": {
+    "interpreter": true,
+    "model_root": true,
+    "source_tree": true,
+    "weights": true
+  },
+  "schema_version": "generated_asset_manifest_v1",
+  "skipped_count": 0,
+  "source_image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "steps": 5,
+  "triangle_budget": 150000
+}

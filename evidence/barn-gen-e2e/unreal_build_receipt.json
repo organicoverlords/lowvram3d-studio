@@ -1,0 +1,60 @@
+{
+  "available": true,
+  "camera_fov_deg": 92.8800334634389,
+  "camera_label": "barn_gen_e2e_Camera_Source",
+  "classification": "PROVEN",
+  "generated_actor_count": 1,
+  "generated_actors": [
+    {
+      "kind": "structure",
+      "label": "architecture_house_025",
+      "layer": "architecture",
+      "mesh": "/Game/AgentProof/BarnGenE2E/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod",
+      "placed_size_m": [
+        8.99,
+        12.01,
+        4.68
+      ],
+      "requested_size_m": [
+        8.62,
+        14.36,
+        4.68
+      ],
+      "source": "generated",
+      "uniform_scale": 6.08782
+    }
+  ],
+  "generated_import_failures": [],
+  "generated_mesh_yaw_deg": -90.0,
+  "generated_meshes": {
+    "architecture_house_025": {
+      "extent_cm": [
+        98.63825607299805,
+        73.79655075073242,
+        38.4189453125
+      ],
+      "path": "/Game/AgentProof/BarnGenE2E/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod",
+      "triangles": 149996
+    }
+  },
+  "geometry_source": "mixed",
+  "instance_stride": {},
+  "kinds": [
+    "ground_plane",
+    "scatter_instance",
+    "structure"
+  ],
+  "layers": [
+    "architecture",
+    "terrain",
+    "vegetation"
+  ],
+  "map": "/Game/AgentProof/BarnGenE2E/Maps/L_barn_gen_e2e",
+  "primitive_actor_count": 15,
+  "removed_stale_actors": 0,
+  "scene_id": "barn_gen_e2e",
+  "schema_version": "structural_build_receipt_v2",
+  "skipped_instance_count": 0,
+  "skipped_instances": [],
+  "spawned_count": 16
+}

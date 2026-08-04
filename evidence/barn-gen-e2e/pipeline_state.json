@@ -1,0 +1,149 @@
+{
+  "classification": "SCENE_BUILT_WITH_GENERATED_ASSETS",
+  "composition_manifest_hash": "7ffc57a122aba16f2c32faa69833e56b8623ec7e97b861e3659991545d6e795f",
+  "disable_neural": false,
+  "enable_pcg": false,
+  "generated_assets": {
+    "actors_using_generated_meshes": 1,
+    "classification": "PROVEN",
+    "failed_count": 0,
+    "generated_count": 1,
+    "geometry_source": "mixed",
+    "requested": true
+  },
+  "gpu_work_requested": false,
+  "graph_hash": "fad5aa6b614ce1b8286966b01a96aef4afa7ad63c4f42bb3c276dae6e75745bb",
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+  "input_hashes": {
+    "builder_manifest": "a47090951680ef3bf416e052133cd45e4e496f25ec57795793e50c26bd1954e1",
+    "representation_manifest": "7115229f162a18546e2b03821600e19eb7fe8d9bb13acf475033b757b2cc100b",
+    "scene_spec": "945e829ba26852d32d101d4243331b8e0ef1ae0fe974acc89c9722a0cb233898",
+    "source_image": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b"
+  },
+  "input_kind": "scene",
+  "layer_receipts": {},
+  "max_triangles": 1500000,
+  "max_vram_mb": 6144,
+  "next_action": "TEXTURE_GENERATED_ASSETS",
+  "output_map": "C:/Program Files/Git/Game/AgentProof/BarnGenE2E/barn_gen_e2e/Maps/L_barn_gen_e2e_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "preview",
+  "repair_routes": {
+    "floating_architecture": "scene_graph_construction|architecture_generation",
+    "grey_default_material": "material_generation|material_harmonization",
+    "incorrect_object_classification": "semantic_segmentation|instance_decomposition",
+    "navmesh_crossing_water": "gameplay_planning|navigation_generation",
+    "offset_view_hole": "unseen_world_completion|world_continuation",
+    "source_silhouette_mismatch": "camera_estimation|representation_selection|terrain_generation|architecture_generation",
+    "vegetation_in_water": "vegetation_planning|vegetation_generation"
+  },
+  "resume": false,
+  "scene_id": "barn_gen_e2e",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "ccce20416573fc69191abf0cd4d35be48ef493286577966d912b22e7553a0773",
+      "input_hash": "f48cbc6be0251239bec0bc57b9f717310e669a0c1ebc2956a4a290bece13f478",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\architecture_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "completeness": {
+      "classification": "PARTIAL",
+      "config_hash": "bd0d0a16daf6893d8ec9249093b19013c167c29f7fd174589ed589052e482a37",
+      "input_hash": "69b4c7a14ef034e934d16df722f6b25266d8e12dfe78ea2e265ed8ae8445abdc",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\scene_completeness_receipt.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "scene_composition": {
+      "classification": "PROVEN",
+      "config_hash": "aa091b4984e4ac586de1e34602f13d5cfd0b3a2629347206f5565ba28588bae1",
+      "input_hash": "2bf56b29f81bc232ea819b16215d3ea99f3e9565d3797b88353f4492579c292a",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\scene_content_manifest.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "acacc04da7b4fa18a2673766a3312d7e3a8d6a537e67626d2105ba6385da7cba",
+      "input_hash": "f48cbc6be0251239bec0bc57b9f717310e669a0c1ebc2956a4a290bece13f478",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\terrain_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "c127d7194d17e5eb596b8823cddb6aeb73044d4b5aebb47c5b8d97f7eb02b73f",
+      "input_hash": "f48cbc6be0251239bec0bc57b9f717310e669a0c1ebc2956a4a290bece13f478",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\vegetation_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    }
+  },
+  "started_at": "2026-08-04T12:50:28.574601+00:00",
+  "unreal_build": {
+    "available": true,
+    "camera_fov_deg": 92.8800334634389,
+    "camera_label": "barn_gen_e2e_Camera_Source",
+    "classification": "PROVEN",
+    "generated_actor_count": 1,
+    "generated_actors": [
+      {
+        "kind": "structure",
+        "label": "architecture_house_025",
+        "layer": "architecture",
+        "mesh": "/Game/AgentProof/BarnGenE2E/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod",
+        "placed_size_m": [
+          8.99,
+          12.01,
+          4.68
+        ],
+        "requested_size_m": [
+          8.62,
+          14.36,
+          4.68
+        ],
+        "source": "generated",
+        "uniform_scale": 6.08782
+      }
+    ],
+    "generated_import_failures": [],
+    "generated_mesh_yaw_deg": -90.0,
+    "generated_meshes": {
+      "architecture_house_025": {
+        "extent_cm": [
+          98.63825607299805,
+          73.79655075073242,
+          38.4189453125
+        ],
+        "path": "/Game/AgentProof/BarnGenE2E/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod",
+        "triangles": 149996
+      }
+    },
+    "geometry_source": "mixed",
+    "instance_stride": {},
+    "kinds": [
+      "ground_plane",
+      "scatter_instance",
+      "structure"
+    ],
+    "layers": [
+      "architecture",
+      "terrain",
+      "vegetation"
+    ],
+    "map": "/Game/AgentProof/BarnGenE2E/Maps/L_barn_gen_e2e",
+    "primitive_actor_count": 15,
+    "removed_stale_actors": 0,
+    "scene_id": "barn_gen_e2e",
+    "schema_version": "structural_build_receipt_v2",
+    "skipped_instance_count": 0,
+    "skipped_instances": [],
+    "spawned_count": 16
+  },
+  "updated_at": "2026-08-04T12:50:28.574601+00:00"
+}

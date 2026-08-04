@@ -1,0 +1,51 @@
+{
+  "success": true,
+  "selected_generator": "mini_turbo",
+  "generator_locked": true,
+  "fallback_generators_allowed": [],
+  "transport": "direct-local-weights",
+  "comfyui_url": null,
+  "comfyui_workflow": null,
+  "model_root": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct",
+  "model_subfolder": "hunyuan3d-dit-v2-mini-turbo",
+  "source_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\crop.png",
+  "prompt": "",
+  "target_fbx_used": false,
+  "texture_pipeline_run": false,
+  "rig_pipeline_run": false,
+  "diagnostics_trace": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\generation_trace.jsonl",
+  "seed": 12345,
+  "steps": 5,
+  "octree_ladder": "384:3000,320:2000,256:1500",
+  "diagnostic_telemetry": false,
+  "source_image_sha256": "4c64ac56027801aa4e35c43ea589855f806530ee26f9ddc611333aaa8ee4a683",
+  "weights": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\\model.fp16.safetensors",
+  "weights_bytes": 3822584202,
+  "torch": "2.8.0+cu126",
+  "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "conditioning_source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\crop.png",
+  "matte": "shaman_matte.py",
+  "conditioning_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\mini_turbo_conditioning.png",
+  "image_dimensions": [
+    819,
+    266
+  ],
+  "flashvdm": true,
+  "octree_resolution": 384,
+  "num_chunks": 3000,
+  "attempts": [
+    {
+      "octree_resolution": 384,
+      "num_chunks": 3000,
+      "status": "ok",
+      "peak_vram_mb": 5017
+    }
+  ],
+  "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-gen-e2e\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+  "raw_glb_sha256": "61d54d26fb40c2c167ccf163e36591bd41f70f8ca461eeaeeabc2281158a7c6e",
+  "raw_glb_bytes": 22865864,
+  "raw_vertices": 634924,
+  "raw_triangles": 1270496,
+  "generation_seconds": 786.9,
+  "guidance_scale": 5.0
+}

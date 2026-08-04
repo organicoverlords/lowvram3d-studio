@@ -1,0 +1,79 @@
+{
+  "classification": "PROVEN",
+  "records": [
+    {
+      "confidence": 0.809,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "vegetation_tree_004",
+      "representations": [
+        "procedural_population"
+      ],
+      "selected": "procedural_population",
+      "semantic_class": "vegetation",
+      "source_camera_important": true
+    },
+    {
+      "confidence": 0.795,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "sky_sky_002",
+      "representations": [
+        "sky_environment"
+      ],
+      "selected": "sky_environment",
+      "semantic_class": "sky",
+      "source_camera_important": true
+    },
+    {
+      "confidence": 0.787,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "terrain_grass_009",
+      "representations": [
+        "terrain"
+      ],
+      "selected": "terrain",
+      "semantic_class": "terrain",
+      "source_camera_important": true
+    },
+    {
+      "confidence": 0.582,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "architecture_house_025",
+      "representations": [
+        "modular_architecture"
+      ],
+      "selected": "modular_architecture",
+      "semantic_class": "architecture",
+      "source_camera_important": true
+    },
+    {
+      "confidence": 0.518,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "architecture_hovel_079",
+      "representations": [
+        "modular_architecture"
+      ],
+      "selected": "modular_architecture",
+      "semantic_class": "architecture",
+      "source_camera_important": true
+    },
+    {
+      "confidence": 0.509,
+      "fallback": "unresolved",
+      "materially_visible": true,
+      "region_id": "terrain_field_029",
+      "representations": [
+        "terrain"
+      ],
+      "selected": "terrain",
+      "semantic_class": "terrain",
+      "source_camera_important": true
+    }
+  ],
+  "schema_version": "representation_manifest_v1",
+  "selection_policy": "semantic class, confidence, visibility, gameplay role, camera importance, and budgets"
+}

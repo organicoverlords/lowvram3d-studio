@@ -1,0 +1,169 @@
+{
+  "available_builder_count": 9,
+  "classification": "PROVEN",
+  "filename_not_used_for_selection": true,
+  "schema_version": "builder_manifest_v2",
+  "selected": {
+    "architecture": {
+      "contract": {
+        "builder_id": "architecture",
+        "collision_policy": "blocking_by_region",
+        "fallback": "conservative_blocker",
+        "input_contract": [
+          "regions",
+          "scene_graph"
+        ],
+        "material_policy": "local_architecture",
+        "navigation_policy": "walkable_openings",
+        "output_types": [
+          "StaticMeshActor"
+        ],
+        "proof_gates": [
+          "geometry",
+          "collision"
+        ],
+        "representations": [
+          "modular_architecture",
+          "editable_mesh"
+        ],
+        "resource_budget": {
+          "triangles": 200000
+        },
+        "semantic_classes": [
+          "architecture",
+          "interior_structure",
+          "wall",
+          "roof",
+          "tower",
+          "opening"
+        ]
+      },
+      "estimated_budget": {
+        "triangles": 400000
+      },
+      "reason": "SceneSpec semantics and representation",
+      "region_ids": [
+        "architecture_house_025",
+        "architecture_hovel_079"
+      ]
+    },
+    "environment": {
+      "contract": {
+        "builder_id": "environment",
+        "collision_policy": "none",
+        "fallback": "flat_environment",
+        "input_contract": [
+          "regions",
+          "camera"
+        ],
+        "material_policy": "environment",
+        "navigation_policy": "ignored",
+        "output_types": [
+          "SkyAtmosphere",
+          "DirectionalLight",
+          "ExponentialHeightFog"
+        ],
+        "proof_gates": [
+          "environment",
+          "lighting"
+        ],
+        "representations": [
+          "sky_environment",
+          "visual_shell"
+        ],
+        "resource_budget": {
+          "draw_calls": 10
+        },
+        "semantic_classes": [
+          "sky_or_ceiling",
+          "lighting_source"
+        ]
+      },
+      "estimated_budget": {
+        "draw_calls": 10
+      },
+      "reason": "SceneSpec semantics and representation",
+      "region_ids": [
+        "sky_sky_002"
+      ]
+    },
+    "terrain": {
+      "contract": {
+        "builder_id": "terrain",
+        "collision_policy": "blocking",
+        "fallback": "visual_shell",
+        "input_contract": [
+          "regions",
+          "visibility"
+        ],
+        "material_policy": "rock_or_ground",
+        "navigation_policy": "walkable",
+        "output_types": [
+          "StaticMeshActor"
+        ],
+        "proof_gates": [
+          "geometry",
+          "collision"
+        ],
+        "representations": [
+          "terrain",
+          "procedural_mesh"
+        ],
+        "resource_budget": {
+          "triangles": 100000
+        },
+        "semantic_classes": [
+          "ground",
+          "terrain",
+          "cliff"
+        ]
+      },
+      "estimated_budget": {
+        "triangles": 200000
+      },
+      "reason": "SceneSpec semantics and representation",
+      "region_ids": [
+        "terrain_grass_009",
+        "terrain_field_029"
+      ]
+    },
+    "vegetation": {
+      "contract": {
+        "builder_id": "vegetation",
+        "collision_policy": "none",
+        "fallback": "visual_shell",
+        "input_contract": [
+          "regions",
+          "visibility"
+        ],
+        "material_policy": "biome_local",
+        "navigation_policy": "ignored",
+        "output_types": [
+          "StaticMeshActor"
+        ],
+        "proof_gates": [
+          "population",
+          "exclusion"
+        ],
+        "representations": [
+          "procedural_population",
+          "procedural_mesh"
+        ],
+        "resource_budget": {
+          "instances": 1000
+        },
+        "semantic_classes": [
+          "vegetation"
+        ]
+      },
+      "estimated_budget": {
+        "instances": 1000
+      },
+      "reason": "SceneSpec semantics and representation",
+      "region_ids": [
+        "vegetation_tree_004"
+      ]
+    }
+  },
+  "selection_source": "SceneSpec semantic classes and representation manifest"
+}

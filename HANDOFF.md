@@ -1,187 +1,215 @@
-# Handoff — 2026-08-04
+# Handoff — 2026-08-04 (second session)
 
 Repo: `C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803`
 Branch: `agent/scene-pipeline-smoke-20260803`
-Head: `7fbbce8` (session started at `2e228c1`)
+Head: `80d07bb` (this session started at `0658086`)
 Unreal project: `C:\Users\Lauri\Desktop\UnrealAITest58\UnrealAITest58.uproject` (UE 5.8.0)
 
-**Start here:** `docs/unreal-mcp/README.md`, then `docs/pipelines/README.md`.
-Run `python -m uemcp doctor` from `unreal/` before diagnosing anything.
+**Start here:** `docs/AXIS_CONVENTIONS.md`, then `docs/unreal-mcp/README.md`, then
+`docs/pipelines/README.md`. Run `python -m uemcp doctor` from `unreal/` before
+diagnosing anything.
 
 ---
 
 ## 1. What actually works now
 
-One command takes an image to a built, rendered Unreal scene:
+One command takes an image to a built, rendered Unreal scene **containing
+generated geometry** rather than engine primitives:
 
 ```bash
 PYTHONPATH=src python -m lowvram3d.image_to_scene_pipeline \
   --image "C:/Users/Lauri/Downloads/benchmarkpics/treesandbarn.png" \
   --project "C:/Users/Lauri/Desktop/UnrealAITest58/UnrealAITest58.uproject" \
-  --scene-id barn_auto --input-kind scene --quality-tier preview \
-  --output-root "/Game/AgentProof/BarnAuto" --evidence-root evidence/barn-auto
+  --scene-id barn_gen --input-kind scene --quality-tier preview \
+  --output-root "/Game/AgentProof/BarnGen" --evidence-root evidence/barn-gen \
+  --generate-assets --max-generated-assets 1
 ```
 
-Ends with `PIPELINE_CLASSIFICATION=SCENE_BUILT` and 16 actors in
-`/Game/AgentProof/BarnAuto/Maps/L_barn_auto`.
+Ends with `PIPELINE_CLASSIFICATION=SCENE_BUILT_WITH_GENERATED_ASSETS`.
 
-Chain: image → MoGe-2 depth → SegFormer regions → unprojected placement →
-spawned in Unreal → rendered. Every stage writes a receipt under
-`--evidence-root`.
+Chain: image → MoGe-2 depth → SegFormer regions **+ per-region masks** →
+unprojected placement → **crop → matte → Mini Turbo → decimate → import** →
+spawned in Unreal → rendered. Every stage writes a receipt.
 
----
+**The classification distinguishes generated from primitive.** `SCENE_BUILT` used
+to be true of a field of cubes; there are now three outcomes
+(`..._WITH_GENERATED_ASSETS`, `..._FROM_PRIMITIVES`, `PARTIAL`) and the build
+receipt counts the two kinds of actor separately. Do not average them.
 
-## 2. The two pipelines
-
-Full rationale in `docs/pipelines/README.md`. The short version:
-
-| | **A — Photometric** | **B — Structural** |
-|---|---|---|
-| Bet | Reproduce *this photograph* | Build a *real scene* it describes |
-| Fails when | Camera moves off-axis | Compared to the source image |
-
-**They must be graded on different tests.** Photometric matches the source view
-*by construction*, so scoring it that way proves nothing — that is how a flat
-textured shell passed as a scene for several sessions. `pipeline_result_v1`
-carries `graded_on` / `not_applicable` and omits inapplicable metrics rather
-than reporting zero, so they cannot be silently averaged.
-
-`offaxis_stability` is the one metric both must satisfy, and the only one that
-would have caught the flat shell early.
-
-Dispatcher: `python -m lowvram3d.pipelines --list`.
+Interpreter note: use Python312 and an **absolute** `PYTHONPATH`. `PYTHONPATH=src`
+does not survive an MSYS shell.
 
 ---
 
-## 3. Environments (this matters — nothing shares one)
+## 2. Axis conventions — measured, and not what was assumed
 
-| Purpose | Interpreter |
-|---|---|
-| MoGe, segmentation, splats | `%LOCALAPPDATA%\LowVRAM3DStudio\envs\image-world-moge\Scripts\python.exe` (torch 2.8.0+cu128, CUDA) |
-| Image comparison, pipeline driver | `%LOCALAPPDATA%\Programs\Python\Python312\python.exe` (numpy, PIL, cv2, trimesh) |
-| Perceptual critic | `...\envs\visualqa\Scripts\python.exe` (transformers, CPU torch) |
-| **Do not use** | Python311 on PATH — no numpy/PIL/torch |
+Full detail and receipts in `docs/AXIS_CONVENTIONS.md` and `evidence/axis-probe/`.
+This closes the open item that had been guessed at three times.
 
-`torch` in Python312 is an **empty namespace directory**, not an install:
-`torch.__file__` is `None`. It imports and then fails on first attribute access.
+**Unreal's glTF importer maps glTF (x, y, z) onto Unreal (x, z, y), at 100 cm per
+glTF metre**, with zero off-axis leakage. Measured with an asymmetric probe
+(`workers/make_axis_probe_glb.py` + `unreal/measure_axis_mapping.py`), and
+independently confirmed later when a generated mesh's Unreal extents matched its
+glTF extents under that mapping exactly.
 
-`depth_stage.py` shells out to the MoGe interpreter and degrades visibly when
-it is missing — it never silently produces a flat result.
+Two consequences: the importer already applies the metre→centimetre conversion,
+and the Y↔Z swap is a *reflection*, which is correct — it converts right-handed
+Y-up glTF into left-handed Z-up Unreal. A mesh that arrives mirrored is mirrored
+in the source file.
 
----
+**The MoGe reconstruction was upside down, and that was the real bug.**
+`moge_reconstruct` negated Y as well as Z, which is right for OpenCV points with
+Y down; MoGe's Y is already up. The extra negation inverted every reconstruction,
+and an inverted scene cannot be framed by *any* camera pose because the
+correction required is a mirror — which is why scoring always preferred a
+vertically flipped render and why "yaw −50 with centroid framing" was the best
+anyone could find. Fixed by negating only Z, and reversing winding with it.
 
-## 4. Talking to Unreal
+Proven before changing the exporter, by transforming an existing reconstruction
+(`workers/reorient_reconstruction.py`) and re-rendering the yaw sweep
+(`scripts/verify_axis_mapping_prediction.py`):
 
-`unreal/uemcp/` is the canonical client. `python -m uemcp doctor` checks every
-surface and names the repair.
+| yaw | before | after | flip needed after |
+|---|---|---|---|
+| 0 | 0.134 | 0.152 | identity |
+| −50 (the old workaround) | **0.301** | 0.098 | vflip |
+| **−90 (measured)** | −0.026 | **1.439** | **identity** |
 
-Three independent channels reach the editor:
-
-- **UE_MCP_Bridge** — TCP, port **derived from the project path** and published
-  to `<project>/Saved/UE_MCP_Bridge/port.json` each boot (49538 here). 713
-  handlers, the only one with `execute_python`. **This is the workhorse.**
-- **ModelContextProtocol** — `http://127.0.0.1:8000/mcp`, ~54 toolsets, no
-  arbitrary Python.
-- **UnrealOpenCode** — port 3000, legacy.
-
-### Traps that each cost hours
-
-- **Never hardcode port 55557.** Read the lockfile.
-- **Never use `urllib`/`requests` against port 8000** — it answers with an
-  unterminated event stream that reports as `200 OK` with a zero-byte body and
-  no exception. Use `uemcp.EditorMCP` (raw socket).
-- **`execute_python` needs a named result variable.** `ExecuteFile` semantics,
-  so top-level `return` is a syntax error.
-- **`connect_material_property` fails silently on a wrong pin name.**
-  `VertexColor` accepts only the default output; `TextureSample` accepts
-  `"RGB"`. Always connect *and then verify*.
-- **Long editor work can exceed the handler timeout while still completing.**
-  A 14 MB import "timed out" and had succeeded. Check state before retrying.
-- **MSYS rewrites leading-slash arguments.** `--output-root /Game/X` arrives as
-  `C:/Program Files/Git/Game/X`. `unreal_stage.normalise_package_root` recovers
-  it; do the same anywhere else a package path crosses a shell.
-- **A modal dialog blocks the game thread** and stalls every channel at once.
-  Look at the editor window before investigating anything else.
-
-### `mcp__unreal-engine__*` tools are unusable
-
-The npm client (`ultimate-unreal-engine-mcp` 0.1.25) correlates responses by a
-`correlationId` this plugin build **never echoes**, so every call times out at
-30 s. The reconnect storm was a separate defect and is fixed (patched
-`BridgeServer.cpp`, rebuilt). Configs for Claude / Codex / OpenCode are
-corrected and pinned (backups `.bak-20260804`). **Use `uemcp` instead.**
+Correlation at yaw −90 goes from −0.229 to **+0.780**, silhouette IoU 0.150 →
+**0.526**. The source camera for a reconstruction is **yaw −90**, not yaw 0.
 
 ---
 
-## 5. Bugs found and fixed (do not reintroduce)
+## 3. Per-object generation
 
-Each of these silently discarded the previous stage's work while every receipt
-still read `PROVEN`:
+`src/lowvram3d/asset_generation.py` is the stage; `workers/mini_turbo_generate.py`
+is unchanged and still the only generator.
 
-1. **Material emissive never connected.** `M_CastlegroundsSourceProjection` is
-   `MSM_UNLIT`; three `TextureSample` nodes pointed at the right texture with
-   none wired to an output. Every capture in project history rendered black.
-2. **Nanite ate the mesh.** glTF import enables it; the mesh then reports and
-   renders a 1,770-triangle fallback proxy for a 502,846-triangle
-   reconstruction. Disabled on import.
-3. **Double metre→centimetre conversion.** The importer already applies ×100.
-   Scaling the actor again put a 544 m scene at 25 km across.
-4. **Non-idempotent builders.** `new_level()` on an existing path *loads* it, so
-   reruns stacked copies — three meshes, three cameras, and in the hybrid map
-   four competing directional lights. Builders now remove what they own first.
-5. **180° import roll.** Diagnosed by scoring the render against the source
-   under all four flip candidates (`rot180` correlation 0.50, everything else
-   negative). Corrected on the mesh, not the camera.
-6. **MCP HTTP server never started.** `bAutoStartServer` was in
-   `DefaultEditor.ini` under the wrong module; the class is
-   `config=EditorPerProjectUserSettings` in `ModelContextProtocolEngine`. Moved
-   to `Config/DefaultEditorPerProjectUserSettings.ini`.
+Three judgements, each deliberate:
+
+- **Surfaces are not generated.** Terrain, water and paths are measured extents,
+  not objects with a silhouette, and keep their planes.
+- **Scatter regions generate once** and reuse the mesh across instances. A tree
+  line is twelve placements of one subject, not twelve ten-minute generations.
+  This is a cost decision and the receipt says so.
+- **Failures are per-asset.** A region that fails keeps its primitive and is
+  recorded as failed; failing the run would discard everything that worked.
+
+**Matte from the segmentation masks, never rembg.** The segmentation stage
+computed a per-class mask and threw it away; it now writes one PNG per region
+(`--mask-dir`). rembg on this source erased half the barn — the same failure that
+stripped the shaman's ornaments. Measured difference on the same crop: 99 bodies
+and not watertight → **12 bodies, watertight**, and the shape went from a smooth
+loaf to a barn with a ridge line, a doorway and the lean-to from the photo.
+
+**Decimate before leaving the stage.** Mini Turbo samples a 384³ volume whatever
+the subject, so one building is ~1.7 M triangles — grid resolution, not detail.
+Blender reduces it to 150 k (`workers/decimate_mesh.py`; no Python decimator is
+installed in this interpreter and Blender is already a declared dependency).
+This takes the Unreal import from **over ten minutes to seconds**.
+
+`workers/preview_generated_mesh.py` renders any asset on its own, on the CPU, so
+"is this actually a barn?" does not require building a scene.
+
+---
+
+## 4. Runtime and its failure mode
+
+Mini Turbo needs its own interpreter, `hy3dgen` on `PYTHONPATH`, and a model root
+that is neither — all three checked up front by `resolve_runtime()`, which names
+what is missing. If the weights are absent, look in the parallel `hub\` HF tree
+before re-downloading 3.8 GB.
+
+**This GPU faults on the second generation of a run.** Across three independent
+runs the first asset generates cleanly and later ones die with `CUDA error:
+misaligned address` inside a Linear on the second diffusion step. Each asset is
+already its own process, so it is not a leaked context. This GTX 1660 SUPER has
+form — fp16 cuDNN convolution on it produces NaN often enough to be disabled
+elsewhere in the project.
+
+Mitigations in place: a settle pause between assets, and a retry that re-runs in
+a fresh process further down the octree ladder (the worker's own ladder only
+handles OOM, and the CUDA context is unusable after this fault anyway). It is not
+a fix. Last full run: 2 of 3 assets generated, the third exhausted all three
+rungs.
+
+---
+
+## 5. Bugs found and fixed this session
+
+Each of these put real work into the project and made it look like something
+else had failed.
+
+1. **`unreal.Rotator` is `(roll, pitch, yaw)`.** `Rotator(0, yaw, 0)` sets
+   *pitch* and lays every generated mesh on its side. Caught by recording
+   requested against placed extents — they came back as permutations of each
+   other. Use keyword arguments.
+2. **Relative paths crossing into the editor.** The editor resolves a relative
+   path against the *project* directory, so a generated mesh reported as "not
+   found" and renders landed in `UnrealAITest58/`. Resolve before sending.
+3. **A handler timeout is not a failure — but a script error is.** The import
+   workaround treated every exception as "still working" and polled for thirty
+   minutes for a mesh that could never appear.
+4. **Polling restarted the work it was waiting for.** The poll re-ran the
+   importer, which starts an import when it finds no mesh, so a two-minute import
+   never finished. Polling is query-only now.
+5. **Import reuse ignored the source.** A regenerated mesh keeps its filename, so
+   a scene was rendered with a barn that had been replaced an hour earlier, with
+   nothing in any receipt saying so. Reuse now requires a source-hash match,
+   stored as asset metadata.
+6. **Scale fit the smallest axis ratio**, so a 15 m tree line became 2.6 m lumps.
+   Match the measured *height*: it is the dimension a single view determines.
+7. **Importing inside the scene build** hid a successful ten-minute import behind
+   a handler timeout and shipped primitives with a `PROVEN` receipt.
+8. **`depth_receipt` was referenced before assignment** when a SceneSpec was
+   supplied.
 
 ---
 
 ## 6. Open items, highest leverage first
 
-1. **Per-object models via Hunyuan3D Mini Turbo.** The user asked for this
-   explicitly. Placement specs are already the right input: each region carries
-   a source bbox to crop, a measured world size to scale to, and a position.
-   Stage is `region bbox → crop → Mini Turbo → GLB → import → swap for the
-   primitive`. Runtime notes: standalone Python, `hy3dgen` on `PYTHONPATH`, DiT
-   weights under the `hub\` HF tree. **Structural output is still engine
-   primitives until this lands.**
-2. **A/mesh glTF axis mapping.** Yaw 0 (what the standard convention predicts)
-   renders an almost-empty frame; geometry sits near yaw −50°. Centroid framing
-   is a workaround. **Settle it by measuring** the mapping from known vertex
-   positions — do not guess a fourth time.
-3. **A/splats needs a UE plugin.** PLY is standard INRIA 3DGS and validated
-   (`scripts/render_splat_ply.py`, needs no GPU). Luma AI ship a free UE plugin;
-   installing one is a project change, so ask first.
-4. **Occlusion inpainting.** Single-view leaves holes by definition.
-   [SplatFill](https://arxiv.org/abs/2509.07809) operates on the splat
-   representation already exported.
-5. **`mcp__unreal-engine__*` correlationId mismatch** — the npm package is older
-   than the installed plugin. Reconcile or retire.
+1. **The scene composition, not the generator.** The generated barn is good; the
+   assembled scene is not. Two specific causes, both upstream of generation:
+   - MoGe gives the tree region a depth band of 11.7–23.1 m while the barn sits
+     at 13.5 m, so the vegetation mass **swallows the building**. Region depth
+     needs to be a surface, not a band, or nearer regions need to carve it.
+   - A "tree" region here is a 28 m hedge line, not a tree. Its crop is
+     therefore a chunk of foliage and its mesh is a blob — accurate to the input
+     and useless as a tree. Instance segmentation would fix the crop, the mesh
+     and the placement at once.
+2. **Texture the generated meshes.** They render as untextured grey. The source
+   crop and its mask are already on disk per asset; this is the same projection
+   problem the photometric lane already solved once.
+3. **The CUDA fault** in §4. Worth one experiment: generate the same asset twice
+   in a row in one run and see whether the *second* attempt fails, which would
+   separate "GPU state" from "this particular input".
+4. **A/splats needs a UE plugin.** Unchanged. Installing one is a project
+   change, so ask first.
+5. **`mcp__unreal-engine__*` correlationId mismatch** — unchanged; use `uemcp`.
 
 ---
 
-## 7. Test suite caveat
+## 7. Test suite
 
-`python -m pytest` fails collection on 33 files for missing
-`PIL`/`numpy`/`cv2`/`psutil`. **This is pre-existing**, confirmed by stashing
-all session changes and reproducing identically on a clean tree. It is an
-interpreter-on-PATH problem, not a regression — but it does mean the "52 passing
-tests" baseline is not reproducible from a default shell. Use Python312.
+`536 passed / 70 failed`, and **the same 70 fail on a clean tree** — verified by
+stashing every change and re-running. They are the pre-existing
+`torch`-is-an-empty-namespace problem in Python312, not a regression. Three files
+also fail collection for the same reason and must be `--ignore`d.
+
+New: `tests/test_asset_generation_plan.py` covers what gets generated and from
+which pixels, without touching a GPU.
 
 ---
 
-## 8. Working habits that paid off
+## 8. Working habits that paid off, again
 
-- **Measure, don't eyeball.** The 180° roll was settled by scoring four
-  candidate orientations, not by looking. The result contradicted the standard
-  convention.
-- **Verify writes, don't trust return values.** Unreal's Python API returns
-  success for several operations that silently did nothing.
-- **Distrust green receipts.** Every major defect this session sat behind a
-  `PROVEN` classification. A PNG existing is not evidence it contains anything.
-- **Render off-screen, not screenshots.** `capture_scene_png` / `uemcp shot`
-  need no window focus, no PIE, no player pawn, and return a byte size to
-  assert on.
+- **Measure, don't eyeball.** The axis mapping, the up-axis defect and the
+  Rotator argument order were all found by comparing numbers that should have
+  matched and didn't. None was visible by looking at a render.
+- **Make the prediction falsifiable.** The probe measurement predicted yaw −90;
+  the render *refuted* it, and the refutation is what exposed the real defect. A
+  measurement that only confirms itself would have shipped the wrong fix.
+- **Distrust green receipts.** Still true. This session added `PROVEN` receipts
+  over a stale mesh and over primitives standing in for a failed import.
+- **Report the artefact, not the exit code.** Every acceptance here checks the
+  file that was supposed to be written.

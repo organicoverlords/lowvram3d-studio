@@ -1,0 +1,50 @@
+{
+  "classification": "PROVEN",
+  "default_grey_allowed": false,
+  "global_fallback": "neutral_local_material",
+  "regions": [
+    {
+      "fallback": "local_material",
+      "material_family": "biome_local",
+      "observed": true,
+      "region_id": "vegetation_tree_004",
+      "semantic_class": "vegetation"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "environment",
+      "observed": true,
+      "region_id": "sky_sky_002",
+      "semantic_class": "sky_or_ceiling"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "rock_or_ground",
+      "observed": true,
+      "region_id": "terrain_grass_009",
+      "semantic_class": "terrain"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "local_architecture",
+      "observed": true,
+      "region_id": "architecture_house_025",
+      "semantic_class": "architecture"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "local_architecture",
+      "observed": true,
+      "region_id": "architecture_hovel_079",
+      "semantic_class": "architecture"
+    },
+    {
+      "fallback": "local_material",
+      "material_family": "rock_or_ground",
+      "observed": true,
+      "region_id": "terrain_field_029",
+      "semantic_class": "terrain"
+    }
+  ],
+  "schema_version": "scene_material_analysis_v1"
+}
