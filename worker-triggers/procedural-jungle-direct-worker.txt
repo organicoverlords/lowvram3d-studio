@@ -1,8 +1,8 @@
-run=50
-requested=2026-08-04T18:44:00+03:00
+run=51
+requested=2026-08-04T18:46:00+03:00
 mode=github-self-hosted-v3-visual-overhaul
-repair_commit=78a9eeb84420cfca3d3641a182e897977afc1453
-repair_scope=delegate-redundant-decoded-build-unreal-guard-after-proven-coexistence-gate
+repair_commit=79884864a9da5b621c78500a726c0739f04bb2b1
+repair_scope=python-patch-decoded-build-unreal-guard-after-proven-coexistence-gate
 coexistence_wrapper_source=498e600c5873377fd0f55b8179b86ec62780b32c
 installer_sha256=8caff1745534e6c73ae21b86a6cb5ee035bad5512741a1c5561bc3b649a348d5
 protected_unreal_project=C:\Users\Lauri\Desktop\UnrealAITest58\UnrealAITest58.uproject
