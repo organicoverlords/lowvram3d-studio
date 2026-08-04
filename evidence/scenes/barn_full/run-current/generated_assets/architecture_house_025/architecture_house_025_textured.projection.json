@@ -1,0 +1,22 @@
+{
+  "classification": "PROVEN",
+  "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\crop.png",
+  "fill_rgb": [
+    44.1,
+    38.1,
+    32.4
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+  "mask_coverage": 0.1427,
+  "observed_from": "single view; sides stretch along the projection axis",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
+  "output_bytes": 16441328,
+  "projection": "object_space_front_minus_z",
+  "schema_version": "crop_projection_v1",
+  "texture_size": [
+    950,
+    950
+  ],
+  "triangles": 149998,
+  "vertices": 449926
+}

@@ -1,0 +1,13 @@
+{
+  "classification": "PROVEN",
+  "failed_count": 0,
+  "free_vram_mb": 5503,
+  "generated_count": 1,
+  "next": "Open Unreal, then rerun with --phase build --resume to import these meshes and assemble the scene.",
+  "octree_resolutions_reached": [
+    320
+  ],
+  "phase": "generate",
+  "schema_version": "generation_phase_receipt_v1",
+  "skipped_count": 1
+}

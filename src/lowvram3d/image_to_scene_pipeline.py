@@ -16,6 +16,7 @@ from typing import Any, Callable
 
 from .scene_completeness import audit_scene_completeness
 from .depth_stage import reconstruct_depth
+from .placement_refinement import refine as refine_placement
 from .region_placement import place as place_regions
 from .asset_generation import free_vram_mb
 from .asset_generation import generate as generate_region_assets
@@ -179,6 +180,14 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         placement = place_regions(
             depth_receipt["segmentation"],
             (depth_receipt.get("camera") or {}).get("fov_x_deg"))
+        # Satisfy the measurements rather than merely reporting that they were
+        # not satisfied. Mutates `placement` in place, and only when it improves
+        # its own objective.
+        refinement = refine_placement(
+            placement,
+            depth_receipt["segmentation"].get("ground_plane_unreal"),
+            depth_receipt.get("camera") or {})
+        _write_json(evidence / "placement_refinement.json", refinement)
         _write_json(evidence / "region_placement.json", placement)
 
         # Generate a real mesh per object-like region. Without this the

@@ -1,0 +1,51 @@
+{
+  "success": true,
+  "selected_generator": "mini_turbo",
+  "generator_locked": true,
+  "fallback_generators_allowed": [],
+  "transport": "direct-local-weights",
+  "comfyui_url": null,
+  "comfyui_workflow": null,
+  "model_root": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct",
+  "model_subfolder": "hunyuan3d-dit-v2-mini-turbo",
+  "source_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\crop.png",
+  "prompt": "",
+  "target_fbx_used": false,
+  "texture_pipeline_run": false,
+  "rig_pipeline_run": false,
+  "diagnostics_trace": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\generation_trace.jsonl",
+  "seed": 12345,
+  "steps": 5,
+  "octree_ladder": "320:2000,256:1500",
+  "diagnostic_telemetry": false,
+  "source_image_sha256": "aece03b143db713ec1f83b69d5a45c03568674d5aea42e744f9186208a916d44",
+  "weights": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\\model.fp16.safetensors",
+  "weights_bytes": 3822584202,
+  "torch": "2.8.0+cu126",
+  "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "conditioning_source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\crop.png",
+  "matte": "shaman_matte.py",
+  "conditioning_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\mini_turbo_conditioning.png",
+  "image_dimensions": [
+    950,
+    950
+  ],
+  "flashvdm": true,
+  "octree_resolution": 320,
+  "num_chunks": 2000,
+  "attempts": [
+    {
+      "octree_resolution": 320,
+      "num_chunks": 2000,
+      "status": "ok",
+      "peak_vram_mb": 4463
+    }
+  ],
+  "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+  "raw_glb_sha256": "112997a83f03c455a958eac9eca7d8fe2cb13b40b7629a50b722710ad29e52f6",
+  "raw_glb_bytes": 15423860,
+  "raw_vertices": 428151,
+  "raw_triangles": 857102,
+  "generation_seconds": 227.0,
+  "guidance_scale": 5.0
+}
