@@ -1,9 +1,9 @@
 {
-  "purpose": "Dispatch exactly one branch-write-free FaceVerse v4 preflight with PowerShell-safe stage tracing, isolated user-site, normal venv site initialization, and faulthandler.",
-  "workflow_commit": "fe802c2ce22b1bd9e1eb89aecd6c0a2ad66ab8e0",
+  "purpose": "Dispatch exactly one branch-write-free FaceVerse v4 preflight using directly instrumented Python, isolated user-site, normal venv initialization, and immutable CUDA Torch.",
+  "workflow_commit": "ec7e237c0abb5eb0d486904f6cb8b36495211b76",
+  "direct_trace_commit": "c55d421efb2353e6220e3facabc7d8d99f2cb186",
   "isolation_patch_commit": "bb7c4c08c8501736024fd6ab06352cd64dcc77ac",
-  "stage_trace_commit": "3373f4e525a9f5cc2efe7d134e9e9ac25d9d4411",
   "release_fallback_commit": "823140c119eb89cbd5a46d7ce5a47316d0fa4ff6",
-  "failed_trace_generator_run": 30871521995,
-  "requested_at": "2026-08-04T05:24:00+03:00"
+  "failed_runtime_trace_run": 30871651279,
+  "requested_at": "2026-08-04T05:28:00+03:00"
 }
