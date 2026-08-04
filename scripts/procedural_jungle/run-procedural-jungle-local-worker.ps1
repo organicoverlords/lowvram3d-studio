@@ -40,7 +40,7 @@ $OverhaulBundleRoot = Join-Path $RepoRoot 'worker-bundles\procedural-jungle-visu
 $BaseBytes = Get-CleanBase64Bytes -Directory $BaseBundleRoot -ExpectedChunkCount 9
 $OverhaulBytes = Get-CleanBase64Bytes -Directory $OverhaulBundleRoot -ExpectedChunkCount 4
 
-$ExpectedOverhaulSha = 'e719e59ee412f6e17a0b6507d7a15aef175dee544de9ff7b7f6510d23b0c8ea0'
+$ExpectedOverhaulSha = 'd78dfd8b68e1a47573446c038bfaaf03d996751b931160266279ee5814613129'
 $TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-visual-overhaul-$Head"
 if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
