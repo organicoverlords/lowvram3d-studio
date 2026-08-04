@@ -18,7 +18,7 @@ if ($text.Contains($old)) {
     [System.IO.File]::WriteAllText((Resolve-Path -LiteralPath $target), $text, [System.Text.UTF8Encoding]::new($false))
     Write-Host 'CANONICAL_WORLD_COLOR_COMPAT=APPLIED'
 }
-elif ($text.Contains($new)) {
+elseif ($text.Contains($new)) {
     Write-Host 'CANONICAL_WORLD_COLOR_COMPAT=ALREADY_APPLIED'
 }
 else {
