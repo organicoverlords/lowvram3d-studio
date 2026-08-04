@@ -11,7 +11,9 @@ if (-not (Test-Path -LiteralPath $target)) {
 
 $text = Get-Content -LiteralPath $target -Raw
 
-$anchor = "$LandmarkerUrl = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task'"
+$anchor = @'
+$LandmarkerUrl = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task'
+'@.Trim()
 $insertion = @'
 $FaceVerseReleaseBase = 'https://github.com/Mrkomiljon/faceverse-onnx/releases/latest/download'
 $FaceVerseModelReleaseUrl = "$FaceVerseReleaseBase/faceverse_v4_2.npy"
