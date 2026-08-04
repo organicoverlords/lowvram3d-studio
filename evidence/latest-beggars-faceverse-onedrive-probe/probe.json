@@ -1,8 +1,111 @@
 ﻿{
     "classification":  "PROBE_COMPLETE",
-    "workflow_run_id":  "30869737457",
+    "workflow_run_id":  "30869828958",
     "source":  "official FaceVerse v4 README OneDrive shares",
     "probes":  [
-
+                   {
+                       "name":  "model",
+                       "mode":  "head-no-follow",
+                       "curl_exit":  0,
+                       "summary":  "301|https://1drv.ms/u/c/b8eab7b1820a6fa4/EWJOsgGxPMZDkl8xJ_QZB30BpcjNoMVGK9mnUPq5n9-lyw?e=4GvEs9||0",
+                       "bytes":  667,
+                       "sha256":  "a1336a49b0d8d6cd99deec548383d2aedad7925d228d66ff7b61066d4dd6d84c",
+                       "location_count":  1,
+                       "location_hosts":  [
+                                              "onedrive.live.com"
+                                          ],
+                       "begins_with_html":  false
+                   },
+                   {
+                       "name":  "model",
+                       "mode":  "get-follow",
+                       "curl_exit":  0,
+                       "summary":  "200|https://onedrive.live.com/?cid=b8eab7b1820a6fa4\u0026id=B8EAB7B1820A6FA4!s01b24e623cb143c6925f3127f419077d\u0026resid=B8EAB7B1820A6FA4!s01b24e623cb143c6925f3127f419077d\u0026e=4GvEs9\u0026migratedtospo=true\u0026redeem=aHR0cHM6Ly8xZHJ2Lm1zL3UvYy9iOGVhYjdiMTgyMGE2ZmE0L0VXSk9zZ0d4UE1aRGtsOHhKX1FaQjMwQnBjak5vTVZHSzltblVQcTVuOS1seXc_ZT00R3ZFczk|text/html; charset=utf-8|302640",
+                       "bytes":  302640,
+                       "sha256":  "4db6555775a960b9e3880a4bdf88188440df20fbc6d9cf971777cd8ac325cd7f",
+                       "location_count":  2,
+                       "location_hosts":  [
+                                              "onedrive.live.com"
+                                          ],
+                       "begins_with_html":  true
+                   },
+                   {
+                       "name":  "model",
+                       "mode":  "download-follow",
+                       "curl_exit":  0,
+                       "summary":  "200|https://onedrive.live.com/?cid=b8eab7b1820a6fa4\u0026id=B8EAB7B1820A6FA4!s01b24e623cb143c6925f3127f419077d\u0026resid=B8EAB7B1820A6FA4!s01b24e623cb143c6925f3127f419077d\u0026e=4GvEs9\u0026download=1\u0026migratedtospo=true\u0026redeem=aHR0cHM6Ly8xZHJ2Lm1zL3UvYy9iOGVhYjdiMTgyMGE2ZmE0L0VXSk9zZ0d4UE1aRGtsOHhKX1FaQjMwQnBjak5vTVZHSzltblVQcTVuOS1seXc_ZT00R3ZFczkmZG93bmxvYWQ9MQ|text/html; charset=utf-8|300814",
+                       "bytes":  300814,
+                       "sha256":  "712d9d0645b0a996d96d1e28ce283377cf568e770e687195eb496de85a71af2d",
+                       "location_count":  2,
+                       "location_hosts":  [
+                                              "onedrive.live.com"
+                                          ],
+                       "begins_with_html":  true
+                   },
+                   {
+                       "name":  "model",
+                       "mode":  "download-replace-query",
+                       "curl_exit":  0,
+                       "summary":  "200|https://onedrive.live.com/?cid=b8eab7b1820a6fa4\u0026id=B8EAB7B1820A6FA4!s01b24e623cb143c6925f3127f419077d\u0026resid=B8EAB7B1820A6FA4!s01b24e623cb143c6925f3127f419077d\u0026download=1\u0026migratedtospo=true\u0026redeem=aHR0cHM6Ly8xZHJ2Lm1zL3UvYy9iOGVhYjdiMTgyMGE2ZmE0L0VXSk9zZ0d4UE1aRGtsOHhKX1FaQjMwQnBjak5vTVZHSzltblVQcTVuOS1seXc_ZG93bmxvYWQ9MQ|text/html; charset=utf-8|301747",
+                       "bytes":  301747,
+                       "sha256":  "c359bd4c9f509fa856de9dec662101bafbf4f340d624fea74ea0a7bdec434391",
+                       "location_count":  2,
+                       "location_hosts":  [
+                                              "onedrive.live.com"
+                                          ],
+                       "begins_with_html":  true
+                   },
+                   {
+                       "name":  "checkpoint",
+                       "mode":  "head-no-follow",
+                       "curl_exit":  0,
+                       "summary":  "301|https://1drv.ms/u/c/b8eab7b1820a6fa4/ETfT_C9Oz1FFlykJdtj3h6MBR1KvQb5BYwesxFykH-7BZA?e=7ti1yj||0",
+                       "bytes":  667,
+                       "sha256":  "8cc79afac0c72873f5976f07955f80d150582a3c7572d99e0588fed653466932",
+                       "location_count":  1,
+                       "location_hosts":  [
+                                              "onedrive.live.com"
+                                          ],
+                       "begins_with_html":  false
+                   },
+                   {
+                       "name":  "checkpoint",
+                       "mode":  "get-follow",
+                       "curl_exit":  0,
+                       "summary":  "200|https://onedrive.live.com/?cid=b8eab7b1820a6fa4\u0026id=B8EAB7B1820A6FA4!s2ffcd337cf4e455197290976d8f787a3\u0026resid=B8EAB7B1820A6FA4!s2ffcd337cf4e455197290976d8f787a3\u0026e=7ti1yj\u0026migratedtospo=true\u0026redeem=aHR0cHM6Ly8xZHJ2Lm1zL3UvYy9iOGVhYjdiMTgyMGE2ZmE0L0VUZlRfQzlPejFGRmx5a0pkdGozaDZNQlIxS3ZRYjVCWXdlc3hGeWtILTdCWkE_ZT03dGkxeWo|text/html; charset=utf-8|301739",
+                       "bytes":  301739,
+                       "sha256":  "86e87e8f6932c7fef8c1f4f6dfdbdad2f8393bfd9172088e2f81b4cb47975591",
+                       "location_count":  2,
+                       "location_hosts":  [
+                                              "onedrive.live.com"
+                                          ],
+                       "begins_with_html":  true
+                   },
+                   {
+                       "name":  "checkpoint",
+                       "mode":  "download-follow",
+                       "curl_exit":  0,
+                       "summary":  "200|https://onedrive.live.com/?cid=b8eab7b1820a6fa4\u0026id=B8EAB7B1820A6FA4!s2ffcd337cf4e455197290976d8f787a3\u0026resid=B8EAB7B1820A6FA4!s2ffcd337cf4e455197290976d8f787a3\u0026e=7ti1yj\u0026download=1\u0026migratedtospo=true\u0026redeem=aHR0cHM6Ly8xZHJ2Lm1zL3UvYy9iOGVhYjdiMTgyMGE2ZmE0L0VUZlRfQzlPejFGRmx5a0pkdGozaDZNQlIxS3ZRYjVCWXdlc3hGeWtILTdCWkE_ZT03dGkxeWomZG93bmxvYWQ9MQ|text/html; charset=utf-8|301765",
+                       "bytes":  301765,
+                       "sha256":  "0b8e27e41fa417416edc4995095124cc9c46063aff7edfd4a96956e257f34148",
+                       "location_count":  2,
+                       "location_hosts":  [
+                                              "onedrive.live.com"
+                                          ],
+                       "begins_with_html":  true
+                   },
+                   {
+                       "name":  "checkpoint",
+                       "mode":  "download-replace-query",
+                       "curl_exit":  0,
+                       "summary":  "200|https://onedrive.live.com/?cid=b8eab7b1820a6fa4\u0026id=B8EAB7B1820A6FA4!s2ffcd337cf4e455197290976d8f787a3\u0026resid=B8EAB7B1820A6FA4!s2ffcd337cf4e455197290976d8f787a3\u0026download=1\u0026migratedtospo=true\u0026redeem=aHR0cHM6Ly8xZHJ2Lm1zL3UvYy9iOGVhYjdiMTgyMGE2ZmE0L0VUZlRfQzlPejFGRmx5a0pkdGozaDZNQlIxS3ZRYjVCWXdlc3hGeWtILTdCWkE_ZG93bmxvYWQ9MQ|text/html; charset=utf-8|302601",
+                       "bytes":  302601,
+                       "sha256":  "6f05e337837924a469c15ac8747aeae32db6c1dff8c9d6b27fce274e12ee2af8",
+                       "location_count":  2,
+                       "location_hosts":  [
+                                              "onedrive.live.com"
+                                          ],
+                       "begins_with_html":  true
+                   }
                ]
 }
