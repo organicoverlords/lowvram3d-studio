@@ -29,6 +29,31 @@ $v15Builder = 'blender\upgrade_beggars_meme_scene_faceverse_v15.py'
 foreach ($required in @($blender,$python,$v11Runner,$cutoutBuilder,$overlayBuilder,$v15Builder)) {
     if (-not (Test-Path -LiteralPath $required)) { throw "Blender v15 input missing: $required" }
 }
+
+# Blender 5.x changed Alpha Over's socket layout. Never use positional input 0.
+$v15Text = Get-Content -LiteralPath $v15Builder -Raw
+$unsafeFactor = '    alpha_over.inputs[0].default_value = 1.0'
+$safeFactor = @'
+    factor_socket = alpha_over.inputs.get("Factor") or alpha_over.inputs.get("Fac")
+    if factor_socket is not None and hasattr(factor_socket, "default_value"):
+        try:
+            factor_socket.default_value = 1.0
+        except TypeError:
+            pass
+'@
+if ($v15Text.Contains($unsafeFactor)) {
+    $v15Text = $v15Text.Replace($unsafeFactor, $safeFactor.TrimEnd("`r","`n"))
+}
+elseif (-not $v15Text.Contains('factor_socket = alpha_over.inputs.get("Factor")')) {
+    throw 'Could not locate the Blender 5 Alpha Over compatibility anchor.'
+}
+[System.IO.File]::WriteAllText(
+    (Resolve-Path -LiteralPath $v15Builder),
+    $v15Text,
+    [System.Text.UTF8Encoding]::new($false)
+)
+Write-Host 'BLENDER_FACEVERSE_V15_ALPHA_OVER_SOCKET_COMPAT=PROVEN'
+
 Invoke-NativeChecked $python @('-m','py_compile',$cutoutBuilder,$overlayBuilder,$v15Builder) 'Blender v15 sources failed compilation'
 Invoke-NativeChecked 'powershell.exe' @('-NoLogo','-NoProfile','-ExecutionPolicy','Bypass','-File',$v11Runner) 'Proven Blender v11 prerequisite failed'
 
