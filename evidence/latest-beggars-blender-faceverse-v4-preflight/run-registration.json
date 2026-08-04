@@ -1,0 +1,9 @@
+{
+  "classification": "RUN_REGISTERED",
+  "workflow_run_id": 30876454195,
+  "status": "in_progress",
+  "conclusion": null,
+  "head_sha": "10e55786c6c6a29fff373f48345951233ef13367",
+  "head_branch": "agent/blender-beggars-scene-20260804",
+  "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30876454195"
+}
