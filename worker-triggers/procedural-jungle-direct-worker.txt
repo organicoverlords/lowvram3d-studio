@@ -1,8 +1,8 @@
-run=33
-requested=2026-08-04T07:18:00+03:00
+run=34
+requested=2026-08-04T07:36:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=13d155fbc788c2a8dcf366d8b6106a0711672814
-repair_scope=dense-layered-jungle-visual-overhaul
+repair_commit=a4d5ab2561666afdc620ec1cc94fda43e19ba560
+repair_scope=trust-committed-visual-overhaul-archive
 codex=false
 claude=false
 magicmusic=false
