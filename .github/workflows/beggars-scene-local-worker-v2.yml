@@ -1,7 +1,7 @@
 name: Beggars meme Blender recreation v2
 run-name: Beggars meme recreation v2 ${{ github.run_id }}
 
-# registration-trigger: 2026-08-04T10:47:00+03:00
+# registration-trigger: 2026-08-04T18:18:00+03:00
 
 on:
   workflow_dispatch:
@@ -17,6 +17,7 @@ on:
       - scripts/apply-beggars-atlas-topology-compat.ps1
       - scripts/apply-beggars-faceplate-runtime.ps1
       - scripts/apply-beggars-faceplate-action-compat.ps1
+      - scripts/apply-beggars-faceplate-visual-v2.ps1
       - scripts/finalize-beggars-scene-evidence.ps1
       - scripts/run-beggars-scene-v2.ps1
       - configs/scene/beggars_banquet_recreation_v1.json
@@ -99,6 +100,14 @@ jobs:
           & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceplate-action-compat.ps1
           if ($LASTEXITCODE -ne 0) {
             throw "Face-plate Action compatibility failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Apply neutral fixed face-plate visual v2
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceplate-visual-v2.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Neutral face-plate visual v2 repair failed with exit code $LASTEXITCODE"
           }
 
       - name: Run memory-bounded reconstruction and Blender build
