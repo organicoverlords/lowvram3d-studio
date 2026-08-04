@@ -1,5 +1,5 @@
 {
-  "purpose": "Locate the full Beggars scene build using caption-cleaned face sprites, no head shell, and the high dark collar composition.",
-  "target_head_sha": "88bcf1b37a311ca636ff0c2a7c015ee3ea8f60bf",
-  "requested_at": "2026-08-04T19:08:00+03:00"
+  "purpose": "Locate the latest post-build diagnostic using a single beveled robe bust, compact neck and narrow V trim.",
+  "target_head_sha": "815806c264c6d9a427f07e259322cdcb3ecc0e07",
+  "requested_at": "2026-08-04T19:22:00+03:00"
 }
