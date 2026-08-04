@@ -28,6 +28,7 @@ from .scene_material_analysis import build_material_regions
 from .scene_representation import build_representation_manifest
 from .scene_visibility import build_visibility_manifest
 from .scene_visual_validation import compare_source_view, repair_history, write_source_comparison
+from .scene_composition import build_scene_content_manifest, load_scene_overrides, material_build_receipt
 
 
 def _sha256(path: Path) -> str:
@@ -259,9 +260,34 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     else:
         for layer in ("terrain", "architecture", "vegetation"):
             _stage(state, f"{layer}_plan", _canonical({"spec": spec, "image_sha256": image_hash, "generic": True}), evidence / f"{layer}_plan.json", lambda layer=layer: _not_applicable(layer, "semantic analysis has not selected this fixture-specific planner"))
+    overrides = load_scene_overrides(str(spec.get("scene_id", args.scene_id)), Path(__file__).resolve().parents[2] / "scenes")
+    composition_input = _canonical({"spec": spec, "analysis": analysis_bundle, "camera": spec.get("camera", {}), "visibility": visibility_manifest, "representation": representation_manifest, "material": material_plan, "overrides": overrides})
+    _stage(
+        state,
+        "scene_composition",
+        composition_input,
+        evidence / "scene_content_manifest.json",
+        lambda: build_scene_content_manifest(
+            spec=spec,
+            analysis_bundle=analysis_bundle,
+            camera_contract=spec.get("camera", {}),
+            semantic_masks={"regions": spec.get("regions", [])},
+            depth_bands={"records": spec.get("depth_bands", [])},
+            world_anchors={"landmarks": spec.get("landmarks", [])},
+            support_relationships={"relationships": scene_graph.get("edges", [])},
+            visibility=visibility_manifest,
+            representation_manifest=representation_manifest,
+            material_plan=material_plan,
+            overrides=overrides,
+        ),
+    )
+    composition_manifest = _read(evidence / "scene_content_manifest.json")
+    _write_json(evidence / "material_build_receipt.json", material_build_receipt(composition_manifest))
+    _write_json(evidence / "scene_composition_receipt.json", {"schema_version": "scene_composition_receipt_v1", "classification": composition_manifest.get("classification"), "manifest_hash": composition_manifest.get("manifest_hash"), "actor_count": len(composition_manifest.get("actors", [])), "override_count": composition_manifest.get("override_count", 0), "manual_only_actor_count": composition_manifest.get("manual_only_actor_count", 0), "rebuild_policy": composition_manifest.get("rebuild_policy")})
     layer_classes = {name: value.get("classification") for name, value in receipts.items()}
     all_layers_proven = all(layer_classes.get(name) == "PROVEN" for name in ("terrain", "architecture", "water", "bridge", "vegetation", "environment"))
     state["layer_receipts"] = layer_classes
+    state["composition_manifest_hash"] = composition_manifest.get("manifest_hash")
     state["classification"] = "PARTIAL"
     state["next_action"] = "RUN_GAMEPLAY_AND_VISUAL_VALIDATION" if all_layers_proven else "RUN_BOUNDED_UNREAL_LAYER_BUILDERS"
     _write_json(state_path, state)

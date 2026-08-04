@@ -1,446 +1,363 @@
 {
+  "builder_id": "vegetation",
   "classification": "PROVEN",
-  "cpu_deterministic": true,
-  "exclusions": [
-    "river_main",
-    "bridge_axis_main",
-    "castle_core",
-    "SP_PlayerStart_Castle_V1",
-    "walkable_navigation_path"
-  ],
+  "manifest_hash": "eb4dbcf2719608be958f70d2a97f87aa298dc14338877119f3458094d8a64070",
+  "manual_only_actor_count": 0,
+  "pipeline_owned": true,
+  "record_count": 16,
   "records": [
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Trees_00",
-        "location_cm": [
-          -2500.0,
-          2800.0,
-          400.0
-        ],
-        "name": "StaticMeshActor_25",
-        "scale": [
-          300.0,
-          300.0,
-          600.0
-        ],
-        "tags": [
-          "decorative",
-          "scene_spec_generated",
-          "trees",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_tree_tree_000",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 0,
-      "species": "trees"
+      "location_m": [
+        -25.0,
+        28.0,
+        4.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Trees_01",
-        "location_cm": [
-          -2000.0,
-          2200.0,
-          400.0
-        ],
-        "name": "StaticMeshActor_26",
-        "scale": [
-          300.0,
-          300.0,
-          600.0
-        ],
-        "tags": [
-          "decorative",
-          "scene_spec_generated",
-          "trees",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_tree_tree_001",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 1,
-      "species": "trees"
+      "location_m": [
+        -20.0,
+        22.0,
+        4.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Trees_02",
-        "location_cm": [
-          -1400.0,
-          3600.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_27",
-        "scale": [
-          300.0,
-          300.0,
-          600.0
-        ],
-        "tags": [
-          "decorative",
-          "scene_spec_generated",
-          "trees",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_tree_tree_002",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 2,
-      "species": "trees"
+      "location_m": [
+        -14.0,
+        36.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Trees_03",
-        "location_cm": [
-          2700.0,
-          4200.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_28",
-        "scale": [
-          300.0,
-          300.0,
-          600.0
-        ],
-        "tags": [
-          "decorative",
-          "scene_spec_generated",
-          "trees",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_tree_tree_003",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 3,
-      "species": "trees"
+      "location_m": [
+        27.0,
+        42.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Trees_04",
-        "location_cm": [
-          3300.0,
-          5100.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_29",
-        "scale": [
-          300.0,
-          300.0,
-          600.0
-        ],
-        "tags": [
-          "decorative",
-          "scene_spec_generated",
-          "trees",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_tree_tree_004",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 4,
-      "species": "trees"
+      "location_m": [
+        33.0,
+        51.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Trees_05",
-        "location_cm": [
-          -3500.0,
-          5700.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_30",
-        "scale": [
-          300.0,
-          300.0,
-          600.0
-        ],
-        "tags": [
-          "decorative",
-          "scene_spec_generated",
-          "trees",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_tree_tree_005",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 5,
-      "species": "trees"
+      "location_m": [
+        -35.0,
+        57.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Trees_06",
-        "location_cm": [
-          4000.0,
-          6500.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_31",
-        "scale": [
-          300.0,
-          300.0,
-          600.0
-        ],
-        "tags": [
-          "decorative",
-          "scene_spec_generated",
-          "trees",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_tree_tree_006",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 6,
-      "species": "trees"
+      "location_m": [
+        40.0,
+        65.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Trees_07",
-        "location_cm": [
-          -4300.0,
-          4200.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_32",
-        "scale": [
-          300.0,
-          300.0,
-          600.0
-        ],
-        "tags": [
-          "decorative",
-          "scene_spec_generated",
-          "trees",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_tree_tree_007",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 7,
-      "species": "trees"
+      "location_m": [
+        -43.0,
+        42.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Grass_08",
-        "location_cm": [
-          -2300.0,
-          2950.0,
-          400.0
-        ],
-        "name": "StaticMeshActor_33",
-        "scale": [
-          150.0,
-          150.0,
-          200.0
-        ],
-        "tags": [
-          "decorative",
-          "grass",
-          "scene_spec_generated",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_grass_grass_000",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 8,
-      "species": "grass"
+      "location_m": [
+        -23.0,
+        29.5,
+        4.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Grass_09",
-        "location_cm": [
-          -1800.0,
-          2350.0,
-          400.0
-        ],
-        "name": "StaticMeshActor_34",
-        "scale": [
-          150.0,
-          150.0,
-          200.0
-        ],
-        "tags": [
-          "decorative",
-          "grass",
-          "scene_spec_generated",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_grass_grass_001",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 9,
-      "species": "grass"
+      "location_m": [
+        -18.0,
+        23.5,
+        4.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Grass_10",
-        "location_cm": [
-          -1200.0,
-          3750.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_35",
-        "scale": [
-          150.0,
-          150.0,
-          200.0
-        ],
-        "tags": [
-          "decorative",
-          "grass",
-          "scene_spec_generated",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_grass_grass_002",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 10,
-      "species": "grass"
+      "location_m": [
+        -12.0,
+        37.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Grass_11",
-        "location_cm": [
-          2900.0,
-          4350.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_36",
-        "scale": [
-          150.0,
-          150.0,
-          200.0
-        ],
-        "tags": [
-          "decorative",
-          "grass",
-          "scene_spec_generated",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_grass_grass_003",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 11,
-      "species": "grass"
+      "location_m": [
+        29.0,
+        43.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Grass_12",
-        "location_cm": [
-          3500.0,
-          5250.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_37",
-        "scale": [
-          150.0,
-          150.0,
-          200.0
-        ],
-        "tags": [
-          "decorative",
-          "grass",
-          "scene_spec_generated",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_grass_grass_004",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 12,
-      "species": "grass"
+      "location_m": [
+        35.0,
+        52.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Grass_13",
-        "location_cm": [
-          -3300.0,
-          5850.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_38",
-        "scale": [
-          150.0,
-          150.0,
-          200.0
-        ],
-        "tags": [
-          "decorative",
-          "grass",
-          "scene_spec_generated",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_grass_grass_005",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 13,
-      "species": "grass"
+      "location_m": [
+        -33.0,
+        58.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Grass_14",
-        "location_cm": [
-          4200.0,
-          6650.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_39",
-        "scale": [
-          150.0,
-          150.0,
-          200.0
-        ],
-        "tags": [
-          "decorative",
-          "grass",
-          "scene_spec_generated",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_grass_grass_006",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 14,
-      "species": "grass"
+      "location_m": [
+        42.0,
+        66.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Vegetation_Grass_15",
-        "location_cm": [
-          -4100.0,
-          4350.0,
-          300.0
-        ],
-        "name": "StaticMeshActor_40",
-        "scale": [
-          150.0,
-          150.0,
-          200.0
-        ],
-        "tags": [
-          "decorative",
-          "grass",
-          "scene_spec_generated",
-          "unpromoted",
-          "vegetation"
-        ]
-      },
+      "actor_id": "vegetation_vegetation_grass_grass_007",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
       "created": false,
-      "index": 15,
-      "species": "grass"
+      "location_m": [
+        -41.0,
+        43.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
     }
   ],
-  "schema_version": "vegetation_build_receipt_v1"
+  "schema_version": "vegetation_build_receipt_v2"
 }

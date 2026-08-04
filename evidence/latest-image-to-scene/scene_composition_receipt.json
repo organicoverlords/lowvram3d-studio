@@ -1,0 +1,9 @@
+{
+  "actor_count": 32,
+  "classification": "PROVEN",
+  "manifest_hash": "eb4dbcf2719608be958f70d2a97f87aa298dc14338877119f3458094d8a64070",
+  "manual_only_actor_count": 0,
+  "override_count": 2,
+  "rebuild_policy": "delete_generated_map_and_scene_local_assets_then_reapply_manifest",
+  "schema_version": "scene_composition_receipt_v1"
+}

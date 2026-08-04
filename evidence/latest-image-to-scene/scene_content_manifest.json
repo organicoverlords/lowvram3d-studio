@@ -1,0 +1,4248 @@
+{
+  "actors": [
+    {
+      "actor_id": "terrain_castle_core_playable_castle_island",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "terrain",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "landform_role": "playable_surface",
+        "primitive": "box"
+      },
+      "manual_only": false,
+      "material_class": "rock_or_ground",
+      "navigation_policy": "walkable",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic terrain primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          10.0,
+          28.0,
+          2.5
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          24.0,
+          20.0,
+          5.0
+        ]
+      }
+    },
+    {
+      "actor_id": "terrain_castle_core_foreground_cliff_mass",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "terrain",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "landform_role": "foreground_cliff",
+        "primitive": "rock_cluster"
+      },
+      "manual_only": false,
+      "material_class": "rock_or_ground",
+      "navigation_policy": "walkable",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic terrain primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          -22.0,
+          31.0,
+          8.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          18.0,
+          14.0,
+          16.0
+        ]
+      }
+    },
+    {
+      "actor_id": "terrain_castle_core_secondary_island_west",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "terrain",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "landform_role": "secondary_island",
+        "primitive": "rock_cluster"
+      },
+      "manual_only": false,
+      "material_class": "rock_or_ground",
+      "navigation_policy": "ignored",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic terrain primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          -34.0,
+          49.0,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          12.0,
+          10.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "terrain_castle_core_secondary_island_east",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "terrain",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "landform_role": "secondary_island",
+        "primitive": "rock_cluster"
+      },
+      "manual_only": false,
+      "material_class": "rock_or_ground",
+      "navigation_policy": "ignored",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic terrain primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          34.0,
+          58.0,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          14.0,
+          11.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "terrain_castle_core_playable_boundary_north",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "terrain",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "landform_role": "navigation_boundary",
+        "primitive": "box"
+      },
+      "manual_only": false,
+      "material_class": "rock_or_ground",
+      "navigation_policy": "blocked",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic terrain primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          10.0,
+          72.0,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          70.0,
+          2.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "architecture_castle_core_main_body",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "architectural_role": "central_mass",
+        "opening": false,
+        "primitive": "box"
+      },
+      "manual_only": false,
+      "material_class": "local_architecture",
+      "navigation_policy": "walkable_openings",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic modular architecture primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          10.0,
+          28.0,
+          12.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          16.0,
+          11.0,
+          14.0
+        ]
+      }
+    },
+    {
+      "actor_id": "architecture_castle_core_west_wing",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "architectural_role": "wing",
+        "opening": false,
+        "primitive": "box"
+      },
+      "manual_only": false,
+      "material_class": "local_architecture",
+      "navigation_policy": "walkable_openings",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic modular architecture primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          1.0,
+          29.0,
+          8.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          5.0,
+          9.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "actor_id": "architecture_castle_core_east_wing",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "architectural_role": "wing",
+        "opening": false,
+        "primitive": "box"
+      },
+      "manual_only": false,
+      "material_class": "local_architecture",
+      "navigation_policy": "walkable_openings",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic modular architecture primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          19.0,
+          29.0,
+          8.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          5.0,
+          9.0,
+          8.0
+        ]
+      }
+    },
+    {
+      "actor_id": "architecture_castle_core_tower_shaft",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "architectural_role": "vertical_tower",
+        "opening": false,
+        "primitive": "cylinder"
+      },
+      "manual_only": false,
+      "material_class": "local_architecture",
+      "navigation_policy": "walkable_openings",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic modular architecture primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          12.0,
+          25.0,
+          28.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          5.0,
+          5.0,
+          42.0
+        ]
+      }
+    },
+    {
+      "actor_id": "architecture_castle_core_tower_cap",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "architectural_role": "tower_cap",
+        "opening": false,
+        "primitive": "cone"
+      },
+      "manual_only": false,
+      "material_class": "local_architecture",
+      "navigation_policy": "ignored",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic modular architecture primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          12.0,
+          25.0,
+          49.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          7.0,
+          7.0,
+          4.0
+        ]
+      }
+    },
+    {
+      "actor_id": "architecture_castle_core_gate",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "collision_policy": "walkable_opening",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "architectural_role": "opening",
+        "opening": false,
+        "primitive": "box"
+      },
+      "manual_only": false,
+      "material_class": "wood_or_local",
+      "navigation_policy": "walkable",
+      "semantic_class": "architecture",
+      "semantic_region_id": "castle_core",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region",
+        "region geometry data",
+        "deterministic modular architecture primitive"
+      ],
+      "world_transform": {
+        "location_m": [
+          10.0,
+          22.3,
+          4.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          4.0,
+          0.8,
+          5.0
+        ]
+      }
+    },
+    {
+      "actor_id": "water_river_main_segment_000",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "water",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_radius_m": 3.0,
+        "primitive": "box",
+        "segment_index": 0,
+        "spline_id": "river_main"
+      },
+      "manual_only": false,
+      "material_class": "water",
+      "navigation_policy": "excluded",
+      "semantic_class": "water",
+      "semantic_region_id": "river_main",
+      "source_evidence": [
+        "SceneSpec.splines"
+      ],
+      "transform_derivation": [
+        "SceneSpec spline points",
+        "segment midpoint and tangent",
+        "water width"
+      ],
+      "world_transform": {
+        "location_m": [
+          -15.0,
+          47.5,
+          0.0
+        ],
+        "rotation_deg": [
+          0.0,
+          9.462322208025617,
+          0.0
+        ],
+        "scale_m": [
+          30.4138126514911,
+          12.0,
+          0.1
+        ]
+      }
+    },
+    {
+      "actor_id": "water_river_main_segment_001",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "water",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_radius_m": 3.0,
+        "primitive": "box",
+        "segment_index": 1,
+        "spline_id": "river_main"
+      },
+      "manual_only": false,
+      "material_class": "water",
+      "navigation_policy": "excluded",
+      "semantic_class": "water",
+      "semantic_region_id": "river_main",
+      "source_evidence": [
+        "SceneSpec.splines"
+      ],
+      "transform_derivation": [
+        "SceneSpec spline points",
+        "segment midpoint and tangent",
+        "water width"
+      ],
+      "world_transform": {
+        "location_m": [
+          15.0,
+          54.0,
+          0.0
+        ],
+        "rotation_deg": [
+          0.0,
+          14.931417178137554,
+          0.0
+        ],
+        "scale_m": [
+          31.04834939252005,
+          12.0,
+          0.1
+        ]
+      }
+    },
+    {
+      "actor_id": "water_water_channels_000",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "water",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "primitive": "box"
+      },
+      "manual_only": false,
+      "material_class": "water",
+      "navigation_policy": "excluded",
+      "semantic_class": "water",
+      "semantic_region_id": "water_channels",
+      "source_evidence": [
+        "SceneSpec.region"
+      ],
+      "transform_derivation": [
+        "SceneSpec.region geometry",
+        "water material policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "actor_id": "crossing_bridge_axis_main_deck_000",
+      "asset_path": "/Engine/BasicShapes/Cube.Cube",
+      "builder_id": "crossing",
+      "builder_version": "1.0.0",
+      "collision_policy": "blocking",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "primitive": "box",
+        "segment_index": 0,
+        "spline_id": "bridge_axis_main",
+        "support_policy": "generated_at_segment_joints"
+      },
+      "manual_only": false,
+      "material_class": "wood_or_local",
+      "navigation_policy": "walkable",
+      "semantic_class": "crossing",
+      "semantic_region_id": "bridge_axis_main",
+      "source_evidence": [
+        "SceneSpec.splines",
+        "scene graph crossing relation"
+      ],
+      "transform_derivation": [
+        "crossing spline endpoints",
+        "segment tangent",
+        "crossing width"
+      ],
+      "world_transform": {
+        "location_m": [
+          0.0,
+          31.0,
+          4.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          20.0,
+          3.0,
+          0.3
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_000",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "tree"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -25.0,
+          28.0,
+          4.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_001",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "tree"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -20.0,
+          22.0,
+          4.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_002",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "tree"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -14.0,
+          36.0,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_003",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "tree"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          27.0,
+          42.0,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_004",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "tree"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          33.0,
+          51.0,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_005",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "tree"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -35.0,
+          57.0,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_006",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "tree"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          40.0,
+          65.0,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_007",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "tree"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -43.0,
+          42.0,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          3.0,
+          3.0,
+          6.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_000",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "grass"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -23.0,
+          29.5,
+          4.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.5,
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_001",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "grass"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -18.0,
+          23.5,
+          4.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.5,
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_002",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "grass"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -12.0,
+          37.5,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.5,
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_003",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "grass"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          29.0,
+          43.5,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.5,
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_004",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "grass"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          35.0,
+          52.5,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.5,
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_005",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "grass"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -33.0,
+          58.5,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.5,
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_006",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "grass"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          42.0,
+          66.5,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.5,
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_007",
+      "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "exclusion_regions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "primitive": "foliage_cross",
+        "species": "grass"
+      },
+      "manual_only": false,
+      "material_class": "biome_local",
+      "navigation_policy": "ignored",
+      "semantic_class": "vegetation",
+      "semantic_region_id": "vegetation",
+      "source_evidence": [
+        "analysis_bundle.regions",
+        "SceneSpec"
+      ],
+      "transform_derivation": [
+        "SceneSpec region",
+        "deterministic population data",
+        "vegetation exclusion policy"
+      ],
+      "world_transform": {
+        "location_m": [
+          -41.0,
+          43.5,
+          3.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.5,
+          1.5,
+          2.0
+        ]
+      }
+    },
+    {
+      "actor_id": "environment_sky",
+      "asset_path": "/Engine/Transient/Environment",
+      "builder_id": "environment",
+      "builder_version": "1.0.0",
+      "collision_policy": "none",
+      "deterministic_seed": 20260803,
+      "geometry_parameters": {
+        "environment_kind": "atmosphere",
+        "primitive": "box"
+      },
+      "manual_only": false,
+      "material_class": "environment",
+      "navigation_policy": "ignored",
+      "semantic_class": "sky_or_ceiling",
+      "semantic_region_id": "sky",
+      "source_evidence": [
+        "SceneSpec.camera",
+        "SceneSpec.region"
+      ],
+      "transform_derivation": [
+        "SceneSpec environment semantics",
+        "camera contract"
+      ],
+      "world_transform": {
+        "location_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale_m": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    }
+  ],
+  "builders": {
+    "architecture": {
+      "actor_count": 6,
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "castle_core"
+      ]
+    },
+    "crossing": {
+      "actor_count": 1,
+      "builder_id": "crossing",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "bridge_axis_main"
+      ]
+    },
+    "environment": {
+      "actor_count": 1,
+      "builder_id": "environment",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "sky"
+      ]
+    },
+    "terrain": {
+      "actor_count": 5,
+      "builder_id": "terrain",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "castle_core"
+      ]
+    },
+    "vegetation": {
+      "actor_count": 16,
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "vegetation"
+      ]
+    },
+    "water": {
+      "actor_count": 3,
+      "builder_id": "water",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "river_main",
+        "water_channels"
+      ]
+    }
+  },
+  "classification": "PROVEN",
+  "deterministic_seed": 20260803,
+  "inputs": {
+    "analysis_bundle_schema": "analysis_bundle_v1",
+    "camera_contract": {
+      "envelope": {
+        "max_pitch_deg": 3.0,
+        "max_translation_m": 2.0,
+        "max_yaw_deg": 5.0
+      },
+      "required_views": [
+        {
+          "far_m": 500.0,
+          "field_of_view_deg": 48.0,
+          "id": "source",
+          "look_at_m": [
+            0.0,
+            38.0,
+            12.0
+          ],
+          "near_m": 0.1,
+          "position_m": [
+            0.0,
+            -110.0,
+            18.0
+          ],
+          "principal_point_norm": [
+            0.5,
+            0.5
+          ],
+          "projection": "perspective",
+          "purpose": "source_match"
+        },
+        {
+          "far_m": 500.0,
+          "field_of_view_deg": 48.0,
+          "id": "offset_left",
+          "look_at_m": [
+            0.0,
+            38.0,
+            12.0
+          ],
+          "near_m": 0.1,
+          "position_m": [
+            -1.0,
+            -110.0,
+            18.0
+          ],
+          "principal_point_norm": [
+            0.5,
+            0.5
+          ],
+          "projection": "perspective",
+          "purpose": "offset_parallax"
+        },
+        {
+          "far_m": 500.0,
+          "field_of_view_deg": 48.0,
+          "id": "offset_right",
+          "look_at_m": [
+            0.0,
+            38.0,
+            12.0
+          ],
+          "near_m": 0.1,
+          "position_m": [
+            1.0,
+            -110.0,
+            18.0
+          ],
+          "principal_point_norm": [
+            0.5,
+            0.5
+          ],
+          "projection": "perspective",
+          "purpose": "offset_parallax"
+        }
+      ],
+      "source_camera": {
+        "far_m": 500.0,
+        "field_of_view_deg": 48.0,
+        "id": "source",
+        "look_at_m": [
+          0.0,
+          38.0,
+          12.0
+        ],
+        "near_m": 0.1,
+        "position_m": [
+          0.0,
+          -110.0,
+          18.0
+        ],
+        "principal_point_norm": [
+          0.5,
+          0.5
+        ],
+        "projection": "perspective",
+        "purpose": "source_match"
+      }
+    },
+    "contours": {},
+    "depth_bands": {
+      "records": [
+        {
+          "far_m": 20.0,
+          "id": "foreground",
+          "near_m": 0.1
+        },
+        {
+          "far_m": 38.0,
+          "id": "castle",
+          "near_m": 20.0
+        },
+        {
+          "far_m": 58.0,
+          "id": "water",
+          "near_m": 38.0
+        },
+        {
+          "far_m": 100.0,
+          "id": "background",
+          "near_m": 58.0
+        }
+      ]
+    },
+    "material_plan": {
+      "classification": "PROVEN",
+      "default_grey_allowed": false,
+      "global_fallback": "neutral_local_material",
+      "regions": [
+        {
+          "fallback": "local_material",
+          "material_family": "local_material",
+          "observed": true,
+          "region_id": "source_shell",
+          "semantic_class": "unknown"
+        },
+        {
+          "fallback": "local_material",
+          "material_family": "local_architecture",
+          "observed": true,
+          "region_id": "castle_core",
+          "semantic_class": "architecture"
+        },
+        {
+          "fallback": "local_material",
+          "material_family": "water",
+          "observed": true,
+          "region_id": "water_channels",
+          "semantic_class": "water"
+        },
+        {
+          "fallback": "local_material",
+          "material_family": "biome_local",
+          "observed": true,
+          "region_id": "vegetation",
+          "semantic_class": "vegetation"
+        },
+        {
+          "fallback": "local_material",
+          "material_family": "environment",
+          "observed": true,
+          "region_id": "sky",
+          "semantic_class": "sky_or_ceiling"
+        }
+      ],
+      "schema_version": "scene_material_analysis_v1"
+    },
+    "representation_manifest": {
+      "classification": "PROVEN",
+      "records": [
+        {
+          "confidence": 0.99,
+          "fallback": "visual_shell",
+          "materially_visible": true,
+          "region_id": "source_shell",
+          "representations": [
+            "visual_shell",
+            "background_card"
+          ],
+          "selected": "visual_shell",
+          "semantic_class": "unknown",
+          "source_camera_important": true
+        },
+        {
+          "confidence": 0.72,
+          "fallback": "unresolved",
+          "materially_visible": true,
+          "region_id": "castle_core",
+          "representations": [
+            "editable_mesh",
+            "modular_architecture",
+            "gameplay_proxy"
+          ],
+          "selected": "editable_mesh",
+          "semantic_class": "unknown",
+          "source_camera_important": true
+        },
+        {
+          "confidence": 0.68,
+          "fallback": "unresolved",
+          "materially_visible": true,
+          "region_id": "water_channels",
+          "representations": [
+            "gameplay_proxy",
+            "water_surface"
+          ],
+          "selected": "gameplay_proxy",
+          "semantic_class": "unknown",
+          "source_camera_important": true
+        },
+        {
+          "confidence": 0.55,
+          "fallback": "unresolved",
+          "materially_visible": true,
+          "region_id": "vegetation",
+          "representations": [
+            "procedural_population"
+          ],
+          "selected": "procedural_population",
+          "semantic_class": "unknown",
+          "source_camera_important": true
+        },
+        {
+          "confidence": 0.95,
+          "fallback": "unresolved",
+          "materially_visible": true,
+          "region_id": "sky",
+          "representations": [
+            "sky_environment"
+          ],
+          "selected": "sky_environment",
+          "semantic_class": "unknown",
+          "source_camera_important": true
+        }
+      ],
+      "schema_version": "representation_manifest_v1",
+      "selection_policy": "semantic class, confidence, visibility, gameplay role, camera importance, and budgets"
+    },
+    "semantic_masks": {
+      "regions": [
+        {
+          "confidence": 0.99,
+          "depth_band": "foreground",
+          "id": "source_shell",
+          "interactive": false,
+          "label": "source-visible reconstructed surface",
+          "representation": "visual_shell",
+          "tags": [
+            "source_locked"
+          ],
+          "walkable": false
+        },
+        {
+          "bbox_norm_xyxy": [
+            0.38,
+            0.18,
+            0.72,
+            0.72
+          ],
+          "confidence": 0.72,
+          "depth_band": "castle",
+          "id": "castle_core",
+          "interactive": true,
+          "label": "castle and lighthouse gameplay area",
+          "representation": "editable_mesh",
+          "tags": [
+            "hero_structure"
+          ],
+          "walkable": true
+        },
+        {
+          "confidence": 0.68,
+          "depth_band": "water",
+          "id": "water_channels",
+          "interactive": false,
+          "label": "water channels",
+          "representation": "gameplay_proxy",
+          "tags": [
+            "water",
+            "exclusion"
+          ],
+          "walkable": false
+        },
+        {
+          "confidence": 0.55,
+          "depth_band": "foreground",
+          "id": "vegetation",
+          "interactive": false,
+          "label": "decorative vegetation",
+          "representation": "procedural_population",
+          "tags": [
+            "decorative"
+          ],
+          "walkable": false
+        },
+        {
+          "confidence": 0.95,
+          "id": "sky",
+          "interactive": false,
+          "label": "sky and clouds",
+          "representation": "sky",
+          "tags": [
+            "background"
+          ],
+          "walkable": false
+        }
+      ]
+    },
+    "support_relationships": {
+      "relationships": [
+        {
+          "confidence": 0.5,
+          "evidence": "semantic_adjacency",
+          "fallback": "unresolved",
+          "source": "crossing_002",
+          "target": "water_003",
+          "type": "crosses"
+        },
+        {
+          "confidence": 0.5,
+          "evidence": "semantic_adjacency",
+          "fallback": "unresolved",
+          "source": "crossing_002",
+          "target": "water_spline_001",
+          "type": "crosses"
+        },
+        {
+          "confidence": 0.6,
+          "evidence": "scene_spec.splines",
+          "fallback": "bounded_crossing",
+          "source": "crossing_002",
+          "target": "water_003",
+          "type": "spans"
+        },
+        {
+          "confidence": 0.6,
+          "evidence": "scene_spec.splines",
+          "fallback": "bounded_crossing",
+          "source": "crossing_002",
+          "target": "water_spline_001",
+          "type": "spans"
+        }
+      ]
+    },
+    "visibility": {
+      "classification": "PROVEN",
+      "full_reconstruction_claim": false,
+      "policy": "source-visible fidelity with conservative bounded completion",
+      "records": [
+        {
+          "completion_policy": "visual_shell_only",
+          "confidence": 0.99,
+          "decorative": false,
+          "gameplay_only": false,
+          "hidden_geometry_inferred": false,
+          "region_id": "source_shell",
+          "source_visible_evidence": true,
+          "visibility": "fully_visible"
+        },
+        {
+          "completion_policy": "gameplay_boundary",
+          "confidence": 0.72,
+          "decorative": false,
+          "gameplay_only": true,
+          "hidden_geometry_inferred": true,
+          "region_id": "castle_core",
+          "source_visible_evidence": true,
+          "visibility": "partially_occluded"
+        },
+        {
+          "completion_policy": "conservative_extrusion",
+          "confidence": 0.68,
+          "decorative": false,
+          "gameplay_only": false,
+          "hidden_geometry_inferred": true,
+          "region_id": "water_channels",
+          "source_visible_evidence": false,
+          "visibility": "ambiguous"
+        },
+        {
+          "completion_policy": "conservative_extrusion",
+          "confidence": 0.55,
+          "decorative": true,
+          "gameplay_only": false,
+          "hidden_geometry_inferred": true,
+          "region_id": "vegetation",
+          "source_visible_evidence": false,
+          "visibility": "ambiguous"
+        },
+        {
+          "completion_policy": "conservative_extrusion",
+          "confidence": 0.95,
+          "decorative": false,
+          "gameplay_only": false,
+          "hidden_geometry_inferred": true,
+          "region_id": "sky",
+          "source_visible_evidence": false,
+          "visibility": "ambiguous"
+        }
+      ],
+      "schema_version": "visibility_manifest_v1"
+    },
+    "world_anchors": {
+      "landmarks": [
+        {
+          "id": "lighthouse_top",
+          "role": "camera_calibration",
+          "source_uv_norm": [
+            0.58,
+            0.19
+          ],
+          "tolerance_px": 38.0,
+          "world_m": [
+            12.0,
+            25.0,
+            49.0
+          ]
+        },
+        {
+          "id": "castle_base",
+          "role": "layout_anchor",
+          "world_m": [
+            10.0,
+            28.0,
+            5.0
+          ]
+        },
+        {
+          "id": "foreground_cliff",
+          "role": "qa_anchor",
+          "world_m": [
+            -22.0,
+            31.0,
+            16.0
+          ]
+        }
+      ]
+    }
+  },
+  "layers": {
+    "architecture": {
+      "actors": [
+        {
+          "actor_id": "architecture_castle_core_main_body",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "architecture",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "architectural_role": "central_mass",
+            "opening": false,
+            "primitive": "box"
+          },
+          "manual_only": false,
+          "material_class": "local_architecture",
+          "navigation_policy": "walkable_openings",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic modular architecture primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              10.0,
+              28.0,
+              12.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              16.0,
+              11.0,
+              14.0
+            ]
+          }
+        },
+        {
+          "actor_id": "architecture_castle_core_west_wing",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "architecture",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "architectural_role": "wing",
+            "opening": false,
+            "primitive": "box"
+          },
+          "manual_only": false,
+          "material_class": "local_architecture",
+          "navigation_policy": "walkable_openings",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic modular architecture primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              1.0,
+              29.0,
+              8.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              5.0,
+              9.0,
+              8.0
+            ]
+          }
+        },
+        {
+          "actor_id": "architecture_castle_core_east_wing",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "architecture",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "architectural_role": "wing",
+            "opening": false,
+            "primitive": "box"
+          },
+          "manual_only": false,
+          "material_class": "local_architecture",
+          "navigation_policy": "walkable_openings",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic modular architecture primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              19.0,
+              29.0,
+              8.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              5.0,
+              9.0,
+              8.0
+            ]
+          }
+        },
+        {
+          "actor_id": "architecture_castle_core_tower_shaft",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "architecture",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "architectural_role": "vertical_tower",
+            "opening": false,
+            "primitive": "cylinder"
+          },
+          "manual_only": false,
+          "material_class": "local_architecture",
+          "navigation_policy": "walkable_openings",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic modular architecture primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              12.0,
+              25.0,
+              28.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              5.0,
+              5.0,
+              42.0
+            ]
+          }
+        },
+        {
+          "actor_id": "architecture_castle_core_tower_cap",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "architecture",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "architectural_role": "tower_cap",
+            "opening": false,
+            "primitive": "cone"
+          },
+          "manual_only": false,
+          "material_class": "local_architecture",
+          "navigation_policy": "ignored",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic modular architecture primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              12.0,
+              25.0,
+              49.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              7.0,
+              7.0,
+              4.0
+            ]
+          }
+        },
+        {
+          "actor_id": "architecture_castle_core_gate",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "architecture",
+          "builder_version": "1.0.0",
+          "collision_policy": "walkable_opening",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "architectural_role": "opening",
+            "opening": false,
+            "primitive": "box"
+          },
+          "manual_only": false,
+          "material_class": "wood_or_local",
+          "navigation_policy": "walkable",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic modular architecture primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              10.0,
+              22.3,
+              4.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              4.0,
+              0.8,
+              5.0
+            ]
+          }
+        }
+      ],
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "castle_core"
+      ],
+      "resource_budget": {
+        "triangles": 200000
+      },
+      "schema_version": "scene_architecture_build_instructions_v1"
+    },
+    "crossing": {
+      "actors": [
+        {
+          "actor_id": "crossing_bridge_axis_main_deck_000",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "crossing",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "primitive": "box",
+            "segment_index": 0,
+            "spline_id": "bridge_axis_main",
+            "support_policy": "generated_at_segment_joints"
+          },
+          "manual_only": false,
+          "material_class": "wood_or_local",
+          "navigation_policy": "walkable",
+          "semantic_class": "crossing",
+          "semantic_region_id": "bridge_axis_main",
+          "source_evidence": [
+            "SceneSpec.splines",
+            "scene graph crossing relation"
+          ],
+          "transform_derivation": [
+            "crossing spline endpoints",
+            "segment tangent",
+            "crossing width"
+          ],
+          "world_transform": {
+            "location_m": [
+              0.0,
+              31.0,
+              4.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              20.0,
+              3.0,
+              0.3
+            ]
+          }
+        }
+      ],
+      "builder_id": "crossing",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "bridge_axis_main"
+      ],
+      "resource_budget": {
+        "triangles": 50000
+      },
+      "schema_version": "scene_crossing_build_instructions_v1"
+    },
+    "environment": {
+      "actors": [
+        {
+          "actor_id": "environment_sky",
+          "asset_path": "/Engine/Transient/Environment",
+          "builder_id": "environment",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "environment_kind": "atmosphere",
+            "primitive": "box"
+          },
+          "manual_only": false,
+          "material_class": "environment",
+          "navigation_policy": "ignored",
+          "semantic_class": "sky_or_ceiling",
+          "semantic_region_id": "sky",
+          "source_evidence": [
+            "SceneSpec.camera",
+            "SceneSpec.region"
+          ],
+          "transform_derivation": [
+            "SceneSpec environment semantics",
+            "camera contract"
+          ],
+          "world_transform": {
+            "location_m": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ],
+      "builder_id": "environment",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "sky"
+      ],
+      "resource_budget": {
+        "draw_calls": 10
+      },
+      "schema_version": "scene_environment_build_instructions_v1"
+    },
+    "terrain": {
+      "actors": [
+        {
+          "actor_id": "terrain_castle_core_playable_castle_island",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "terrain",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "landform_role": "playable_surface",
+            "primitive": "box"
+          },
+          "manual_only": false,
+          "material_class": "rock_or_ground",
+          "navigation_policy": "walkable",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic terrain primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              10.0,
+              28.0,
+              2.5
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              24.0,
+              20.0,
+              5.0
+            ]
+          }
+        },
+        {
+          "actor_id": "terrain_castle_core_foreground_cliff_mass",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "terrain",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "landform_role": "foreground_cliff",
+            "primitive": "rock_cluster"
+          },
+          "manual_only": false,
+          "material_class": "rock_or_ground",
+          "navigation_policy": "walkable",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic terrain primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              -22.0,
+              31.0,
+              8.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              18.0,
+              14.0,
+              16.0
+            ]
+          }
+        },
+        {
+          "actor_id": "terrain_castle_core_secondary_island_west",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "terrain",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "landform_role": "secondary_island",
+            "primitive": "rock_cluster"
+          },
+          "manual_only": false,
+          "material_class": "rock_or_ground",
+          "navigation_policy": "ignored",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic terrain primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              -34.0,
+              49.0,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              12.0,
+              10.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "terrain_castle_core_secondary_island_east",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "terrain",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "landform_role": "secondary_island",
+            "primitive": "rock_cluster"
+          },
+          "manual_only": false,
+          "material_class": "rock_or_ground",
+          "navigation_policy": "ignored",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic terrain primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              34.0,
+              58.0,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              14.0,
+              11.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "terrain_castle_core_playable_boundary_north",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "terrain",
+          "builder_version": "1.0.0",
+          "collision_policy": "blocking",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "landform_role": "navigation_boundary",
+            "primitive": "box"
+          },
+          "manual_only": false,
+          "material_class": "rock_or_ground",
+          "navigation_policy": "blocked",
+          "semantic_class": "architecture",
+          "semantic_region_id": "castle_core",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region",
+            "region geometry data",
+            "deterministic terrain primitive"
+          ],
+          "world_transform": {
+            "location_m": [
+              10.0,
+              72.0,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              70.0,
+              2.0,
+              6.0
+            ]
+          }
+        }
+      ],
+      "builder_id": "terrain",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "castle_core"
+      ],
+      "resource_budget": {
+        "triangles": 100000
+      },
+      "schema_version": "scene_terrain_build_instructions_v1"
+    },
+    "vegetation": {
+      "actors": [
+        {
+          "actor_id": "vegetation_vegetation_tree_tree_000",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "tree"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -25.0,
+              28.0,
+              4.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              3.0,
+              3.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_tree_tree_001",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "tree"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -20.0,
+              22.0,
+              4.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              3.0,
+              3.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_tree_tree_002",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "tree"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -14.0,
+              36.0,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              3.0,
+              3.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_tree_tree_003",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "tree"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              27.0,
+              42.0,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              3.0,
+              3.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_tree_tree_004",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "tree"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              33.0,
+              51.0,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              3.0,
+              3.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_tree_tree_005",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "tree"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -35.0,
+              57.0,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              3.0,
+              3.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_tree_tree_006",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "tree"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              40.0,
+              65.0,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              3.0,
+              3.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_tree_tree_007",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "tree"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -43.0,
+              42.0,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              3.0,
+              3.0,
+              6.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_grass_grass_000",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "grass"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -23.0,
+              29.5,
+              4.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.5,
+              1.5,
+              2.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_grass_grass_001",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "grass"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -18.0,
+              23.5,
+              4.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.5,
+              1.5,
+              2.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_grass_grass_002",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "grass"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -12.0,
+              37.5,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.5,
+              1.5,
+              2.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_grass_grass_003",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "grass"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              29.0,
+              43.5,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.5,
+              1.5,
+              2.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_grass_grass_004",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "grass"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              35.0,
+              52.5,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.5,
+              1.5,
+              2.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_grass_grass_005",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "grass"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -33.0,
+              58.5,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.5,
+              1.5,
+              2.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_grass_grass_006",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "grass"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              42.0,
+              66.5,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.5,
+              1.5,
+              2.0
+            ]
+          }
+        },
+        {
+          "actor_id": "vegetation_vegetation_grass_grass_007",
+          "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+          "builder_id": "vegetation",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_regions": [
+              "water_channels",
+              "crossing",
+              "castle_core"
+            ],
+            "primitive": "foliage_cross",
+            "species": "grass"
+          },
+          "manual_only": false,
+          "material_class": "biome_local",
+          "navigation_policy": "ignored",
+          "semantic_class": "vegetation",
+          "semantic_region_id": "vegetation",
+          "source_evidence": [
+            "analysis_bundle.regions",
+            "SceneSpec"
+          ],
+          "transform_derivation": [
+            "SceneSpec region",
+            "deterministic population data",
+            "vegetation exclusion policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              -41.0,
+              43.5,
+              3.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.5,
+              1.5,
+              2.0
+            ]
+          }
+        }
+      ],
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "vegetation"
+      ],
+      "resource_budget": {
+        "instances": 1000
+      },
+      "schema_version": "scene_vegetation_build_instructions_v1"
+    },
+    "water": {
+      "actors": [
+        {
+          "actor_id": "water_river_main_segment_000",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "water",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_radius_m": 3.0,
+            "primitive": "box",
+            "segment_index": 0,
+            "spline_id": "river_main"
+          },
+          "manual_only": false,
+          "material_class": "water",
+          "navigation_policy": "excluded",
+          "semantic_class": "water",
+          "semantic_region_id": "river_main",
+          "source_evidence": [
+            "SceneSpec.splines"
+          ],
+          "transform_derivation": [
+            "SceneSpec spline points",
+            "segment midpoint and tangent",
+            "water width"
+          ],
+          "world_transform": {
+            "location_m": [
+              -15.0,
+              47.5,
+              0.0
+            ],
+            "rotation_deg": [
+              0.0,
+              9.462322208025617,
+              0.0
+            ],
+            "scale_m": [
+              30.4138126514911,
+              12.0,
+              0.1
+            ]
+          }
+        },
+        {
+          "actor_id": "water_river_main_segment_001",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "water",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "exclusion_radius_m": 3.0,
+            "primitive": "box",
+            "segment_index": 1,
+            "spline_id": "river_main"
+          },
+          "manual_only": false,
+          "material_class": "water",
+          "navigation_policy": "excluded",
+          "semantic_class": "water",
+          "semantic_region_id": "river_main",
+          "source_evidence": [
+            "SceneSpec.splines"
+          ],
+          "transform_derivation": [
+            "SceneSpec spline points",
+            "segment midpoint and tangent",
+            "water width"
+          ],
+          "world_transform": {
+            "location_m": [
+              15.0,
+              54.0,
+              0.0
+            ],
+            "rotation_deg": [
+              0.0,
+              14.931417178137554,
+              0.0
+            ],
+            "scale_m": [
+              31.04834939252005,
+              12.0,
+              0.1
+            ]
+          }
+        },
+        {
+          "actor_id": "water_water_channels_000",
+          "asset_path": "/Engine/BasicShapes/Cube.Cube",
+          "builder_id": "water",
+          "builder_version": "1.0.0",
+          "collision_policy": "none",
+          "deterministic_seed": 20260803,
+          "geometry_parameters": {
+            "primitive": "box"
+          },
+          "manual_only": false,
+          "material_class": "water",
+          "navigation_policy": "excluded",
+          "semantic_class": "water",
+          "semantic_region_id": "water_channels",
+          "source_evidence": [
+            "SceneSpec.region"
+          ],
+          "transform_derivation": [
+            "SceneSpec.region geometry",
+            "water material policy"
+          ],
+          "world_transform": {
+            "location_m": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "rotation_deg": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "scale_m": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      ],
+      "builder_id": "water",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [
+        "river_main",
+        "water_channels"
+      ],
+      "resource_budget": {
+        "triangles": 40000
+      },
+      "schema_version": "scene_water_build_instructions_v1"
+    }
+  },
+  "manifest_hash": "eb4dbcf2719608be958f70d2a97f87aa298dc14338877119f3458094d8a64070",
+  "manual_only_actor_count": 0,
+  "materials": {
+    "classification": "PROVEN",
+    "default_grey_allowed": false,
+    "records": [
+      {
+        "actor_id": "terrain_castle_core_playable_castle_island",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "rock_or_ground",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "terrain_castle_core_foreground_cliff_mass",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "rock_or_ground",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "terrain_castle_core_secondary_island_west",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "rock_or_ground",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "terrain_castle_core_secondary_island_east",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "rock_or_ground",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "terrain_castle_core_playable_boundary_north",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "rock_or_ground",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "architecture_castle_core_main_body",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "local_architecture",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "architecture_castle_core_west_wing",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "local_architecture",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "architecture_castle_core_east_wing",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "local_architecture",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "architecture_castle_core_tower_shaft",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "local_architecture",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "architecture_castle_core_tower_cap",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "local_architecture",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "architecture_castle_core_gate",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "wood_or_local",
+        "semantic_region_id": "castle_core"
+      },
+      {
+        "actor_id": "water_river_main_segment_000",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "water",
+        "semantic_region_id": "river_main"
+      },
+      {
+        "actor_id": "water_river_main_segment_001",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "water",
+        "semantic_region_id": "river_main"
+      },
+      {
+        "actor_id": "water_water_channels_000",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "water",
+        "semantic_region_id": "water_channels"
+      },
+      {
+        "actor_id": "crossing_bridge_axis_main_deck_000",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "wood_or_local",
+        "semantic_region_id": "bridge_axis_main"
+      },
+      {
+        "actor_id": "vegetation_vegetation_tree_tree_000",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_tree_tree_001",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_tree_tree_002",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_tree_tree_003",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_tree_tree_004",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_tree_tree_005",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_tree_tree_006",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_tree_tree_007",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_grass_grass_000",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_grass_grass_001",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_grass_grass_002",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_grass_grass_003",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_grass_grass_004",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_grass_grass_005",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_grass_grass_006",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "vegetation_vegetation_grass_grass_007",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "biome_local",
+        "semantic_region_id": "vegetation"
+      },
+      {
+        "actor_id": "environment_sky",
+        "assignment": "pipeline_manifest",
+        "default_grey_allowed": false,
+        "material_class": "environment",
+        "semantic_region_id": "sky"
+      }
+    ],
+    "schema_version": "scene_material_build_manifest_v1"
+  },
+  "override_count": 2,
+  "overrides": [
+    {
+      "confidence": 0.72,
+      "corrected_value": {
+        "architecture_parts": [
+          {
+            "architectural_role": "central_mass",
+            "center_m": [
+              10.0,
+              28.0,
+              12.0
+            ],
+            "collision_policy": "blocking",
+            "id": "main_body",
+            "material_class": "local_architecture",
+            "navigation_policy": "walkable_openings",
+            "primitive": "box",
+            "size_m": [
+              16.0,
+              11.0,
+              14.0
+            ]
+          },
+          {
+            "architectural_role": "wing",
+            "center_m": [
+              1.0,
+              29.0,
+              8.0
+            ],
+            "collision_policy": "blocking",
+            "id": "west_wing",
+            "material_class": "local_architecture",
+            "navigation_policy": "walkable_openings",
+            "primitive": "box",
+            "size_m": [
+              5.0,
+              9.0,
+              8.0
+            ]
+          },
+          {
+            "architectural_role": "wing",
+            "center_m": [
+              19.0,
+              29.0,
+              8.0
+            ],
+            "collision_policy": "blocking",
+            "id": "east_wing",
+            "material_class": "local_architecture",
+            "navigation_policy": "walkable_openings",
+            "primitive": "box",
+            "size_m": [
+              5.0,
+              9.0,
+              8.0
+            ]
+          },
+          {
+            "architectural_role": "vertical_tower",
+            "center_m": [
+              12.0,
+              25.0,
+              28.0
+            ],
+            "collision_policy": "blocking",
+            "id": "tower_shaft",
+            "material_class": "local_architecture",
+            "navigation_policy": "walkable_openings",
+            "primitive": "cylinder",
+            "size_m": [
+              5.0,
+              5.0,
+              42.0
+            ]
+          },
+          {
+            "architectural_role": "tower_cap",
+            "center_m": [
+              12.0,
+              25.0,
+              49.0
+            ],
+            "collision_policy": "blocking",
+            "id": "tower_cap",
+            "material_class": "local_architecture",
+            "navigation_policy": "ignored",
+            "primitive": "cone",
+            "size_m": [
+              7.0,
+              7.0,
+              4.0
+            ]
+          },
+          {
+            "architectural_role": "opening",
+            "center_m": [
+              10.0,
+              22.3,
+              4.0
+            ],
+            "collision_policy": "walkable_opening",
+            "id": "gate",
+            "material_class": "wood_or_local",
+            "navigation_policy": "walkable",
+            "primitive": "box",
+            "size_m": [
+              4.0,
+              0.8,
+              5.0
+            ]
+          }
+        ],
+        "terrain_parts": [
+          {
+            "center_m": [
+              10.0,
+              28.0,
+              2.5
+            ],
+            "collision_policy": "blocking",
+            "id": "playable_castle_island",
+            "landform_role": "playable_surface",
+            "material_class": "rock_or_ground",
+            "navigation_policy": "walkable",
+            "primitive": "box",
+            "size_m": [
+              24.0,
+              20.0,
+              5.0
+            ]
+          },
+          {
+            "center_m": [
+              -22.0,
+              31.0,
+              8.0
+            ],
+            "collision_policy": "blocking",
+            "id": "foreground_cliff_mass",
+            "landform_role": "foreground_cliff",
+            "material_class": "rock_or_ground",
+            "navigation_policy": "walkable",
+            "primitive": "rock_cluster",
+            "size_m": [
+              18.0,
+              14.0,
+              16.0
+            ]
+          },
+          {
+            "center_m": [
+              -34.0,
+              49.0,
+              3.0
+            ],
+            "collision_policy": "blocking",
+            "id": "secondary_island_west",
+            "landform_role": "secondary_island",
+            "material_class": "rock_or_ground",
+            "navigation_policy": "ignored",
+            "primitive": "rock_cluster",
+            "size_m": [
+              12.0,
+              10.0,
+              6.0
+            ]
+          },
+          {
+            "center_m": [
+              34.0,
+              58.0,
+              3.0
+            ],
+            "collision_policy": "blocking",
+            "id": "secondary_island_east",
+            "landform_role": "secondary_island",
+            "material_class": "rock_or_ground",
+            "navigation_policy": "ignored",
+            "primitive": "rock_cluster",
+            "size_m": [
+              14.0,
+              11.0,
+              6.0
+            ]
+          },
+          {
+            "center_m": [
+              10.0,
+              72.0,
+              3.0
+            ],
+            "collision_policy": "blocking",
+            "id": "playable_boundary_north",
+            "landform_role": "navigation_boundary",
+            "material_class": "rock_or_ground",
+            "navigation_policy": "blocked",
+            "primitive": "box",
+            "size_m": [
+              70.0,
+              2.0,
+              6.0
+            ]
+          }
+        ]
+      },
+      "evidence": [
+        "analysis_bundle.regions.castle_core",
+        "SceneSpec.landmarks",
+        "source-view structural audit"
+      ],
+      "original_inference": "one semantic region does not expose independent landform and architecture modules",
+      "override_id": "castle_core_decomposition_v1",
+      "pipeline_stage": "scene_composition",
+      "reason": "the source analysis identifies a gameplay structure and separate landform silhouettes that must remain independent",
+      "target_region_id": "castle_core"
+    },
+    {
+      "confidence": 0.55,
+      "corrected_value": {
+        "exclusions": [
+          "water_channels",
+          "crossing",
+          "castle_core"
+        ],
+        "population": [
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+            "center_m": [
+              -25.0,
+              28.0,
+              4.0
+            ],
+            "id": "tree_000",
+            "primitive": "foliage_cross",
+            "size_m": [
+              3.0,
+              3.0,
+              6.0
+            ],
+            "species": "tree"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+            "center_m": [
+              -20.0,
+              22.0,
+              4.0
+            ],
+            "id": "tree_001",
+            "primitive": "foliage_cross",
+            "size_m": [
+              3.0,
+              3.0,
+              6.0
+            ],
+            "species": "tree"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+            "center_m": [
+              -14.0,
+              36.0,
+              3.0
+            ],
+            "id": "tree_002",
+            "primitive": "foliage_cross",
+            "size_m": [
+              3.0,
+              3.0,
+              6.0
+            ],
+            "species": "tree"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+            "center_m": [
+              27.0,
+              42.0,
+              3.0
+            ],
+            "id": "tree_003",
+            "primitive": "foliage_cross",
+            "size_m": [
+              3.0,
+              3.0,
+              6.0
+            ],
+            "species": "tree"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+            "center_m": [
+              33.0,
+              51.0,
+              3.0
+            ],
+            "id": "tree_004",
+            "primitive": "foliage_cross",
+            "size_m": [
+              3.0,
+              3.0,
+              6.0
+            ],
+            "species": "tree"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+            "center_m": [
+              -35.0,
+              57.0,
+              3.0
+            ],
+            "id": "tree_005",
+            "primitive": "foliage_cross",
+            "size_m": [
+              3.0,
+              3.0,
+              6.0
+            ],
+            "species": "tree"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+            "center_m": [
+              40.0,
+              65.0,
+              3.0
+            ],
+            "id": "tree_006",
+            "primitive": "foliage_cross",
+            "size_m": [
+              3.0,
+              3.0,
+              6.0
+            ],
+            "species": "tree"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+            "center_m": [
+              -43.0,
+              42.0,
+              3.0
+            ],
+            "id": "tree_007",
+            "primitive": "foliage_cross",
+            "size_m": [
+              3.0,
+              3.0,
+              6.0
+            ],
+            "species": "tree"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+            "center_m": [
+              -23.0,
+              29.5,
+              4.0
+            ],
+            "id": "grass_000",
+            "primitive": "foliage_cross",
+            "size_m": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "species": "grass"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+            "center_m": [
+              -18.0,
+              23.5,
+              4.0
+            ],
+            "id": "grass_001",
+            "primitive": "foliage_cross",
+            "size_m": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "species": "grass"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+            "center_m": [
+              -12.0,
+              37.5,
+              3.0
+            ],
+            "id": "grass_002",
+            "primitive": "foliage_cross",
+            "size_m": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "species": "grass"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+            "center_m": [
+              29.0,
+              43.5,
+              3.0
+            ],
+            "id": "grass_003",
+            "primitive": "foliage_cross",
+            "size_m": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "species": "grass"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+            "center_m": [
+              35.0,
+              52.5,
+              3.0
+            ],
+            "id": "grass_004",
+            "primitive": "foliage_cross",
+            "size_m": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "species": "grass"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+            "center_m": [
+              -33.0,
+              58.5,
+              3.0
+            ],
+            "id": "grass_005",
+            "primitive": "foliage_cross",
+            "size_m": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "species": "grass"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+            "center_m": [
+              42.0,
+              66.5,
+              3.0
+            ],
+            "id": "grass_006",
+            "primitive": "foliage_cross",
+            "size_m": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "species": "grass"
+          },
+          {
+            "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+            "center_m": [
+              -41.0,
+              43.5,
+              3.0
+            ],
+            "id": "grass_007",
+            "primitive": "foliage_cross",
+            "size_m": [
+              1.5,
+              1.5,
+              2.0
+            ],
+            "species": "grass"
+          }
+        ]
+      },
+      "evidence": [
+        "analysis_bundle.regions.vegetation",
+        "visibility manifest",
+        "source-view vegetation audit"
+      ],
+      "original_inference": "vegetation mask does not contain stable world-space instance coordinates",
+      "override_id": "vegetation_population_v1",
+      "pipeline_stage": "scene_composition",
+      "reason": "population must remain deterministic and respect water, crossing, and architecture exclusions",
+      "target_region_id": "vegetation"
+    }
+  ],
+  "rebuild_policy": "delete_generated_map_and_scene_local_assets_then_reapply_manifest",
+  "scene_id": "castlegrounds_hybrid_v1",
+  "schema_version": "scene_content_manifest_v1",
+  "source_image_sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba"
+}

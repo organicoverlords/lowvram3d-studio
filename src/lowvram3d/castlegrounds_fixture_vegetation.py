@@ -1,32 +1,26 @@
-"""CPU-first deterministic vegetation placement with exclusion rules."""
+"""Compatibility projection of the generic deterministic population builder."""
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Mapping
+
+from .builders.vegetation import build_instructions
+from .scene_composition import load_scene_overrides
 
 
 def build_vegetation_plan(spec: Mapping[str, Any]) -> dict[str, Any]:
-    seed = int(spec["intent"]["deterministic_seed"])
-    placements = [
-        [-25.0, 28.0, 4.0], [-20.0, 22.0, 4.0], [-14.0, 36.0, 3.0],
-        [27.0, 42.0, 3.0], [33.0, 51.0, 3.0], [-35.0, 57.0, 3.0],
-        [40.0, 65.0, 3.0], [-43.0, 42.0, 3.0],
-        [-23.0, 29.5, 4.0], [-18.0, 23.5, 4.0], [-12.0, 37.5, 3.0],
-        [29.0, 43.5, 3.0], [35.0, 52.5, 3.0], [-33.0, 58.5, 3.0],
-        [42.0, 66.5, 3.0], [-41.0, 43.5, 3.0],
-    ]
-    return {
-        "schema_version": "scene_vegetation_plan_v1",
-        "classification": "PROVEN",
-        "scene_id": spec["scene_id"],
-        "seed": seed,
-        "execution": "cpu_deterministic",
-        "species": [
-            {"id": "trees", "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3", "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed", "count": 8, "scale_m": [3.0, 3.0, 6.0]},
-            {"id": "grass", "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3", "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed", "count": 8, "scale_m": [1.5, 1.5, 2.0]},
-        ],
-        "placements_m": placements,
-        "exclusions": ["river_main", "bridge_axis_main", "castle_core", "SP_PlayerStart_Castle_V1", "walkable_navigation_path"],
-        "collision": "none",
-        "navigation": "ignored",
-    }
+    root = Path(__file__).resolve().parents[2] / "scenes"
+    overrides = load_scene_overrides(str(spec.get("scene_id", "")), root)
+    override_map = {str(item["target_region_id"]): dict(item.get("corrected_value", {})) for item in overrides.get("overrides", [])}
+    instructions = build_instructions(spec, overrides=override_map)
+    placements = []
+    species_counts: dict[str, int] = {}
+    for actor in instructions["actors"]:
+        transform = actor["world_transform"]
+        species = str(actor["geometry_parameters"].get("species", "vegetation"))
+        species_counts[species] = species_counts.get(species, 0) + 1
+        placements.append(transform["location_m"])
+    species = [{"id": name, "mesh": "/Engine/BasicShapes/Cube.Cube", "material": material, "count": count, "scale_m": [1.0, 1.0, 1.0]} for name, count in sorted(species_counts.items()) for material in ["biome_local"]]
+    exclusions = next((item.get("corrected_value", {}).get("population", []) for item in overrides.get("overrides", []) if item.get("target_region_id") == "vegetation"), [])
+    return {"schema_version": "scene_vegetation_plan_v1", "classification": "PROVEN", "scene_id": spec["scene_id"], "seed": int(spec["intent"]["deterministic_seed"]), "execution": "cpu_deterministic", "species": species, "placements_m": placements, "exclusions": ["river_main", "bridge_axis_main", "castle_core", "SP_PlayerStart_Castle_V1", "walkable_navigation_path"], "collision": "none", "navigation": "ignored"}

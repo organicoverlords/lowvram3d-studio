@@ -1,0 +1,234 @@
+{
+  "classification": "PROVEN",
+  "default_grey_allowed": false,
+  "manual_assignments": 0,
+  "record_count": 32,
+  "records": [
+    {
+      "actor_id": "terrain_castle_core_playable_castle_island",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "rock_or_ground",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "terrain_castle_core_foreground_cliff_mass",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "rock_or_ground",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "terrain_castle_core_secondary_island_west",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "rock_or_ground",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "terrain_castle_core_secondary_island_east",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "rock_or_ground",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "terrain_castle_core_playable_boundary_north",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "rock_or_ground",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "architecture_castle_core_main_body",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "local_architecture",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "architecture_castle_core_west_wing",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "local_architecture",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "architecture_castle_core_east_wing",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "local_architecture",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "architecture_castle_core_tower_shaft",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "local_architecture",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "architecture_castle_core_tower_cap",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "local_architecture",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "architecture_castle_core_gate",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "wood_or_local",
+      "semantic_region_id": "castle_core"
+    },
+    {
+      "actor_id": "water_river_main_segment_000",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "water",
+      "semantic_region_id": "river_main"
+    },
+    {
+      "actor_id": "water_river_main_segment_001",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "water",
+      "semantic_region_id": "river_main"
+    },
+    {
+      "actor_id": "water_water_channels_000",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "water",
+      "semantic_region_id": "water_channels"
+    },
+    {
+      "actor_id": "crossing_bridge_axis_main_deck_000",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "wood_or_local",
+      "semantic_region_id": "bridge_axis_main"
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_000",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_001",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_002",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_003",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_004",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_005",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_006",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_007",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_000",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_001",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_002",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_003",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_004",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_005",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_006",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_007",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation"
+    },
+    {
+      "actor_id": "environment_sky",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "environment",
+      "semantic_region_id": "sky"
+    }
+  ],
+  "schema_version": "material_build_receipt_v1",
+  "source": "scene_content_manifest"
+}

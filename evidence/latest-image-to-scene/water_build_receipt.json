@@ -1,62 +1,77 @@
 {
+  "builder_id": "water",
   "classification": "PROVEN",
-  "navigation_excluded": true,
+  "manifest_hash": "eb4dbcf2719608be958f70d2a97f87aa298dc14338877119f3458094d8a64070",
+  "manual_only_actor_count": 0,
+  "pipeline_owned": true,
+  "record_count": 3,
   "records": [
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Water_River_Main_00",
-        "location_cm": [
-          -1500.0,
-          4750.0,
-          0.0
-        ],
-        "name": "StaticMeshActor_15",
-        "scale": [
-          30.4138126514911,
-          12.0,
-          0.12
-        ],
-        "tags": [
-          "no_build",
-          "river_main",
-          "scene_spec_generated",
-          "unpromoted",
-          "water"
-        ]
-      },
+      "actor_id": "water_river_main_segment_000",
+      "builder_id": "water",
+      "class": "StaticMeshActor",
       "created": false,
-      "id": "SP_Water_River_Main_00",
-      "width_m": 12.0
+      "location_m": [
+        -15.0,
+        47.5,
+        0.0
+      ],
+      "material_class": "water",
+      "rotation_deg": [
+        0.0,
+        9.462322208025617,
+        0.0
+      ],
+      "scale_m": [
+        30.4138126514911,
+        12.0,
+        0.1
+      ]
     },
     {
-      "actor": {
-        "class": "StaticMeshActor",
-        "label": "SP_Water_River_Main_01",
-        "location_cm": [
-          1500.0,
-          5400.0,
-          0.0
-        ],
-        "name": "StaticMeshActor_16",
-        "scale": [
-          31.04834939252005,
-          12.0,
-          0.12
-        ],
-        "tags": [
-          "no_build",
-          "river_main",
-          "scene_spec_generated",
-          "unpromoted",
-          "water"
-        ]
-      },
+      "actor_id": "water_river_main_segment_001",
+      "builder_id": "water",
+      "class": "StaticMeshActor",
       "created": false,
-      "id": "SP_Water_River_Main_01",
-      "width_m": 12.0
+      "location_m": [
+        15.0,
+        54.0,
+        0.0
+      ],
+      "material_class": "water",
+      "rotation_deg": [
+        0.0,
+        14.931417178137554,
+        0.0
+      ],
+      "scale_m": [
+        31.04834939252005,
+        12.0,
+        0.1
+      ]
+    },
+    {
+      "actor_id": "water_water_channels_000",
+      "builder_id": "water",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "material_class": "water",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.0,
+        1.0,
+        1.0
+      ]
     }
   ],
-  "river_visible": true,
-  "schema_version": "water_build_receipt_v1"
+  "schema_version": "water_build_receipt_v2"
 }

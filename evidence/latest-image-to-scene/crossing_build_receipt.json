@@ -1,0 +1,33 @@
+{
+  "builder_id": "crossing",
+  "classification": "PROVEN",
+  "manifest_hash": "eb4dbcf2719608be958f70d2a97f87aa298dc14338877119f3458094d8a64070",
+  "manual_only_actor_count": 0,
+  "pipeline_owned": true,
+  "record_count": 1,
+  "records": [
+    {
+      "actor_id": "crossing_bridge_axis_main_deck_000",
+      "builder_id": "crossing",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        0.0,
+        31.0,
+        4.0
+      ],
+      "material_class": "wood_or_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        20.0,
+        3.0,
+        0.3
+      ]
+    }
+  ],
+  "schema_version": "crossing_build_receipt_v2"
+}

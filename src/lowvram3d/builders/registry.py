@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from .base import BuilderContract, estimate_budget
+from . import architecture, crossing, environment, terrain, vegetation, water
 
 
 BUILDER_REGISTRY: dict[str, BuilderContract] = {
@@ -17,6 +18,16 @@ BUILDER_REGISTRY: dict[str, BuilderContract] = {
     "background": BuilderContract("background", ("background_geometry",), ("background_card", "visual_shell"), ("regions", "visibility"), ("StaticMeshActor",), "none", "ignored", "background", ("coverage",), "visual_shell", {"triangles": 100000}),
     "environment": BuilderContract("environment", ("sky_or_ceiling", "lighting_source"), ("sky_environment", "visual_shell"), ("regions", "camera"), ("SkyAtmosphere", "DirectionalLight", "ExponentialHeightFog"), "none", "ignored", "environment", ("environment", "lighting"), "flat_environment", {"draw_calls": 10}),
     "gameplay_boundary": BuilderContract("gameplay_boundary", ("gameplay_boundary",), ("gameplay_proxy", "collision_only", "navigation_only"), ("regions", "scene_graph"), ("BlockingVolume",), "blocking", "blocked", "debug", ("collision",), "bounded_box", {"actors": 32}),
+}
+
+
+INSTRUCTION_BUILDERS = {
+    "terrain": terrain.build_instructions,
+    "architecture": architecture.build_instructions,
+    "water": water.build_instructions,
+    "crossing": crossing.build_instructions,
+    "vegetation": vegetation.build_instructions,
+    "environment": environment.build_instructions,
 }
 
 
@@ -67,3 +78,12 @@ def builder_manifest(spec: Mapping[str, Any], representation_manifest: Mapping[s
         contract = BUILDER_REGISTRY[builder_id]
         records[builder_id] = {"contract": contract.to_dict(), **details, "estimated_budget": estimate_budget(contract, len(details["region_ids"]))}
     return {"schema_version": "builder_manifest_v2", "classification": "PROVEN", "selected": records, "selection_source": "SceneSpec semantic classes and representation manifest", "filename_not_used_for_selection": True, "available_builder_count": len(BUILDER_REGISTRY)}
+
+
+def build_instruction_manifest(spec: Mapping[str, Any], *, representation_manifest: Mapping[str, Any] | None = None, overrides: Mapping[str, Any] | None = None) -> dict[str, dict[str, Any]]:
+    """Run only the allowlisted generic builders for CPU manifest generation."""
+
+    result: dict[str, dict[str, Any]] = {}
+    for builder_id, builder in INSTRUCTION_BUILDERS.items():
+        result[builder_id] = builder(spec, representation_manifest=representation_manifest, overrides=overrides)
+    return result

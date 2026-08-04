@@ -1,0 +1,703 @@
+{
+  "actor_count": 32,
+  "classification": "PROVEN",
+  "manifest_hash": "eb4dbcf2719608be958f70d2a97f87aa298dc14338877119f3458094d8a64070",
+  "manual_only_actor_count": 0,
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1.L_Castlegrounds_Hybrid_V1",
+  "materials_pipeline_assigned": true,
+  "records": [
+    {
+      "actor_id": "terrain_castle_core_playable_castle_island",
+      "builder_id": "terrain",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        10.0,
+        28.0,
+        2.5
+      ],
+      "material_class": "rock_or_ground",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        24.0,
+        20.0,
+        5.0
+      ]
+    },
+    {
+      "actor_id": "terrain_castle_core_foreground_cliff_mass",
+      "builder_id": "terrain",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -22.0,
+        31.0,
+        8.0
+      ],
+      "material_class": "rock_or_ground",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        18.0,
+        14.0,
+        16.0
+      ]
+    },
+    {
+      "actor_id": "terrain_castle_core_secondary_island_west",
+      "builder_id": "terrain",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -34.0,
+        49.0,
+        3.0
+      ],
+      "material_class": "rock_or_ground",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        12.0,
+        10.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "terrain_castle_core_secondary_island_east",
+      "builder_id": "terrain",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        34.0,
+        58.0,
+        3.0
+      ],
+      "material_class": "rock_or_ground",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        14.0,
+        11.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "terrain_castle_core_playable_boundary_north",
+      "builder_id": "terrain",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        10.0,
+        72.0,
+        3.0
+      ],
+      "material_class": "rock_or_ground",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        70.0,
+        2.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "architecture_castle_core_main_body",
+      "builder_id": "architecture",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        10.0,
+        28.0,
+        12.0
+      ],
+      "material_class": "local_architecture",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        16.0,
+        11.0,
+        14.0
+      ]
+    },
+    {
+      "actor_id": "architecture_castle_core_west_wing",
+      "builder_id": "architecture",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        1.0,
+        29.0,
+        8.0
+      ],
+      "material_class": "local_architecture",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        5.0,
+        9.0,
+        8.0
+      ]
+    },
+    {
+      "actor_id": "architecture_castle_core_east_wing",
+      "builder_id": "architecture",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        19.0,
+        29.0,
+        8.0
+      ],
+      "material_class": "local_architecture",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        5.0,
+        9.0,
+        8.0
+      ]
+    },
+    {
+      "actor_id": "architecture_castle_core_tower_shaft",
+      "builder_id": "architecture",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        12.0,
+        25.0,
+        28.0
+      ],
+      "material_class": "local_architecture",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        5.0,
+        5.0,
+        42.0
+      ]
+    },
+    {
+      "actor_id": "architecture_castle_core_tower_cap",
+      "builder_id": "architecture",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        12.0,
+        25.0,
+        49.0
+      ],
+      "material_class": "local_architecture",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        7.0,
+        7.0,
+        4.0
+      ]
+    },
+    {
+      "actor_id": "architecture_castle_core_gate",
+      "builder_id": "architecture",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        10.0,
+        22.3,
+        4.0
+      ],
+      "material_class": "wood_or_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        4.0,
+        0.8,
+        5.0
+      ]
+    },
+    {
+      "actor_id": "water_river_main_segment_000",
+      "builder_id": "water",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -15.0,
+        47.5,
+        0.0
+      ],
+      "material_class": "water",
+      "rotation_deg": [
+        0.0,
+        9.462322208025617,
+        0.0
+      ],
+      "scale_m": [
+        30.4138126514911,
+        12.0,
+        0.1
+      ]
+    },
+    {
+      "actor_id": "water_river_main_segment_001",
+      "builder_id": "water",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        15.0,
+        54.0,
+        0.0
+      ],
+      "material_class": "water",
+      "rotation_deg": [
+        0.0,
+        14.931417178137554,
+        0.0
+      ],
+      "scale_m": [
+        31.04834939252005,
+        12.0,
+        0.1
+      ]
+    },
+    {
+      "actor_id": "water_water_channels_000",
+      "builder_id": "water",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "material_class": "water",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "actor_id": "crossing_bridge_axis_main_deck_000",
+      "builder_id": "crossing",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        0.0,
+        31.0,
+        4.0
+      ],
+      "material_class": "wood_or_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        20.0,
+        3.0,
+        0.3
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_000",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -25.0,
+        28.0,
+        4.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_001",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -20.0,
+        22.0,
+        4.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_002",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -14.0,
+        36.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_003",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        27.0,
+        42.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_004",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        33.0,
+        51.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_005",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -35.0,
+        57.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_006",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        40.0,
+        65.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_tree_007",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -43.0,
+        42.0,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        3.0,
+        3.0,
+        6.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_000",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -23.0,
+        29.5,
+        4.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_001",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -18.0,
+        23.5,
+        4.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_002",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -12.0,
+        37.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_003",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        29.0,
+        43.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_004",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        35.0,
+        52.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_005",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -33.0,
+        58.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_006",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        42.0,
+        66.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "actor_id": "vegetation_vegetation_grass_grass_007",
+      "builder_id": "vegetation",
+      "class": "StaticMeshActor",
+      "created": false,
+      "location_m": [
+        -41.0,
+        43.5,
+        3.0
+      ],
+      "material_class": "biome_local",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale_m": [
+        1.5,
+        1.5,
+        2.0
+      ]
+    },
+    {
+      "actor_id": "environment_sky",
+      "assignment": "environment_class",
+      "builder_id": "environment",
+      "class": "SkyAtmosphere",
+      "created": false,
+      "material_class": "environment"
+    }
+  ],
+  "schema_version": "scene_content_build_receipt_v1",
+  "target_map_requested": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "transforms_pipeline_derived": true
+}

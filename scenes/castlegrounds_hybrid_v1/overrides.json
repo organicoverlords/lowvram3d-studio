@@ -1,0 +1,62 @@
+{
+  "schema_version": "scene_overrides_v1",
+  "scene_id": "castlegrounds_hybrid_v1",
+  "overrides": [
+    {
+      "override_id": "castle_core_decomposition_v1",
+      "target_region_id": "castle_core",
+      "original_inference": "one semantic region does not expose independent landform and architecture modules",
+      "corrected_value": {
+        "terrain_parts": [
+          {"id": "playable_castle_island", "primitive": "box", "center_m": [10.0, 28.0, 2.5], "size_m": [24.0, 20.0, 5.0], "landform_role": "playable_surface", "material_class": "rock_or_ground", "collision_policy": "blocking", "navigation_policy": "walkable"},
+          {"id": "foreground_cliff_mass", "primitive": "rock_cluster", "center_m": [-22.0, 31.0, 8.0], "size_m": [18.0, 14.0, 16.0], "landform_role": "foreground_cliff", "material_class": "rock_or_ground", "collision_policy": "blocking", "navigation_policy": "walkable"},
+          {"id": "secondary_island_west", "primitive": "rock_cluster", "center_m": [-34.0, 49.0, 3.0], "size_m": [12.0, 10.0, 6.0], "landform_role": "secondary_island", "material_class": "rock_or_ground", "collision_policy": "blocking", "navigation_policy": "ignored"},
+          {"id": "secondary_island_east", "primitive": "rock_cluster", "center_m": [34.0, 58.0, 3.0], "size_m": [14.0, 11.0, 6.0], "landform_role": "secondary_island", "material_class": "rock_or_ground", "collision_policy": "blocking", "navigation_policy": "ignored"},
+          {"id": "playable_boundary_north", "primitive": "box", "center_m": [10.0, 72.0, 3.0], "size_m": [70.0, 2.0, 6.0], "landform_role": "navigation_boundary", "material_class": "rock_or_ground", "collision_policy": "blocking", "navigation_policy": "blocked"}
+        ],
+        "architecture_parts": [
+          {"id": "main_body", "primitive": "box", "center_m": [10.0, 28.0, 12.0], "size_m": [16.0, 11.0, 14.0], "architectural_role": "central_mass", "material_class": "local_architecture", "collision_policy": "blocking", "navigation_policy": "walkable_openings"},
+          {"id": "west_wing", "primitive": "box", "center_m": [1.0, 29.0, 8.0], "size_m": [5.0, 9.0, 8.0], "architectural_role": "wing", "material_class": "local_architecture", "collision_policy": "blocking", "navigation_policy": "walkable_openings"},
+          {"id": "east_wing", "primitive": "box", "center_m": [19.0, 29.0, 8.0], "size_m": [5.0, 9.0, 8.0], "architectural_role": "wing", "material_class": "local_architecture", "collision_policy": "blocking", "navigation_policy": "walkable_openings"},
+          {"id": "tower_shaft", "primitive": "cylinder", "center_m": [12.0, 25.0, 28.0], "size_m": [5.0, 5.0, 42.0], "architectural_role": "vertical_tower", "material_class": "local_architecture", "collision_policy": "blocking", "navigation_policy": "walkable_openings"},
+          {"id": "tower_cap", "primitive": "cone", "center_m": [12.0, 25.0, 49.0], "size_m": [7.0, 7.0, 4.0], "architectural_role": "tower_cap", "material_class": "local_architecture", "collision_policy": "blocking", "navigation_policy": "ignored"},
+          {"id": "gate", "primitive": "box", "center_m": [10.0, 22.3, 4.0], "size_m": [4.0, 0.8, 5.0], "architectural_role": "opening", "material_class": "wood_or_local", "collision_policy": "walkable_opening", "navigation_policy": "walkable"}
+        ]
+      },
+      "reason": "the source analysis identifies a gameplay structure and separate landform silhouettes that must remain independent",
+      "evidence": ["analysis_bundle.regions.castle_core", "SceneSpec.landmarks", "source-view structural audit"],
+      "confidence": 0.72,
+      "pipeline_stage": "scene_composition"
+    },
+    {
+      "override_id": "vegetation_population_v1",
+      "target_region_id": "vegetation",
+      "original_inference": "vegetation mask does not contain stable world-space instance coordinates",
+      "corrected_value": {
+        "population": [
+          {"id": "tree_000", "species": "tree", "primitive": "foliage_cross", "center_m": [-25.0, 28.0, 4.0], "size_m": [3.0, 3.0, 6.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3"},
+          {"id": "tree_001", "species": "tree", "primitive": "foliage_cross", "center_m": [-20.0, 22.0, 4.0], "size_m": [3.0, 3.0, 6.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3"},
+          {"id": "tree_002", "species": "tree", "primitive": "foliage_cross", "center_m": [-14.0, 36.0, 3.0], "size_m": [3.0, 3.0, 6.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3"},
+          {"id": "tree_003", "species": "tree", "primitive": "foliage_cross", "center_m": [27.0, 42.0, 3.0], "size_m": [3.0, 3.0, 6.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3"},
+          {"id": "tree_004", "species": "tree", "primitive": "foliage_cross", "center_m": [33.0, 51.0, 3.0], "size_m": [3.0, 3.0, 6.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3"},
+          {"id": "tree_005", "species": "tree", "primitive": "foliage_cross", "center_m": [-35.0, 57.0, 3.0], "size_m": [3.0, 3.0, 6.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3"},
+          {"id": "tree_006", "species": "tree", "primitive": "foliage_cross", "center_m": [40.0, 65.0, 3.0], "size_m": [3.0, 3.0, 6.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3"},
+          {"id": "tree_007", "species": "tree", "primitive": "foliage_cross", "center_m": [-43.0, 42.0, 3.0], "size_m": [3.0, 3.0, 6.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3"},
+          {"id": "grass_000", "species": "grass", "primitive": "foliage_cross", "center_m": [-23.0, 29.5, 4.0], "size_m": [1.5, 1.5, 2.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3"},
+          {"id": "grass_001", "species": "grass", "primitive": "foliage_cross", "center_m": [-18.0, 23.5, 4.0], "size_m": [1.5, 1.5, 2.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3"},
+          {"id": "grass_002", "species": "grass", "primitive": "foliage_cross", "center_m": [-12.0, 37.5, 3.0], "size_m": [1.5, 1.5, 2.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3"},
+          {"id": "grass_003", "species": "grass", "primitive": "foliage_cross", "center_m": [29.0, 43.5, 3.0], "size_m": [1.5, 1.5, 2.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3"},
+          {"id": "grass_004", "species": "grass", "primitive": "foliage_cross", "center_m": [35.0, 52.5, 3.0], "size_m": [1.5, 1.5, 2.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3"},
+          {"id": "grass_005", "species": "grass", "primitive": "foliage_cross", "center_m": [-33.0, 58.5, 3.0], "size_m": [1.5, 1.5, 2.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3"},
+          {"id": "grass_006", "species": "grass", "primitive": "foliage_cross", "center_m": [42.0, 66.5, 3.0], "size_m": [1.5, 1.5, 2.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3"},
+          {"id": "grass_007", "species": "grass", "primitive": "foliage_cross", "center_m": [-41.0, 43.5, 3.0], "size_m": [1.5, 1.5, 2.0], "asset_path": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3"}
+        ],
+        "exclusions": ["water_channels", "crossing", "castle_core"]
+      },
+      "reason": "population must remain deterministic and respect water, crossing, and architecture exclusions",
+      "evidence": ["analysis_bundle.regions.vegetation", "visibility manifest", "source-view vegetation audit"],
+      "confidence": 0.55,
+      "pipeline_stage": "scene_composition"
+    }
+  ]
+}

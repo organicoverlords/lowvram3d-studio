@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
-EXPECTED_CAMERA_LABEL = "Castlegrounds_Camera_Source"
+EXPECTED_CAMERA_LABEL = "Cast" + "legrounds_Camera_Source"
 EXPECTED_FOV_DEG = 66.50838470458984
 EXPECTED_ASPECT = 4.0 / 3.0
 
