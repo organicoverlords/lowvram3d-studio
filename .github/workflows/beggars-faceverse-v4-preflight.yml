@@ -15,6 +15,7 @@ on:
       - scripts/apply-beggars-faceverse-v4-venv-compat.ps1
       - scripts/apply-beggars-faceverse-v4-probe-compat.ps1
       - scripts/apply-beggars-faceverse-v4-release-fallback.ps1
+      - scripts/apply-beggars-faceverse-v4-isolated-proof.ps1
       - .github/workflows/beggars-faceverse-v4-preflight.yml
 
 permissions:
@@ -88,6 +89,14 @@ jobs:
           & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceverse-v4-release-fallback.ps1
           if ($LASTEXITCODE -ne 0) {
             throw "FaceVerse release fallback patch failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Isolate FaceVerse proof environment
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceverse-v4-isolated-proof.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "FaceVerse isolated-proof patch failed with exit code $LASTEXITCODE"
           }
 
       - name: Run bounded FaceVerse v4 proof
