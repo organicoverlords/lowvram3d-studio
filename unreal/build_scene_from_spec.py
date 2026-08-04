@@ -35,6 +35,7 @@ PLAYER_START_LABEL = "SP_PlayerStart_Castle_V1"
 SOURCE_CAMERA_LABEL = "Castlegrounds_Camera_Source"
 SOURCE_MESH_LABEL = "Castlegrounds_ReconstructedMesh"
 MAX_PROXY_DIM_CM = 5000.0
+DEFAULT_GAME_MODE_PATH = "/Script/Engine.GameModeBase"
 
 
 def _read_json(path: str | Path) -> dict[str, Any]:
@@ -181,6 +182,36 @@ def _load(level_subsystem: Any, map_path: str) -> bool:
     return bool(unreal.EditorLoadingAndSavingUtils.load_map(map_path))
 
 
+def _set_default_game_mode() -> str:
+    world = unreal.EditorLevelLibrary.get_editor_world()
+    if world is None:
+        raise RuntimeError("editor world unavailable while configuring game mode")
+    world_settings = world.get_world_settings()
+    game_mode = unreal.load_class(None, DEFAULT_GAME_MODE_PATH)
+    if game_mode is None:
+        raise RuntimeError(f"could not load {DEFAULT_GAME_MODE_PATH}")
+    world_settings.set_editor_property("default_game_mode", game_mode)
+    actual = world_settings.get_editor_property("default_game_mode")
+    actual_path = str(actual.get_path_name()) if actual is not None and hasattr(actual, "get_path_name") else str(actual)
+    if actual_path != DEFAULT_GAME_MODE_PATH:
+        raise RuntimeError(f"default game mode did not apply: {actual_path}")
+    return actual_path
+
+
+def _anchor_and_player_start(plan: dict[str, Any]) -> tuple[list[float], list[float]]:
+    dimensions = plan["dimensions_cm"]
+    centre = _vector(plan["actor_center_cm"], "proxy actor_center_cm")
+    if "base_anchor_cm" in plan:
+        anchor = _vector(plan["base_anchor_cm"], "proxy base_anchor_cm")
+    elif "base_anchor_m" in plan:
+        anchor = [100.0 * value for value in _vector(plan["base_anchor_m"], "proxy base_anchor_m")]
+    else:
+        anchor = [centre[0], centre[1], centre[2] - _finite(dimensions["height_cm"], "proxy height_cm") / 2.0]
+    start_clearance_y = max(1000.0, _finite(dimensions["depth_cm"], "proxy depth_cm") * 1.5)
+    player_start = [anchor[0], anchor[1] - start_clearance_y, anchor[2] + 200.0]
+    return anchor, player_start
+
+
 def _validate_inputs(spec: dict[str, Any], plan: dict[str, Any], args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     validation = validate_scene_spec(spec)
     if not validation["scene_spec_valid"]:
@@ -227,6 +258,9 @@ def _repair_existing_output(args: argparse.Namespace, spec: dict[str, Any], plan
     proxy = _find_label(actors, PROXY_LABEL)
     ground = _find_label(actors, GROUND_LABEL)
     player_start = _find_label(actors, PLAYER_START_LABEL)
+    _, player_start_location = _anchor_and_player_start(plan)
+    player_start.set_actor_location(unreal.Vector(*player_start_location), False, False)
+    default_game_mode = _set_default_game_mode()
     source_mesh_collision = _set_collision(source_mesh, enabled=False, navigation=False)
     proxy_collision = _set_collision(proxy, enabled=True, navigation=True)
     ground_collision = _set_collision(ground, enabled=True, navigation=True)
@@ -268,6 +302,8 @@ def _repair_existing_output(args: argparse.Namespace, spec: dict[str, Any], plan
         "castle_proxy": {"label": PROXY_LABEL, "record": _actor_record(proxy), "dimensions_cm": plan["dimensions_cm"], "collision": proxy_collision, "navigation_intent": "walkable"},
         "walkable_ground": {"label": GROUND_LABEL, "record": _actor_record(ground), "collision": ground_collision},
         "player_start": _actor_record(player_start),
+        "player_start_policy": "outside_proxy_on_ground_clearance",
+        "default_game_mode": default_game_mode,
         "lighting_present": {"directional_light": any("DirectionalLight" in str(actor.get_class().get_name()) for actor in actors), "sky_light": any("SkyLight" in str(actor.get_class().get_name()) for actor in actors)},
         "source_visual_shell_preserved": True,
         "source_camera_contract_preserved": True,
@@ -337,6 +373,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError(f"could not save output map: {args.output_map}")
     if not _load(level_subsystem, args.output_map):
         raise RuntimeError(f"could not reload output map after copy: {args.output_map}")
+    default_game_mode = _set_default_game_mode()
 
     cube_asset = unreal.load_asset("/Engine/BasicShapes/Cube.Cube")
     if cube_asset is None:
@@ -351,12 +388,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     _tags(proxy, plan["tags"])
     proxy_collision = _set_collision(proxy, enabled=True, navigation=True)
 
-    if "base_anchor_cm" in plan:
-        anchor = _vector(plan["base_anchor_cm"], "proxy base_anchor_cm")
-    elif "base_anchor_m" in plan:
-        anchor = [100.0 * value for value in _vector(plan["base_anchor_m"], "proxy base_anchor_m")]
-    else:
-        anchor = [centre[0], centre[1], centre[2] - dimensions["height_cm"] / 2.0]
+    anchor, player_start_location = _anchor_and_player_start(plan)
     ground_width = max(3000.0, dimensions["width_cm"] * 1.5)
     ground_depth = max(3000.0, dimensions["depth_cm"] * 1.5)
     ground = _spawn_asset(cube_asset, unreal.Vector(anchor[0], anchor[1], anchor[2] - 50.0))
@@ -367,7 +399,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     _tags(ground, ["gameplay_proxy", "replaceable", "unpromoted", "scene_spec_generated", "walkable_ground"])
     ground_collision = _set_collision(ground, enabled=True, navigation=True)
 
-    player_start = _spawn_class(unreal.PlayerStart, unreal.Vector(anchor[0], anchor[1], anchor[2] + 200.0))
+    player_start = _spawn_class(unreal.PlayerStart, unreal.Vector(*player_start_location))
     if player_start is None:
         raise RuntimeError("could not spawn PlayerStart")
     _label(player_start, PLAYER_START_LABEL)
@@ -410,6 +442,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
         "castle_proxy": {"label": PROXY_LABEL, "record": _actor_record(proxy), "dimensions_cm": dimensions, "collision": proxy_collision, "navigation_intent": "walkable"},
         "walkable_ground": {"label": GROUND_LABEL, "record": _actor_record(ground), "collision": ground_collision},
         "player_start": _actor_record(player_start),
+        "player_start_policy": "outside_proxy_on_ground_clearance",
+        "default_game_mode": default_game_mode,
         "lighting_present": {"directional_light": True, "sky_light": True},
         "source_visual_shell_preserved": True,
         "source_camera_contract_preserved": True,

@@ -34,6 +34,7 @@
     ]
   },
   "classification": "PROVEN",
+  "default_game_mode": "/Script/Engine.GameModeBase",
   "errors": [],
   "fresh_process_validation": true,
   "lighting_present": {
@@ -49,7 +50,7 @@
     "label": "SP_PlayerStart_Castle_V1",
     "location_cm": [
       1000.0,
-      2800.0,
+      1712.5,
       700.0
     ],
     "name": "PlayerStart_0",
@@ -70,6 +71,7 @@
       "unpromoted"
     ]
   },
+  "player_start_policy": "outside_proxy_on_ground_clearance",
   "scene_spec_id": "castlegrounds_hybrid_authoritative_v1",
   "schema_version": "hybrid_level_validation_receipt_v1",
   "source_camera": {

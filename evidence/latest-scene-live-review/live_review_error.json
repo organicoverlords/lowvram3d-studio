@@ -1,0 +1,5 @@
+{
+  "schema_version": "live_scene_review_state_v1",
+  "classification": "REJECTED",
+  "error": "AttributeError: 'World' object has no attribute 'get_actors'"
+}

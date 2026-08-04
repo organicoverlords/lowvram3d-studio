@@ -1,0 +1,262 @@
+{
+  "castle_proxy_reviewed": true,
+  "classification": "PROVEN",
+  "contract": {
+    "actors": {
+      "castle_proxy": {
+        "bounds": {
+          "extent_cm": [
+            646.5530896784348,
+            362.5,
+            770.158827411077
+          ],
+          "origin_cm": [
+            999.9999999999999,
+            2800.0,
+            1270.158827411077
+          ]
+        },
+        "class": "StaticMeshActor",
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_GameplayProxy_Castle_V1",
+        "location_cm": [
+          1000.0,
+          2800.0,
+          1270.158827411077
+        ],
+        "name": "StaticMeshActor_0",
+        "navigation": true,
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          12.931061793568698,
+          7.25,
+          15.403176548221541
+        ],
+        "tags": [
+          "castle_proxy",
+          "gameplay_proxy",
+          "replaceable",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "ground": {
+        "bounds": {
+          "extent_cm": [
+            1500.0,
+            1500.0,
+            50.0
+          ],
+          "origin_cm": [
+            1000.0,
+            2800.0,
+            450.0
+          ]
+        },
+        "class": "StaticMeshActor",
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_GameplayGround_Castle_V1",
+        "location_cm": [
+          1000.0,
+          2800.0,
+          450.0
+        ],
+        "name": "StaticMeshActor_2",
+        "navigation": true,
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          30.0,
+          30.0,
+          1.0
+        ],
+        "tags": [
+          "gameplay_proxy",
+          "replaceable",
+          "scene_spec_generated",
+          "unpromoted",
+          "walkable_ground"
+        ]
+      },
+      "player_start": {
+        "class": "PlayerStart",
+        "label": "SP_PlayerStart_Castle_V1",
+        "location_cm": [
+          1000.0,
+          1712.5,
+          700.0
+        ],
+        "name": "PlayerStart_0",
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "tags": [
+          "gameplay_proxy",
+          "replaceable",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "source_camera": {
+        "class": "CameraActor",
+        "fov_deg": 66.50838470458984,
+        "label": "Castlegrounds_Camera_Source",
+        "location_cm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "name": "CameraActor_5",
+        "rotation_deg": [
+          -0.0,
+          0.0,
+          89.99999999999999
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "tags": [
+          "ImageToSceneSmoke20260803"
+        ]
+      },
+      "source_mesh": {
+        "class": "StaticMeshActor",
+        "label": "Castlegrounds_ReconstructedMesh",
+        "location_cm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "name": "StaticMeshActor_1",
+        "rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "tags": [
+          "CastlegroundsSourceMeshV2",
+          "ImageToSceneSmoke20260803",
+          "MoGe2P2P5D",
+          "source_locked",
+          "source_mesh_v2",
+          "visual_only",
+          "visual_shell"
+        ]
+      }
+    },
+    "camera_inventory": [
+      {
+        "fov_deg": 66.50838470458984,
+        "label": "Castlegrounds_Camera_Source"
+      },
+      {
+        "fov_deg": 66.50838470458984,
+        "label": "Castlegrounds_Camera_Left"
+      },
+      {
+        "fov_deg": 66.50838470458984,
+        "label": "Castlegrounds_Camera_Right"
+      },
+      {
+        "fov_deg": 66.50838470458984,
+        "label": "Castlegrounds_Camera_Forward"
+      },
+      {
+        "fov_deg": 66.50838470458984,
+        "label": "Castlegrounds_Camera_Elevated"
+      }
+    ],
+    "classification": "PROVEN",
+    "default_game_mode": "/Script/Engine.GameModeBase",
+    "ground_blocking_collision": true,
+    "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+    "player_start_outside_proxy": true,
+    "proxy_blocking_collision": true,
+    "proxy_rests_on_ground": true,
+    "schema_version": "live_scene_review_state_v1",
+    "screenshot_dir": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-scene-live-review\\screenshots",
+    "screenshots_expected": [
+      "level_overview.png",
+      "source_camera_view.png",
+      "castle_proxy_selected.png",
+      "castle_proxy_collision.png",
+      "ground_and_player_start.png",
+      "shell_and_proxy_independent.png"
+    ],
+    "source_camera_forward": [
+      2.220446049250313e-16,
+      1.0000000000000002,
+      0.0
+    ],
+    "source_map_sha256": "39547be52ab21f3f6b0d99c0f2a2f93103a5c0ebf9da56435e37feae04cc15f9",
+    "source_shell_bounds": {
+      "extent_cm": [
+        31664.0146484375,
+        33339.46044921875,
+        18168.1279296875
+      ],
+      "origin_cm": [
+        5403.5556640625,
+        38192.25048828125,
+        -15270.5244140625
+      ]
+    },
+    "source_shell_collision_disabled": true,
+    "source_shell_navigation_disabled": true,
+    "source_shell_visual_only": true
+  },
+  "errors": [],
+  "live_editor_level_review": "PROVEN",
+  "missing_screenshots": [],
+  "schema_version": "live_scene_review_receipt_v1",
+  "screenshots": [
+    {
+      "bytes": 426166,
+      "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-scene-live-review\\screenshots\\level_overview.png"
+    },
+    {
+      "bytes": 298496,
+      "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-scene-live-review\\screenshots\\source_camera_view.png"
+    },
+    {
+      "bytes": 347974,
+      "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-scene-live-review\\screenshots\\castle_proxy_selected.png"
+    },
+    {
+      "bytes": 349392,
+      "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-scene-live-review\\screenshots\\castle_proxy_collision.png"
+    },
+    {
+      "bytes": 252434,
+      "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-scene-live-review\\screenshots\\ground_and_player_start.png"
+    },
+    {
+      "bytes": 438730,
+      "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-scene-live-review\\screenshots\\shell_and_proxy_independent.png"
+    }
+  ],
+  "source_camera_view_captured": true,
+  "source_map_sha256": "39547be52ab21f3f6b0d99c0f2a2f93103a5c0ebf9da56435e37feae04cc15f9",
+  "source_shell_visual_only": true
+}

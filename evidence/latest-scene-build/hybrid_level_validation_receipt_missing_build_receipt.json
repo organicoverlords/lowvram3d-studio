@@ -1,0 +1,6 @@
+{
+  "classification": "REJECTED",
+  "error": "RuntimeError: scene-spec, proxy-plan, output-map, build-receipt, and receipt are required",
+  "schema_version": "hybrid_level_validation_receipt_v1",
+  "traceback": "Traceback (most recent call last):\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/validate_scene_from_spec.py\", line 226, in main\n    receipt = validate(args)\n              ^^^^^^^^^^^^^^\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/validate_scene_from_spec.py\", line 94, in validate\n    raise RuntimeError(\"scene-spec, proxy-plan, output-map, build-receipt, and receipt are required\")\nRuntimeError: scene-spec, proxy-plan, output-map, build-receipt, and receipt are required\n"
+}

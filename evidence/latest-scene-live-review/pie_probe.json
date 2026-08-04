@@ -1,0 +1,62 @@
+{
+  "chosen_player_start": "UNAVAILABLE:AttributeError",
+  "classification": "PROVEN",
+  "pawn": {
+    "class": "DefaultPawn",
+    "label": "DefaultPawn0",
+    "location_cm": [
+      1000.0,
+      1712.5,
+      700.0
+    ],
+    "name": "DefaultPawn_0",
+    "rotation_deg": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "tags": []
+  },
+  "player_starts": [
+    {
+      "class": "PlayerStart",
+      "label": "SP_PlayerStart_Castle_V1",
+      "location_cm": [
+        1000.0,
+        1712.5,
+        700.0
+      ],
+      "name": "PlayerStart_0",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "tags": [
+        "gameplay_proxy",
+        "replaceable",
+        "scene_spec_generated",
+        "unpromoted"
+      ]
+    }
+  ],
+  "runtime_default_pawn_class": "/Script/Engine.DefaultPawn",
+  "runtime_game_mode": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/UEDPIE_0_L_Castlegrounds_Hybrid_V1.L_Castlegrounds_Hybrid_V1:PersistentLevel.GameModeBase_0",
+  "schema_version": "live_pie_probe_v1",
+  "world": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/UEDPIE_0_L_Castlegrounds_Hybrid_V1.L_Castlegrounds_Hybrid_V1",
+  "world_settings": {
+    "default_game_mode": "/Script/Engine.GameModeBase",
+    "default_pawn_class": "UNAVAILABLE:Exception",
+    "game_mode_override": "UNAVAILABLE:Exception"
+  }
+}

@@ -26,6 +26,7 @@ PROXY_LABEL = "SP_GameplayProxy_Castle_V1"
 GROUND_LABEL = "SP_GameplayGround_Castle_V1"
 PLAYER_START_LABEL = "SP_PlayerStart_Castle_V1"
 SOURCE_CAMERA_LABEL = "Castlegrounds_Camera_Source"
+DEFAULT_GAME_MODE_PATH = "/Script/Engine.GameModeBase"
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -108,6 +109,14 @@ def validate(args: argparse.Namespace) -> dict[str, Any]:
     level_subsystem = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
     if not bool(level_subsystem.load_level(args.output_map)):
         raise RuntimeError(f"could not reload output map: {args.output_map}")
+    world = unreal.EditorLevelLibrary.get_editor_world()
+    if world is None:
+        raise RuntimeError("editor world unavailable")
+    world_settings = world.get_world_settings()
+    game_mode = world_settings.get_editor_property("default_game_mode")
+    game_mode_path = str(game_mode.get_path_name()) if game_mode is not None and hasattr(game_mode, "get_path_name") else str(game_mode)
+    if game_mode_path != DEFAULT_GAME_MODE_PATH:
+        raise RuntimeError(f"default game mode mismatch: {game_mode_path}")
     actors = _actors()
     source_asset_path = spec["outputs"]["unreal_source_mesh_asset"]
     source_mesh = []
@@ -161,6 +170,14 @@ def validate(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("proxy location does not match plan")
     if any(not _close(actual, expected, 1e-4) for actual, expected in zip([proxy_scale.x, proxy_scale.y, proxy_scale.z], expected_scale)):
         raise RuntimeError("proxy dimensions do not match plan")
+    expected_start = (build.get("player_start") or {}).get("location_cm")
+    if not isinstance(expected_start, list) or len(expected_start) != 3:
+        raise RuntimeError("build receipt is missing deterministic Player Start location")
+    start_location = starts[0].get_actor_location()
+    if any(not _close(actual, expected, 1e-2) for actual, expected in zip([start_location.x, start_location.y, start_location.z], expected_start)):
+        raise RuntimeError("Player Start location drifted from build receipt")
+    if abs(start_location.y - proxy_location.y) <= dims["depth_cm"] / 2.0 + 100.0:
+        raise RuntimeError("Player Start remains inside or too close to proxy depth")
     proxy_component = _static(proxy[0])
     proxy_collision = _collision_text(proxy_component)
     if "QUERY_AND_PHYSICS" not in proxy_collision.upper():
@@ -194,6 +211,8 @@ def validate(args: argparse.Namespace) -> dict[str, Any]:
         "castle_proxy": {**_record(proxy[0]), "collision": proxy_collision, "dimensions_cm": dims, "navigation_intent": "walkable"},
         "walkable_ground": {**_record(ground[0]), "collision": ground_collision},
         "player_start": _record(starts[0]),
+        "player_start_policy": build.get("player_start_policy", "unrecorded"),
+        "default_game_mode": game_mode_path,
         "lighting_present": {"directional_light": True, "sky_light": True},
         "fresh_process_validation": True,
         "navigation_proof": "intent_only_not_full_navigation_proof",

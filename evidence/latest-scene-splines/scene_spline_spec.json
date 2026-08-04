@@ -1,0 +1,64 @@
+{
+  "classification": "PROVEN",
+  "coordinate_system": {
+    "units": "meters",
+    "unreal_scale_cm_per_unit": 100.0,
+    "up_axis": "Z"
+  },
+  "promotion": false,
+  "scene_id": "castlegrounds_hybrid_authoritative_v1",
+  "schema_version": "scene_spline_spec_v1",
+  "splines": [
+    {
+      "exclusion_radius_m": 3.0,
+      "id": "river_main",
+      "kind": "river_centerline",
+      "points_m": [
+        [
+          -30.0,
+          45.0,
+          0.0
+        ],
+        [
+          0.0,
+          50.0,
+          0.0
+        ],
+        [
+          30.0,
+          58.0,
+          0.0
+        ]
+      ],
+      "tags": [
+        "water",
+        "no_build",
+        "scene_spec_generated",
+        "unpromoted"
+      ],
+      "width_m": 12.0
+    },
+    {
+      "id": "bridge_axis_main",
+      "kind": "bridge_axis",
+      "points_m": [
+        [
+          -10.0,
+          31.0,
+          4.0
+        ],
+        [
+          10.0,
+          31.0,
+          4.0
+        ]
+      ],
+      "tags": [
+        "crossing",
+        "scene_spec_generated",
+        "unpromoted"
+      ],
+      "width_m": 3.0
+    }
+  ]
+}

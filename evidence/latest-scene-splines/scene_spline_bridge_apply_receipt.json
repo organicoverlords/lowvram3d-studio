@@ -1,0 +1,31 @@
+{
+  "schema_version": "scene_spline_bridge_apply_receipt_v1",
+  "classification": "PROVEN",
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "method": "existing_typed_bridge_add_component_and_set_spline_points",
+  "promotion": false,
+  "geometry_generation": false,
+  "save_result": true,
+  "fresh_reload_persistence": true,
+  "records": [
+    {
+      "id": "river_main",
+      "actor_label": "SP_Spline_River_Main",
+      "component_name": "SplineComponent_River_Main_2",
+      "points_m": [[-30.0, 45.0, 0.0], [0.0, 50.0, 0.0], [30.0, 58.0, 0.0]],
+      "points_cm": [[-3000.0, 4500.0, 0.0], [0.0, 5000.0, 0.0], [3000.0, 5800.0, 0.0]],
+      "width_m": 12.0,
+      "exclusion_radius_m": 3.0,
+      "tags": ["exclusion_radius_m=3", "no_build", "scene_spec_generated", "spline_id=river_main", "unpromoted", "water", "width_m=12"]
+    },
+    {
+      "id": "bridge_axis_main",
+      "actor_label": "SP_Spline_Bridge_Axis_Main",
+      "component_name": "SplineComponent_Bridge_Axis_Main",
+      "points_m": [[-10.0, 31.0, 4.0], [10.0, 31.0, 4.0]],
+      "points_cm": [[-1000.0, 3100.0, 400.0], [1000.0, 3100.0, 400.0]],
+      "width_m": 3.0,
+      "tags": ["crossing", "scene_spec_generated", "spline_id=bridge_axis_main", "unpromoted", "width_m=3"]
+    }
+  ]
+}

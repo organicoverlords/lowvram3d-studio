@@ -94,6 +94,7 @@ def test_adapter_scripts_emit_required_manifest_and_protection_fields() -> None:
         "source_map_sha256_after",
         "source_camera_contract_preserved",
         "proxy_not_promoted",
+        "default_game_mode",
         "gpu_work_requested",
         "pcg_work_started",
     ):

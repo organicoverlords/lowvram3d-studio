@@ -1,0 +1,99 @@
+{
+  "blocked_path": {
+    "end_cm": [
+      1000.0,
+      2800.0,
+      700.0
+    ],
+    "length_cm": 681.9453165819673,
+    "partial": true,
+    "points": [
+      [
+        1000.0,
+        1712.5,
+        510.0
+      ],
+      [
+        988.0,
+        1976.0,
+        510.0
+      ],
+      [
+        1000.0,
+        2394.0,
+        510.0
+      ]
+    ],
+    "start_cm": [
+      1000.0,
+      1712.5,
+      700.0
+    ],
+    "valid": true
+  },
+  "bounded_navigation_proven": true,
+  "classification": "PROVEN",
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "navmesh_bounds_volume": {
+    "bounds_extent_cm": [
+      1500.0,
+      1500.0,
+      1200.0
+    ],
+    "bounds_origin_cm": [
+      1000.0,
+      2800.0,
+      1000.0
+    ],
+    "label": "SP_NavMeshBounds_Castle_V1",
+    "location_cm": [
+      1000.0,
+      2800.0,
+      1000.0
+    ]
+  },
+  "proxy_blocks_path": true,
+  "proxy_bounds_extent_cm": [
+    646.5530896784348,
+    362.5,
+    770.158827411077
+  ],
+  "proxy_bounds_origin_cm": [
+    999.9999999999999,
+    2800.0,
+    1270.158827411077
+  ],
+  "schema_version": "navigation_validation_receipt_v1",
+  "walk_path": {
+    "end_cm": [
+      1000.0,
+      2300.0,
+      700.0
+    ],
+    "length_cm": 587.995249320086,
+    "partial": false,
+    "points": [
+      [
+        1000.0,
+        1712.5,
+        510.0
+      ],
+      [
+        988.0,
+        1976.0,
+        510.0
+      ],
+      [
+        1000.0,
+        2300.0,
+        510.0
+      ]
+    ],
+    "start_cm": [
+      1000.0,
+      1712.5,
+      700.0
+    ],
+    "valid": true
+  }
+}

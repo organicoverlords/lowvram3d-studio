@@ -1,0 +1,33 @@
+{
+  "after_forward_input_location_cm": [
+    1000.0,
+    2401.10001046854,
+    700.0
+  ],
+  "classification": "PROVEN",
+  "ground_height_cm": 700.0,
+  "ground_preserved": true,
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/UEDPIE_0_L_Castlegrounds_Hybrid_V1.L_Castlegrounds_Hybrid_V1",
+  "pawn_class": "DefaultPawn",
+  "pawn_clearance_before_proxy_cm": 36.39998953146005,
+  "pawn_height_after_input_cm": 700.0,
+  "proxy_blocked_forward_traversal": true,
+  "proxy_bounds_extent_cm": [
+    646.5530896784348,
+    362.5,
+    770.158827411077
+  ],
+  "proxy_bounds_origin_cm": [
+    999.9999999999999,
+    2800.0,
+    1270.158827411077
+  ],
+  "proxy_front_boundary_y_cm": 2437.5,
+  "schema_version": "pie_traversal_receipt_v1",
+  "start_location_cm": [
+    1000.0,
+    1712.5,
+    700.0
+  ],
+  "travel_distance_cm": 688.60001046854
+}

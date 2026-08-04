@@ -1,0 +1,30 @@
+{
+  "actor_class": "NavMeshBoundsVolume",
+  "bounded_to_gameplay_area": true,
+  "bounds_extent_cm": [
+    1500.0,
+    1500.0,
+    1200.0
+  ],
+  "bounds_origin_cm": [
+    1000.0,
+    2800.0,
+    1000.0
+  ],
+  "classification": "PROVEN",
+  "existed": true,
+  "label": "SP_NavMeshBounds_Castle_V1",
+  "location_cm": [
+    1000.0,
+    2800.0,
+    1000.0
+  ],
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "save_result": true,
+  "scale": [
+    15.0,
+    15.0,
+    12.0
+  ],
+  "schema_version": "navigation_apply_receipt_v1"
+}

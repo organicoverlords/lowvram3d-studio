@@ -1,0 +1,7 @@
+{
+  "classification": "REJECTED",
+  "error": "TypeError: set_actor_location() required argument 'teleport' (pos 3) not found",
+  "gpu_work_requested": false,
+  "schema_version": "hybrid_level_build_receipt_v1",
+  "traceback": "Traceback (most recent call last):\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/build_scene_from_spec.py\", line 468, in main\n    receipt = build(args)\n              ^^^^^^^^^^^\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/build_scene_from_spec.py\", line 339, in build\n    receipt = _repair_existing_output(args, spec, plan, camera_spec, source_file, source_hash_before)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/build_scene_from_spec.py\", line 262, in _repair_existing_output\n    player_start.set_actor_location(unreal.Vector(*player_start_location), False)\nTypeError: set_actor_location() required argument 'teleport' (pos 3) not found\n"
+}
