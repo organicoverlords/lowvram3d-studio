@@ -3,15 +3,15 @@
   "camera": {
     "aspect_ratio": 1.3333333333333333,
     "convention": "gltf_y_up_z_back",
-    "fov_x_deg": 92.87824373386881,
-    "fov_y_deg": 76.52252190222369,
+    "fov_x_deg": 92.88072928447795,
+    "fov_y_deg": 76.52494207269122,
     "projection": "perspective"
   },
   "classification": "PROVEN",
   "depth_edge_rtol": 0.05,
   "depth_range": [
-    1.416476845741272,
-    544.1771240234375
+    1.4164676666259766,
+    543.9358520507812
   ],
   "device": "cuda",
   "grid_stride": 2,
@@ -22,13 +22,13 @@
   ],
   "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
   "interpreter": "C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\image-world-moge\\Scripts\\python.exe",
-  "masked_pixel_fraction": 0.6951990679975174,
+  "masked_pixel_fraction": 0.6951939806477214,
   "model": "Ruicheng/moge-2-vitb-normal",
-  "output_bytes": 13974012,
+  "output_bytes": 13974188,
   "output_glb": "evidence\\scenes\\barn_full\\run-current\\depth\\barn_full_moge.glb",
-  "output_sha256": "99e643f99d5e19aa0b04ee133ef4d9bd3cb692324cc8ef904a0900e482e4346f",
-  "quads_considered": 270108,
-  "quads_dropped_at_depth_edges": 18683,
+  "output_sha256": "76b137159bc2e230dbf2593d9378cfe73aaa7b7ab77788bc50c1704c510ef581",
+  "quads_considered": 270107,
+  "quads_dropped_at_depth_edges": 18673,
   "schema_version": "moge_reconstruction_receipt_v1",
   "segmentation": {
     "classification": "PROVEN",
@@ -63,484 +63,92 @@
         ],
         "clusters": [
           {
-            "bbox_norm_xyxy": [
-              0.23688,
-              0.17772,
-              0.62362,
-              0.34899
-            ],
-            "centroid_norm_xy": [
-              0.43833,
-              0.26289
-            ],
-            "depth_m": {
-              "far": 13.892,
-              "median": 12.443,
-              "near": 11.599
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                12.443,
-                -1.673,
-                4.636
-              ],
-              "max": [
-                13.892,
-                2.103,
-                5.836
-              ],
-              "min": [
-                11.599,
-                -5.336,
-                3.64
-              ],
-              "size": [
-                2.292,
-                7.439,
-                2.196
-              ]
-            },
-            "pixel_count": 64448
-          },
-          {
+            "aspect_lateral_over_height": 2.467,
             "bbox_norm_xyxy": [
               0.0,
-              0.5046,
-              0.18923,
+              0.04972,
+              0.92196,
               0.72284
             ],
             "centroid_norm_xy": [
-              0.08896,
-              0.62138
+              0.46454,
+              0.39835
             ],
+            "component_id": 0,
+            "component_pixel_count": 466647,
             "depth_m": {
-              "far": 23.699,
-              "median": 19.811,
-              "near": 18.419
+              "far": 23.119,
+              "median": 14.4,
+              "near": 11.732
             },
             "measured_unreal_m": {
               "centroid": [
-                19.811,
-                -16.989,
-                -3.879
+                14.4,
+                -0.408,
+                2.225
               ],
               "max": [
-                23.699,
-                -13.171,
-                -0.985
+                23.119,
+                10.745,
+                7.134
               ],
               "min": [
-                18.419,
-                -23.76,
-                -6.403
+                11.732,
+                -18.007,
+                -4.52
               ],
               "size": [
-                5.281,
-                10.588,
-                5.419
+                11.387,
+                28.752,
+                11.654
               ]
             },
-            "pixel_count": 50089
+            "pixel_count": 466647,
+            "separable": true
           },
           {
+            "aspect_lateral_over_height": 3.124,
             "bbox_norm_xyxy": [
-              0.54144,
-              0.25506,
-              0.84116,
-              0.48527
-            ],
-            "centroid_norm_xy": [
-              0.68686,
-              0.34383
-            ],
-            "depth_m": {
-              "far": 13.556,
-              "median": 12.081,
-              "near": 11.591
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                12.081,
-                4.832,
-                3.179
-              ],
-              "max": [
-                13.556,
-                7.297,
-                4.33
-              ],
-              "min": [
-                11.591,
-                2.119,
-                1.252
-              ],
-              "size": [
-                1.966,
-                5.178,
-                3.078
-              ]
-            },
-            "pixel_count": 48242
-          },
-          {
-            "bbox_norm_xyxy": [
-              0.59461,
-              0.04972,
-              0.85843,
-              0.26796
-            ],
-            "centroid_norm_xy": [
-              0.70822,
-              0.15712
-            ],
-            "depth_m": {
-              "far": 12.834,
-              "median": 12.085,
-              "near": 11.681
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                12.085,
-                5.192,
-                6.523
-              ],
-              "max": [
-                12.834,
-                7.851,
-                8.148
-              ],
-              "min": [
-                11.681,
-                3.123,
-                5.073
-              ],
-              "size": [
-                1.153,
-                4.727,
-                3.075
-              ]
-            },
-            "pixel_count": 46007
-          },
-          {
-            "bbox_norm_xyxy": [
-              0.68715,
-              0.44107,
-              0.92196,
-              0.7081
-            ],
-            "centroid_norm_xy": [
-              0.80804,
-              0.59859
-            ],
-            "depth_m": {
-              "far": 17.635,
-              "median": 16.223,
-              "near": 15.086
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                16.223,
-                10.609,
-                -2.534
-              ],
-              "max": [
-                17.635,
-                12.641,
-                -0.088
-              ],
-              "min": [
-                15.086,
-                7.871,
-                -4.623
-              ],
-              "size": [
-                2.549,
-                4.77,
-                4.535
-              ]
-            },
-            "pixel_count": 43876
-          },
-          {
-            "bbox_norm_xyxy": [
-              0.35566,
-              0.32873,
-              0.68992,
-              0.48895
-            ],
-            "centroid_norm_xy": [
-              0.49977,
-              0.39811
-            ],
-            "depth_m": {
-              "far": 15.95,
-              "median": 14.706,
-              "near": 13.69
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                14.706,
-                0.115,
-                2.405
-              ],
-              "max": [
-                15.95,
-                3.147,
-                3.611
-              ],
-              "min": [
-                13.69,
-                -3.381,
-                0.945
-              ],
-              "size": [
-                2.26,
-                6.528,
-                2.666
-              ]
-            },
-            "pixel_count": 41617
-          },
-          {
-            "bbox_norm_xyxy": [
-              0.1616,
-              0.3186,
-              0.45649,
+              0.21892,
+              0.70074,
+              0.24309,
               0.71823
             ],
             "centroid_norm_xy": [
-              0.31499,
-              0.42089
+              0.22924,
+              0.70958
             ],
+            "component_id": 1,
+            "component_pixel_count": 347,
             "depth_m": {
-              "far": 15.591,
-              "median": 13.004,
-              "near": 11.45
+              "far": 16.242,
+              "median": 3.253,
+              "near": 2.429
             },
             "measured_unreal_m": {
               "centroid": [
-                13.004,
-                -4.969,
-                1.643
+                3.253,
+                -1.849,
+                -1.065
               ],
               "max": [
-                15.591,
-                -2.576,
-                3.066
+                16.242,
+                -1.345,
+                -0.803
               ],
               "min": [
-                11.45,
-                -7.919,
-                0.094
+                2.429,
+                -9.321,
+                -5.224
               ],
               "size": [
-                4.141,
-                5.343,
-                2.972
+                13.813,
+                7.976,
+                4.422
               ]
             },
-            "pixel_count": 41197
-          },
-          {
-            "bbox_norm_xyxy": [
-              0.03867,
-              0.28177,
-              0.27417,
-              0.51565
-            ],
-            "centroid_norm_xy": [
-              0.17459,
-              0.41279
-            ],
-            "depth_m": {
-              "far": 24.196,
-              "median": 20.926,
-              "near": 18.604
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                20.926,
-                -13.92,
-                2.653
-              ],
-              "max": [
-                24.196,
-                -10.986,
-                6.976
-              ],
-              "min": [
-                18.604,
-                -21.393,
-                0.051
-              ],
-              "size": [
-                5.592,
-                10.408,
-                6.925
-              ]
-            },
-            "pixel_count": 35584
-          },
-          {
-            "bbox_norm_xyxy": [
-              0.37086,
-              0.06814,
-              0.66091,
-              0.22928
-            ],
-            "centroid_norm_xy": [
-              0.5426,
-              0.1463
-            ],
-            "depth_m": {
-              "far": 13.063,
-              "median": 12.336,
-              "near": 11.528
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                12.336,
-                1.354,
-                6.815
-              ],
-              "max": [
-                13.063,
-                3.518,
-                8.422
-              ],
-              "min": [
-                11.528,
-                -2.206,
-                5.61
-              ],
-              "size": [
-                1.534,
-                5.724,
-                2.812
-              ]
-            },
-            "pixel_count": 30061
-          },
-          {
-            "bbox_norm_xyxy": [
-              0.10152,
-              0.45488,
-              0.34738,
-              0.71547
-            ],
-            "centroid_norm_xy": [
-              0.21749,
-              0.57776
-            ],
-            "depth_m": {
-              "far": 19.095,
-              "median": 15.702,
-              "near": 14.351
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                15.702,
-                -9.019,
-                -1.914
-              ],
-              "max": [
-                19.095,
-                -7.119,
-                0.129
-              ],
-              "min": [
-                14.351,
-                -13.384,
-                -4.074
-              ],
-              "size": [
-                4.744,
-                6.265,
-                4.203
-              ]
-            },
-            "pixel_count": 29195
-          },
-          {
-            "bbox_norm_xyxy": [
-              0.32735,
-              0.41989,
-              0.72376,
-              0.55985
-            ],
-            "centroid_norm_xy": [
-              0.50522,
-              0.49512
-            ],
-            "depth_m": {
-              "far": 21.509,
-              "median": 17.408,
-              "near": 15.338
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                17.408,
-                0.067,
-                0.112
-              ],
-              "max": [
-                21.509,
-                5.212,
-                1.263
-              ],
-              "min": [
-                15.338,
-                -3.97,
-                -1.156
-              ],
-              "size": [
-                6.17,
-                9.182,
-                2.419
-              ]
-            },
-            "pixel_count": 25497
-          },
-          {
-            "bbox_norm_xyxy": [
-              0.60014,
-              0.42726,
-              0.9047,
-              0.66575
-            ],
-            "centroid_norm_xy": [
-              0.66584,
-              0.49086
-            ],
-            "depth_m": {
-              "far": 30.195,
-              "median": 27.451,
-              "near": 23.514
-            },
-            "measured_unreal_m": {
-              "centroid": [
-                27.451,
-                9.397,
-                0.381
-              ],
-              "max": [
-                30.195,
-                11.513,
-                2.263
-              ],
-              "min": [
-                23.514,
-                5.886,
-                -1.028
-              ],
-              "size": [
-                6.681,
-                5.627,
-                3.29
-              ]
-            },
-            "pixel_count": 11254
+            "pixel_count": 347,
+            "separable": true
           }
         ],
         "confidence": 0.942,
@@ -576,7 +184,7 @@
           ],
           "size": [
             11.387,
-            28.747,
+            28.746,
             11.658
           ]
         },
@@ -922,6 +530,6 @@
     "schema_version": "scene_segmentation_v1",
     "unmapped_labels": []
   },
-  "triangles": 502850,
-  "vertices": 273305
+  "triangles": 502868,
+  "vertices": 273303
 }

@@ -3,7 +3,7 @@
   "assets": [
     {
       "actor_indices": [
-        15
+        3
       ],
       "asset_id": "architecture_house_025",
       "border_contact": {
@@ -39,56 +39,50 @@
         "classification": "PROVEN",
         "decimated": true,
         "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
-        "input_triangles": 857102,
+        "input_triangles": 1240894,
         "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
-        "output_bytes": 12599136,
-        "output_triangles": 149998,
-        "ratio": 0.175008,
-        "reduction": 0.825,
+        "output_bytes": 12598908,
+        "output_triangles": 149997,
+        "ratio": 0.120881,
+        "reduction": 0.8791,
         "schema_version": "mesh_decimation_v1",
         "target_triangles": 150000
       },
-      "dropped_octree_rungs": [
-        {
-          "free_mb": 5190,
-          "needs_mb": 5200,
-          "rung": "384:3000"
-        }
-      ],
       "exit_code": 0,
       "generation_attempts": [
         {
           "error": null,
           "exit_code": 0,
-          "octree_ladder": "320:2000,256:1500",
+          "octree_ladder": "384:3000,320:2000,256:1500",
           "outcome": "ok"
         }
       ],
-      "generation_seconds": 227.0,
+      "generation_seconds": 278.3,
       "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
-      "glb_bytes": 16441328,
-      "glb_sha256": "00270f4183ab45dc385d4821755c55c50e6a4e5f25ed99f6927b3b4ffb95e35d",
+      "glb_bytes": 16441032,
+      "glb_sha256": "ef146801b6b6dad8aad738af6e6954953062d90afff9fde68c9198158f7aaeb2",
       "layer_type": "architecture",
       "mask_coverage": 0.5913,
       "mask_png": "evidence\\scenes\\barn_full\\run-current\\depth\\region_masks\\architecture_house_025.png",
       "matte": "segmentation_mask",
-      "mesh_bodies": 12,
+      "mesh_bodies": 9,
       "mesh_extent": [
-        1.9653,
-        0.7596,
-        1.3944
+        1.9708,
+        0.7615,
+        1.3988
       ],
       "mesh_watertight": false,
-      "octree_resolution": 320,
-      "peak_vram_mb": 4463,
+      "octree_resolution": 384,
+      "peak_vram_mb": 4954,
       "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\preview.png",
       "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
-      "raw_triangles": 857102,
+      "raw_triangles": 1240894,
       "region_id": "architecture_house_025",
       "semantic_label": "house",
+      "separable": true,
       "shared_across_instances": false,
       "status": "generated",
-      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:10<00:00,  6.11it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
+      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:18<00:00,  3.54it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
       "texture_projection": {
         "classification": "PROVEN",
         "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\crop.png",
@@ -101,7 +95,7 @@
         "mask_coverage": 0.1427,
         "observed_from": "single view; sides stretch along the projection axis",
         "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
-        "output_bytes": 16441328,
+        "output_bytes": 16441032,
         "projection": "object_space_front_minus_z",
         "schema_version": "crop_projection_v1",
         "texture_size": [
@@ -109,96 +103,81 @@
           950
         ],
         "textured": true,
-        "triangles": 149998,
-        "vertices": 449926
+        "triangles": 149997,
+        "vertices": 449917
       },
       "too_small": false,
-      "triangles": 149998,
+      "triangles": 149997,
       "unbounded_crop": false,
       "unbounded_sides": [],
-      "vertices": 428151,
+      "vertices": 620147,
       "view_coverage": {
-        "front": 0.2631,
-        "side": 0.2995,
-        "three_quarter": 0.3026,
-        "top": 0.4052
+        "front": 0.263,
+        "side": 0.2993,
+        "three_quarter": 0.3023,
+        "top": 0.4054
       },
       "vram_headroom": {
         "checked": true,
-        "free_mb_at_start": 5190,
-        "free_mb_before": 5192,
-        "gave_up": "free VRAM is not rising; another process is holding it",
+        "free_mb_at_start": 5397,
+        "free_mb_before": 5397,
         "required_mb": 5200,
-        "sufficient": false,
-        "waited_seconds": 15.2
+        "sufficient": true,
+        "waited_seconds": 0.1
       }
     },
     {
       "actor_indices": [
         0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13
+        1
       ],
       "asset_id": "vegetation_tree_004",
       "border_contact": {
-        "bottom": 0.8189,
+        "bottom": 0.0,
         "left": 0.0,
-        "right": 0.8028,
-        "top": 0.0367
+        "right": 0.0,
+        "top": 0.0
       },
-      "conditioned_on_actor_index": 7,
+      "conditioned_on_actor_index": 1,
       "conditioning_size_px": [
-        442,
-        442
+        45,
+        45
       ],
       "crop_bbox_norm_xyxy": [
-        0.03867,
-        0.28177,
-        0.27417,
-        0.51565
+        0.21892,
+        0.70074,
+        0.24309,
+        0.71823
       ],
       "crop_box_px": [
-        36,
-        291,
-        417,
-        575
+        315,
+        760,
+        354,
+        781
       ],
       "crop_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\crop.png",
       "crop_size_px": [
-        381,
-        284
+        39,
+        21
       ],
-      "instance_count": 14,
+      "instance_count": 2,
       "layer_type": "vegetation",
-      "mask_coverage": 0.572,
+      "mask_coverage": 0.42,
       "mask_png": "evidence\\scenes\\barn_full\\run-current\\depth\\region_masks\\vegetation_tree_004.png",
       "matte": "segmentation_mask",
-      "reason": "crop runs off its own edge on bottom, right -- a cut-out of a larger mass, not a subject. Generating from it yields a slab, so this region keeps its primitive.",
+      "reason": "crop is [39, 21] px, below the 64 px minimum to condition on",
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
+      "separable": true,
       "shared_across_instances": true,
       "status": "skipped",
-      "too_small": false,
-      "unbounded_crop": true,
-      "unbounded_sides": [
-        "bottom",
-        "right"
-      ],
+      "too_small": true,
+      "unbounded_crop": false,
+      "unbounded_sides": [],
       "vram_headroom": {
         "checked": true,
-        "free_mb_at_start": 5502,
-        "free_mb_before": 5502,
+        "free_mb_at_start": 5393,
+        "free_mb_before": 5393,
         "required_mb": 5200,
         "sufficient": true,
         "waited_seconds": 0.1

@@ -1,0 +1,35 @@
+{
+  "actor_count": 5,
+  "applied": true,
+  "at_cap_count": 2,
+  "classification": "PROVEN",
+  "cost_after": 299.332248,
+  "cost_before": 791.949152,
+  "ground_plane_used": true,
+  "inferred_actor_count": 0,
+  "max_shift_m": 2.8507,
+  "max_shift_per_axis_m": 2.0,
+  "mean_shift_m": 1.2384,
+  "moved_count": 3,
+  "optimiser": {
+    "iterations": 13,
+    "method": "L-BFGS-B",
+    "success": true
+  },
+  "reprojection_actor_count": 2,
+  "scale_disagreement": {
+    "median_ratio": 1.395,
+    "note": "actor extent vs the pixels it came from; translation cannot fix this",
+    "worst_ratio": 1.404
+  },
+  "schema_version": "placement_refinement_v1",
+  "shift_cap_per_axis_m": 2.0,
+  "surface_actor_count": 2,
+  "tolerances": {
+    "ground_m": 1.186,
+    "measured_anchor_m": 0.75,
+    "penetration_fraction": 0.05,
+    "reprojection_norm": 0.02
+  },
+  "unprojectable_actor_count": 3
+}
