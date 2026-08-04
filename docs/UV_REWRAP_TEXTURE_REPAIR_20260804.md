@@ -120,6 +120,41 @@ and GLB, so the pipeline command above reproduces the result exactly.
 
 `FULL_UV_REWRAP_AND_TEXTURE_REPAIR_PROVEN`
 
+## Canonical integration
+
+Both workers are now canonical Pipeline V2 stage routes — `uv.route = "injective"` and
+`texture.route = "mvadapter_sixview"` — with no algorithm change. See the stage-route table in
+`PIPELINE_V2.md`.
+
+The rewrapped GLB is the **canonical panda UV master**, registered with every proof hash in
+`configs/uv/tactical_red_panda_scout_canonical_uv_master.json`. The UV stage adopts it after
+checking sha256, geometry fingerprint and injectivity; it does not re-unwrap.
+
+`xatlas==0.0.11` is pinned in `requirements-control.txt`. The pin is exact because chart
+decomposition and pack order are what make a rewrap reproducible, and neither is covered by
+semantic versioning.
+
+Supported-command reproduction, run through the canonical stages:
+
+```bash
+cd workers && "$PY" run_unified_pipeline_v2.py \
+  --manifest configs/pipeline/tactical_red_panda_scout_injective_v2.json \
+  --from-stage LOD --to-stage EXPORT_QA \
+  --python "$PY" --blender "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" \
+  --existing-clean "$OUT\tactical_red_panda_scout_rewrapped.glb"
+```
+
+Result: `LOD passed, UV passed, BAKE not_applicable, TEXTURE passed, TEXTURE_QA not_applicable,
+EXPORT_QA passed`. The atlas and textured GLB came out at
+`8b834f33…` and `8f24b7d1…` — **identical to the proof hashes above**, so the canonical route
+reproduces the hand-run result bit for bit. EXPORT_QA's fresh Blender import passed all thirteen
+checks.
+
+The geometry boundary is seeded from the canonical UV master, which is the verified
+geometry-equivalent replacement for the removed source: its fingerprint matches the preserved
+textured baseline. The rewrap step itself still cannot be bit-reproduced until the original input
+is restored, because xatlas chart decomposition depends on input vertex and face order.
+
 ## Notes
 
 - **The source mesh no longer exists on disk.** `bar_local_closure_v1\` was removed by something

@@ -1,0 +1,34 @@
+{
+  "manifest_version": 2,
+  "asset_id": "tactical_red_panda_scout_from_source",
+  "profile": "humanoid",
+  "source": {
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\panda.jpg",
+    "sha256": "e4bfb2b11e4397e8d1db0f6d487d0074f4557ff668027876b5b8c183f7ac6f7e",
+    "bytes": 71294
+  },
+  "generator": "mini_turbo",
+  "generation_prompt": "tactical red panda scout in a ghillie suit static non-animated asset; preserve the complete visible silhouette and thin details; no rig, no animation",
+  "geometry": {
+    "lod_triangle_targets": [],
+    "preserve_thin_features": true
+  },
+  "lod": {
+    "mode": "generate"
+  },
+  "uv": {
+    "route": "injective",
+    "resolution": 4096,
+    "padding": 4,
+    "max_degenerate_uv_triangles": 0
+  },
+  "texture": {
+    "route": "raster_project",
+    "resolution": 4096
+  },
+  "rig": {
+    "required": false,
+    "separate_props": false
+  },
+  "output_root": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\pipeline_v2_from_source_20260804"
+}

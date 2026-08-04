@@ -433,11 +433,18 @@ def main() -> int:
     parser.add_argument("--donor-max-distance-fraction", type=float, default=0.030)
     parser.add_argument("--donor-min-normal-dot", type=float, default=0.50)
     parser.add_argument("--donor-neighbours", type=int, default=16)
+    parser.add_argument("--output-basename", default="",
+                        help="artifact stem; defaults to the mesh stem without a UV suffix")
     args = parser.parse_args()
 
     root = Path(args.output_dir)
     root.mkdir(parents=True, exist_ok=True)
     mesh = Path(args.mesh)
+    basename = args.output_basename or mesh.stem
+    for suffix in ("_rewrapped", "_uv", "_lod0_uv"):
+        if basename.endswith(suffix):
+            basename = basename[: -len(suffix)]
+            break
     receipt = json.loads(Path(args.views_receipt).read_text(encoding="utf-8"))
     timings = {}
 
@@ -463,10 +470,10 @@ def main() -> int:
           f"unresolved={donor['unresolved_texels']} {timings['donor_fill']:.0f}s", flush=True)
 
     started = time.time()
-    atlas_info = write_atlas(cache, fused, donor, root / "panda_injective_basecolor.png",
-                             args.padding_px)
-    textured = root / "tactical_red_panda_scout_textured.glb"
-    bound = bind_texture(mesh, textured, (root / "panda_injective_basecolor.png").read_bytes(),
+    basecolor = root / f"{basename}_basecolor.png"
+    atlas_info = write_atlas(cache, fused, donor, basecolor, args.padding_px)
+    textured = root / f"{basename}_textured.glb"
+    bound = bind_texture(mesh, textured, basecolor.read_bytes(),
                          np.ones(cache["triangle_count"], bool), wrap=33071)
     timings["write"] = time.time() - started
 

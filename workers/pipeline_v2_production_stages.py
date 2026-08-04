@@ -56,10 +56,15 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     root = Path(manifest["output_root"])
     profile = pipeline.profile
     asset_id = manifest["asset_id"]
-    resolution = int(manifest["texture"]["resolution"])
+    texture_manifest = manifest["texture"]
+    resolution = int(texture_manifest["resolution"])
+    texture_route = str(texture_manifest.get("route", "raster_project")).lower()
     uv_resolution = int((manifest.get("uv") or {}).get("resolution", 1024))
     uv_padding = int((manifest.get("uv") or {}).get("padding", 4))
     uv_timeout = float((manifest.get("uv") or {}).get("candidate_timeout_seconds", 600))
+    # Zero-area UV triangles are a hard failure by default. A profile may declare a measured
+    # allowance when the offenders are known 3D slivers that own no texels; it is never inferred.
+    uv_max_degenerate = int((manifest.get("uv") or {}).get("max_degenerate_uv_triangles", 0))
     lod_mode = str((manifest.get("lod") or {}).get("mode", "generate")).lower()
     suffix = "4k" if resolution >= 4096 else "2k"
 
@@ -146,6 +151,46 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
 
     # ---------------------------------------------------------------- UV
     def uv():
+        uv_manifest = manifest.get("uv") or {}
+        route = str(uv_manifest.get("route", "fast_blender")).lower()
+        master = uv_manifest.get("master") or {}
+
+        # A canonical UV master is adopted, never re-unwrapped. `validate_existing_uv.py` is the
+        # wrong gate for one: it requires a material and a packed texture, which a UV master
+        # legitimately does not carry. What matters is that the file is still the proven file and
+        # that its layout is still injective.
+        if route == "injective" and master.get("path"):
+            master_path = Path(master["path"])
+
+            def master_runner(_overrides):
+                stage = pipeline.stage_dir("UV") / "candidate"
+                report = stage / "uv_master_verify.json"
+                code, out = pipeline.run([
+                    pipeline.python, w("uv_master_verify.py"),
+                    "--master", master_path, "--report", report,
+                    "--resolution", str(uv_resolution),
+                    "--expect-sha256", str(master.get("sha256", "")),
+                    "--expect-geometry-fingerprint", str(master.get("geometry_fingerprint", "")),
+                    "--expect-triangles", str(int(master.get("triangles") or 0)),
+                ])
+                data = _json(report)
+                gates = {"route": "injective", "adopted_canonical_master": True,
+                         "master": str(master_path), "master_sha256": data.get("master_sha256"),
+                         "geometry_fingerprint": data.get("geometry_fingerprint"),
+                         "triangles": data.get("triangles"),
+                         **(data.get("checks") or {}),
+                         **{k: v for k, v in (data.get("injectivity") or {}).items()
+                            if k in ("injective", "interior_texels_claimed_twice",
+                                     "analytic_uv_area_fraction", "degenerate_uv_triangles")}}
+                if code != 0 or not data.get("success"):
+                    return StageResult("failed", gates=gates,
+                                       failure_codes=data.get("failure_codes") or ["UV_MASTER_INVALID"],
+                                       detail=f"UV master verify exit {code}: {out[-1000:]}")
+                return StageResult("passed", gates=gates,
+                                   outputs={"uv_mesh": master_path, "uv_report": report})
+
+            return pipeline.execute("UV", [master_path], master_runner)
+
         explicit = manifest.get("uv_mesh") or (manifest.get("uv") or {}).get("mesh")
         if explicit:
             explicit_path = Path(explicit)
@@ -183,7 +228,40 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             stage = pipeline.stage_dir("UV") / "candidate"
             output = stage / f"{asset_id}_lod0_uv.glb"
             report = stage / "uv_report.json"
-            route = (manifest.get("uv") or {}).get("route", "fast_blender")
+            if route == "injective":
+                code, out = pipeline.run([
+                    pipeline.python, w("uv_rewrap_injective.py"),
+                    "--mesh", lod0, "--output", output, "--report", report,
+                    "--resolution", str(uv_resolution), "--padding", str(uv_padding),
+                ])
+                data = _json(report)
+                gate = data.get("injectivity_after") or {}
+                gates = {
+                    "route": "injective", "packer": data.get("packer"),
+                    "chart_count": data.get("chart_count"),
+                    "triangles": data.get("triangles"),
+                    "seam_vertices_added": data.get("seam_vertices_added"),
+                    "geometry_preserved": data.get("geometry_preserved"),
+                    "topology_preserved": data.get("topology_preserved"),
+                    "geometry_fingerprint": data.get("geometry_fingerprint"),
+                    "injective": gate.get("injective"),
+                    "interior_texels_claimed_twice": gate.get("interior_texels_claimed_twice"),
+                    "atlas_utilization": gate.get("analytic_uv_area_fraction"),
+                    "degenerate_uv_triangles": gate.get("degenerate_uv_triangles"),
+                    "max_degenerate_uv_triangles": uv_max_degenerate,
+                }
+                codes = []
+                if not gate.get("injective"):
+                    codes.append("UV_OVERLAP")
+                if int(gate.get("degenerate_uv_triangles") or 0) > uv_max_degenerate:
+                    codes.append("UV_DEGENERATE")
+                if not (data.get("geometry_preserved") and data.get("topology_preserved")):
+                    codes.append("UV_GEOMETRY_CHANGED")
+                if code != 0 or not output.exists() or codes:
+                    return StageResult("failed", gates=gates, failure_codes=sorted(set(codes)),
+                                       detail=f"injective rewrap exit {code}: {out[-1000:]}")
+                return StageResult("passed", outputs={"uv_mesh": output, "uv_report": report},
+                                   gates=gates)
             if route != "xatlas":
                 output = stage / f"{asset_id}_uv.glb"
                 code, out = _blender(
@@ -285,6 +363,64 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
 
     # ---------------------------------------------------------------- TEXTURE
     def texture():
+        # Six-view MV-Adapter route. Self-contained: it fuses already-generated views straight
+        # onto an injective atlas and binds the result, so it needs neither the INGEST matte nor
+        # the BAKE maps that the raster route consumes.
+        if texture_route == "mvadapter_sixview":
+            mesh = _output(pipeline, "UV", "uv_mesh")
+            bundle = Path(texture_manifest["bundle"])
+            views_receipt = Path(texture_manifest["views_receipt"])
+            region_config = texture_manifest.get("region_config") or ""
+            if region_config:
+                region_path = Path(region_config)
+                region_config = str(region_path if region_path.is_absolute()
+                                    else REPO_ROOT / region_path)
+
+            def mv_runner(_overrides):
+                stage = pipeline.stage_dir("TEXTURE") / "candidate"
+                command = [
+                    pipeline.python, w("injective_atlas_texture.py"),
+                    "--mesh", mesh, "--bundle", bundle,
+                    "--views-receipt", views_receipt, "--output-dir", stage,
+                    "--atlas-size", str(resolution),
+                    "--output-basename", asset_id,
+                ]
+                if region_config:
+                    command += ["--region-config", region_config]
+                code, out = pipeline.run(command)
+                report = stage / "injective_texture_report.json"
+                data = _json(report)
+                glb = stage / f"{asset_id}_textured.glb"
+                basecolor = stage / f"{asset_id}_basecolor.png"
+                atlas = data.get("atlas") or {}
+                gate = data.get("atlas_injectivity") or {}
+                owned = int(atlas.get("owned_texels") or 0)
+                gates = {
+                    "route": "mvadapter_sixview",
+                    "atlas_injective": gate.get("injective"),
+                    "interior_texels_claimed_twice": gate.get("interior_texels_claimed_twice"),
+                    "owned_texels": owned,
+                    "observed_texels": atlas.get("observed_texels"),
+                    "donated_texels": atlas.get("donated_texels"),
+                    "unresolved_texels": atlas.get("unresolved_texels"),
+                    "observed_percent": round(100.0 * int(atlas.get("observed_texels") or 0)
+                                              / max(owned, 1), 4),
+                    "ownership_share_percent": data.get("ownership_share_percent"),
+                    "atlas_sha256": atlas.get("atlas_sha256"),
+                    "textured_glb_sha256": data.get("textured_glb_sha256"),
+                    "provenance": data.get("provenance"),
+                }
+                codes = []
+                if not gate.get("injective"):
+                    codes.append("UV_OVERLAP")
+                if code != 0 or not glb.exists() or codes:
+                    return StageResult("failed", gates=gates, failure_codes=sorted(set(codes)),
+                                       detail=f"mvadapter texture exit {code}: {out[-1000:]}")
+                return StageResult("passed", gates=gates, outputs={
+                    "textured_glb": glb, "basecolor": basecolor, "texture_report": report})
+
+            return pipeline.execute("TEXTURE", [mesh, views_receipt], mv_runner)
+
         matte = _output(pipeline, "INGEST", "matte")
         mesh = _output(pipeline, "UV", "uv_mesh")
         normal = _output(pipeline, "BAKE", "normal")

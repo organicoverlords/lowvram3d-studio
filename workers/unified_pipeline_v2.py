@@ -74,8 +74,27 @@ def normalize_manifest(manifest: dict, *, stage_from: str = "INGEST",
         "route": "fast_blender",
     }
     result["uv"]["route"] = str(result["uv"].get("route", "fast_blender")).lower()
-    if result["uv"]["route"] not in {"existing", "fast_blender", "xatlas"}:
+    if result["uv"]["route"] not in {"existing", "fast_blender", "xatlas", "injective"}:
         raise ValueError(f"UNIFIED_UV_ROUTE_INVALID: {result['uv']['route']}")
+
+    texture = result.get("texture") or {}
+    texture["route"] = str(texture.get("route", "raster_project")).lower()
+    if texture["route"] not in {"raster_project", "mvadapter_sixview"}:
+        raise ValueError(f"UNIFIED_TEXTURE_ROUTE_INVALID: {texture['route']}")
+    if texture["route"] == "mvadapter_sixview":
+        for key in ("bundle", "views_receipt"):
+            if not texture.get(key):
+                raise ValueError(f"UNIFIED_TEXTURE_MVADAPTER_MISSING: {key}")
+        if result["uv"]["route"] != "injective":
+            raise ValueError("UNIFIED_TEXTURE_MVADAPTER_REQUIRES_INJECTIVE_UV")
+    result["texture"] = texture
+
+    # The six-view route fuses generated views straight onto the atlas and binds the result. It
+    # consumes no baked maps and emits no ORM, so BAKE and the ORM/region gates in TEXTURE_QA have
+    # nothing to act on. Declaring them inapplicable is honest; running them to a green "passed"
+    # on absent inputs is exactly the failure mode V2 exists to prevent.
+    result["stages_not_applicable"] = (["BAKE", "TEXTURE_QA"]
+                                       if texture["route"] == "mvadapter_sixview" else [])
     result["intent"] = {
         "static": True,
         "rigged": False,

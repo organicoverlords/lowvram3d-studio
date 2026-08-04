@@ -62,6 +62,43 @@ pipeline learns to emit technically valid rubbish, so the budget is hard.
 | `BAD_ORIENTATION` | re-run upright reorientation |
 | `REAR_MIRRORS_FRONT` | bar non-real views from semantic projection |
 
+## Stage routes
+
+`UV` and `TEXTURE` each dispatch on a manifest-declared route. The default route is unchanged.
+
+| Stage | Route | Worker | When |
+| --- | --- | --- | --- |
+| UV | `fast_blender` (default) | `blender/final_pipeline_uv.py` | general assets |
+| UV | `xatlas` | `workers/uv_xatlas_isolated.py` | preset search over chart budget and stretch |
+| UV | `existing` | `blender/validate_existing_uv.py` | adopt a UV mesh that already carries a material and packed texture |
+| UV | `injective` | `workers/uv_rewrap_injective.py` | rebuild UVs so no texel interior is claimed twice |
+| TEXTURE | `raster_project` (default) | `workers/raster_project.py` and the bake chain | general assets |
+| TEXTURE | `mvadapter_sixview` | `workers/injective_atlas_texture.py` | fuse six already-generated MV-Adapter views onto an injective atlas |
+
+The `injective` route is what a single-owner atlas actually requires. An atlas resolves each texel
+to one triangle, so if the layout is not injective every other claimant of a texel displays a
+colour computed for a surface it is not part of. On the red panda that showed up as the front face
+appearing on the back of the head, and it was not repairable by fusion: at 2048 the sum of UV
+triangle areas was 1.062e8 texels against an atlas holding 4.19e6. See
+`UV_REWRAP_TEXTURE_REPAIR_20260804.md`.
+
+When `uv.master` is declared, the `injective` route adopts that canonical master instead of
+unwrapping, after checking its sha256, its geometry fingerprint and its injectivity.
+`validate_existing_uv.py` is deliberately not used for this: it requires a material and a packed
+texture, which a UV master legitimately does not carry.
+
+`mvadapter_sixview` requires `uv.route == "injective"` and declares `BAKE` and `TEXTURE_QA`
+inapplicable — it consumes no baked maps and emits no ORM, and running those stages to a green
+`passed` on absent inputs is the exact failure mode V2 exists to prevent. The runner records them
+as `not_applicable` rather than `passed`.
+
+New failure codes: `UV_MASTER_HASH_MISMATCH`, `UV_MASTER_GEOMETRY_MISMATCH`, `UV_GEOMETRY_CHANGED`.
+None has a bounded repair recipe — they mean the input is not what it claims to be, which is a
+human's problem, not a retry's.
+
+`uv.max_degenerate_uv_triangles` declares a measured allowance for zero-area UV triangles. It
+defaults to `0`; it is never inferred from what a packer happened to produce.
+
 ## Profiles
 
 `humanoid`, `humanoid_complex_accessories`, `quadruped`, `flying_creature`, `static_prop`,

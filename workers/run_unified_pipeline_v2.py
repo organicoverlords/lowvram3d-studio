@@ -82,7 +82,13 @@ def main() -> int:
 
     summary = {}
     exit_code = 0
+    not_applicable = set(manifest.get("stages_not_applicable") or [])
     for stage in CANONICAL_STAGES[CANONICAL_STAGES.index(start):CANONICAL_STAGES.index(stop) + 1]:
+        if stage in not_applicable:
+            summary[stage] = {"status": "not_applicable", "failure_codes": [],
+                              "needs_human": False}
+            print(f"[{stage}] not applicable for this route - skipping", flush=True)
+            continue
         receipt = stages[stage]()
         summary[stage] = {
             "status": receipt["status"],

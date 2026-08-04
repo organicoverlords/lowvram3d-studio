@@ -1,0 +1,42 @@
+{
+  "manifest_version": 2,
+  "asset_id": "tactical_red_panda_scout",
+  "profile": "humanoid",
+  "source": {
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\panda.jpg",
+    "sha256": "e4bfb2b11e4397e8d1db0f6d487d0074f4557ff668027876b5b8c183f7ac6f7e",
+    "bytes": 71294
+  },
+  "generator": "mini_turbo",
+  "geometry": {
+    "lod_triangle_targets": [],
+    "preserve_thin_features": true
+  },
+  "lod": {
+    "mode": "preserve_source"
+  },
+  "uv": {
+    "route": "injective",
+    "resolution": 4096,
+    "padding": 4,
+    "max_degenerate_uv_triangles": 1424,
+    "master": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\panda_injective_rewrap_20260804\\tactical_red_panda_scout_rewrapped.glb",
+      "sha256": "950343dd7ff76877ce6adb83d6d4a80a8d123e7aafb397b566a762d454a9a5f1",
+      "geometry_fingerprint": "5a957b9d8b47716096e8dd6df3869c45b8fa7a0dbe0747bd224ace45aa283803",
+      "triangles": 644348
+    }
+  },
+  "texture": {
+    "route": "mvadapter_sixview",
+    "resolution": 4096,
+    "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v9_upright_raw",
+    "views_receipt": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_upright_384x20_20260803\\inference_receipt.json",
+    "region_config": "configs/texture/panda_face_priority_region.json"
+  },
+  "rig": {
+    "required": false,
+    "separate_props": false
+  },
+  "output_root": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\pipeline_v2_injective_20260804"
+}
