@@ -1,7 +1,7 @@
 name: Beggars meme Blender recreation v2
 run-name: Beggars meme recreation v2 ${{ github.run_id }}
 
-# registration-trigger: 2026-08-04T10:28:00+03:00
+# registration-trigger: 2026-08-04T10:36:00+03:00
 
 on:
   workflow_dispatch:
@@ -14,6 +14,7 @@ on:
       - scripts/apply-beggars-blender-runtime-compat.ps1
       - scripts/apply-beggars-visual-repair.ps1
       - scripts/apply-beggars-face-atlas-repair.ps1
+      - scripts/apply-beggars-atlas-topology-compat.ps1
       - scripts/finalize-beggars-scene-evidence.ps1
       - scripts/run-beggars-scene-v2.ps1
       - configs/scene/beggars_banquet_recreation_v1.json
@@ -73,9 +74,16 @@ jobs:
             throw "Derived masked face atlas repair failed with exit code $LASTEXITCODE"
           }
 
+      - name: Keep atlas on original dense topology
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-atlas-topology-compat.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Atlas topology compatibility repair failed with exit code $LASTEXITCODE"
+          }
+
       - name: Run memory-bounded reconstruction and Blender build
         id: build
-        continue-on-error: true
         shell: powershell
         run: |
           & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\run-beggars-scene-v2.ps1
