@@ -56,6 +56,16 @@ INVOKE_CHECKED_REPLACEMENT = '''function Invoke-Checked {
 }
 '''
 
+GAME_FLAGS = """    '-unattended', '-nop4', '-nosplash', '-nosound', '-stdout', '-FullStdOutLogOutput',
+"""
+GAME_FLAGS_REPLACEMENT = """    '-unattended', '-NoPause', '-nop4', '-nosplash', '-nosound', '-stdout', '-FullStdOutLogOutput',
+"""
+
+EXEC_COMMANDS = """    '-ExecCmds="r.VSync 0,r.ScreenPercentage 100,r.MotionBlurQuality 0,sg.ViewDistanceQuality 2,sg.ShadowQuality 2,sg.EffectsQuality 2,sg.FoliageQuality 2,sg.PostProcessQuality 2"'
+"""
+EXEC_COMMANDS_REPLACEMENT = """    '-ExecCmds="t.MaxFPS 60,t.IdleWhenNotForeground 0,Slate.bAllowThrottling 0,r.VSync 0,r.ScreenPercentage 100,r.MotionBlurQuality 0,sg.ViewDistanceQuality 2,sg.ShadowQuality 2,sg.EffectsQuality 2,sg.FoliageQuality 2,sg.PostProcessQuality 2"'
+"""
+
 
 def replace_exact(text: str, old: str, new: str, label: str) -> str:
     count = text.count(old)
@@ -78,15 +88,38 @@ def main() -> None:
         INVOKE_CHECKED_REPLACEMENT,
         "decoded Invoke-Checked function",
     )
+    patched = replace_exact(
+        patched,
+        GAME_FLAGS,
+        GAME_FLAGS_REPLACEMENT,
+        "standalone game flags",
+    )
+    patched = replace_exact(
+        patched,
+        EXEC_COMMANDS,
+        EXEC_COMMANDS_REPLACEMENT,
+        "standalone game ExecCmds",
+    )
 
     if GUARD_NEEDLE in patched:
         raise SystemExit("decoded blanket Unreal guard remains after patch")
     if "$NativeExitCode = $LASTEXITCODE" not in patched:
         raise SystemExit("native exit-code preservation marker is missing")
+    for marker in (
+        "'-NoPause'",
+        "t.MaxFPS 60",
+        "t.IdleWhenNotForeground 0",
+        "Slate.bAllowThrottling 0",
+    ):
+        if marker not in patched:
+            raise SystemExit(f"runtime foreground/performance marker is missing: {marker}")
+    if EXEC_COMMANDS in patched or GAME_FLAGS in patched:
+        raise SystemExit("unpatched standalone runtime command remains")
 
     path.write_bytes(patched.encode("utf-8"))
     print("JUNGLE_BUILD_INTERNAL_UNREAL_GUARD_PATCH=PROVEN", flush=True)
     print("JUNGLE_NATIVE_STDERR_EXIT_CODE_PATCH=PROVEN", flush=True)
+    print("JUNGLE_RUNTIME_BACKGROUND_THROTTLE_PATCH=PROVEN", flush=True)
 
 
 if __name__ == "__main__":
