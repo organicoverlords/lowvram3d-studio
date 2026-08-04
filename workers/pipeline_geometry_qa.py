@@ -35,6 +35,11 @@ def main() -> None:
         action="store_true",
         help="treat remaining detached shards as a failure",
     )
+    parser.add_argument(
+        "--support-reference-mesh",
+        default="",
+        help="score source support in this mesh's frame instead of the graded mesh's own",
+    )
     args = parser.parse_args()
 
     mesh_path = Path(args.mesh)
@@ -51,7 +56,18 @@ def main() -> None:
     sizes = np.bincount(labels)
     body = int(np.argmax(sizes))
     max_diagonal = scene_diagonal * args.max_shard_diagonal_fraction
-    context = load_support_context(mesh_path, positions)
+    # Support is scored by projecting a component into a frame derived from percentiles of the
+    # mesh's own positions. That makes the score depend on which *other* components exist: strip
+    # nineteen of them and the frame shifts, re-scoring every survivor. A cleaner and the gate that
+    # verifies it then disagree about the same triangles - measured here as support 0.375 -> 0.125,
+    # 0.5 -> 0.0, 1.0 -> 0.0 - and the repair can never reach a fixed point. Grading in the
+    # pre-cleanup frame keeps the two in the same coordinate system.
+    support_positions = positions
+    if args.support_reference_mesh:
+        reference = Path(args.support_reference_mesh)
+        if reference.is_file():
+            support_positions = read_glb(reference)[0].astype(np.float64)
+    context = load_support_context(mesh_path, support_positions)
     shards: list[dict] = []
     preserved_small: list[dict] = []
 

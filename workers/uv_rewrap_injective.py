@@ -103,23 +103,26 @@ def rewrap(mesh: Path, output: Path, resolution: int, padding: int,
         raise RuntimeError("UV_REWRAP_GEOMETRY_FINGERPRINT_CHANGED")
 
     gate = injectivity(new_uv, new_tris, int(resolution))
+    rejected = None
     if not gate["injective"]:
-        raise RuntimeError(
-            f"UV_REWRAP_NOT_INJECTIVE:{gate['interior_texels_claimed_twice']}")
-    if gate["analytic_uv_area_fraction"] > 1.0:
-        raise RuntimeError(
-            f"UV_REWRAP_AREA_EXCEEDS_ATLAS:{gate['analytic_uv_area_fraction']}")
+        rejected = f"UV_REWRAP_NOT_INJECTIVE:{gate['interior_texels_claimed_twice']}"
+    elif gate["analytic_uv_area_fraction"] > 1.0:
+        rejected = f"UV_REWRAP_AREA_EXCEEDS_ATLAS:{gate['analytic_uv_area_fraction']}"
 
-    output.parent.mkdir(parents=True, exist_ok=True)
-    write_glb(output, new_positions, new_normals, new_uv.astype(np.float32), new_tris)
+    if rejected is None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        write_glb(output, new_positions, new_normals, new_uv.astype(np.float32), new_tris)
 
     report = {
         "schema": "uv_rewrap_injective_v1",
         "packer": f"xatlas {getattr(xatlas, '__version__', 'unknown')}",
         "input_mesh": str(mesh),
         "input_mesh_sha256": input_sha,
-        "output_mesh": str(output),
-        "output_mesh_sha256": sha256(output),
+        "output_mesh": str(output) if rejected is None else None,
+        "output_mesh_sha256": sha256(output) if rejected is None else None,
+        # Reject with evidence, not a bare exception. A gate that only raises leaves the caller
+        # nothing to read, and a stage that finds no report cannot tell a rejection from a crash.
+        "rejected": rejected,
         "atlas_resolution": int(resolution),
         "atlas_count": int(atlas.atlas_count),
         "packed_width": int(atlas.width),
@@ -133,13 +136,17 @@ def rewrap(mesh: Path, output: Path, resolution: int, padding: int,
         "geometry_fingerprint": before,
         "geometry_preserved": True,
         "topology_preserved": True,
+        "injective": bool(gate["injective"]),
         "uv_hash_preserved": False,
         "unwrap_seconds": round(unwrap_seconds, 1),
         "injectivity_after": gate,
+        "exact_overlap": gate["exact_overlap"],
         "injectivity_before_at_2048": previous,
     }
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    if rejected is not None:
+        raise RuntimeError(rejected)
     return report
 
 

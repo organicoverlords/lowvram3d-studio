@@ -42,8 +42,14 @@ def run_one(python: str, child: Path, source: Path, directory: Path, preset: str
                 proc.kill()
                 stdout, _ = proc.communicate(timeout=10)
             child_report = json.loads(report.read_text(encoding="utf-8")) if report.exists() else {}
-        return {"preset": preset, "status": "timed_out", "elapsed_seconds": round(time.monotonic() - started, 3),
-                "command": command,
+            # This return belongs to the timeout handler. At the outer indent it ran on every
+            # call, which made the two statements below unreachable and left `child_report`
+            # unbound on the success path - an UnboundLocalError the outer handler then reported
+            # as "failed". The xatlas route could therefore never succeed, and the UV_OVERLAP
+            # repair recipe that selects it could never have worked.
+            return {"preset": preset, "status": "timed_out",
+                    "elapsed_seconds": round(time.monotonic() - started, 3),
+                    "command": command,
                     "last_operation": child_report.get("last_operation"),
                     "candidate_written": bool(child_report.get("candidate_written")),
                     "report": str(report), "output": str(output),

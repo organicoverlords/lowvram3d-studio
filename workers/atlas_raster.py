@@ -144,4 +144,19 @@ def injectivity(uv: np.ndarray, tris: np.ndarray, size: int, *, interior: float 
         "degenerate_uv_triangles": int((area <= 0.0).sum()),
         "uv_out_of_unit_square": int(((np.asarray(uv) < -1e-6) | (np.asarray(uv) > 1 + 1e-6)).any(axis=1).sum()),
         "injective": bool(shared.sum() == 0),
+        # Restated in the vocabulary `visual_evaluator.check_uv` contracts on. That gate refuses to
+        # read a silent report as a clean atlas - a timed-out detector once returned zeroes that
+        # were taken as proof - so a route reporting injectivity a different way must still say how
+        # much it tested and what it found, or it is indistinguishable from a detector that gave up.
+        "exact_overlap": {
+            "tested_pair_count": int(first.size),
+            "timed_out": False,
+            "success": True,
+            "positive_overlap_total_texels_equivalent": float(shared.sum()),
+            "positive_overlap_pair_count": int(shared.sum()),
+            "degenerate_uv_triangle_count": int((area <= 0.0).sum()),
+            "out_of_bounds_triangle_count": int(
+                ((np.asarray(uv) < -1e-6) | (np.asarray(uv) > 1 + 1e-6)).any(axis=1).sum()),
+            "method": "exhaustive_strict_interior_texel_census",
+        },
     }

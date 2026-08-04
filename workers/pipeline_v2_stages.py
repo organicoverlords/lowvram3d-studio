@@ -27,6 +27,22 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
     profile = pipeline.profile
     source_image = Path(manifest["source"]["path"])
     texture_resolution = int(manifest["texture"]["resolution"])
+    # The generator does not run in the pipeline's own interpreter. Mini Turbo needs the
+    # standalone Python it was installed against and `hy3dgen` on PYTHONPATH; running it with the
+    # shared interpreter fails on an import, not on anything about the asset. Declaring the
+    # runtime in the manifest keeps that fact out of the stage code and off a wrapper script.
+    generator_runtime = manifest.get("generator_runtime") or {}
+    generator_python = generator_runtime.get("python") or pipeline.python
+    generator_env = ({"PYTHONPATH": os.pathsep.join(str(p) for p in generator_runtime["pythonpath"])}
+                     if generator_runtime.get("pythonpath") else None)
+    # The ladder and step count were pinned to the bottom rung here (256:1500, one step) while the
+    # proven reference run used 384:3000,320:2000,256:1500 at five steps. That is not a small
+    # difference: at 256 the generator fuses a standing figure's legs into one mass, which the
+    # stance repair then has to cut apart at a face-loss cost no budget will accept. The ladder
+    # already degrades on its own when VRAM runs out, so starting at the top costs nothing.
+    generator_settings = manifest.get("generator_settings") or {}
+    octree_ladder = str(generator_settings.get("octree_ladder", "384:3000,320:2000,256:1500"))
+    generator_steps = int(generator_settings.get("steps", 5))
 
     def w(name: str) -> Path:
         return REPO_ROOT / "workers" / name
@@ -83,9 +99,9 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
                 "LOWVRAM3D_MINI_TURBO_MODEL_ROOT",
                 r"C:\AI\HY3D2\HuggingFaceHub\hunyuan3d-2mini-direct",
             ))
-            steps = int(overrides.get("steps", 1))
+            steps = int(overrides.get("steps", generator_steps))
             code, out = pipeline.run([
-                pipeline.python, w("mini_turbo_generate.py"),
+                generator_python, w("mini_turbo_generate.py"),
                 "--image", source_image,
                 "--conditioning-image", matte,
                 "--output", master,
@@ -93,17 +109,18 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
                 "--model-root", model_root,
                 "--prompt", prompt,
                 "--steps", str(steps),
-                "--octree-ladder", "256:1500",
+                "--octree-ladder", octree_ladder,
                 "--seed", "12345",
-            ])
+            ], env_extra=generator_env)
             result = read_json(result_json)
             failure_code = result.get("failure_code")
             if code != 0 or not master.exists():
                 return StageResult("failed", failure_codes=[failure_code] if failure_code else [],
-                                   gates={"steps": steps, "octree_resolution": 256, "num_chunks": 1500, "seed": 12345},
+                                   gates={"steps": steps, "octree_ladder": octree_ladder, "seed": 12345},
                                    detail=f"generator exit {code}: {out[-800:]}")
             return StageResult("passed", outputs={"master": master},
-                               gates={"sha256": sha256(master), "steps": steps, "octree_resolution": 256, "num_chunks": 1500, "seed": 12345})
+                               gates={"sha256": sha256(master), "steps": steps, "octree_ladder": octree_ladder,
+                                      "octree_resolution_used": result.get("octree_resolution"), "seed": 12345})
         inputs = [existing_master] if existing_master else [pipeline.stage_dir("INGEST") / "proven" / "matte.png"]
         return pipeline.execute("GENERATE", inputs, runner)
 

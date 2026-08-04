@@ -178,11 +178,17 @@ class Pipeline:
             str(REPO_ROOT),
         ]
         existing_pythonpath = env.get("PYTHONPATH", "")
+        # A caller that needs an extra import root (a generator with its own vendored package,
+        # say) means "as well as", never "instead of": clobbering PYTHONPATH here would take the
+        # repo's own workers off the path and fail on an import rather than on the asset.
+        extra_pythonpath = (env_extra or {}).get("PYTHONPATH", "")
         env["PYTHONPATH"] = os.pathsep.join(
-            repo_paths + ([existing_pythonpath] if existing_pythonpath else [])
+            repo_paths
+            + ([extra_pythonpath] if extra_pythonpath else [])
+            + ([existing_pythonpath] if existing_pythonpath else [])
         )
         if env_extra:
-            env.update(env_extra)
+            env.update({k: v for k, v in env_extra.items() if k != "PYTHONPATH"})
         try:
             process = subprocess.run([str(c) for c in command], cwd=str(cwd or REPO_ROOT),
                                      env=env, capture_output=True, text=True,

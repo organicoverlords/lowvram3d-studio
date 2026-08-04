@@ -66,6 +66,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     # allowance when the offenders are known 3D slivers that own no texels; it is never inferred.
     uv_max_degenerate = int((manifest.get("uv") or {}).get("max_degenerate_uv_triangles", 0))
     lod_mode = str((manifest.get("lod") or {}).get("mode", "generate")).lower()
+    lod_regression_allowed = bool((manifest.get("lod") or {}).get(
+        "allow_topology_regression_below_lod0", False))
     suffix = "4k" if resolution >= 4096 else "2k"
 
     def w(name: str) -> Path:
@@ -119,6 +121,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             outputs = {"lod_report": report}
             gates = {"targets": targets_list, "lods": []}
             failures = []
+            topology_failures = []
             for index, target in enumerate(targets_list):
                 source = outdir / f"{asset_id}_lod{index}.glb"
                 if not source.exists():
@@ -138,13 +141,27 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 if achieved <= 0 or achieved > max(target * 1.20, target + 5000):
                     failures.append(f"LOD{index} achieved {achieved}, target {target}")
                 for metric in ("boundary_edges", "non_manifold_edges"):
-                    if int(candidate_topology.get(metric, 0)) > int(source_topology.get(metric, 0)):
-                        failures.append(
-                            f"LOD{index} {metric} regressed "
-                            f"{source_topology.get(metric)}->{candidate_topology.get(metric)}"
-                        )
+                    if int(candidate_topology.get(metric, 0)) <= int(source_topology.get(metric, 0)):
+                        continue
+                    message = (f"LOD{index} {metric} regressed "
+                               f"{source_topology.get(metric)}->{candidate_topology.get(metric)}")
+                    # LOD0 carries the asset's real topology and stays strict. Below it, thin
+                    # features are expected to go: a ghillie fringe cannot survive a 4x decimation
+                    # and a distance LOD is not supposed to make it. The allowance is declared per
+                    # asset, and the measured counts are recorded either way so "advisory" never
+                    # means "unmeasured".
+                    if index > 0 and lod_regression_allowed:
+                        gates.setdefault("topology_regressions_advisory", []).append(message)
+                    else:
+                        topology_failures.append(message)
+            failures.extend(topology_failures)
             if failures:
-                return StageResult("failed", gates=gates, detail="; ".join(failures))
+                # Torn topology is the one LOD failure with a real recipe behind it - decimating
+                # less. Without a code the repair policy has nothing to key on and the stage goes
+                # straight to needs_human, which is how a detectable defect becomes a manual one.
+                codes = ["LOD_TOPOLOGY_REGRESSED"] if topology_failures else []
+                return StageResult("failed", gates=gates, failure_codes=codes,
+                                   detail="; ".join(failures))
             return StageResult("passed", outputs=outputs, gates=gates)
 
         return pipeline.execute("LOD", [clean], runner)
@@ -152,7 +169,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     # ---------------------------------------------------------------- UV
     def uv():
         uv_manifest = manifest.get("uv") or {}
-        route = str(uv_manifest.get("route", "fast_blender")).lower()
+        manifest_route = str(uv_manifest.get("route", "fast_blender")).lower()
+        route = manifest_route
         master = uv_manifest.get("master") or {}
 
         # A canonical UV master is adopted, never re-unwrapped. `validate_existing_uv.py` is the
@@ -228,6 +246,10 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             stage = pipeline.stage_dir("UV") / "candidate"
             output = stage / f"{asset_id}_lod0_uv.glb"
             report = stage / "uv_report.json"
+            # The repair policy switches route by override. Reading it from the manifest only
+            # meant the UV_OVERLAP recipe could never fire: the stage re-ran the identical route
+            # until the retry budget ran out, reporting the same codes each time.
+            route = str(overrides.get("route") or manifest_route).lower()
             if route == "injective":
                 code, out = pipeline.run([
                     pipeline.python, w("uv_rewrap_injective.py"),
@@ -251,12 +273,19 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     "max_degenerate_uv_triangles": uv_max_degenerate,
                 }
                 codes = []
-                if not gate.get("injective"):
-                    codes.append("UV_OVERLAP")
-                if int(gate.get("degenerate_uv_triangles") or 0) > uv_max_degenerate:
-                    codes.append("UV_DEGENERATE")
-                if not (data.get("geometry_preserved") and data.get("topology_preserved")):
-                    codes.append("UV_GEOMETRY_CHANGED")
+                if not data:
+                    # The worker raises rather than reporting when it rejects a rewrap, so an
+                    # absent report means it died - not that it measured an overlap or a changed
+                    # surface. Reading those out of a missing file invents evidence and, worse,
+                    # sends the repair policy down the overlap branch for what may be an OOM.
+                    codes.append("UV_INJECTIVE_WORKER_FAILED")
+                else:
+                    if not gate.get("injective"):
+                        codes.append("UV_OVERLAP")
+                    if int(gate.get("degenerate_uv_triangles") or 0) > uv_max_degenerate:
+                        codes.append("UV_DEGENERATE")
+                    if not (data.get("geometry_preserved") and data.get("topology_preserved")):
+                        codes.append("UV_GEOMETRY_CHANGED")
                 if code != 0 or not output.exists() or codes:
                     return StageResult("failed", gates=gates, failure_codes=sorted(set(codes)),
                                        detail=f"injective rewrap exit {code}: {out[-1000:]}")

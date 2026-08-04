@@ -70,6 +70,7 @@ def verify(master: Path, resolution: int, expected_sha: str, expected_fingerprin
         "vertices": int(len(positions)),
         "atlas_resolution": int(resolution),
         "injectivity": gate,
+        "exact_overlap": gate["exact_overlap"],
         "checks": checks,
         "failure_codes": sorted(set(failure_codes)),
         "success": not failure_codes,

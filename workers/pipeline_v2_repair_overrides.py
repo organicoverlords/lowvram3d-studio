@@ -60,6 +60,16 @@ def _write_failed(
 def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
     profile = pipeline.profile
     root = Path(manifest["output_root"])
+    # The stance repair exists to make a humanoid riggable, and its own failure code says so.
+    # Running it on an asset nobody asked to rig is not a safety net, it is damage: on a seated
+    # quadruped it pulled the feet apart, dropped 3% of the faces and left three debris
+    # components, then failed the asset on a rigging gate it never needed to satisfy.
+    rig_required = bool((manifest.get("rig") or {}).get("required", profile.rig_required))
+    # Some poses are connected on purpose. A crouched figure in a long garment has no leg gap in
+    # the source art either, and the repair can only open one by deleting the garment between the
+    # thighs - which a rigger solves with bone weights instead. Declaring that is a per-asset
+    # decision, never inferred from the fact that the repair happened to exceed its budget.
+    stance_repair_enabled = bool((manifest.get("clean") or {}).get("stance_repair", True))
 
     def w(name: str) -> Path:
         return REPO_ROOT / "workers" / name
@@ -70,6 +80,20 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
         receipt = original_clean()
         if receipt.get("status") != "passed" or profile.name not in HUMANOID_PROFILES:
             return receipt
+        if not rig_required or not stance_repair_enabled:
+            # Say so in the receipt. A stage that silently skips a repair is indistinguishable
+            # from one that ran it and passed, which is the kind of green result V2 exists to
+            # stop producing.
+            updated = dict(receipt)
+            updated["gates"] = {**(receipt.get("gates") or {}),
+                                "stance_repair_run": False,
+                                "stance_repair_skipped_reason": (
+                                    "rig_not_required" if not rig_required
+                                    else "manifest_clean_stance_repair_false"),
+                                "stance_verified": False}
+            pipeline.write_receipt("CLEAN", updated)
+            pipeline.log(f"[CLEAN] stance repair not run ({updated['gates']['stance_repair_skipped_reason']})")
+            return updated
         gates = receipt.get("gates") or {}
         current = (receipt.get("outputs") or {}).get("clean", {})
         if (
@@ -176,6 +200,10 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
                 "--max-axis-ratio", str(profile.max_axis_ratio),
                 "--debris-height-min", "0.66",
                 "--debris-blocking",
+                # Grade the cleaned mesh in the frame the cleaner decided in, not the one its own
+                # deletions produced. Otherwise removing debris re-scores the survivors and the
+                # gate rejects components the cleaner had just judged supported.
+                "--support-reference-mesh", raw,
             ])
             verify = _json(verify_report)
             loss = float(cleanup.get("triangles_removed_percent") or 0.0)
