@@ -1,17 +1,65 @@
 [CmdletBinding()]
-param([string]$ExpectedBranch='feature/procedural-jungle-playable-20260804')
+param(
+    [string]$ExpectedBranch = 'feature/procedural-jungle-playable-20260804'
+)
 Set-StrictMode -Version Latest
-$ErrorActionPreference='Stop'
-$R=(git rev-parse --show-toplevel).Trim();Set-Location $R
-if((git config --get remote.origin.url).Trim()-notmatch 'organicoverlords/lowvram3d-studio(\.git)?$'){throw'repo'}
-if((git branch --show-current).Trim()-ne $ExpectedBranch){throw'branch'}
-$c='9d293ff814c5d6cd5d96196b40abd8d7c56d8b93';$b='a3f5721d5f4b086152ba4ac8fb2591cc49bfd799';$p='scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1'
-& git merge-base --is-ancestor $c HEAD;if($LASTEXITCODE-ne 0){throw'ancestry'}
-if((git rev-parse "$c`:$p").Trim()-ne$b){throw'blob'}
-$d=Join-Path $env:RUNNER_TEMP "jungle-runtime-$((git rev-parse HEAD).Trim())";if(Test-Path $d){Remove-Item $d -Recurse -Force};New-Item -ItemType Directory $d|Out-Null
-$o=Join-Path $d 'worker.ps1';$t=@(& git show "$c`:$p")-join"`n";$m='$RecoveryText = $RecoveryText.Replace($OldRead, $NewRead).Replace($OldWrite, $NewWrite)'
-if([regex]::Matches($t,[regex]::Escape($m)).Count-ne 1){throw'insert'}
-$z=[Convert]::FromBase64String('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');$ms=New-Object IO.MemoryStream(,$z);$gs=New-Object IO.Compression.GzipStream($ms,[IO.Compression.CompressionMode]::Decompress);$sr=New-Object IO.StreamReader($gs);$x=$sr.ReadToEnd();$sr.Dispose()
-$t=$t.Replace($m,$m+"`n"+$x);Set-Content $o $t -Encoding utf8
-Write-Host 'JUNGLE_RUNTIME_MOVEMENT_CAPTURE_FIX_INJECTION=PROVEN'
-& $o -ExpectedBranch $ExpectedBranch;if($LASTEXITCODE-ne 0){throw"worker $LASTEXITCODE"}
+$ErrorActionPreference = 'Stop'
+
+$RepoRoot = (git rev-parse --show-toplevel).Trim()
+if (-not $RepoRoot) { throw 'Not inside the expected Git repository' }
+Set-Location -LiteralPath $RepoRoot
+$Remote = (git config --get remote.origin.url).Trim()
+$Branch = (git branch --show-current).Trim()
+$Head = (git rev-parse HEAD).Trim()
+if ($Remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $Remote" }
+if ($Branch -ne $ExpectedBranch) { throw "Branch mismatch: $Branch" }
+
+$BaseCommit = '84c2259677c3211c5dbe55da814677c40d635d10'
+$BaseBlob = '5301f2769e455318b6ae396c37692a5d8778b3aa'
+$WrapperPath = 'scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1'
+& git merge-base --is-ancestor $BaseCommit HEAD
+if ($LASTEXITCODE -ne 0) { throw "Runtime repair base is not an ancestor of HEAD: $BaseCommit" }
+$ActualBlob = (& git rev-parse "$BaseCommit`:$WrapperPath").Trim()
+if ($LASTEXITCODE -ne 0 -or $ActualBlob -ne $BaseBlob) {
+    throw "Runtime repair base identity mismatch: expected=$BaseBlob actual=$ActualBlob"
+}
+
+$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-ps51-$Head"
+if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
+New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
+$PatchedWrapper = Join-Path $TempRoot 'run-procedural-jungle-local-worker-ps51.ps1'
+$BaseLines = @(& git show "$BaseCommit`:$WrapperPath")
+if ($LASTEXITCODE -ne 0 -or $BaseLines.Count -lt 10) { throw 'Could not read the proven runtime repair wrapper' }
+$WrapperText = $BaseLines -join "`n"
+
+$Old = '$x=$sr.ReadToEnd();$sr.Dispose()'
+$New = '$x=$sr.ReadToEnd();$sr.Dispose();$Utf8NoBomTargets=[regex]::Matches($x,''utf8NoBOM'').Count;if($Utf8NoBomTargets -lt 1 -or $Utf8NoBomTargets -gt 8){throw "Unexpected utf8NoBOM compatibility target count: $Utf8NoBomTargets"};$x=$x.Replace(''utf8NoBOM'',''utf8'');Write-Host "POWERSHELL51_UTF8_COMPAT_PATCH=PROVEN targets=$Utf8NoBomTargets"'
+$MatchCount = [regex]::Matches($WrapperText, [regex]::Escape($Old)).Count
+if ($MatchCount -ne 1) { throw "Could not prove unique decompression patch point; matches=$MatchCount" }
+$WrapperText = $WrapperText.Replace($Old, $New)
+[IO.File]::WriteAllText($PatchedWrapper, $WrapperText, (New-Object Text.UTF8Encoding($false)))
+
+# Never upload stale captures or acceptance from an earlier failed run.
+$OutputRoot = 'C:\AI\ProceduralJungle\20260804'
+$ProofRoot = Join-Path $OutputRoot 'proof'
+if (Test-Path -LiteralPath $ProofRoot) {
+    Get-ChildItem -LiteralPath $ProofRoot -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like 'capture_*.png' -or $_.Name -in @('gameplay_runtime_proof.json', 'contact_sheet.png', 'visual_capture_audit.json') } |
+        Remove-Item -Force
+}
+foreach ($StalePath in @(
+    (Join-Path $OutputRoot 'acceptance.json'),
+    (Join-Path $RepoRoot 'evidence\latest-procedural-jungle\acceptance.json'),
+    (Join-Path $RepoRoot 'evidence\latest-procedural-jungle\workflow_receipt.json')
+)) {
+    if (Test-Path -LiteralPath $StalePath) { Remove-Item -LiteralPath $StalePath -Force }
+}
+
+Write-Host "RUNTIME_REPAIR_BASE_COMMIT=$BaseCommit"
+Write-Host "RUNTIME_REPAIR_BASE_BLOB=$BaseBlob"
+Write-Host 'POWERSHELL51_WRAPPER_PATCH=PROVEN'
+Write-Host 'STALE_JUNGLE_PROOF_CLEARED=PROVEN'
+
+& $PatchedWrapper -ExpectedBranch $ExpectedBranch
+$WorkerExit = $LASTEXITCODE
+if ($WorkerExit -ne 0) { throw "PowerShell-5-compatible jungle worker failed with exit code $WorkerExit" }
