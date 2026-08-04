@@ -1,9 +1,9 @@
 {
-  "purpose": "Dispatch exactly one workflow_dispatch FaceVerse v4 preflight after uv-first Python discovery, captured native diagnostics, and uv-venv environment creation, then record its run ID.",
-  "workflow_commit": "bb8900f7346fe521dbc9b3fa990065e124cc8a8c",
+  "purpose": "Dispatch exactly one FaceVerse v4 preflight after safe probes and seeded uv-venv recovery, then record its run ID.",
+  "workflow_commit": "6c47a850e9418a2b5054d92fcd163ed1ed51a119",
   "python_compat_commit": "0f60941499a3482ca2c532ec1c143fc6b64e1253",
   "native_compat_commit": "5c50dd5ddf8d6a2bd80a3be766149b23dc4a9e33",
   "venv_compat_commit": "512036d84abef44c14d713c43d263bb0f3d2a65c",
-  "registrar_commit": "ac6f8d9b3c42b6e85685942f4189fe2d9bbabf10",
-  "requested_at": "2026-08-04T04:18:00+03:00"
+  "probe_compat_commit": "3a000080aa8f4d527aeb4e663c952e29bf82632b",
+  "requested_at": "2026-08-04T04:24:00+03:00"
 }
