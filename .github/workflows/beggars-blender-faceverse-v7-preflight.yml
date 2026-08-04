@@ -1,5 +1,5 @@
 name: Beggars Blender FaceVerse v7 preflight
-run-name: Beggars Blender FaceVerse v7 preflight ${{ github.run_id }}
+run-name: Beggars Blender FaceVerse v7 guarded preflight ${{ github.run_id }}
 
 on:
   workflow_dispatch:
