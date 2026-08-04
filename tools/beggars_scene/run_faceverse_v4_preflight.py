@@ -1,17 +1,23 @@
 from __future__ import annotations
 
 import argparse
+import faulthandler
 import hashlib
 import json
 import os
 import sys
 import time
+import traceback
 from pathlib import Path
 
 import cv2
 import mediapipe as mp
 import numpy as np
 import torch
+
+
+def faceverse_stage(name: str) -> None:
+    print(f"FACEVERSE_STAGE={name}", flush=True)
 
 
 def parse_args() -> argparse.Namespace:
@@ -47,7 +53,9 @@ def distance(left: np.ndarray, right: np.ndarray) -> float:
     return float(np.sqrt(((left - right) ** 2).sum()))
 
 
-def detect_face_box_and_eyes(image_rgb: np.ndarray, landmarker_path: Path) -> tuple[np.ndarray, np.ndarray]:
+def detect_face_box_and_eyes(
+    image_rgb: np.ndarray, landmarker_path: Path
+) -> tuple[np.ndarray, np.ndarray]:
     base_options = mp.tasks.BaseOptions
     face_landmarker = mp.tasks.vision.FaceLandmarker
     options_type = mp.tasks.vision.FaceLandmarkerOptions
@@ -60,32 +68,47 @@ def detect_face_box_and_eyes(image_rgb: np.ndarray, landmarker_path: Path) -> tu
         num_faces=1,
     )
     with face_landmarker.create_from_options(options) as detector:
-        face_image = mp.Image(mp.ImageFormat.SRGB, np.ascontiguousarray(image_rgb.astype(np.uint8)))
+        face_image = mp.Image(
+            mp.ImageFormat.SRGB, np.ascontiguousarray(image_rgb.astype(np.uint8))
+        )
         results = detector.detect(face_image)
     if not results.face_landmarks:
         raise RuntimeError("MediaPipe did not detect a face in the selected private keyframe")
 
     landmarks = np.asarray(
-        [(landmark.x * image_rgb.shape[1], landmark.y * image_rgb.shape[0]) for landmark in results.face_landmarks[0]],
+        [
+            (landmark.x * image_rgb.shape[1], landmark.y * image_rgb.shape[0])
+            for landmark in results.face_landmarks[0]
+        ],
         dtype=np.float32,
     )
     if landmarks.shape[0] < 474:
-        raise RuntimeError(f"MediaPipe returned only {landmarks.shape[0]} landmarks; 474 are required")
+        raise RuntimeError(
+            f"MediaPipe returned only {landmarks.shape[0]} landmarks; 474 are required"
+        )
 
     left_vector = norm(landmarks[362, :2] - landmarks[263, :2])
     left_distance = max(distance(landmarks[362, :2], landmarks[263, :2]), 1e-6)
     left_center = (landmarks[263, :2] + landmarks[362, :2]) * 0.5
-    left_eye_x = float(np.dot(landmarks[473] - left_center, left_vector) / left_distance * 3.0)
+    left_eye_x = float(
+        np.dot(landmarks[473] - left_center, left_vector) / left_distance * 3.0
+    )
     left_eye_y = float(
-        np.dot(landmarks[473] - left_center, left_vector[[1, 0]]) / left_distance * -1.5
+        np.dot(landmarks[473] - left_center, left_vector[[1, 0]])
+        / left_distance
+        * -1.5
     )
 
     right_vector = norm(landmarks[33, :2] - landmarks[133, :2])
     right_distance = max(distance(landmarks[33, :2], landmarks[133, :2]), 1e-6)
     right_center = (landmarks[33, :2] + landmarks[133, :2]) * 0.5
-    right_eye_x = float(np.dot(landmarks[468] - right_center, right_vector) / right_distance * 3.0)
+    right_eye_x = float(
+        np.dot(landmarks[468] - right_center, right_vector) / right_distance * 3.0
+    )
     right_eye_y = float(
-        np.dot(landmarks[468] - right_center, right_vector[[1, 0]]) / right_distance * -1.5
+        np.dot(landmarks[468] - right_center, right_vector[[1, 0]])
+        / right_distance
+        * -1.5
     )
 
     bbox = np.asarray(
@@ -138,7 +161,11 @@ def choose_device(requested: str) -> torch.device:
 
 
 def main() -> int:
+    faulthandler.enable()
+    faceverse_stage("MAIN_BEGIN")
     args = parse_args()
+    faceverse_stage("ARGS_PARSED")
+
     faceverse_root = Path(args.faceverse_root).resolve()
     model_path = Path(args.model_npy).resolve()
     checkpoint_path = Path(args.checkpoint).resolve()
@@ -158,24 +185,40 @@ def main() -> int:
             raise SystemExit(f"Required FaceVerse preflight input is missing: {required}")
 
     sys.path.insert(0, str(faceverse_root))
-    from faceversev4 import FaceVerseRecon  # pylint: disable=import-error,import-outside-toplevel
-    from Sim3DR.renderer import render_fvr  # pylint: disable=import-error,import-outside-toplevel
+    faceverse_stage("FACEVERSE_IMPORT_BEGIN")
+    from faceversev4 import (  # pylint: disable=import-error,import-outside-toplevel
+        FaceVerseRecon,
+    )
+    from Sim3DR.renderer import (  # pylint: disable=import-error,import-outside-toplevel
+        render_fvr,
+    )
+    faceverse_stage("FACEVERSE_IMPORT_DONE")
 
+    faceverse_stage("IMAGE_READ_BEGIN")
     image_bgr = cv2.imread(str(input_image_path), cv2.IMREAD_COLOR)
     if image_bgr is None:
         raise SystemExit(f"OpenCV could not read the selected keyframe: {input_image_path}")
     image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+    faceverse_stage("IMAGE_READ_DONE")
+
+    faceverse_stage("MEDIAPIPE_BEGIN")
     bbox, eye_coefficients = detect_face_box_and_eyes(image_rgb, landmarker_path)
+    faceverse_stage("MEDIAPIPE_DONE")
 
     device = choose_device(args.device)
+    print(f"FACEVERSE_DEVICE={device}", flush=True)
     if device.type == "cuda":
         torch.cuda.empty_cache()
         torch.cuda.reset_peak_memory_stats(device)
 
+    faceverse_stage("MODEL_LOAD_BEGIN")
     start = time.perf_counter()
     model = FaceVerseRecon(str(model_path), str(checkpoint_path), device)
     load_seconds = time.perf_counter() - start
+    print(f"FACEVERSE_MODEL_LOAD_SECONDS={load_seconds:.6f}", flush=True)
+    faceverse_stage("MODEL_LOAD_DONE")
 
+    faceverse_stage("INFERENCE_BEGIN")
     inference_start = time.perf_counter()
     coefficients, bbox_list = model.process_imgs(
         image_rgb[np.newaxis, ...], bbox.reshape(1, 1, 4)
@@ -187,7 +230,10 @@ def main() -> int:
     if device.type == "cuda":
         torch.cuda.synchronize(device)
     inference_seconds = time.perf_counter() - inference_start
+    print(f"FACEVERSE_INFERENCE_SECONDS={inference_seconds:.6f}", flush=True)
+    faceverse_stage("INFERENCE_DONE")
 
+    faceverse_stage("RENDER_BEGIN")
     triangles = np.asarray(model.fvd["tri"], dtype=np.int32)
     render_rgb, depth = render_fvr(
         image_rgb,
@@ -196,6 +242,7 @@ def main() -> int:
         normals[0],
         colors[0],
     )
+    faceverse_stage("RENDER_DONE")
     if render_rgb.shape[:2] != image_rgb.shape[:2]:
         raise RuntimeError(
             f"FaceVerse render shape {render_rgb.shape} does not match input {image_rgb.shape}"
@@ -207,6 +254,7 @@ def main() -> int:
     coefficients_path = output_dir / "faceverse_v4_coefficients.npz"
     report_path = output_dir / "faceverse_v4_report.json"
 
+    faceverse_stage("OUTPUT_WRITE_BEGIN")
     if not cv2.imwrite(str(render_path), cv2.cvtColor(render_rgb, cv2.COLOR_RGB2BGR)):
         raise RuntimeError(f"Could not write FaceVerse render: {render_path}")
     if not cv2.imwrite(str(depth_path), depth):
@@ -247,7 +295,9 @@ def main() -> int:
         "torch_cuda_version": torch.version.cuda,
         "gpu_name": torch.cuda.get_device_name(device) if device.type == "cuda" else None,
         "peak_cuda_memory_mib": (
-            float(torch.cuda.max_memory_allocated(device) / 1024**2) if device.type == "cuda" else 0.0
+            float(torch.cuda.max_memory_allocated(device) / 1024**2)
+            if device.type == "cuda"
+            else 0.0
         ),
         "model_load_seconds": load_seconds,
         "inference_seconds": inference_seconds,
@@ -279,6 +329,7 @@ def main() -> int:
         "reference_image_packaged": False,
     }
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+    faceverse_stage("OUTPUT_WRITE_DONE")
 
     if coefficients.shape[1] != 621:
         raise RuntimeError(f"Expected 621 FaceVerse coefficients, got {coefficients.shape[1]}")
@@ -288,11 +339,20 @@ def main() -> int:
         )
     if render_nonzero_fraction < 0.03 or depth_nonzero_fraction < 0.03:
         raise RuntimeError(
-            f"FaceVerse render coverage is too small: rgb={render_nonzero_fraction:.4f} depth={depth_nonzero_fraction:.4f}"
+            f"FaceVerse render coverage is too small: rgb={render_nonzero_fraction:.4f} "
+            f"depth={depth_nonzero_fraction:.4f}"
         )
-    print(json.dumps(report, sort_keys=True))
+    print(json.dumps(report, sort_keys=True), flush=True)
+    faceverse_stage("PROOF_COMPLETE")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except SystemExit:
+        raise
+    except BaseException:  # diagnostic boundary
+        traceback.print_exc()
+        faceverse_stage("UNHANDLED_EXCEPTION")
+        raise
