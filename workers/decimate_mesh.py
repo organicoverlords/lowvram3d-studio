@@ -36,9 +36,34 @@ import bpy, sys, json
 
 argv = sys.argv[sys.argv.index("--") + 1:]
 source, destination, ratio = argv[0], argv[1], float(argv[2])
+min_part = float(argv[3]) if len(argv) > 3 else 0.0
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=source)
+
+# Marching cubes leaves detached crumbs around the subject -- the barn came back
+# as nine bodies, one of which was the building. They survive decimation, get
+# imported, and read as floating debris in the scene. Split into loose parts and
+# drop anything far below the main body; a real separate part like a lean-to
+# roof is a large fraction of the whole, not a thousandth of it.
+removed_parts = 0
+if min_part > 0.0:
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in [o for o in bpy.context.scene.objects if o.type == "MESH"]:
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.mode_set(mode="EDIT")
+        bpy.ops.mesh.select_all(action="SELECT")
+        bpy.ops.mesh.separate(type="LOOSE")
+        bpy.ops.object.mode_set(mode="OBJECT")
+    parts = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+    if parts:
+        largest = max(len(o.data.polygons) for o in parts)
+        doomed = [o for o in parts
+                  if len(o.data.polygons) < largest * min_part]
+        removed_parts = len(doomed)
+        for obj in doomed:
+            bpy.data.objects.remove(obj, do_unlink=True)
 
 meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
 before = sum(len(o.data.polygons) for o in meshes)
@@ -49,10 +74,29 @@ for obj in meshes:
         modifier.ratio = ratio
         bpy.context.view_layer.objects.active = obj
         bpy.ops.object.modifier_apply(modifier=modifier.name)
+# Weld and smooth before export. The glTF exporter splits a vertex wherever the
+# normals differ across a face, and Blender's Decimate leaves faces flat-shaded,
+# so every triangle came out with its own three vertices: 449,917 vertices for
+# 149,997 triangles, and 149,960 disconnected "bodies". That soup imported into
+# Unreal at six times the vertex count it needed, shaded faceted, and made every
+# watertight/body statistic downstream meaningless.
+for obj in [o for o in bpy.context.scene.objects if o.type == "MESH"]:
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.ops.object.shade_smooth()
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.remove_doubles(threshold=1e-5)
+    bpy.ops.object.mode_set(mode="OBJECT")
+
 after = sum(len(o.data.polygons) for o in bpy.context.scene.objects if o.type == "MESH")
+vertices = sum(len(o.data.vertices) for o in bpy.context.scene.objects if o.type == "MESH")
 
 bpy.ops.export_scene.gltf(filepath=destination, export_format="GLB")
-print("DECIMATE_RESULT " + json.dumps({"before": before, "after": after}))
+print("DECIMATE_RESULT " + json.dumps({"before": before, "after": after,
+                                       "vertices": vertices,
+                                       "removed_parts": removed_parts}))
 '''
 
 
@@ -74,6 +118,13 @@ def main(argv: list[str] | None = None) -> int:
                                                             DEFAULT_BLENDER))
     parser.add_argument("--receipt", default="")
     parser.add_argument("--timeout", type=float, default=1800.0)
+    parser.add_argument(
+        "--min-part-fraction", type=float, default=0.02,
+        help="Drop loose parts smaller than this fraction of the largest part's "
+             "triangle count. Marching cubes leaves detached crumbs -- the barn "
+             "came back as nine bodies, one of which was the building. A real "
+             "separate part like a lean-to roof is a large fraction of the "
+             "whole, not a thousandth of it. 0 disables.")
     args = parser.parse_args(argv)
 
     source = Path(args.input).resolve()
@@ -86,7 +137,9 @@ def main(argv: list[str] | None = None) -> int:
 
     before = triangle_count(source)
     receipt["input_triangles"] = before
-    if before <= args.target_triangles:
+    receipt["min_part_fraction"] = args.min_part_fraction
+    # Crumb removal is worth a Blender round trip even inside budget.
+    if before <= args.target_triangles and args.min_part_fraction <= 0.0:
         # Already within budget: copy rather than round-trip through Blender,
         # which would re-tessellate for no benefit.
         destination.write_bytes(source.read_bytes())
@@ -94,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
                         "output_triangles": before, "ratio": 1.0,
                         "reason": "already within the triangle budget"})
     else:
-        ratio = args.target_triangles / float(before)
+        ratio = min(1.0, args.target_triangles / float(before))
         blender = Path(args.blender)
         if not blender.is_file():
             receipt.update({"classification": "UNAVAILABLE",
@@ -108,7 +161,8 @@ def main(argv: list[str] | None = None) -> int:
             completed = subprocess.run(
                 [str(blender), "--background", "--factory-startup",
                  "--python", str(script), "--",
-                 str(source), str(destination), f"{ratio:.6f}"],
+                 str(source), str(destination), f"{ratio:.6f}",
+                 f"{args.min_part_fraction:.6f}"],
                 capture_output=True, text=True, timeout=args.timeout)
         receipt["blender_exit_code"] = completed.returncode
         if not destination.is_file():
