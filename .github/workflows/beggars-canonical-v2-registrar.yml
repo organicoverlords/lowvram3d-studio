@@ -1,0 +1,111 @@
+name: Beggars canonical v2 registrar
+run-name: Beggars canonical v2 registrar ${{ github.run_id }}
+
+on:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - evidence/canonical-v2-trigger.json
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: beggars-canonical-v2-registrar
+  cancel-in-progress: true
+
+jobs:
+  dispatch-and-register:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Dispatch and resolve canonical run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import time
+          import urllib.request
+          from pathlib import Path
+
+          repo = os.environ['REPOSITORY']
+          branch = os.environ['BRANCH']
+          token = os.environ['GH_TOKEN']
+          workflow = 'beggars-canonical-face-diagnostic.yml'
+          api = f'https://api.github.com/repos/{repo}'
+          headers = {
+              'Accept': 'application/vnd.github+json',
+              'Authorization': f'Bearer {token}',
+              'X-GitHub-Api-Version': '2022-11-28',
+              'User-Agent': 'beggars-canonical-v2-registrar',
+          }
+
+          def request(method: str, url: str, payload=None):
+              data = None if payload is None else json.dumps(payload).encode('utf-8')
+              req = urllib.request.Request(url, data=data, method=method, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  body = response.read()
+                  return None if not body else json.loads(body.decode('utf-8'))
+
+          request('POST', f'{api}/actions/workflows/{workflow}/dispatches', {'ref': branch})
+          run = None
+          for _ in range(24):
+              time.sleep(5)
+              result = request(
+                  'GET',
+                  f'{api}/actions/workflows/{workflow}/runs?branch={branch}&event=workflow_dispatch&per_page=20',
+              )
+              runs = result.get('workflow_runs', [])
+              if runs:
+                  run = max(runs, key=lambda item: item['id'])
+                  break
+          if run is None:
+              raise SystemExit('Dispatched canonical workflow did not register within 120 seconds')
+
+          evidence = Path('evidence/latest-beggars-canonical-v2-registrar')
+          evidence.mkdir(parents=True, exist_ok=True)
+          payload = {
+              'classification': 'RUN_REGISTERED',
+              'workflow_run_id': run['id'],
+              'workflow_name': run['name'],
+              'workflow_path': run['path'],
+              'event': run['event'],
+              'status': run['status'],
+              'conclusion': run['conclusion'],
+              'head_sha': run['head_sha'],
+              'head_branch': run['head_branch'],
+              'url': run['html_url'],
+              'created_at': run['created_at'],
+              'updated_at': run['updated_at'],
+              'observed_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+          }
+          (evidence / 'run-registration.json').write_text(
+              json.dumps(payload, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          print(json.dumps(payload, sort_keys=True))
+          PY
+
+      - name: Publish registration receipt
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add evidence/latest-beggars-canonical-v2-registrar/run-registration.json
+          git commit -m "evidence(scene): register canonical v2 run ${{ github.run_id }}"
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if git push origin HEAD:agent/blender-beggars-scene-20260804; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
