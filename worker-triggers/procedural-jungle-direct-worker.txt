@@ -1,8 +1,9 @@
-run=42
-requested=2026-08-04T08:25:30+03:00
+run=43
+requested=2026-08-04T18:10:00+03:00
 mode=github-self-hosted-v3-visual-overhaul
-repair_commit=5ee2f112714d451f22fee8e7ab337ef766804f9c
-repair_scope=safe-owned-unreal-editor-preflight
+repair_commit=160e91a42146e353ffeea4506d7405835c45f6c3
+repair_scope=utf8-byte-length-guard-for-checksummed-v3-installer
+pinned_worker_source=0b30584a12ffc5b961a0890a851aca82d6b381fb
 installer_sha256=8caff1745534e6c73ae21b86a6cb5ee035bad5512741a1c5561bc3b649a348d5
 codex=false
 claude=false
