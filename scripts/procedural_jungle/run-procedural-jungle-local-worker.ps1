@@ -27,7 +27,10 @@ if ($LASTEXITCODE -ne 0 -or $SourceLines.Count -lt 150) {
     throw "Unable to recover protected-coexistence V3 wrapper from $SourceCommit"
 }
 $SourceText = ($SourceLines -join "`n") + "`n"
-$Anchor = '$OwnedProjectRoot = ''C:\Users\Lauri\Desktop\ProceduralJungle58'''
+$Anchor = @'
+$OwnedProjectRoot = 'C:\Users\Lauri\Desktop\ProceduralJungle58'
+$ProtectedProjectPath = 'C:\Users\Lauri\Desktop\UnrealAITest58\UnrealAITest58.uproject'
+'@.Trim()
 $AnchorCount = [regex]::Matches($SourceText, [regex]::Escape($Anchor)).Count
 if ($AnchorCount -ne 1) { throw "Protected-coexistence preflight anchor count is not exactly one: $AnchorCount" }
 
