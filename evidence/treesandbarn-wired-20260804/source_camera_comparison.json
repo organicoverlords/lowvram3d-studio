@@ -1,0 +1,51 @@
+{
+  "aspect_is_4_3": true,
+  "aspect_ratio": 1.3333333333333333,
+  "best_orientation": "vflip",
+  "comparison_png": "evidence\\treesandbarn-wired-20260804\\source_camera_comparison.png",
+  "comparison_sha256": "d8c3b198dd5afcba6246de95685c0f45226077994308c8a277e7742f37fc97af",
+  "difference_png": "evidence\\treesandbarn-wired-20260804\\source_camera_difference.png",
+  "dimensions": [
+    1448,
+    1086
+  ],
+  "mean_abs_difference": 49.85555487724225,
+  "non_dark_fraction": 0.01462613066349216,
+  "orientation_scores": {
+    "hflip": {
+      "combined": 0.11006937952140924,
+      "correlation": -0.03434075024716246,
+      "edge_iou": 0.050364906858494415,
+      "silhouette_iou": 0.09404522291007729
+    },
+    "identity": {
+      "combined": 0.12174322795407955,
+      "correlation": -0.025301214260536584,
+      "edge_iou": 0.051923037933621234,
+      "silhouette_iou": 0.0951214042809949
+    },
+    "rot180": {
+      "combined": 0.16010154028285473,
+      "correlation": 0.0015911427338461304,
+      "edge_iou": 0.05003541673693797,
+      "silhouette_iou": 0.10847498081207062
+    },
+    "vflip": {
+      "combined": 0.29876479391306526,
+      "correlation": 0.13365490516687437,
+      "edge_iou": 0.05046769338750388,
+      "silhouette_iou": 0.11464219535868703
+    }
+  },
+  "p50_abs_difference": 40.0,
+  "p95_abs_difference": 125.0,
+  "render": "evidence\\treesandbarn-wired-20260804\\treesandbarn_source_camera.png",
+  "render_luma_std": 9.470960906777272,
+  "render_mean_luma": 2.2174422331430663,
+  "render_sha256": "2a8b459959c2126552d6f4389909d65d9ad109c76a35dde189d1c3bf75694053",
+  "rgb_range": [
+    0,
+    132
+  ],
+  "source": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png"
+}
