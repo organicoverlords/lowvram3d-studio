@@ -1,5 +1,5 @@
 {
-  "purpose": "Identify the current active and queued GitHub Actions jobs before intervening with LOWVRAM3D-KONE.",
-  "faceverse_run_id": 30876159164,
-  "requested_at": "2026-08-04T06:58:00+03:00"
+  "purpose": "Identify whether the canonical Blender v6 registrar or diagnostic is active, queued, or rejected before worker assignment.",
+  "canonical_blender_v6_trigger_commit": "15c4e791d98cb7a14cf505babeb0e8ec5217fa95",
+  "requested_at": "2026-08-04T06:55:00+03:00"
 }
