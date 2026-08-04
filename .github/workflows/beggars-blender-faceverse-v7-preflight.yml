@@ -7,6 +7,7 @@ on:
     branches:
       - agent/blender-beggars-scene-20260804
     paths:
+      - evidence/beggars-blender-faceverse-v7-trigger.json
       - blender/build_beggars_meme_scene_faceverse_v7.py
       - scripts/apply-beggars-faceverse-v7-recursion-compat.ps1
       - scripts/run-beggars-blender-faceverse-v7-preflight.ps1
