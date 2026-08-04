@@ -7,20 +7,20 @@
     38.1,
     32.4
   ],
-  "flat_filled_face_count": 90159,
+  "flat_filled_face_count": 91021,
   "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
   "mask_coverage": 0.1427,
   "observed_from": "single view; faces below the facing threshold are flat-filled rather than smeared, so textured_face_fraction is the share of this mesh's appearance that was actually observed",
   "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
-  "output_bytes": 4578404,
+  "output_bytes": 4587044,
   "projection": "object_space_front_minus_z",
   "schema_version": "crop_projection_v1",
   "texture_size": [
     958,
     950
   ],
-  "textured_face_count": 59585,
-  "textured_face_fraction": 0.3979,
+  "textured_face_count": 58723,
+  "textured_face_fraction": 0.3922,
   "triangles": 149744,
-  "vertices": 126895
+  "vertices": 127327
 }

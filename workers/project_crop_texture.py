@@ -90,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
     # decimation: the barn goes from 74,556 vertices to about 110,000, not back
     # to three per triangle.
     faces = np.asarray(mesh.faces)
-    observed = mesh.face_normals[:, 2] < -FACING_MIN
+    observed = mesh.face_normals[:, 2] > FACING_MIN
     unobserved = np.flatnonzero(~observed)
     if len(unobserved):
         used = np.unique(faces[unobserved])
