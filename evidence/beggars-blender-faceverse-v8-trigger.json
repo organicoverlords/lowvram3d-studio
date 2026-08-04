@@ -1,8 +1,8 @@
 {
-  "purpose": "Render one bounded v8 still proof with corrected anatomy, fitted hair, realistic eyes, ivory teeth and warmer skin.",
+  "purpose": "Run exactly one current guarded v8 still proof with balanced source color, corrected anatomy, fitted hair, realistic eyes, ivory teeth and warmer skin.",
   "builder_commit": "c843ff0f7e4ae67abc1580b5fbc2d8814d0c3701",
   "runner_commit": "e1ef3edc4e14a29167e32463a313550880bc627d",
-  "workflow_commit": "a5722788358379514e029a8ef1a9dc5bc4567731",
+  "source_color_patch": "scripts/apply-beggars-blender-faceverse-v8-source-color.ps1",
   "visual_baseline_run": 30878169523,
-  "requested_at": "2026-08-04T07:48:00+03:00"
+  "requested_at": "2026-08-04T07:55:00+03:00"
 }
