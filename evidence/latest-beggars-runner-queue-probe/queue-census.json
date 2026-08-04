@@ -1,26 +1,26 @@
 {
-  "active_run_count": 2,
+  "active_run_count": 5,
   "classification": "QUEUE_CENSUS_PROVEN",
-  "observed_at": "2026-08-04T15:44:56Z",
+  "observed_at": "2026-08-04T15:48:37Z",
   "runs": [
     {
       "conclusion": null,
-      "created_at": "2026-08-04T15:44:39Z",
+      "created_at": "2026-08-04T15:48:27Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "d7c66d4e5cf039e6c68b4a07efc53c33d46aeb52",
+      "head_sha": "1d26ef36154363d5bcfd30b6590a8826564167f1",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 92047303935,
+          "id": 92048397001,
           "labels": [
             "ubuntu-latest"
           ],
           "name": "inspect-queue",
           "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000021973",
-          "started_at": "2026-08-04T15:44:49Z",
+          "runner_name": "GitHub Actions 1000021977",
+          "started_at": "2026-08-04T15:48:29Z",
           "status": "in_progress",
           "steps": [
             {
@@ -56,33 +56,45 @@
           ]
         }
       ],
-      "name": "Beggars runner queue probe 30925694668",
+      "name": "Beggars runner queue probe 30926008798",
       "path": ".github/workflows/beggars-runner-queue-probe.yml",
-      "run_id": 30925694668,
+      "run_id": 30926008798,
       "status": "in_progress",
-      "updated_at": "2026-08-04T15:44:49Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925694668"
+      "updated_at": "2026-08-04T15:48:30Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30926008798"
     },
     {
       "conclusion": null,
-      "created_at": "2026-08-04T15:44:21Z",
-      "event": "push",
-      "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "7343fc9c475f126d626152eed40b4ed425570925",
+      "created_at": "2026-08-04T15:48:26Z",
+      "event": "pull_request",
+      "head_branch": "feature/procedural-jungle-playable-20260804",
+      "head_sha": "778138db0c309e636e62feefe34f4eb425482303",
+      "jobs": [],
+      "name": "Jungle PR 15 walking panda",
+      "path": ".github/workflows/procedural-jungle-pr-local-worker.yml",
+      "run_id": 30926007723,
+      "status": "pending",
+      "updated_at": "2026-08-04T15:48:27Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30926007723"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-04T15:48:23Z",
+      "event": "pull_request",
+      "head_branch": "feature/procedural-jungle-playable-20260804",
+      "head_sha": "778138db0c309e636e62feefe34f4eb425482303",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 92047217484,
+          "id": 92048380747,
           "labels": [
-            "self-hosted",
-            "Windows",
-            "X64"
+            "ubuntu-latest"
           ],
-          "name": "diagnose",
-          "runner_group_name": "Default",
-          "runner_name": "LOWVRAM3D-KONE",
-          "started_at": "2026-08-04T15:44:24Z",
+          "name": "unit",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000021976",
+          "started_at": "2026-08-04T15:48:26Z",
           "status": "in_progress",
           "steps": [
             {
@@ -93,37 +105,166 @@
             },
             {
               "conclusion": "success",
-              "name": "Checkout diagnostic source",
+              "name": "Run actions/checkout@v4",
               "number": 2,
               "status": "completed"
             },
             {
-              "conclusion": null,
-              "name": "Render post-build variants",
+              "conclusion": "success",
+              "name": "Run actions/setup-python@v5",
               "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": null,
+              "name": "Install control dependencies",
+              "number": 4,
               "status": "in_progress"
             },
             {
               "conclusion": null,
-              "name": "Upload post-build diagnostic",
-              "number": 4,
+              "name": "Compile Python sources",
+              "number": 5,
               "status": "pending"
             },
             {
               "conclusion": null,
-              "name": "Post Checkout diagnostic source",
-              "number": 8,
+              "name": "Run tests",
+              "number": 6,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Post Run actions/setup-python@v5",
+              "number": 11,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Post Run actions/checkout@v4",
+              "number": 12,
               "status": "pending"
             }
           ]
         }
       ],
-      "name": "Beggars faceplate v3 diagnostic 30925669455",
-      "path": ".github/workflows/beggars-faceplate-v3-diagnostic.yml",
-      "run_id": 30925669455,
+      "name": "Branch tests",
+      "path": ".github/workflows/branch-tests.yml",
+      "run_id": 30926003995,
       "status": "in_progress",
-      "updated_at": "2026-08-04T15:44:25Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925669455"
+      "updated_at": "2026-08-04T15:48:27Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30926003995"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-04T15:48:05Z",
+      "event": "push",
+      "head_branch": "agent/blender-beggars-scene-20260804",
+      "head_sha": "964205536244726d1d453b0db5e5aa61e20b6c19",
+      "jobs": [
+        {
+          "completed_at": null,
+          "conclusion": null,
+          "id": 92048293187,
+          "labels": [
+            "self-hosted",
+            "Windows",
+            "X64"
+          ],
+          "name": "diagnose",
+          "runner_group_name": null,
+          "runner_name": null,
+          "started_at": "2026-08-04T15:48:05Z",
+          "status": "queued",
+          "steps": []
+        }
+      ],
+      "name": "Beggars faceplate v3 diagnostic 30925978917",
+      "path": ".github/workflows/beggars-faceplate-v3-diagnostic.yml",
+      "run_id": 30925978917,
+      "status": "queued",
+      "updated_at": "2026-08-04T15:48:05Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925978917"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-04T15:46:25Z",
+      "event": "pull_request",
+      "head_branch": "feature/procedural-jungle-playable-20260804",
+      "head_sha": "9157bbb453d83a786ef8447b3625bd1419b04fed",
+      "jobs": [
+        {
+          "completed_at": null,
+          "conclusion": null,
+          "id": 92047902985,
+          "labels": [
+            "self-hosted",
+            "Windows",
+            "X64"
+          ],
+          "name": "build-and-prove",
+          "runner_group_name": "Default",
+          "runner_name": "LOWVRAM3D-KONE",
+          "started_at": "2026-08-04T15:47:48Z",
+          "status": "in_progress",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Checkout exact jungle branch",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Verify trusted repository and branch",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "failure",
+              "name": "Run deterministic direct worker",
+              "number": 4,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Gate acceptance evidence",
+              "number": 5,
+              "status": "completed"
+            },
+            {
+              "conclusion": "skipped",
+              "name": "Commit compact proof",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Upload proof artifacts",
+              "number": 7,
+              "status": "completed"
+            },
+            {
+              "conclusion": null,
+              "name": "Post Checkout exact jungle branch",
+              "number": 14,
+              "status": "in_progress"
+            }
+          ]
+        }
+      ],
+      "name": "Jungle PR 15 walking panda",
+      "path": ".github/workflows/procedural-jungle-pr-local-worker.yml",
+      "run_id": 30925842054,
+      "status": "in_progress",
+      "updated_at": "2026-08-04T15:47:49Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30925842054"
     }
   ]
 }
