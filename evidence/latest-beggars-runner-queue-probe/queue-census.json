@@ -1,26 +1,26 @@
 {
-  "active_run_count": 1,
+  "active_run_count": 4,
   "classification": "QUEUE_CENSUS_PROVEN",
-  "observed_at": "2026-08-04T04:19:17Z",
+  "observed_at": "2026-08-04T04:22:48Z",
   "runs": [
     {
       "conclusion": null,
-      "created_at": "2026-08-04T04:19:05Z",
+      "created_at": "2026-08-04T04:22:33Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "a274b2a3305d7d6db7d8d5078acba39b48160edd",
+      "head_sha": "f0974225c2e74bac3ad3759917e8895fa73fcfb9",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 91891301002,
+          "id": 91891785799,
           "labels": [
             "ubuntu-latest"
           ],
           "name": "inspect-queue",
           "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000021879",
-          "started_at": "2026-08-04T04:19:12Z",
+          "runner_name": "GitHub Actions 1000021885",
+          "started_at": "2026-08-04T04:22:42Z",
           "status": "in_progress",
           "steps": [
             {
@@ -56,12 +56,226 @@
           ]
         }
       ],
-      "name": "Beggars runner queue probe 30877317694",
+      "name": "Beggars runner queue probe 30877488285",
       "path": ".github/workflows/beggars-runner-queue-probe.yml",
-      "run_id": 30877317694,
+      "run_id": 30877488285,
       "status": "in_progress",
-      "updated_at": "2026-08-04T04:19:12Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30877317694"
+      "updated_at": "2026-08-04T04:22:43Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30877488285"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-04T04:21:13Z",
+      "event": "push",
+      "head_branch": "agent/blender-beggars-scene-20260804",
+      "head_sha": "266d8664b6ab702d0393713c7762bd0d4af15b41",
+      "jobs": [
+        {
+          "completed_at": "2026-08-04T04:21:27Z",
+          "conclusion": "success",
+          "id": 91891600105,
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "name": "register",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000021884",
+          "started_at": "2026-08-04T04:21:22Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Publish exact canonical v6 run identity",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 7,
+              "status": "completed"
+            }
+          ]
+        },
+        {
+          "completed_at": null,
+          "conclusion": null,
+          "id": 91891631005,
+          "labels": [
+            "self-hosted",
+            "Windows",
+            "X64"
+          ],
+          "name": "build-and-render",
+          "runner_group_name": "",
+          "runner_name": "",
+          "started_at": "2026-08-04T04:21:27Z",
+          "status": "queued",
+          "steps": []
+        }
+      ],
+      "name": "Beggars canonical FaceVerse Blender v6 preflight 30877423905",
+      "path": ".github/workflows/beggars-blender-faceverse-v3-preflight.yml",
+      "run_id": 30877423905,
+      "status": "queued",
+      "updated_at": "2026-08-04T04:21:27Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30877423905"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-04T04:20:58Z",
+      "event": "pull_request",
+      "head_branch": "feature/procedural-jungle-playable-20260804",
+      "head_sha": "cddc21efebfc895357787e6d6eeb2fe5479997e8",
+      "jobs": [
+        {
+          "completed_at": null,
+          "conclusion": null,
+          "id": 91891649415,
+          "labels": [
+            "self-hosted",
+            "Windows",
+            "X64"
+          ],
+          "name": "build-and-prove",
+          "runner_group_name": "",
+          "runner_name": "",
+          "started_at": "2026-08-04T04:21:35Z",
+          "status": "queued",
+          "steps": []
+        }
+      ],
+      "name": "Jungle PR 15 walking panda",
+      "path": ".github/workflows/procedural-jungle-pr-local-worker.yml",
+      "run_id": 30877411151,
+      "status": "queued",
+      "updated_at": "2026-08-04T04:21:35Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30877411151"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-04T04:20:48Z",
+      "event": "push",
+      "head_branch": "agent/blender-beggars-scene-20260804",
+      "head_sha": "cbf5e23a7d6f686b84d7b9edaa771a66c0aa6e06",
+      "jobs": [
+        {
+          "completed_at": "2026-08-04T04:21:03Z",
+          "conclusion": "success",
+          "id": 91891540884,
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "name": "register",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000021882",
+          "started_at": "2026-08-04T04:20:56Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Publish exact run identity",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 7,
+              "status": "completed"
+            }
+          ]
+        },
+        {
+          "completed_at": null,
+          "conclusion": null,
+          "id": 91891573968,
+          "labels": [
+            "self-hosted",
+            "Windows",
+            "X64"
+          ],
+          "name": "build-and-render",
+          "runner_group_name": "Default",
+          "runner_name": "LOWVRAM3D-KONE",
+          "started_at": "2026-08-04T04:22:28Z",
+          "status": "in_progress",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Checkout exact refined model-space v6 source",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": null,
+              "name": "Run refined model-space Blender v6 preflight",
+              "number": 3,
+              "status": "in_progress"
+            },
+            {
+              "conclusion": null,
+              "name": "Upload refined model-space Blender v6 preflight",
+              "number": 4,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Post Checkout exact refined model-space v6 source",
+              "number": 8,
+              "status": "pending"
+            }
+          ]
+        }
+      ],
+      "name": "Beggars Blender FaceVerse v6 preflight 30877403228",
+      "path": ".github/workflows/beggars-blender-faceverse-v6-preflight.yml",
+      "run_id": 30877403228,
+      "status": "in_progress",
+      "updated_at": "2026-08-04T04:22:28Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30877403228"
     }
   ]
 }
