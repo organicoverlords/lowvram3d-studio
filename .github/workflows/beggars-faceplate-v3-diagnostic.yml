@@ -1,0 +1,62 @@
+name: Beggars faceplate v3 diagnostic
+run-name: Beggars faceplate v3 diagnostic ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - blender/diagnose_beggars_faceplate_v3.py
+      - .github/workflows/beggars-faceplate-v3-diagnostic.yml
+      - evidence/beggars-faceplate-v3-diagnostic-trigger.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: beggars-faceplate-v3-diagnostic
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 15
+    steps:
+      - name: Checkout diagnostic source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
+          fetch-depth: 1
+
+      - name: Render post-build variants
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $blender = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
+          $blend = 'C:\AI\LowVRAM3D-benchmarks\beggars-scene\run-30924008509\artifact\beggars_photoreal_recreation.blend'
+          $output = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\faceplate-v3-diagnostic-${{ github.run_id }}"
+          foreach ($required in @($blender,$blend,'blender\diagnose_beggars_faceplate_v3.py')) {
+            if (-not (Test-Path -LiteralPath $required)) { throw "Faceplate v3 diagnostic input missing: $required" }
+          }
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          & $blender --background --factory-startup --python blender\diagnose_beggars_faceplate_v3.py -- --blend $blend --output-dir $output --frame 60
+          if ($LASTEXITCODE -ne 0) { throw "Faceplate v3 Blender diagnostic failed with exit code $LASTEXITCODE" }
+          foreach ($name in @('variant_00_current.png','variant_01_plate_only.png','variant_02_natural_bust.png','variant_03_larger_face.png','diagnostic.json','faceplate_v3_diagnostic.blend')) {
+            $path = Join-Path $output $name
+            if (-not (Test-Path -LiteralPath $path) -or (Get-Item -LiteralPath $path).Length -le 0) { throw "Diagnostic output missing: $name" }
+          }
+          "FACEPLATE_V3_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Upload post-build diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-faceplate-v3-diagnostic-${{ github.run_id }}
+          path: |
+            ${{ env.FACEPLATE_V3_OUTPUT }}/variant_*.png
+            ${{ env.FACEPLATE_V3_OUTPUT }}/packed_*.png
+            ${{ env.FACEPLATE_V3_OUTPUT }}/diagnostic.json
+            ${{ env.FACEPLATE_V3_OUTPUT }}/faceplate_v3_diagnostic.blend
+          if-no-files-found: error
+          retention-days: 7
