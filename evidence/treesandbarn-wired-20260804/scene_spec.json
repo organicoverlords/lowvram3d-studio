@@ -1,0 +1,117 @@
+{
+  "analysis_mode": "moge_depth",
+  "camera": {
+    "aspect_ratio": 1.3333333333333333,
+    "contract_status": "RESOLVED",
+    "convention": "gltf_y_up_z_back",
+    "horizontal_fov_deg": 92.87235844497489,
+    "projection": "perspective",
+    "source_view_id": "source",
+    "uncertainty": 0.1,
+    "vertical_fov_deg": 76.51679153921573
+  },
+  "classification": "PROVEN",
+  "coordinate_system": {
+    "handedness": "right",
+    "units": "meters",
+    "up_axis": "Z"
+  },
+  "depth": {
+    "confidence": 0.9,
+    "estimator": "Ruicheng/moge-2-vitb-normal",
+    "masked_pixel_fraction": 0.6951812622732314,
+    "mesh_glb": "evidence\\treesandbarn-wired-20260804\\depth\\treesandbarn_20260804_moge.glb",
+    "mesh_sha256": "31f6ca3efc353df3ddba180bdb82981dea868ea3110084e2f814fd65705245a3",
+    "quads_dropped_at_depth_edges": 18678,
+    "representation": "metric_point_map",
+    "triangles": 502850,
+    "vertices": 273298
+  },
+  "depth_bands": [
+    {
+      "confidence": 0.9,
+      "far_m": 543.9359741210938,
+      "id": "moge_measured",
+      "near_m": 1.4166713953018188
+    }
+  ],
+  "image_quality": {
+    "alpha_present": true,
+    "decode": "PROVEN",
+    "dimensions_px": [
+      1448,
+      1086
+    ],
+    "exposure_uncertainty": "NOT_ESTIMATED",
+    "mean_rgb": [
+      55.8056,
+      53.6982,
+      45.818
+    ],
+    "stddev_rgb": [
+      38.1814,
+      37.2462,
+      36.5357
+    ]
+  },
+  "material_regions": [],
+  "object_instances": [],
+  "regions": [
+    {
+      "bbox_norm_xyxy": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ],
+      "confidence": 0.9,
+      "id": "reconstructed_geometry_001",
+      "layer_type": "reconstructed_geometry",
+      "representation": "depth_mesh",
+      "uncertainty": "single_view_reconstruction_is_unobserved_behind_surfaces"
+    }
+  ],
+  "resource_budgets": {
+    "gpu_work_requested": true,
+    "max_triangles": 1500000,
+    "max_vram_mb": 6144
+  },
+  "scene_id": "treesandbarn_20260804",
+  "schema_version": "analysis_bundle_v1",
+  "source": {
+    "dimensions_px": [
+      1448,
+      1086
+    ],
+    "kind": "single_image",
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+    "sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b"
+  },
+  "structural_features": [],
+  "support_relationships": [],
+  "surface_orientation": {
+    "confidence": 0.0,
+    "representation": "unknown_normals_or_slopes",
+    "uncertainty": "requires_surface_estimator"
+  },
+  "uncertainties": [
+    {
+      "description": "A single view cannot observe surfaces behind what it sees; the mesh is open where depth edges were culled",
+      "fallback": "leave_holes_rather_than_weld_across_depth_edges",
+      "id": "single_view_occlusion",
+      "severity": "medium"
+    }
+  ],
+  "visibility": [
+    {
+      "classification": "fully_visible",
+      "completion_policy": "visual_shell_only",
+      "region_id": "visual_shell_001"
+    }
+  ],
+  "world_scale": {
+    "confidence": 0.6,
+    "status": "RESOLVED_UP_TO_SCALE",
+    "units": "meters"
+  }
+}

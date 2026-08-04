@@ -1,0 +1,19 @@
+{
+  "classification": "PROVEN",
+  "records": [
+    {
+      "confidence": 0.9,
+      "fallback": "unresolved",
+      "materially_visible": false,
+      "region_id": "reconstructed_geometry_001",
+      "representations": [
+        "unresolved"
+      ],
+      "selected": "unresolved",
+      "semantic_class": "reconstructed_geometry",
+      "source_camera_important": true
+    }
+  ],
+  "schema_version": "representation_manifest_v1",
+  "selection_policy": "semantic class, confidence, visibility, gameplay role, camera importance, and budgets"
+}

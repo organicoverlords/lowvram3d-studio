@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .scene_completeness import audit_scene_completeness
+from .depth_stage import reconstruct_depth
 from .scene_analysis import analyze_image
 from .scene_paths import derive_scene_paths
 from .scene_registry import builder_manifest
@@ -115,7 +116,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             dimensions = Image.open(image).size
         except Exception:
             dimensions = (1, 1)
-        spec = analyze_image(image, args.scene_id, dimensions)
+        # Recover real depth before analysis. Without it the bundle keeps a
+        # placeholder camera and zero-confidence depth, and asset strategy falls
+        # through to source_projection -- the input image on a shell, which
+        # reproduces the source view exactly and carries no geometry.
+        depth_receipt: dict[str, Any] | None = None
+        if not args.disable_neural:
+            depth_receipt = reconstruct_depth(
+                image, evidence / "depth", args.scene_id,
+                max_triangles=int(args.max_triangles))
+            _write_json(evidence / "depth_reconstruction_receipt.json", depth_receipt)
+        spec = analyze_image(image, args.scene_id, dimensions,
+                             depth_receipt=depth_receipt)
     output_map = args.output_map or paths["map"]
     if spec.get("source", {}).get("sha256") != image_hash:
         if spec.get("source", {}).get("sha256") is not None:
