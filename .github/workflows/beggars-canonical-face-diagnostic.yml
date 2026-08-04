@@ -1,7 +1,7 @@
 name: Beggars canonical face diagnostic
 run-name: Beggars canonical face diagnostic ${{ github.run_id }}
 
-# visual-retry: 2026-08-04T03:12:00+03:00
+# visual-retry: 2026-08-04T03:18:00+03:00
 
 on:
   workflow_dispatch:
@@ -31,6 +31,35 @@ jobs:
         with:
           clean: true
           fetch-depth: 0
+
+      - name: Register exact diagnostic run
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = 'evidence\latest-beggars-canonical-diagnostic'
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          $registration = [ordered]@{
+            classification = 'RUN_REGISTERED'
+            workflow_run_id = [long]'${{ github.run_id }}'
+            status = 'in_progress'
+            conclusion = $null
+            head_sha = '${{ github.sha }}'
+            head_branch = '${{ github.ref_name }}'
+            url = 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          }
+          $registration | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'run-registration.json') -Encoding utf8
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- (Join-Path $evidence 'run-registration.json')
+          git commit -m "evidence(scene): register canonical diagnostic ${{ github.run_id }}"
+          for ($attempt = 1; $attempt -le 4; $attempt++) {
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if ($LASTEXITCODE -ne 0) { throw "Registration rebase failed on attempt $attempt" }
+            git push origin HEAD:agent/blender-beggars-scene-20260804
+            if ($LASTEXITCODE -eq 0) { break }
+            if ($attempt -eq 4) { throw 'Could not publish diagnostic run registration' }
+            Start-Sleep -Seconds 2
+          }
 
       - name: Ensure reconstruction runtime
         shell: powershell
@@ -88,15 +117,18 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $evidence = 'evidence\latest-beggars-canonical-diagnostic'
-          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
           Copy-Item -LiteralPath (Join-Path $env:CANONICAL_DIAGNOSTIC_OUTPUT 'diagnostic.json') -Destination (Join-Path $evidence 'diagnostic.json') -Force
           Copy-Item -LiteralPath (Join-Path $env:CANONICAL_DIAGNOSTIC_OUTPUT 'canonical_report.json') -Destination (Join-Path $evidence 'canonical_report.json') -Force
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- $evidence
           git commit -m "evidence(scene): record canonical face diagnostic ${{ github.run_id }}"
-          git pull --rebase origin agent/blender-beggars-scene-20260804
-          git push origin HEAD:agent/blender-beggars-scene-20260804
+          for ($attempt = 1; $attempt -le 4; $attempt++) {
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if ($LASTEXITCODE -ne 0) { throw "Receipt rebase failed on attempt $attempt" }
+            git push origin HEAD:agent/blender-beggars-scene-20260804
+            if ($LASTEXITCODE -eq 0) { break }
+            if ($attempt -eq 4) { throw 'Could not publish canonical diagnostic receipts' }
+            Start-Sleep -Seconds 2
+          }
 
       - name: Upload canonical diagnostic renders
         uses: actions/upload-artifact@v4
