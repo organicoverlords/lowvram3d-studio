@@ -1,0 +1,62 @@
+{
+  "classification": "PROVEN",
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "navigation_bounds": {
+    "castle": {
+      "class": "NavMeshBoundsVolume",
+      "label": "SP_NavMeshBounds_Castle_V1",
+      "location_cm": [
+        1000.0,
+        2800.0,
+        1000.0
+      ],
+      "name": "NavMeshBoundsVolume_0",
+      "scale": [
+        30.0,
+        30.0,
+        24.0
+      ],
+      "tags": [
+        "gameplay_proxy",
+        "navigation_proof",
+        "replaceable",
+        "scene_spec_generated",
+        "unpromoted"
+      ]
+    },
+    "river": {
+      "class": "NavMeshBoundsVolume",
+      "created": false,
+      "label": "SP_NavMeshBounds_River_Crossing_V1",
+      "location_cm": [
+        0.0,
+        5000.0,
+        300.0
+      ],
+      "name": "NavMeshBoundsVolume_1",
+      "scale": [
+        20.0,
+        20.0,
+        6.0
+      ],
+      "tags": [
+        "gameplay_proxy",
+        "navigation_proof",
+        "river_crossing",
+        "scene_spec_generated",
+        "unpromoted"
+      ]
+    }
+  },
+  "receipts": [
+    "architecture",
+    "bridge",
+    "environment",
+    "terrain",
+    "vegetation",
+    "water"
+  ],
+  "save_result": true,
+  "schema_version": "complete_scene_layer_build_receipt_v1",
+  "source_shell_untouched": true
+}

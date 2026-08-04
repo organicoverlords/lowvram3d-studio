@@ -1,0 +1,27 @@
+{
+  "schema_version": "unreal_editor_crash_receipt_v1",
+  "classification": "BLOCKED_UNREAL_EDITOR_SLATE_ASSERT",
+  "editor_pid": 21596,
+  "bridge_endpoint": "127.0.0.1:49538",
+  "last_remote_call": {
+    "handler": "execute_python",
+    "params": {
+      "code": "import unreal\nworlds=list(unreal.EditorLevelLibrary.get_pie_worlds(False))\nworld=worlds[0] if worlds else None\nif world:\n actors=unreal.GameplayStatics.get_all_actors_of_class(world,unreal.StaticMeshActor)\n for a in actors:\n  if str(a.get_actor_label())==\"Castlegrounds_ReconstructedMesh\":\n   unreal.log(\"SOURCE_LOC=\"+str(a.get_actor_location()))\n   unreal.log(\"SOURCE_ROT=\"+str(a.get_actor_rotation()))\n   unreal.log(\"SOURCE_SCALE=\"+str(a.get_actor_scale3d()))\n   c=a.get_component_by_class(unreal.StaticMeshComponent)\n   unreal.log(\"SOURCE_MESH=\"+str(c.static_mesh.get_path_name() if c and c.static_mesh else \"NONE\"))"
+    },
+    "purpose": "read-only source-shell transform audit"
+  },
+  "crash_context": {
+    "path": "C:/Users/Lauri/Desktop/UnrealAITest58/Saved/Crashes/UECC-Windows-8EF535EC48BBF206C5C09A98EA59D571_0000/CrashContext.runtime-xml",
+    "error": "Assertion failed: bWasFound in SlateApplication.cpp line 3315",
+    "is_oom": false,
+    "is_assert": true
+  },
+  "last_successful_proof": [
+    "NAVIGATION_VALIDATION=PROVEN",
+    "IMAGE_TO_SCENE_GAMEPLAY=PROVEN"
+  ],
+  "visual_proof": "BLOCKED_AFTER_ONE_CAPTURE",
+  "source_map_mutated": false,
+  "gpu_work_requested": false,
+  "retry_policy": "do not repeat the crashed remote call automatically"
+}

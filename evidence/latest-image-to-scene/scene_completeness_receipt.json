@@ -1,0 +1,56 @@
+{
+  "all_major_regions_accounted_for": true,
+  "classification": "PROVEN",
+  "interactive_regions_require_geometry_collision_navigation": true,
+  "regions": [
+    {
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "background_geometry",
+      "region_id": "source_shell",
+      "representation": "VISUAL_SHELL",
+      "source_shell_only": true,
+      "spec_reference": "source_shell"
+    },
+    {
+      "independent_geometry": true,
+      "interactive_complete": true,
+      "layer_type": "architecture",
+      "region_id": "castle_core",
+      "representation": "EDITABLE_GEOMETRY",
+      "source_shell_only": false,
+      "spec_reference": "castle_core"
+    },
+    {
+      "independent_geometry": true,
+      "interactive_complete": true,
+      "layer_type": "water",
+      "region_id": "water_channels",
+      "representation": "WATER",
+      "source_shell_only": false,
+      "spec_reference": "water_channels"
+    },
+    {
+      "independent_geometry": true,
+      "interactive_complete": true,
+      "layer_type": "vegetation",
+      "region_id": "vegetation",
+      "representation": "PROCEDURAL_POPULATION",
+      "source_shell_only": false,
+      "spec_reference": "vegetation"
+    },
+    {
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "sky_or_ceiling",
+      "region_id": "sky",
+      "representation": "SKY",
+      "source_shell_only": false,
+      "spec_reference": "sky"
+    }
+  ],
+  "scene_id": "castlegrounds_hybrid_authoritative_v1",
+  "schema_version": "scene_completeness_receipt_v1",
+  "unresolved_regions": [],
+  "visual_shell_not_counted_as_editable": true
+}

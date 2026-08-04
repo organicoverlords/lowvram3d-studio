@@ -1,0 +1,96 @@
+{
+  "classification": "PROVEN",
+  "features": [
+    {
+      "center_m": [
+        10.0,
+        28.0,
+        2.5
+      ],
+      "collision": "blocking",
+      "id": "playable_castle_island",
+      "navigation": "walkable",
+      "primitive": "modular_box_cluster",
+      "region_id": "castle_core",
+      "size_m": [
+        24.0,
+        20.0,
+        5.0
+      ]
+    },
+    {
+      "center_m": [
+        -22.0,
+        31.0,
+        8.0
+      ],
+      "collision": "blocking",
+      "id": "foreground_cliff_mass",
+      "navigation": "walkable_boundary",
+      "primitive": "modular_rock_cluster",
+      "region_id": "foreground_cliff",
+      "size_m": [
+        18.0,
+        14.0,
+        16.0
+      ]
+    },
+    {
+      "center_m": [
+        -34.0,
+        49.0,
+        3.0
+      ],
+      "collision": "blocking",
+      "id": "secondary_island_west",
+      "navigation": "ignored",
+      "primitive": "modular_rock_cluster",
+      "region_id": "foreground_cliff",
+      "size_m": [
+        12.0,
+        10.0,
+        6.0
+      ]
+    },
+    {
+      "center_m": [
+        34.0,
+        58.0,
+        3.0
+      ],
+      "collision": "blocking",
+      "id": "secondary_island_east",
+      "navigation": "ignored",
+      "primitive": "modular_rock_cluster",
+      "region_id": "foreground_cliff",
+      "size_m": [
+        14.0,
+        11.0,
+        6.0
+      ]
+    },
+    {
+      "center_m": [
+        10.0,
+        72.0,
+        3.0
+      ],
+      "collision": "blocking",
+      "id": "playable_boundary_north",
+      "navigation": "blocked",
+      "primitive": "boundary_box",
+      "region_id": "castle_core",
+      "size_m": [
+        70.0,
+        2.0,
+        6.0
+      ]
+    }
+  ],
+  "scene_id": "castlegrounds_hybrid_authoritative_v1",
+  "schema_version": "scene_terrain_plan_v1",
+  "seed": 20260803,
+  "source_camera_silhouette_policy": "bounded_modular_landforms; no source-shell edits",
+  "units": "meters",
+  "water_exclusion": "river_main plus 3m radius"
+}

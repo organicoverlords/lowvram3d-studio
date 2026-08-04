@@ -1,0 +1,16 @@
+{
+  "classification": "NOT_APPLICABLE",
+  "filename_not_used_for_selection": true,
+  "gates": {
+    "budget_validation": "NOT_APPLICABLE",
+    "builder_selection": "NOT_APPLICABLE",
+    "camera_depth_contract": "NOT_APPLICABLE",
+    "image_ingest": "PROVEN",
+    "scene_completeness_plan": "NOT_APPLICABLE",
+    "scene_spec_generation": "NOT_APPLICABLE",
+    "scene_spec_validation": "NOT_APPLICABLE"
+  },
+  "input_kind": "object",
+  "schema_version": "scene_generalization_receipt_v1",
+  "source_sha256": "e4bfb2b11e4397e8d1db0f6d487d0074f4557ff668027876b5b8c183f7ac6f7e"
+}

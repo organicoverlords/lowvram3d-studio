@@ -1,0 +1,12 @@
+{
+  "classification": "PROVEN",
+  "filename_not_used_for_selection": true,
+  "gpu_work_requested": false,
+  "max_triangles": 1500000,
+  "max_vram_mb": 6144,
+  "requested_triangle_budget": 100000,
+  "scene_spec_errors": [],
+  "scene_spec_valid": true,
+  "schema_version": "scene_plan_validation_v1",
+  "selected_builder_count": 1
+}

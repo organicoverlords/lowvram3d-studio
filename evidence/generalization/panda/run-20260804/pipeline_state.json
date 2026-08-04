@@ -1,0 +1,43 @@
+{
+  "classification": "PARTIAL",
+  "gpu_work_requested": false,
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\panda.jpg",
+  "image_sha256": "e4bfb2b11e4397e8d1db0f6d487d0074f4557ff668027876b5b8c183f7ac6f7e",
+  "layer_receipts": {},
+  "next_action": "RUN_BOUNDED_UNREAL_LAYER_BUILDERS",
+  "output_map": "/Game/GeneratedScenes/panda/Maps/L_panda_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "smoke",
+  "resume": true,
+  "scene_id": "panda",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "5e24f4971eaba208f61f135bae9c36901c66d16c6e326b732b2f43e6a75b326e",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\panda\\run-20260804\\architecture_plan.json",
+      "reused": false
+    },
+    "completeness": {
+      "classification": "PROVEN",
+      "input_sha256": "1c2e596ea64708a33eee9214cb9555789647e34ad4e58f38e87aea2caaf893d9",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\panda\\run-20260804\\scene_completeness_receipt.json",
+      "reused": false
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "5e24f4971eaba208f61f135bae9c36901c66d16c6e326b732b2f43e6a75b326e",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\panda\\run-20260804\\terrain_plan.json",
+      "reused": false
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "5e24f4971eaba208f61f135bae9c36901c66d16c6e326b732b2f43e6a75b326e",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\panda\\run-20260804\\vegetation_plan.json",
+      "reused": false
+    }
+  },
+  "started_at": "2026-08-04T01:39:23.476739+00:00",
+  "updated_at": "2026-08-04T01:39:23.476739+00:00"
+}

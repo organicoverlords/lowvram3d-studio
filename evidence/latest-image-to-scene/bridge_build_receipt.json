@@ -1,0 +1,435 @@
+{
+  "above_ground": true,
+  "classification": "PROVEN",
+  "collision": true,
+  "deck_elevation_cm": 600.0,
+  "ground_top_cm": 500.0,
+  "navigation": true,
+  "records": [
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_Deck_00",
+        "location_cm": [
+          -800.0,
+          3100.0,
+          600.0
+        ],
+        "name": "StaticMeshActor_17",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "deck_00"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_Deck_01",
+        "location_cm": [
+          -400.0,
+          3100.0,
+          600.0
+        ],
+        "name": "StaticMeshActor_18",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "deck_01"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_Deck_02",
+        "location_cm": [
+          0.0,
+          3100.0,
+          600.0
+        ],
+        "name": "StaticMeshActor_19",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "deck_02"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_Deck_03",
+        "location_cm": [
+          400.0,
+          3100.0,
+          600.0
+        ],
+        "name": "StaticMeshActor_20",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "deck_03"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_Deck_04",
+        "location_cm": [
+          800.0,
+          3100.0,
+          600.0
+        ],
+        "name": "StaticMeshActor_21",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "deck_04"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_Support_00",
+        "location_cm": [
+          -800.0,
+          3100.0,
+          200.0
+        ],
+        "name": "StaticMeshActor_22",
+        "scale": [
+          0.35,
+          0.35,
+          2.0
+        ],
+        "tags": [
+          "bridge",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "support_00"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_Support_01",
+        "location_cm": [
+          0.0,
+          3100.0,
+          200.0
+        ],
+        "name": "StaticMeshActor_23",
+        "scale": [
+          0.35,
+          0.35,
+          2.0
+        ],
+        "tags": [
+          "bridge",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "support_01"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_Support_02",
+        "location_cm": [
+          800.0,
+          3100.0,
+          200.0
+        ],
+        "name": "StaticMeshActor_24",
+        "scale": [
+          0.35,
+          0.35,
+          2.0
+        ],
+        "tags": [
+          "bridge",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "support_02"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_River_Crossing_Deck_00",
+        "location_cm": [
+          -800.0,
+          5000.0,
+          120.0
+        ],
+        "name": "StaticMeshActor_41",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "river_crossing_deck_00"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_River_Crossing_Deck_01",
+        "location_cm": [
+          -400.0,
+          5000.0,
+          120.0
+        ],
+        "name": "StaticMeshActor_42",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "river_crossing_deck_01"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_River_Crossing_Deck_02",
+        "location_cm": [
+          0.0,
+          5000.0,
+          120.0
+        ],
+        "name": "StaticMeshActor_43",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "river_crossing_deck_02"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_River_Crossing_Deck_03",
+        "location_cm": [
+          400.0,
+          5000.0,
+          120.0
+        ],
+        "name": "StaticMeshActor_44",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "river_crossing_deck_03"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_River_Crossing_Deck_04",
+        "location_cm": [
+          800.0,
+          5000.0,
+          120.0
+        ],
+        "name": "StaticMeshActor_45",
+        "scale": [
+          4.0,
+          3.0,
+          0.3
+        ],
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "river_crossing_deck_04"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_River_Crossing_Support_00",
+        "location_cm": [
+          -800.0,
+          5000.0,
+          50.0
+        ],
+        "name": "StaticMeshActor_46",
+        "scale": [
+          0.35,
+          0.35,
+          1.0
+        ],
+        "tags": [
+          "bridge",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "river_crossing_support_00"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_River_Crossing_Support_01",
+        "location_cm": [
+          0.0,
+          5000.0,
+          50.0
+        ],
+        "name": "StaticMeshActor_47",
+        "scale": [
+          0.35,
+          0.35,
+          1.0
+        ],
+        "tags": [
+          "bridge",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "river_crossing_support_01"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Bridge_River_Crossing_Support_02",
+        "location_cm": [
+          800.0,
+          5000.0,
+          50.0
+        ],
+        "name": "StaticMeshActor_48",
+        "scale": [
+          0.35,
+          0.35,
+          1.0
+        ],
+        "tags": [
+          "bridge",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "river_crossing_support_02"
+    }
+  ],
+  "river_crossing_deck_elevation_cm": 120.0,
+  "river_crossing_derived_from": "river_main midpoint [0, 50, 0]",
+  "schema_version": "bridge_build_receipt_v1",
+  "width_m": 3.0
+}

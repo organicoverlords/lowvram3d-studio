@@ -1,0 +1,171 @@
+{
+  "classification": "PROVEN",
+  "collision": true,
+  "independent_geometry": true,
+  "lighthouse": true,
+  "records": [
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Architecture_Castle_Main_Body",
+        "location_cm": [
+          1000.0,
+          2800.0,
+          1200.0
+        ],
+        "name": "StaticMeshActor_9",
+        "scale": [
+          16.0,
+          11.0,
+          14.0
+        ],
+        "tags": [
+          "architecture",
+          "castle_core",
+          "castle_main_body",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "castle_main_body",
+      "lighthouse": false
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Architecture_Castle_West_Wing",
+        "location_cm": [
+          100.0,
+          2900.0,
+          800.0
+        ],
+        "name": "StaticMeshActor_10",
+        "scale": [
+          5.0,
+          9.0,
+          8.0
+        ],
+        "tags": [
+          "architecture",
+          "castle_core",
+          "castle_west_wing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "castle_west_wing",
+      "lighthouse": false
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Architecture_Castle_East_Wing",
+        "location_cm": [
+          1900.0,
+          2900.0,
+          800.0
+        ],
+        "name": "StaticMeshActor_11",
+        "scale": [
+          5.0,
+          9.0,
+          8.0
+        ],
+        "tags": [
+          "architecture",
+          "castle_core",
+          "castle_east_wing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "castle_east_wing",
+      "lighthouse": false
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Architecture_Lighthouse_Shaft",
+        "location_cm": [
+          1200.0,
+          2500.0,
+          2800.0
+        ],
+        "name": "StaticMeshActor_12",
+        "scale": [
+          5.0,
+          5.0,
+          42.0
+        ],
+        "tags": [
+          "architecture",
+          "castle_core",
+          "lighthouse_shaft",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "lighthouse_shaft",
+      "lighthouse": true
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Architecture_Lighthouse_Cap",
+        "location_cm": [
+          1200.0,
+          2500.0,
+          4900.0
+        ],
+        "name": "StaticMeshActor_13",
+        "scale": [
+          7.0,
+          7.0,
+          4.0
+        ],
+        "tags": [
+          "architecture",
+          "castle_core",
+          "lighthouse_cap",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "lighthouse_cap",
+      "lighthouse": true
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Architecture_Castle_Gate",
+        "location_cm": [
+          1000.0,
+          2230.0,
+          400.0
+        ],
+        "name": "StaticMeshActor_14",
+        "scale": [
+          4.0,
+          0.8,
+          5.0
+        ],
+        "tags": [
+          "architecture",
+          "castle_core",
+          "castle_gate",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "castle_gate",
+      "lighthouse": false
+    }
+  ],
+  "schema_version": "architecture_build_receipt_v1"
+}

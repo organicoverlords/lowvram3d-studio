@@ -1,0 +1,9 @@
+{
+  "classification": "NOT_APPLICABLE",
+  "filename_not_used_for_selection": true,
+  "scene_id": "panda_object",
+  "schema_version": "scene_builder_manifest_v1",
+  "selected": {},
+  "selection_source": "explicit input_kind=object",
+  "unknown_semantics": []
+}

@@ -1,0 +1,20 @@
+{
+  "all_major_regions_accounted_for": true,
+  "classification": "PROVEN",
+  "interactive_regions_require_geometry_collision_navigation": true,
+  "regions": [
+    {
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "visual_shell",
+      "region_id": "visual_shell_001",
+      "representation": "VISUAL_SHELL",
+      "source_shell_only": true,
+      "spec_reference": "visual_shell_001"
+    }
+  ],
+  "scene_id": "baatti_object",
+  "schema_version": "scene_completeness_receipt_v1",
+  "unresolved_regions": [],
+  "visual_shell_not_counted_as_editable": true
+}

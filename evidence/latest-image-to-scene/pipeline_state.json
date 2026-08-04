@@ -1,0 +1,17 @@
+{
+  "classification": "IMAGE_TO_SCENE_SMOKE_PARTIAL",
+  "gates": {
+    "complete_scene_layers": "PROVEN",
+    "fresh_map_reload": "PROVEN",
+    "gameplay": "PROVEN",
+    "live_contract": "PROVEN",
+    "navigation": "PROVEN",
+    "scene_spec_and_builder_plan": "PROVEN",
+    "visual_proof": "BLOCKED_UNREAL_EDITOR_SLATE_ASSERT"
+  },
+  "gpu_work_requested": false,
+  "next_action": "USER_REVIEW_REQUIRED_UNREAL_EDITOR_RESTART",
+  "scene_id": "castlegrounds",
+  "schema_version": "image_to_scene_pipeline_state_v2",
+  "source_map_protected": true
+}

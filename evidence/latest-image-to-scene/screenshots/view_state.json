@@ -1,0 +1,14 @@
+{
+  "location_cm": [
+    1000.0,
+    1712.5,
+    700.0
+  ],
+  "rotation_deg": [
+    0.0,
+    90.0,
+    0.0
+  ],
+  "view": "source_camera",
+  "world": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/UEDPIE_0_L_Castlegrounds_Hybrid_V1.L_Castlegrounds_Hybrid_V1"
+}

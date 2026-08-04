@@ -45,7 +45,7 @@ nav = unreal.NavigationSystemV1.get_navigation_system(world)
 if nav is None:
     raise RuntimeError("navigation system unavailable")
 start = unreal.Vector(1000.0, 1712.5, 700.0)
-walk_end = unreal.Vector(1000.0, 2300.0, 700.0)
+walk_end = unreal.Vector(1000.0, 2100.0, 700.0)
 blocked_end = unreal.Vector(1000.0, 2800.0, 700.0)
 walk_path = nav.find_path_to_location_synchronously(world, start, walk_end, None)
 blocked_path = nav.find_path_to_location_synchronously(world, start, blocked_end, None)

@@ -1,0 +1,42 @@
+{
+  "classification": "PROVEN",
+  "filename_not_used_for_selection": true,
+  "scene_id": "baatti",
+  "schema_version": "scene_builder_manifest_v1",
+  "selected": {
+    "background_geometry": {
+      "capability": {
+        "actor_types": [
+          "StaticMeshActor"
+        ],
+        "collision_policy": "none",
+        "fallback": "visual_shell",
+        "layer_type": "background_geometry",
+        "material_policy": "background",
+        "navigation_policy": "ignored",
+        "optional_inputs": [
+          "depth_bands"
+        ],
+        "proof_gates": [
+          "coverage"
+        ],
+        "representations": [
+          "visual_shell",
+          "editable_geometry"
+        ],
+        "required_inputs": [
+          "regions"
+        ],
+        "resource_budget": {
+          "triangles": 100000
+        }
+      },
+      "reason": "source_shell_or_distant_region",
+      "region_ids": [
+        "visual_shell_001"
+      ]
+    }
+  },
+  "selection_source": "SceneSpec regions, representation, semantic_class, tags, and explicit layer_type",
+  "unknown_semantics": []
+}

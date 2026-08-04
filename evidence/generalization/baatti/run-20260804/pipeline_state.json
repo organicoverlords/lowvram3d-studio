@@ -1,0 +1,43 @@
+{
+  "classification": "PARTIAL",
+  "gpu_work_requested": false,
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\baatti.jpg",
+  "image_sha256": "5a6d39c08efa9c4177fe77a19060c494c724a023acbccfec48444d8009706152",
+  "layer_receipts": {},
+  "next_action": "RUN_BOUNDED_UNREAL_LAYER_BUILDERS",
+  "output_map": "/Game/GeneratedScenes/baatti/Maps/L_baatti_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "smoke",
+  "resume": true,
+  "scene_id": "baatti",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "6d529d3f1a4ecf3f8ab9925421f79a6a2f2db7b0040f6dec3100efa86e5919ff",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\baatti\\run-20260804\\architecture_plan.json",
+      "reused": false
+    },
+    "completeness": {
+      "classification": "PROVEN",
+      "input_sha256": "289fb297ebc66bc53e7391fe69f52c96402e257be5fc7685779bcb49642e7da5",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\baatti\\run-20260804\\scene_completeness_receipt.json",
+      "reused": false
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "6d529d3f1a4ecf3f8ab9925421f79a6a2f2db7b0040f6dec3100efa86e5919ff",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\baatti\\run-20260804\\terrain_plan.json",
+      "reused": false
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "6d529d3f1a4ecf3f8ab9925421f79a6a2f2db7b0040f6dec3100efa86e5919ff",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\baatti\\run-20260804\\vegetation_plan.json",
+      "reused": false
+    }
+  },
+  "started_at": "2026-08-04T01:39:23.223956+00:00",
+  "updated_at": "2026-08-04T01:39:23.223956+00:00"
+}

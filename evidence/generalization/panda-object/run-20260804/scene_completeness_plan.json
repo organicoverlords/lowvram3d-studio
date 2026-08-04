@@ -1,0 +1,6 @@
+{
+  "audit_stage": "completeness",
+  "schema_version": "scene_completeness_plan_v1",
+  "source_image_sha256": "e4bfb2b11e4397e8d1db0f6d487d0074f4557ff668027876b5b8c183f7ac6f7e",
+  "source_scene_spec": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-scene-hybrid\\authoritative_hybrid_scene_spec.json"
+}

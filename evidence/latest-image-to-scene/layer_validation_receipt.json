@@ -1,0 +1,673 @@
+{
+  "architecture": {
+    "classification": "PROVEN",
+    "count": 6,
+    "lighthouse": true,
+    "records": [
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Architecture_Castle_Main_Body",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Cobblestone_Mossy.MI_JEM_Cobblestone_Mossy",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "architecture",
+          "castle_core",
+          "castle_main_body",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Architecture_Castle_West_Wing",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Cobblestone_Mossy.MI_JEM_Cobblestone_Mossy",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "architecture",
+          "castle_core",
+          "castle_west_wing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Architecture_Castle_East_Wing",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Cobblestone_Mossy.MI_JEM_Cobblestone_Mossy",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "architecture",
+          "castle_core",
+          "castle_east_wing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Architecture_Lighthouse_Shaft",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Cobblestone_Mossy.MI_JEM_Cobblestone_Mossy",
+        "mesh": "/Engine/BasicShapes/Cylinder.Cylinder",
+        "navigation": true,
+        "tags": [
+          "architecture",
+          "castle_core",
+          "lighthouse_shaft",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Architecture_Lighthouse_Cap",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Cobblestone_Mossy.MI_JEM_Cobblestone_Mossy",
+        "mesh": "/Engine/BasicShapes/Cone.Cone",
+        "navigation": true,
+        "tags": [
+          "architecture",
+          "castle_core",
+          "lighthouse_cap",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Architecture_Castle_Gate",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "architecture",
+          "castle_core",
+          "castle_gate",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      }
+    ]
+  },
+  "bridge": {
+    "classification": "PROVEN",
+    "count": 16,
+    "records": [
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_Deck_00",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_Deck_01",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_Deck_02",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_Deck_03",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_Deck_04",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "bridge_axis_main",
+          "crossing",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_Support_00",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_Support_01",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_Support_02",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_River_Crossing_Deck_00",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_River_Crossing_Deck_01",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_River_Crossing_Deck_02",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_River_Crossing_Deck_03",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_River_Crossing_Deck_04",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "crossing",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_River_Crossing_Support_00",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_River_Crossing_Support_01",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Bridge_River_Crossing_Support_02",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Wood_Planks_Wet.MI_JEM_Wood_Planks_Wet",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "bridge",
+          "river_crossing",
+          "river_main",
+          "scene_spec_generated",
+          "support",
+          "unpromoted"
+        ]
+      }
+    ],
+    "traversable_geometry": true
+  },
+  "classification": "PROVEN",
+  "fresh_map_reload": true,
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "schema_version": "complete_scene_layer_validation_receipt_v1",
+  "source_map_sha256": "39547be52ab21f3f6b0d99c0f2a2f93103a5c0ebf9da56435e37feae04cc15f9",
+  "source_map_unmodified": true,
+  "terrain": {
+    "classification": "PROVEN",
+    "count": 5,
+    "records": [
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Terrain_Playable_Castle_Island",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Rock_Mossy.MI_JEM_Rock_Mossy",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": true,
+        "tags": [
+          "castle_core",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Terrain_Foreground_Cliff_Mass",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Rock_Mossy.MI_JEM_Rock_Mossy",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": false,
+        "tags": [
+          "foreground_cliff",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Terrain_Secondary_Island_West",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Rock_Mossy.MI_JEM_Rock_Mossy",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": false,
+        "tags": [
+          "foreground_cliff",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Terrain_Secondary_Island_East",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Rock_Mossy.MI_JEM_Rock_Mossy",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": false,
+        "tags": [
+          "foreground_cliff",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+        "label": "SP_Terrain_Playable_Boundary_North",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Rock_Mossy.MI_JEM_Rock_Mossy",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": false,
+        "tags": [
+          "castle_core",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      }
+    ]
+  },
+  "vegetation": {
+    "classification": "PROVEN",
+    "count": 16,
+    "exclusions_tagged": true,
+    "records": [
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Trees_00",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "scene_spec_generated",
+          "trees",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Trees_01",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "scene_spec_generated",
+          "trees",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Trees_02",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "scene_spec_generated",
+          "trees",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Trees_03",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "scene_spec_generated",
+          "trees",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Trees_04",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "scene_spec_generated",
+          "trees",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Trees_05",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "scene_spec_generated",
+          "trees",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Trees_06",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "scene_spec_generated",
+          "trees",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Trees_07",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_BroadleafCross_3.SM_JSM_BroadleafCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "scene_spec_generated",
+          "trees",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Grass_08",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "grass",
+          "scene_spec_generated",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Grass_09",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "grass",
+          "scene_spec_generated",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Grass_10",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "grass",
+          "scene_spec_generated",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Grass_11",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "grass",
+          "scene_spec_generated",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Grass_12",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "grass",
+          "scene_spec_generated",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Grass_13",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "grass",
+          "scene_spec_generated",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Grass_14",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "grass",
+          "scene_spec_generated",
+          "unpromoted",
+          "vegetation"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Vegetation_Grass_15",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Grass_Lush_Mixed.MI_JEM_Grass_Lush_Mixed",
+        "mesh": "/Game/JungleEnvironmentMegaPack/Meshes/Foliage/SM_JSM_GrassCross_3.SM_JSM_GrassCross_3",
+        "navigation": false,
+        "tags": [
+          "decorative",
+          "grass",
+          "scene_spec_generated",
+          "unpromoted",
+          "vegetation"
+        ]
+      }
+    ]
+  },
+  "water": {
+    "classification": "PROVEN",
+    "count": 2,
+    "navigation_excluded": true,
+    "records": [
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Water_River_Main_00",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Water_Shallow_Ripples.MI_JEM_Water_Shallow_Ripples",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": false,
+        "tags": [
+          "no_build",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted",
+          "water"
+        ]
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Water_River_Main_01",
+        "material": "/Game/JungleEnvironmentMegaPack/Materials/Instances/MI_JEM_Water_Shallow_Ripples.MI_JEM_Water_Shallow_Ripples",
+        "mesh": "/Engine/BasicShapes/Cube.Cube",
+        "navigation": false,
+        "tags": [
+          "no_build",
+          "river_main",
+          "scene_spec_generated",
+          "unpromoted",
+          "water"
+        ]
+      }
+    ],
+    "visible": true
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "analysis_mode": "cpu_bootstrap",
+  "camera": {
+    "contract_status": "REQUIRES_ANALYSIS",
+    "projection": "perspective",
+    "source_view_id": "source"
+  },
+  "classification": "PROVEN",
+  "coordinate_system": {
+    "handedness": "right",
+    "units": "meters",
+    "up_axis": "Z"
+  },
+  "depth_bands": [
+    {
+      "confidence": 0.2,
+      "far_m": 100.0,
+      "id": "unknown_001",
+      "near_m": 0.1
+    }
+  ],
+  "regions": [
+    {
+      "bbox_norm_xyxy": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ],
+      "confidence": 0.5,
+      "id": "visual_shell_001",
+      "layer_type": "visual_shell",
+      "representation": "visual_shell",
+      "uncertainty": "semantic_analysis_not_instantiated"
+    }
+  ],
+  "resource_budgets": {
+    "gpu_work_requested": false,
+    "max_triangles": 1500000,
+    "max_vram_mb": 6144
+  },
+  "scene_id": "panda_object",
+  "schema_version": "scene_analysis_v1",
+  "source": {
+    "dimensions_px": [
+      416,
+      525
+    ],
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\panda.jpg",
+    "sha256": "e4bfb2b11e4397e8d1db0f6d487d0074f4557ff668027876b5b8c183f7ac6f7e"
+  },
+  "uncertainties": [
+    {
+      "description": "CPU bootstrap has not inferred reliable semantic regions",
+      "fallback": "visual_shell_and_unresolved",
+      "id": "semantic_bootstrap",
+      "severity": "high"
+    }
+  ]
+}

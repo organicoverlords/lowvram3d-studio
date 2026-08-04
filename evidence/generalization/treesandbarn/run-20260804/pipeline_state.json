@@ -1,0 +1,44 @@
+{
+  "classification": "PARTIAL",
+  "gpu_work_requested": false,
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+  "input_kind": "scene",
+  "layer_receipts": {},
+  "next_action": "RUN_BOUNDED_UNREAL_LAYER_BUILDERS",
+  "output_map": "/Game/GeneratedScenes/treesandbarn/treesandbarn/Maps/L_treesandbarn_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "smoke",
+  "resume": true,
+  "scene_id": "treesandbarn",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "d4224aeb29c5d8299fdc0d1ac8547429e691bd4412a992c6837174f7ebd11401",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\treesandbarn\\run-20260804\\architecture_plan.json",
+      "reused": false
+    },
+    "completeness": {
+      "classification": "PROVEN",
+      "input_sha256": "f88788428ab095965f836762e0712475973623fe7c900a4705147b2613f5ba36",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\treesandbarn\\run-20260804\\scene_completeness_receipt.json",
+      "reused": false
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "d4224aeb29c5d8299fdc0d1ac8547429e691bd4412a992c6837174f7ebd11401",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\treesandbarn\\run-20260804\\terrain_plan.json",
+      "reused": false
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "d4224aeb29c5d8299fdc0d1ac8547429e691bd4412a992c6837174f7ebd11401",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\treesandbarn\\run-20260804\\vegetation_plan.json",
+      "reused": false
+    }
+  },
+  "started_at": "2026-08-04T01:42:58.717913+00:00",
+  "updated_at": "2026-08-04T01:52:48.258167+00:00"
+}

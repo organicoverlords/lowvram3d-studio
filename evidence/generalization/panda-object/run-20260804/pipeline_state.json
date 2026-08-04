@@ -1,0 +1,44 @@
+{
+  "classification": "PARTIAL",
+  "gpu_work_requested": false,
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\panda.jpg",
+  "image_sha256": "e4bfb2b11e4397e8d1db0f6d487d0074f4557ff668027876b5b8c183f7ac6f7e",
+  "input_kind": "object",
+  "layer_receipts": {},
+  "next_action": "RUN_BOUNDED_UNREAL_LAYER_BUILDERS",
+  "output_map": "/Game/GeneratedObjectImages/panda_object/panda_object/Maps/L_panda_object_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "smoke",
+  "resume": false,
+  "scene_id": "panda_object",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "536c94702a403796ac5c8bd69621b1be0aa51df6d10b7fd875f25711fce0a408",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\panda-object\\run-20260804\\architecture_plan.json",
+      "reused": false
+    },
+    "completeness": {
+      "classification": "PROVEN",
+      "input_sha256": "a0e515175095b23b247adaceb636314368b38d10d2d77099a081a4f866fc7bae",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\panda-object\\run-20260804\\scene_completeness_receipt.json",
+      "reused": false
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "536c94702a403796ac5c8bd69621b1be0aa51df6d10b7fd875f25711fce0a408",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\panda-object\\run-20260804\\terrain_plan.json",
+      "reused": false
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "536c94702a403796ac5c8bd69621b1be0aa51df6d10b7fd875f25711fce0a408",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\panda-object\\run-20260804\\vegetation_plan.json",
+      "reused": false
+    }
+  },
+  "started_at": "2026-08-04T01:52:38.935267+00:00",
+  "updated_at": "2026-08-04T01:52:38.935267+00:00"
+}

@@ -1,0 +1,44 @@
+{
+  "classification": "PARTIAL",
+  "gpu_work_requested": false,
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\baatti.jpg",
+  "image_sha256": "5a6d39c08efa9c4177fe77a19060c494c724a023acbccfec48444d8009706152",
+  "input_kind": "object",
+  "layer_receipts": {},
+  "next_action": "RUN_BOUNDED_UNREAL_LAYER_BUILDERS",
+  "output_map": "/Game/GeneratedObjectImages/baatti_object/baatti_object/Maps/L_baatti_object_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "smoke",
+  "resume": false,
+  "scene_id": "baatti_object",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "de5fc46886c404abfa1571cd611f2e017a28430b0e14a6f4d0260a55550ca269",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\baatti-object\\run-20260804\\architecture_plan.json",
+      "reused": false
+    },
+    "completeness": {
+      "classification": "PROVEN",
+      "input_sha256": "366413fca5a396ef8f7339ea1b1745235b233c26e1ae7d6e9af01fe8baf6355f",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\baatti-object\\run-20260804\\scene_completeness_receipt.json",
+      "reused": false
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "de5fc46886c404abfa1571cd611f2e017a28430b0e14a6f4d0260a55550ca269",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\baatti-object\\run-20260804\\terrain_plan.json",
+      "reused": false
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "de5fc46886c404abfa1571cd611f2e017a28430b0e14a6f4d0260a55550ca269",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\baatti-object\\run-20260804\\vegetation_plan.json",
+      "reused": false
+    }
+  },
+  "started_at": "2026-08-04T01:52:38.655401+00:00",
+  "updated_at": "2026-08-04T01:52:38.655401+00:00"
+}

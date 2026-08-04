@@ -1,0 +1,58 @@
+{
+  "classification": "PROVEN",
+  "height_fog": true,
+  "records": [
+    {
+      "actor": {
+        "class": "SkyAtmosphere",
+        "label": "SP_Environment_SkyAtmosphere",
+        "location_cm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "name": "SkyAtmosphere_0",
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "tags": [
+          "environment",
+          "scene_spec_generated",
+          "sky",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "label": "SP_Environment_SkyAtmosphere"
+    },
+    {
+      "actor": {
+        "class": "ExponentialHeightFog",
+        "label": "SP_Environment_HeightFog",
+        "location_cm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "name": "ExponentialHeightFog_0",
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "tags": [
+          "environment",
+          "scene_spec_generated",
+          "sky",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "label": "SP_Environment_HeightFog"
+    }
+  ],
+  "schema_version": "environment_build_receipt_v1",
+  "sky_atmosphere": true
+}

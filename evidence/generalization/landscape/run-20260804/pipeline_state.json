@@ -1,0 +1,44 @@
+{
+  "classification": "PARTIAL",
+  "gpu_work_requested": false,
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\landscape.png",
+  "image_sha256": "19863d0be2dd9c14a2bc8338dadb3e2521a15fa28a45416963621ab0e2f805ec",
+  "input_kind": "scene",
+  "layer_receipts": {},
+  "next_action": "RUN_BOUNDED_UNREAL_LAYER_BUILDERS",
+  "output_map": "/Game/GeneratedScenes/landscape/landscape/Maps/L_landscape_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "smoke",
+  "resume": true,
+  "scene_id": "landscape",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "e01139b9b61a2126ce10b5764931a803ad0a150a1ba513fc34d42f71d6d77f26",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\landscape\\run-20260804\\architecture_plan.json",
+      "reused": false
+    },
+    "completeness": {
+      "classification": "PROVEN",
+      "input_sha256": "c494f5ec1d45fe860a53e509196074eb46c14c21364f4897ebc05c8fc8f2655f",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\landscape\\run-20260804\\scene_completeness_receipt.json",
+      "reused": false
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "e01139b9b61a2126ce10b5764931a803ad0a150a1ba513fc34d42f71d6d77f26",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\landscape\\run-20260804\\terrain_plan.json",
+      "reused": false
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "input_sha256": "e01139b9b61a2126ce10b5764931a803ad0a150a1ba513fc34d42f71d6d77f26",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\generalization\\landscape\\run-20260804\\vegetation_plan.json",
+      "reused": false
+    }
+  },
+  "started_at": "2026-08-04T01:42:58.986922+00:00",
+  "updated_at": "2026-08-04T01:52:48.622326+00:00"
+}

@@ -1,0 +1,133 @@
+{
+  "classification": "PROVEN",
+  "collision": true,
+  "independent_geometry": true,
+  "records": [
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Terrain_Playable_Castle_Island",
+        "location_cm": [
+          1000.0,
+          2800.0,
+          250.0
+        ],
+        "name": "StaticMeshActor_4",
+        "scale": [
+          24.0,
+          20.0,
+          5.0
+        ],
+        "tags": [
+          "castle_core",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "playable_castle_island"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Terrain_Foreground_Cliff_Mass",
+        "location_cm": [
+          -2200.0,
+          3100.0,
+          800.0
+        ],
+        "name": "StaticMeshActor_5",
+        "scale": [
+          18.0,
+          14.0,
+          16.0
+        ],
+        "tags": [
+          "foreground_cliff",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "foreground_cliff_mass"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Terrain_Secondary_Island_West",
+        "location_cm": [
+          -3400.0,
+          4900.0,
+          300.0
+        ],
+        "name": "StaticMeshActor_6",
+        "scale": [
+          12.0,
+          10.0,
+          6.0
+        ],
+        "tags": [
+          "foreground_cliff",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "secondary_island_west"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Terrain_Secondary_Island_East",
+        "location_cm": [
+          3400.0,
+          5800.0,
+          300.0
+        ],
+        "name": "StaticMeshActor_7",
+        "scale": [
+          14.0,
+          11.0,
+          6.0
+        ],
+        "tags": [
+          "foreground_cliff",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "secondary_island_east"
+    },
+    {
+      "actor": {
+        "class": "StaticMeshActor",
+        "label": "SP_Terrain_Playable_Boundary_North",
+        "location_cm": [
+          1000.0,
+          7200.0,
+          300.0
+        ],
+        "name": "StaticMeshActor_8",
+        "scale": [
+          70.0,
+          2.0,
+          6.0
+        ],
+        "tags": [
+          "castle_core",
+          "scene_spec_generated",
+          "terrain",
+          "unpromoted"
+        ]
+      },
+      "created": false,
+      "id": "playable_boundary_north"
+    }
+  ],
+  "schema_version": "terrain_build_receipt_v1"
+}

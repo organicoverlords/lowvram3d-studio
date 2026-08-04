@@ -1,0 +1,73 @@
+{
+  "bridge_traversal": {
+    "classification": "PROVEN",
+    "end_cm": [
+      750.0,
+      5000.0,
+      150.0
+    ],
+    "length_cm": 1500.0,
+    "partial": false,
+    "points": [
+      [
+        -750.0,
+        5000.0,
+        140.0
+      ],
+      [
+        750.0,
+        5000.0,
+        140.0
+      ]
+    ],
+    "start_cm": [
+      -750.0,
+      5000.0,
+      150.0
+    ],
+    "valid": true
+  },
+  "classification": "PROVEN",
+  "gpu_work_requested": false,
+  "layer_counts": {
+    "architecture": 6,
+    "bridge": 16,
+    "terrain": 5,
+    "vegetation": 16,
+    "water": 2
+  },
+  "map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "river_crossing_outside_bridge": {
+    "classification": "PROVEN_REJECTED",
+    "crossing_rejected": true,
+    "end_cm": [
+      750.0,
+      5200.0,
+      150.0
+    ],
+    "path_partial": false,
+    "path_valid": false,
+    "start_cm": [
+      -750.0,
+      4800.0,
+      150.0
+    ]
+  },
+  "schema_version": "image_to_scene_gameplay_validation_receipt_v1",
+  "source_map_untouched": true,
+  "water_exclusion": {
+    "classification": "PROVEN",
+    "records": [
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Water_River_Main_00",
+        "navigation": false
+      },
+      {
+        "collision": "<CollisionEnabled.NO_COLLISION: 0>",
+        "label": "SP_Water_River_Main_01",
+        "navigation": false
+      }
+    ]
+  }
+}
