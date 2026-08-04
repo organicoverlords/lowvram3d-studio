@@ -5,6 +5,24 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+function Get-CleanBase64Bytes {
+    param(
+        [Parameter(Mandatory=$true)][string]$Directory,
+        [Parameter(Mandatory=$true)][int]$ExpectedChunkCount
+    )
+    $Chunks = @(Get-ChildItem -LiteralPath $Directory -Filter 'chunk-*.b64' -File | Sort-Object Name)
+    if ($Chunks.Count -ne $ExpectedChunkCount) {
+        throw "Unexpected chunk count at ${Directory}: expected=$ExpectedChunkCount actual=$($Chunks.Count)"
+    }
+    $Builder = New-Object Text.StringBuilder
+    foreach ($Chunk in $Chunks) {
+        $Text = Get-Content -LiteralPath $Chunk.FullName -Raw
+        [void]$Builder.Append(($Text -replace '\s', ''))
+    }
+    if ($Builder.Length -lt 1) { throw "Empty encoded bundle: $Directory" }
+    return [Convert]::FromBase64String($Builder.ToString())
+}
+
 $RepoRoot = (git rev-parse --show-toplevel).Trim()
 if (-not $RepoRoot) { throw 'Not inside a Git repository' }
 Set-Location -LiteralPath $RepoRoot
@@ -12,83 +30,102 @@ Set-Location -LiteralPath $RepoRoot
 $Remote = (git config --get remote.origin.url).Trim()
 $Branch = (git branch --show-current).Trim()
 $Head = (git rev-parse HEAD).Trim()
+$Status = @(git status --short)
 if ($Remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $Remote" }
 if ($Branch -ne $ExpectedBranch) { throw "Branch mismatch: $Branch" }
+if ($Status.Count -ne 0) { throw 'Repository is dirty before jungle build' }
 
-$BundleRoot = Join-Path $RepoRoot 'worker-bundles\procedural-jungle-direct-worker'
-$Chunks = @(Get-ChildItem -LiteralPath $BundleRoot -Filter 'chunk-*.b64' -File | Sort-Object Name)
-if ($Chunks.Count -ne 9) { throw "Unexpected worker bundle chunk count: $($Chunks.Count)" }
+$BaseBundleRoot = Join-Path $RepoRoot 'worker-bundles\procedural-jungle-direct-worker'
+$OverhaulBundleRoot = Join-Path $RepoRoot 'worker-bundles\procedural-jungle-visual-overhaul'
+$BaseBytes = Get-CleanBase64Bytes -Directory $BaseBundleRoot -ExpectedChunkCount 9
+$OverhaulBytes = Get-CleanBase64Bytes -Directory $OverhaulBundleRoot -ExpectedChunkCount 4
 
-$EncodedBuilder = New-Object Text.StringBuilder
-foreach ($Chunk in $Chunks) {
-    $ChunkText = Get-Content -LiteralPath $Chunk.FullName -Raw
-    [void]$EncodedBuilder.Append(($ChunkText -replace '\s', ''))
-}
-$BundleBytes = [Convert]::FromBase64String($EncodedBuilder.ToString())
-
-$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-source-export-$Head"
+$ExpectedOverhaulSha = 'e719e59ee412f6e17a0b6507d7a15aef175dee544de9ff7b7f6510d23b0c8ea0'
+$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-visual-overhaul-$Head"
 if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
-$ZipPath = Join-Path $TempRoot 'worker.zip'
-$ExtractRoot = Join-Path $TempRoot 'extracted'
-[IO.File]::WriteAllBytes($ZipPath, $BundleBytes)
-Expand-Archive -LiteralPath $ZipPath -DestinationPath $ExtractRoot -Force
+$BaseZip = Join-Path $TempRoot 'base-worker.zip'
+$OverhaulArchive = Join-Path $TempRoot 'visual-overhaul.tar.xz'
+$ExtractRoot = Join-Path $TempRoot 'worker'
+[IO.File]::WriteAllBytes($BaseZip, $BaseBytes)
+[IO.File]::WriteAllBytes($OverhaulArchive, $OverhaulBytes)
 
-$LogRoot = 'C:\AI\ProceduralJungle\20260804\logs'
-New-Item -ItemType Directory -Path $LogRoot -Force | Out-Null
-Get-ChildItem -LiteralPath $LogRoot -Filter 'source_snapshot_*.log' -File -ErrorAction SilentlyContinue | Remove-Item -Force
-
-$Selected = @(
-    'blender\procedural_jungle\generate_jungle_assets.py',
-    'project_template\Source\ProceduralJungle58\JunglePopulationActor.cpp',
-    'project_template\Source\ProceduralJungle58\JunglePopulationActor.h',
-    'project_template\Source\ProceduralJungle58\JungleProofDirector.cpp',
-    'project_template\Source\ProceduralJungle58\JungleProofDirector.h',
-    'project_template\Source\ProceduralJungle58\PandaWalkerCharacter.cpp',
-    'project_template\Source\ProceduralJungle58\PandaWalkerCharacter.h',
-    'scripts\procedural_jungle\build-procedural-jungle.ps1',
-    'scripts\procedural_jungle\make_contact_sheet.py',
-    'scripts\procedural_jungle\validate_generated.py',
-    'unreal\procedural_jungle\build_unreal_scene.py',
-    'unreal\procedural_jungle\audit_unreal_scene.py'
-)
-
-$Manifest = New-Object System.Collections.Generic.List[object]
-foreach ($RelativePath in $Selected) {
-    $SourcePath = Join-Path $ExtractRoot $RelativePath
-    if (-not (Test-Path -LiteralPath $SourcePath -PathType Leaf)) { throw "Selected bundle source missing: $RelativePath" }
-    $SafeName = ($RelativePath -replace '[\\/:*?"<>|]', '__')
-    $Destination = Join-Path $LogRoot ("source_snapshot_{0}.log" -f $SafeName)
-    [IO.File]::WriteAllBytes($Destination, [IO.File]::ReadAllBytes($SourcePath))
-    $Hash = (Get-FileHash -LiteralPath $SourcePath -Algorithm SHA256).Hash.ToLowerInvariant()
-    $Manifest.Add([ordered]@{
-        relative_path = $RelativePath
-        snapshot_path = $Destination
-        bytes = (Get-Item -LiteralPath $SourcePath).Length
-        sha256 = $Hash
-    })
-    Write-Host "SOURCE_SNAPSHOT=$RelativePath|BYTES=$((Get-Item -LiteralPath $SourcePath).Length)|SHA256=$Hash"
+$ActualOverhaulSha = (Get-FileHash -LiteralPath $OverhaulArchive -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($ActualOverhaulSha -ne $ExpectedOverhaulSha) {
+    throw "Visual-overhaul archive hash mismatch: expected=$ExpectedOverhaulSha actual=$ActualOverhaulSha"
 }
 
-$ManifestPath = Join-Path $LogRoot 'source_snapshot_manifest.log'
-$ManifestText = [ordered]@{
-    classification = 'PROVEN'
-    branch = $Branch
-    head = $Head
-    bundle_chunk_count = $Chunks.Count
-    bundle_zip_bytes = $BundleBytes.Length
-    files = $Manifest
-    blender_invoked = $false
-    unreal_invoked = $false
-    codex_invoked = $false
-    claude_invoked = $false
-    magicmusic_invoked = $false
-} | ConvertTo-Json -Depth 10
-[IO.File]::WriteAllText($ManifestPath, $ManifestText, (New-Object Text.UTF8Encoding($false)))
+Expand-Archive -LiteralPath $BaseZip -DestinationPath $ExtractRoot -Force
+$Tar = Get-Command tar.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -First 1
+if (-not $Tar) { throw 'Windows tar.exe is required to extract the audited visual-overhaul archive' }
+& $Tar -xJf $OverhaulArchive -C $ExtractRoot
+if ($LASTEXITCODE -ne 0) { throw "Visual-overhaul extraction failed with exit code $LASTEXITCODE" }
 
-Write-Host "JUNGLE_FULL_SOURCE_EXPORT=PROVEN"
-Write-Host "SOURCE_SNAPSHOT_COUNT=$($Manifest.Count)"
-Write-Host 'DIAGNOSTIC_ONLY=TRUE'
-Write-Host 'BLENDER_INVOKED=FALSE'
-Write-Host 'UNREAL_INVOKED=FALSE'
-throw 'DIAGNOSTIC_COMPLETE_NO_BUILD'
+$ManifestPath = Join-Path $ExtractRoot 'MANIFEST.sha256'
+if (-not (Test-Path -LiteralPath $ManifestPath -PathType Leaf)) { throw 'Visual-overhaul manifest is missing' }
+$VerifiedFiles = 0
+foreach ($Line in @(Get-Content -LiteralPath $ManifestPath)) {
+    if ($Line -notmatch '^([0-9a-f]{64})\s+\./(.+)$') { throw "Malformed overhaul manifest line: $Line" }
+    $ExpectedHash = $Matches[1]
+    $RelativePath = $Matches[2]
+    if ($RelativePath -eq 'MANIFEST.sha256') { continue }
+    $TargetPath = Join-Path $ExtractRoot ($RelativePath -replace '/', '\')
+    if (-not (Test-Path -LiteralPath $TargetPath -PathType Leaf)) { throw "Overhaul file missing: $RelativePath" }
+    $ActualHash = (Get-FileHash -LiteralPath $TargetPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($ActualHash -ne $ExpectedHash) {
+        throw "Overhaul file hash mismatch: path=$RelativePath expected=$ExpectedHash actual=$ActualHash"
+    }
+    $VerifiedFiles++
+}
+if ($VerifiedFiles -ne 10) { throw "Unexpected verified-overhaul file count: $VerifiedFiles" }
+
+$GeneratorPath = Join-Path $ExtractRoot 'blender\procedural_jungle\generate_jungle_assets.py'
+$BuildPath = Join-Path $ExtractRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
+$ProofCppPath = Join-Path $ExtractRoot 'project_template\Source\ProceduralJungle58\JungleProofDirector.cpp'
+$PandaCppPath = Join-Path $ExtractRoot 'project_template\Source\ProceduralJungle58\PandaWalkerCharacter.cpp'
+$VisualAuditPath = Join-Path $ExtractRoot 'scripts\procedural_jungle\audit_visual_captures.py'
+
+$GeneratorText = Get-Content -LiteralPath $GeneratorPath -Raw
+$BuildText = Get-Content -LiteralPath $BuildPath -Raw
+$ProofText = Get-Content -LiteralPath $ProofCppPath -Raw
+$PandaText = Get-Content -LiteralPath $PandaCppPath -Raw
+$VisualAuditText = Get-Content -LiteralPath $VisualAuditPath -Raw
+if ($GeneratorText -notmatch 'procedural_jungle_manifest_v2') { throw 'Dense-jungle generator marker missing' }
+if ($GeneratorText -notmatch 'DENSE_JUNGLE_VISUAL_ASSETS_GENERATED') { throw 'Dense-jungle classification marker missing' }
+if ($BuildText -match 'RenderOffScreen') { throw 'Rejected off-screen rendering flag remains in build script' }
+if ($BuildText -match 'utf8NoBOM') { throw 'Unsupported Windows PowerShell encoding remains in build script' }
+if ($ProofText -notmatch 'PrepareNextCapture' -or $ProofText -notmatch 'panda_framed_capture_count') { throw 'Dynamic panda capture implementation missing' }
+if ($PandaText -notmatch 'bRunPhysicsWithNoController') { throw 'Controller-free panda movement fix missing' }
+if ($VisualAuditText -notmatch 'DENSE_JUNGLE_VISUAL_QUALITY_PROVEN') { throw 'Dense-jungle visual audit marker missing' }
+
+Write-Host 'JUNGLE_BASE_BUNDLE_DECODE=PROVEN'
+Write-Host "JUNGLE_VISUAL_OVERHAUL_ARCHIVE_SHA256=$ActualOverhaulSha"
+Write-Host "JUNGLE_VISUAL_OVERHAUL_FILE_COUNT=$VerifiedFiles"
+Write-Host 'JUNGLE_VISUAL_OVERHAUL_OVERLAY=PROVEN'
+Write-Host "JUNGLE_WORKER_HEAD=$Head"
+Write-Host 'CODEX_INVOKED=FALSE'
+Write-Host 'CLAUDE_INVOKED=FALSE'
+Write-Host 'MAGICMUSIC_INVOKED=FALSE'
+
+& powershell -NoProfile -ExecutionPolicy Bypass -File $BuildPath -SourceRoot $ExtractRoot
+if ($LASTEXITCODE -ne 0) { throw "Dense-jungle pipeline failed with exit code $LASTEXITCODE" }
+
+$AcceptancePath = 'C:\AI\ProceduralJungle\20260804\acceptance.json'
+if (-not (Test-Path -LiteralPath $AcceptancePath -PathType Leaf)) { throw "Acceptance output missing: $AcceptancePath" }
+$Acceptance = Get-Content -LiteralPath $AcceptancePath -Raw | ConvertFrom-Json
+if ($Acceptance.classification -ne 'JUNGLE_PANDA_PLAYABLE_PROVEN') { throw "Playable acceptance rejected: $($Acceptance.classification)" }
+if ($Acceptance.visual_quality -ne 'PROVEN') { throw "Visual quality rejected: $($Acceptance.visual_quality)" }
+if ($Acceptance.visual_quality_classification -ne 'DENSE_JUNGLE_VISUAL_QUALITY_PROVEN') {
+    throw "Visual-quality classification rejected: $($Acceptance.visual_quality_classification)"
+}
+if ([int]$Acceptance.generated_variant_count -lt 40) { throw 'Dense-jungle variant count below 40' }
+if ([int]$Acceptance.generated_instance_count -lt 3300) { throw 'Dense-jungle instance count below 3300' }
+if ([int]$Acceptance.canopy_instance_count -lt 380) { throw 'Canopy instance count below 380' }
+if ([int]$Acceptance.understory_instance_count -lt 2500) { throw 'Understory instance count below 2500' }
+if ([int]$Acceptance.panda_framed_capture_count -lt 4) { throw 'Too few panda-framed captures' }
+if ([int]$Acceptance.vegetation_rich_frame_count -lt 6) { throw 'Too few vegetation-rich captures' }
+if ([double]$Acceptance.average_saturation -lt 0.19) { throw 'Capture saturation remains too low' }
+if ([double]$Acceptance.average_near_white_fraction -gt 0.16) { throw 'Capture set remains overexposed' }
+
+Write-Host 'DENSE_JUNGLE_VISUAL_OVERHAUL=PROVEN'
+Write-Host ($Acceptance | ConvertTo-Json -Depth 30)
