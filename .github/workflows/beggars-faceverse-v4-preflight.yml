@@ -15,6 +15,7 @@ on:
       - scripts/apply-beggars-faceverse-v4-venv-compat.ps1
       - scripts/apply-beggars-faceverse-v4-probe-compat.ps1
       - scripts/apply-beggars-faceverse-v4-release-fallback.ps1
+      - scripts/apply-beggars-faceverse-v4-cuda-init-compat.ps1
       - scripts/apply-beggars-faceverse-v4-isolated-proof.ps1
       - .github/workflows/beggars-faceverse-v4-preflight.yml
 
@@ -89,6 +90,14 @@ jobs:
           & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceverse-v4-release-fallback.ps1
           if ($LASTEXITCODE -ne 0) {
             throw "FaceVerse release fallback patch failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Apply bounded CUDA initialization compatibility
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceverse-v4-cuda-init-compat.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "FaceVerse CUDA initialization compatibility failed with exit code $LASTEXITCODE"
           }
 
       - name: Compile directly instrumented FaceVerse proof
