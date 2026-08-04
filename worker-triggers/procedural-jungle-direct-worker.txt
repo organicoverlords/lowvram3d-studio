@@ -1,8 +1,8 @@
-run=20
-requested=2026-08-04T04:31:00+03:00
+run=21
+requested=2026-08-04T04:36:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=6e137b30f37604c8a7e216dbfa072a94f5bf49e1
-repair_scope=controller-free-panda-delayed-camera-visible-daylight-and-visual-audit
+repair_commit=84c2259677c3211c5dbe55da814677c40d635d10
+repair_scope=base64-safe-runtime-movement-camera-daylight-and-visual-audit
 codex=false
 claude=false
 magicmusic=false
