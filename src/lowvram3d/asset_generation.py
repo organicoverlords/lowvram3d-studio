@@ -45,6 +45,14 @@ from typing import Any
 
 REPO = Path(__file__).resolve().parents[2]
 WORKER = REPO / "workers" / "mini_turbo_generate.py"
+DECIMATOR = REPO / "workers" / "decimate_mesh.py"
+
+# Mini Turbo samples a 384^3 volume whatever the subject, so a single building
+# comes back at ~1.7 M triangles. That is grid resolution, not detail, and it
+# costs more than it looks: importing one such mesh into Unreal takes over ten
+# minutes and outlives the editor bridge's handler timeout, so a slow import is
+# indistinguishable from a failed one. Reduce before the mesh leaves this stage.
+DEFAULT_TRIANGLE_BUDGET = 150_000
 
 # Mini Turbo is installed standalone: its own Python, hy3dgen as a source tree
 # on PYTHONPATH, and weights under a model root that is not either of those.
@@ -224,6 +232,60 @@ def _crop(image_path: Path, bbox: list[float], destination: Path,
     return result
 
 
+def _is_retryable_cuda_fault(error: Any) -> bool:
+    """Is this a CUDA fault worth retrying lower down the ladder?
+
+    Observed on this GPU: a generation dies with `CUDA error: misaligned
+    address` inside a Linear during the second diffusion step. The worker's own
+    ladder cannot help, because it only steps down on OutOfMemoryError and
+    because the CUDA context is unusable afterwards -- so the retry has to be a
+    fresh process, which is what this layer already spawns per asset.
+
+    Deliberately narrow: a mesh that fails for a *content* reason should fail
+    once and be reported, not retried three times at fifteen minutes each.
+    """
+    text = str(error or "").lower()
+    if not text:
+        return False
+    retryable = ("misaligned address", "illegal memory access",
+                 "unspecified launch failure", "cublas_status")
+    return any(marker in text for marker in retryable)
+
+
+def _ladder_retries(octree_ladder: str) -> list[str]:
+    """The ladder, then the same ladder with its top rungs removed.
+
+    Each retry is a fresh process at a coarser resolution: whatever alignment
+    the kernel tripped over is shape-dependent, so a smaller grid is the cheap
+    thing to try before giving up on the asset.
+    """
+    rungs = [rung.strip() for rung in octree_ladder.split(",") if rung.strip()]
+    return [",".join(rungs[index:]) for index in range(len(rungs))]
+
+
+def _decimate(glb: Path, budget: int) -> tuple[Path, dict[str, Any]]:
+    """Reduce a generation to the triangle budget, keeping the original.
+
+    A decimation failure is not fatal: the full-resolution mesh is still a
+    correct mesh, just an expensive one, so fall back to it and say so.
+    """
+    reduced = glb.with_name(glb.stem + "_lod.glb")
+    receipt_path = glb.with_name(glb.stem + "_decimation.json")
+    completed = subprocess.run(
+        [sys.executable, str(DECIMATOR), "--input", str(glb),
+         "--output", str(reduced), "--target-triangles", str(budget),
+         "--receipt", str(receipt_path)],
+        capture_output=True, text=True)
+    receipt: dict[str, Any] = {}
+    if receipt_path.is_file():
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if completed.returncode == 0 and reduced.is_file() and reduced.stat().st_size > 4096:
+        return reduced, receipt
+    return glb, {**receipt, "classification": receipt.get("classification", "FAILED"),
+                 "used": "full_resolution_mesh",
+                 "stderr_tail": (completed.stderr or "")[-400:]}
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -238,6 +300,7 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
              steps: int = 5,
              octree_ladder: str = "384:3000,320:2000,256:1500",
              mask_dir: Path | None = None,
+             triangle_budget: int = DEFAULT_TRIANGLE_BUDGET,
              timeout: float = 1800.0) -> dict[str, Any]:
     """Crop, generate and verify one mesh per eligible region."""
     output_dir = Path(output_dir)
@@ -258,6 +321,7 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
         "runtime_checks": runtime["checks"],
         "source_image": str(Path(image).resolve()),
         "planned_asset_count": len(jobs),
+        "triangle_budget": triangle_budget,
         "steps": steps,
         "octree_ladder": octree_ladder,
         "assets": [],
@@ -292,46 +356,71 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
 
         glb = asset_dir / f"{job['asset_id']}.glb"
         result_json = asset_dir / "mini_turbo_result.json"
-        command = [
-            runtime["interpreter"], str(WORKER),
-            "--image", str(asset_dir / "crop.png"),
-            "--output", str(glb),
-            # The worker mattes with rembg unless handed a pre-matted RGBA
-            # image, and it rejects one with no transparency, so only pass the
-            # crop through when the segmentation mask actually applied.
-            *(("--conditioning-image", str(asset_dir / "crop.png"))
-              if crop["matte"] == "segmentation_mask" else ()),
-            "--result-json", str(result_json),
-            "--model-root", runtime["model_root"],
-            "--subfolder", runtime["subfolder"],
-            "--steps", str(steps),
-            "--octree-ladder", octree_ladder,
-        ]
-        try:
-            completed = subprocess.run(
-                command, env=environment, capture_output=True, text=True,
-                timeout=timeout)
+        worker_result: dict[str, Any] = {}
+        attempts: list[dict[str, Any]] = []
+        timed_out = False
+        for ladder in _ladder_retries(octree_ladder):
+            command = [
+                runtime["interpreter"], str(WORKER),
+                "--image", str(asset_dir / "crop.png"),
+                "--output", str(glb),
+                # The worker mattes with rembg unless handed a pre-matted RGBA
+                # image, and it rejects one with no transparency, so only pass
+                # the crop through when the segmentation mask actually applied.
+                *(("--conditioning-image", str(asset_dir / "crop.png"))
+                  if crop["matte"] == "segmentation_mask" else ()),
+                "--result-json", str(result_json),
+                "--model-root", runtime["model_root"],
+                "--subfolder", runtime["subfolder"],
+                "--steps", str(steps),
+                "--octree-ladder", ladder,
+            ]
+            try:
+                completed = subprocess.run(
+                    command, env=environment, capture_output=True, text=True,
+                    timeout=timeout)
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                attempts.append({"octree_ladder": ladder, "outcome": "timeout"})
+                break
+
+            worker_result = {}
+            if result_json.is_file():
+                worker_result = json.loads(result_json.read_text(encoding="utf-8"))
+            attempts.append({
+                "octree_ladder": ladder,
+                "exit_code": completed.returncode,
+                "outcome": "ok" if worker_result.get("success") else "failed",
+                "error": str(worker_result.get("error") or "")[:200] or None,
+            })
             entry["exit_code"] = completed.returncode
             entry["stderr_tail"] = (completed.stderr or "")[-600:]
-        except subprocess.TimeoutExpired:
+            if worker_result.get("success"):
+                break
+            if not _is_retryable_cuda_fault(worker_result.get("error")):
+                break
+
+        entry["generation_attempts"] = attempts
+        if timed_out:
             entry["status"] = "failed"
             entry["reason"] = f"generation exceeded {timeout:.0f}s"
             receipt["assets"].append(entry)
             continue
-
-        worker_result = {}
-        if result_json.is_file():
-            worker_result = json.loads(result_json.read_text(encoding="utf-8"))
         # Trust the artefact, not the exit code: this project has repeatedly
         # found green receipts over missing or empty outputs.
         if glb.is_file() and glb.stat().st_size > 4096 and worker_result.get("success"):
+            usable, decimation = _decimate(glb, triangle_budget)
             entry.update({
                 "status": "generated",
-                "glb": str(glb),
-                "glb_bytes": glb.stat().st_size,
-                "glb_sha256": _sha256(glb),
+                "glb": str(usable),
+                "raw_glb": str(glb),
+                "decimation": decimation,
+                "glb_bytes": usable.stat().st_size,
+                "glb_sha256": _sha256(usable),
                 "vertices": worker_result.get("raw_vertices"),
-                "triangles": worker_result.get("raw_triangles"),
+                "triangles": decimation.get("output_triangles",
+                                            worker_result.get("raw_triangles")),
+                "raw_triangles": worker_result.get("raw_triangles"),
                 "octree_resolution": worker_result.get("octree_resolution"),
                 "peak_vram_mb": max(
                     (a.get("peak_vram_mb") or 0)
@@ -371,6 +460,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--octree-ladder", default="384:3000,320:2000,256:1500")
     parser.add_argument("--mask-dir", default=None,
                         help="per-region masks from the segmentation stage")
+    parser.add_argument("--triangle-budget", type=int,
+                        default=DEFAULT_TRIANGLE_BUDGET)
     parser.add_argument("--plan-only", action="store_true")
     args = parser.parse_args(argv)
 
@@ -383,7 +474,8 @@ def main(argv: list[str] | None = None) -> int:
         result = generate(placement, Path(args.image), Path(args.output_dir),
                           max_assets=args.max_assets, steps=args.steps,
                           octree_ladder=args.octree_ladder,
-                          mask_dir=Path(args.mask_dir) if args.mask_dir else None)
+                          mask_dir=Path(args.mask_dir) if args.mask_dir else None,
+                          triangle_budget=args.triangle_budget)
 
     receipt = Path(args.receipt)
     receipt.parent.mkdir(parents=True, exist_ok=True)

@@ -24,29 +24,30 @@
       ],
       "confidence": 0.809,
       "depth_m": {
-        "far": 23.12,
-        "median": 14.399,
-        "near": 11.733
+        "far": 23.115,
+        "median": 14.396,
+        "near": 11.73
       },
       "id": "vegetation_tree_004",
       "layer_type": "vegetation",
+      "mask_png": "evidence\\barn-auto\\depth\\region_masks\\vegetation_tree_004.png",
       "observed_fraction": 0.9618,
       "pixel_fraction": 0.3088,
       "representation": "scatter_instances",
       "semantic_label": "tree",
       "surface": {
         "mean_normal": [
-          -0.0136,
-          0.2765,
+          -0.0135,
+          0.2766,
           -0.9609
         ],
         "orientation": "vertical",
         "walkable_candidate": false
       },
       "world_extent_m": [
-        356.814,
-        68.738,
-        412.529
+        356.224,
+        68.625,
+        411.62
       ]
     },
     {
@@ -58,12 +59,13 @@
       ],
       "confidence": 0.795,
       "depth_m": {
-        "far": 455.788,
-        "median": 12.467,
-        "near": 11.448
+        "far": 455.573,
+        "median": 12.464,
+        "near": 11.444
       },
       "id": "sky_sky_002",
       "layer_type": "sky",
+      "mask_png": "evidence\\barn-auto\\depth\\region_masks\\sky_sky_002.png",
       "observed_fraction": 0.0081,
       "pixel_fraction": 0.2949,
       "representation": "backdrop",
@@ -71,16 +73,16 @@
       "surface": {
         "mean_normal": [
           -0.4738,
-          0.1908,
+          0.1909,
           -0.8597
         ],
         "orientation": "vertical",
         "walkable_candidate": false
       },
       "world_extent_m": [
-        502.274,
-        76.753,
-        536.63
+        501.558,
+        76.69,
+        536.632
       ]
     },
     {
@@ -92,29 +94,30 @@
       ],
       "confidence": 0.787,
       "depth_m": {
-        "far": 10.332,
-        "median": 2.324,
-        "near": 1.567
+        "far": 10.326,
+        "median": 2.323,
+        "near": 1.566
       },
       "id": "terrain_grass_009",
       "layer_type": "terrain",
+      "mask_png": "evidence\\barn-auto\\depth\\region_masks\\terrain_grass_009.png",
       "observed_fraction": 1.0,
       "pixel_fraction": 0.28672,
       "representation": "heightfield",
       "semantic_label": "grass",
       "surface": {
         "mean_normal": [
-          -0.0698,
-          -0.7607,
-          -0.6453
+          -0.0699,
+          -0.7608,
+          -0.6452
         ],
         "orientation": "horizontal",
         "walkable_candidate": true
       },
       "world_extent_m": [
-        58.509,
-        8.507,
-        27.46
+        58.507,
+        8.511,
+        27.444
       ]
     },
     {
@@ -126,12 +129,13 @@
       ],
       "confidence": 0.582,
       "depth_m": {
-        "far": 16.734,
-        "median": 13.531,
-        "near": 10.789
+        "far": 16.732,
+        "median": 13.528,
+        "near": 10.786
       },
       "id": "architecture_house_025",
       "layer_type": "architecture",
+      "mask_png": "evidence\\barn-auto\\depth\\region_masks\\architecture_house_025.png",
       "observed_fraction": 1.0,
       "pixel_fraction": 0.08192,
       "representation": "structure_mesh",
@@ -140,15 +144,15 @@
         "mean_normal": [
           -0.1481,
           -0.5444,
-          -0.8257
+          -0.8256
         ],
         "orientation": "vertical",
         "walkable_candidate": false
       },
       "world_extent_m": [
-        16.698,
-        4.901,
-        25.262
+        16.692,
+        4.902,
+        25.251
       ]
     },
     {
@@ -160,19 +164,20 @@
       ],
       "confidence": 0.518,
       "depth_m": {
-        "far": 17.366,
-        "median": 15.864,
-        "near": 14.233
+        "far": 17.364,
+        "median": 15.861,
+        "near": 14.228
       },
       "id": "architecture_hovel_079",
       "layer_type": "architecture",
+      "mask_png": "evidence\\barn-auto\\depth\\region_masks\\architecture_hovel_079.png",
       "observed_fraction": 1.0,
       "pixel_fraction": 0.01768,
       "representation": "structure_mesh",
       "semantic_label": "hovel",
       "surface": {
         "mean_normal": [
-          0.3421,
+          0.3423,
           -0.2337,
           -0.9101
         ],
@@ -180,9 +185,9 @@
         "walkable_candidate": false
       },
       "world_extent_m": [
-        6.62,
-        6.206,
-        9.703
+        6.622,
+        6.208,
+        9.708
       ]
     },
     {
@@ -194,29 +199,30 @@
       ],
       "confidence": 0.509,
       "depth_m": {
-        "far": 214.655,
-        "median": 69.552,
-        "near": 15.526
+        "far": 214.353,
+        "median": 69.613,
+        "near": 15.525
       },
       "id": "terrain_field_029",
       "layer_type": "terrain",
-      "observed_fraction": 0.9949,
+      "mask_png": "evidence\\barn-auto\\depth\\region_masks\\terrain_field_029.png",
+      "observed_fraction": 0.995,
       "pixel_fraction": 0.00874,
       "representation": "heightfield",
       "semantic_label": "field",
       "surface": {
         "mean_normal": [
-          -0.2057,
-          -0.977,
+          -0.2058,
+          -0.9769,
           -0.0569
         ],
         "orientation": "horizontal",
         "walkable_candidate": true
       },
       "world_extent_m": [
-        404.072,
-        65.436,
-        489.852
+        404.198,
+        65.39,
+        489.85
       ]
     }
   ],

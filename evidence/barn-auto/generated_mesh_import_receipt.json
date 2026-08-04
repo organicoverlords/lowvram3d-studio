@@ -1,0 +1,31 @@
+{
+  "classification": "PROVEN",
+  "failures": [],
+  "imported_count": 1,
+  "meshes": {
+    "architecture_house_025": {
+      "classification": "PROVEN",
+      "destination": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025",
+      "extent_cm": [
+        98.53092956542969,
+        98.6366081237793,
+        37.155540466308594
+      ],
+      "glb": "C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/evidence/barn-auto/generated_assets/architecture_house_025/architecture_house_025_lod.glb",
+      "glb_bytes": 12596724,
+      "imported_object_paths": [
+        "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod"
+      ],
+      "nanite_disabled": true,
+      "nanite_enabled": false,
+      "package_name": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod",
+      "reused_existing": false,
+      "schema_version": "generated_mesh_import_v1",
+      "static_mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod",
+      "triangles": 149967,
+      "vertices": 449841
+    }
+  },
+  "package_root": "/Game/AgentProof/BarnGen",
+  "schema_version": "generated_mesh_import_receipt_v1"
+}

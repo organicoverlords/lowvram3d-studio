@@ -18,7 +18,8 @@ from .scene_completeness import audit_scene_completeness
 from .depth_stage import reconstruct_depth
 from .region_placement import place as place_regions
 from .asset_generation import generate as generate_region_assets
-from .unreal_stage import build_scene, capture_scene
+from .unreal_stage import (build_scene, capture_scene, import_generated_meshes,
+                           normalise_package_root)
 from .scene_analysis import analyze_image
 from .scene_paths import derive_scene_paths
 from .scene_registry import builder_manifest
@@ -331,8 +332,18 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     # when no editor is reachable so a headless run still produces its plans.
     unreal_receipt = {"available": False, "reason": "no placement to build"}
     if placement and placement.get("actors"):
+        # Import first, in its own calls: a million-triangle mesh takes longer
+        # to import than the scene build is allowed to take in total.
+        imported_meshes = None
+        if generated_assets and generated_assets.get("generated_count"):
+            imported_meshes = import_generated_meshes(
+                generated_assets,
+                normalise_package_root(args.output_root)
+                or f"/Game/AgentProof/{args.scene_id}")
+            _write_json(evidence / "generated_mesh_import_receipt.json",
+                        imported_meshes)
         unreal_receipt = build_scene(placement, args.scene_id, args.output_root,
-                                     generated_assets=generated_assets)
+                                     imported_meshes=imported_meshes)
         _write_json(evidence / "unreal_build_receipt.json", unreal_receipt)
         if unreal_receipt.get("available"):
             shot = capture_scene(evidence / "screenshots" / "structural_scene.png",

@@ -14,12 +14,14 @@ from __future__ import annotations
 
 import json
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
 # uemcp lives beside the pipeline rather than in site-packages.
 UEMCP_DIR = Path(__file__).resolve().parents[2] / "unreal"
 BUILDER = UEMCP_DIR / "build_structural_scene.py"
+MESH_IMPORTER = UEMCP_DIR / "import_generated_mesh.py"
 
 
 def normalise_package_root(value: str | None) -> str | None:
@@ -53,9 +55,74 @@ def _bridge():
     return Bridge()
 
 
+def import_generated_meshes(generated_assets: dict[str, Any],
+                            package_root: str,
+                            timeout: float = 900.0,
+                            settle_timeout: float = 1800.0) -> dict[str, Any]:
+    """Import each generated GLB into the project, one call per mesh.
+
+    A million-triangle import outlives the bridge's handler timeout while the
+    editor goes on and finishes it, so a raised timeout here means "not yet",
+    not "failed". Re-running the import in that state would queue a second copy
+    of an import that is already running, so poll the editor instead.
+    """
+    receipt: dict[str, Any] = {"schema_version": "generated_mesh_import_receipt_v1",
+                               "package_root": package_root, "meshes": {},
+                               "failures": []}
+    assets = [a for a in generated_assets.get("assets", [])
+              if a.get("status") == "generated" and a.get("glb")]
+    if not assets:
+        receipt["classification"] = "EMPTY"
+        return receipt
+
+    try:
+        bridge = _bridge()
+    except Exception as exc:
+        receipt["classification"] = "UNAVAILABLE"
+        receipt["reason"] = f"{type(exc).__name__}: {exc}"
+        return receipt
+
+    for asset in assets:
+        destination = f"{package_root}/GeneratedMeshes/{asset['asset_id']}"
+        request = {"glb": asset["glb"], "destination": destination}
+        code = MESH_IMPORTER.read_text(encoding="utf-8")
+        try:
+            bridge.python("MESH_IMPORT_REQUEST = " + json.dumps(request),
+                          "MESH_IMPORT_REQUEST", timeout=120.0)
+            result = bridge.python_json(code, "result", timeout=timeout)
+        except Exception as exc:
+            # Ask again with the import already on disk: the second call takes
+            # the reuse path and returns immediately once the editor is done.
+            deadline = time.monotonic() + settle_timeout
+            result = None
+            while time.monotonic() < deadline:
+                time.sleep(20.0)
+                try:
+                    bridge.python("MESH_IMPORT_REQUEST = " + json.dumps(request),
+                                  "MESH_IMPORT_REQUEST", timeout=120.0)
+                    result = bridge.python_json(code, "result", timeout=timeout)
+                    break
+                except Exception:
+                    continue
+            if result is None:
+                receipt["failures"].append({
+                    "asset_id": asset["asset_id"],
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "waited_seconds": settle_timeout})
+                continue
+            result["completed_after_handler_timeout"] = True
+        receipt["meshes"][asset["asset_id"]] = result
+
+    receipt["imported_count"] = len(receipt["meshes"])
+    receipt["classification"] = (
+        "PROVEN" if receipt["meshes"] and not receipt["failures"]
+        else "PARTIAL" if receipt["meshes"] else "FAILED")
+    return receipt
+
+
 def build_scene(placement: dict[str, Any], scene_id: str,
                 output_root: str | None = None,
-                generated_assets: dict[str, Any] | None = None,
+                imported_meshes: dict[str, Any] | None = None,
                 timeout: float = 900.0) -> dict[str, Any]:
     """Spawn the structural scene in the live editor."""
     if not placement.get("actors"):
@@ -72,15 +139,15 @@ def build_scene(placement: dict[str, Any], scene_id: str,
                 "reason": f"no editor bridge: {type(exc).__name__}: {exc}"}
 
     request: dict[str, Any] = {"placement": placement, "scene_id": scene_id}
-    if generated_assets and generated_assets.get("assets"):
-        # Only the fields the builder reads: the manifest also carries crops and
-        # per-attempt VRAM telemetry, and the request crosses the bridge as one
-        # JSON literal.
-        request["generated_assets"] = {"assets": [
-            {"asset_id": asset["asset_id"], "glb": asset["glb"],
-             "status": asset["status"], "triangles": asset.get("triangles")}
-            for asset in generated_assets["assets"]
-            if asset.get("status") == "generated" and asset.get("glb")]}
+    if imported_meshes and imported_meshes.get("meshes"):
+        # Only the fields the builder reads: the import receipt also carries
+        # bounds and telemetry, and the request crosses the bridge as one JSON
+        # literal.
+        request["generated_assets"] = {"meshes": {
+            asset_id: {"static_mesh": entry["static_mesh"],
+                       "triangles": entry.get("triangles")}
+            for asset_id, entry in imported_meshes["meshes"].items()
+            if entry.get("static_mesh")}}
     root = normalise_package_root(output_root)
     if root:
         request["package_root"] = root
@@ -109,6 +176,10 @@ def capture_scene(output: Path, scene_id: str, fov_deg: float,
     try:
         bridge = _bridge()
         output.parent.mkdir(parents=True, exist_ok=True)
+        # The editor resolves a relative path against the *project* directory,
+        # so a render invoked from the repo silently lands in UnrealAITest58/
+        # and the evidence directory stays empty.
+        output = output.resolve()
         result = bridge.call("capture_scene_png", {
             "outputPath": str(output), "width": int(width), "height": int(height),
             "fov": float(fov_deg), "world": "editor",

@@ -1,0 +1,37 @@
+{
+  "available": true,
+  "camera_fov_deg": 92.87311873027492,
+  "camera_label": "barn_gen_Camera_Source",
+  "classification": "PROVEN",
+  "generated_actor_count": 1,
+  "generated_import_failures": [],
+  "generated_mesh_yaw_deg": -90.0,
+  "generated_meshes": {
+    "architecture_house_025": {
+      "extent_cm": [
+        98.53092956542969,
+        98.6366081237793,
+        37.155540466308594
+      ],
+      "path": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_lod/StaticMeshes/architecture_house_025_lod.architecture_house_025_lod",
+      "triangles": 149967
+    }
+  },
+  "geometry_source": "mixed",
+  "kinds": [
+    "ground_plane",
+    "scatter_instance",
+    "structure"
+  ],
+  "layers": [
+    "architecture",
+    "terrain",
+    "vegetation"
+  ],
+  "map": "/Game/AgentProof/BarnGen/Maps/L_barn_gen",
+  "primitive_actor_count": 15,
+  "removed_stale_actors": 20,
+  "scene_id": "barn_gen",
+  "schema_version": "structural_build_receipt_v2",
+  "spawned_count": 16
+}

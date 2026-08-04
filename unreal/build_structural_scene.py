@@ -65,52 +65,23 @@ actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 subsystem.new_level(MAP_PATH)
 
 
-def import_generated_mesh(asset):
-    """Import one generated GLB and return its StaticMesh, or None."""
-    task = unreal.AssetImportTask()
-    task.set_editor_property("filename", asset["glb"])
-    task.set_editor_property("destination_path", f"{MESH_DIR}/{asset['asset_id']}")
-    task.set_editor_property("automated", True)
-    task.set_editor_property("replace_existing", True)
-    task.set_editor_property("save", True)
-    unreal.AssetToolsHelpers.get_asset_tools().import_asset_tasks([task])
-
-    for path in (task.get_editor_property("imported_object_paths") or []):
-        loaded = unreal.load_asset(str(path))
-        if isinstance(loaded, unreal.StaticMesh):
-            # Nanite substitutes a coarse fallback proxy, so a 200k-triangle
-            # generation both reports and renders as a few thousand.
-            settings = loaded.get_editor_property("nanite_settings")
-            settings.set_editor_property("enabled", False)
-            loaded.set_editor_property("nanite_settings", settings)
-            unreal.EditorAssetLibrary.save_loaded_asset(loaded)
-            return loaded
-    return None
-
-
-# Import once per asset, not once per actor: a scatter region reuses one mesh
-# across every instance it placed.
+# Meshes are imported beforehand, one bridge call each: a million-triangle
+# import outlives the handler timeout, and doing it here made a slow import
+# indistinguishable from a failed one.
 generated_meshes = {}
 generated_failures = []
-for asset in GENERATED.get("assets", []):
-    if asset.get("status") != "generated" or not asset.get("glb"):
-        continue
-    try:
-        mesh_asset = import_generated_mesh(asset)
-    except Exception as exc:
-        mesh_asset = None
-        generated_failures.append({"asset_id": asset["asset_id"],
-                                   "error": f"{type(exc).__name__}: {exc}"})
-    if mesh_asset is None:
-        generated_failures.append({"asset_id": asset["asset_id"],
-                                   "error": "import produced no StaticMesh"})
+for asset_id, entry in (GENERATED.get("meshes") or {}).items():
+    mesh_asset = unreal.load_asset(entry["static_mesh"])
+    if not isinstance(mesh_asset, unreal.StaticMesh):
+        generated_failures.append({"asset_id": asset_id,
+                                   "error": "not a StaticMesh: " + str(entry["static_mesh"])})
         continue
     bounds = mesh_asset.get_bounds().box_extent
-    generated_meshes[asset["asset_id"]] = {
+    generated_meshes[asset_id] = {
         "mesh": mesh_asset,
         "path": str(mesh_asset.get_path_name()),
         "extent_cm": [float(bounds.x), float(bounds.y), float(bounds.z)],
-        "triangles": asset.get("triangles"),
+        "triangles": entry.get("triangles"),
     }
 
 removed = 0

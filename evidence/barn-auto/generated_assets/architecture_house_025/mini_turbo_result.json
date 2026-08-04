@@ -1,0 +1,50 @@
+{
+  "success": true,
+  "selected_generator": "mini_turbo",
+  "generator_locked": true,
+  "fallback_generators_allowed": [],
+  "transport": "direct-local-weights",
+  "comfyui_url": null,
+  "comfyui_workflow": null,
+  "model_root": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct",
+  "model_subfolder": "hunyuan3d-dit-v2-mini-turbo",
+  "source_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\crop.png",
+  "prompt": "",
+  "target_fbx_used": false,
+  "texture_pipeline_run": false,
+  "rig_pipeline_run": false,
+  "diagnostics_trace": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\generation_trace.jsonl",
+  "seed": 12345,
+  "steps": 5,
+  "octree_ladder": "384:3000,320:2000,256:1500",
+  "diagnostic_telemetry": false,
+  "source_image_sha256": "125ff82dc20f387a9e77254f61ecb2d5aeffb174b5808497b0fa2015f9f8595a",
+  "weights": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\\model.fp16.safetensors",
+  "weights_bytes": 3822584202,
+  "torch": "2.8.0+cu126",
+  "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "matte": "rembg",
+  "conditioning_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\mini_turbo_conditioning.png",
+  "image_dimensions": [
+    819,
+    266
+  ],
+  "flashvdm": true,
+  "octree_resolution": 384,
+  "num_chunks": 3000,
+  "attempts": [
+    {
+      "octree_resolution": 384,
+      "num_chunks": 3000,
+      "status": "ok",
+      "peak_vram_mb": 5548
+    }
+  ],
+  "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+  "raw_glb_sha256": "b23da2d5850371a5a49a30adf1537d8cfc1492223d88d46e0e371425d171aff1",
+  "raw_glb_bytes": 30427268,
+  "raw_vertices": 844831,
+  "raw_triangles": 1690706,
+  "generation_seconds": 577.8,
+  "guidance_scale": 5.0
+}
