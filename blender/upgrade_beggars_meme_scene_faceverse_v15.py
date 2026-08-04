@@ -11,6 +11,7 @@ import bpy
 
 IMAGE_NODE_NAME = "BeggarsSourceHeadOverlayV15"
 SELECTED_LABEL = "scale_200"
+COMPOSITOR_TREE_NAME = "BeggarsCompositorV15"
 
 
 def parse_args() -> argparse.Namespace:
@@ -53,11 +54,30 @@ def load_overlay(path: Path, pack: bool = False) -> bpy.types.Image:
     return image
 
 
+def compositor_tree(scene: bpy.types.Scene, create: bool) -> bpy.types.NodeTree | None:
+    if hasattr(scene, "compositing_node_group"):
+        tree = scene.compositing_node_group
+        if tree is None and create:
+            existing = bpy.data.node_groups.get(COMPOSITOR_TREE_NAME)
+            if existing is not None and existing.bl_idname != "CompositorNodeTree":
+                bpy.data.node_groups.remove(existing)
+                existing = None
+            tree = existing or bpy.data.node_groups.new(
+                COMPOSITOR_TREE_NAME,
+                "CompositorNodeTree",
+            )
+            scene.compositing_node_group = tree
+        return tree
+
+    if create:
+        scene.use_nodes = True
+    return getattr(scene, "node_tree", None)
+
+
 def configure_compositor(selected_image: bpy.types.Image) -> bpy.types.Node:
     scene = bpy.context.scene
-    scene.use_nodes = True
     scene.render.use_compositing = True
-    tree = scene.node_tree
+    tree = compositor_tree(scene, create=True)
     if tree is None:
         raise RuntimeError("V15 compositor node tree is unavailable")
     nodes = tree.nodes
@@ -74,12 +94,34 @@ def configure_compositor(selected_image: bpy.types.Image) -> bpy.types.Node:
     alpha_over.inputs[0].default_value = 1.0
     if hasattr(alpha_over, "premul"):
         alpha_over.premul = 1.0
-    composite = nodes.new("CompositorNodeComposite")
-    composite.name = "BeggarsCompositeV15"
+
+    if hasattr(scene, "compositing_node_group"):
+        existing_outputs = [
+            item
+            for item in tree.interface.items_tree
+            if getattr(item, "item_type", None) == "SOCKET"
+            and getattr(item, "in_out", None) == "OUTPUT"
+            and item.name == "Image"
+        ]
+        if not existing_outputs:
+            tree.interface.new_socket(
+                name="Image",
+                in_out="OUTPUT",
+                socket_type="NodeSocketColor",
+            )
+        output_node = nodes.new("NodeGroupOutput")
+        output_node.name = "BeggarsCompositeGroupOutputV15"
+    else:
+        output_node = nodes.new("CompositorNodeComposite")
+        output_node.name = "BeggarsCompositeV15"
 
     links.new(render_layers.outputs["Image"], alpha_over.inputs[1])
     links.new(image_node.outputs["Image"], alpha_over.inputs[2])
-    links.new(alpha_over.outputs["Image"], composite.inputs["Image"])
+    links.new(alpha_over.outputs["Image"], output_node.inputs["Image"])
+    print(
+        "BLENDER_FACEVERSE_V15_COMPOSITOR_API=PROVEN "
+        f"MODE={'GROUP_5X' if hasattr(scene, 'compositing_node_group') else 'SCENE_TREE_LEGACY'}"
+    )
     return image_node
 
 
@@ -225,9 +267,10 @@ def main() -> int:
 
     bpy.ops.wm.open_mainfile(filepath=str(blend_path))
     scene = bpy.context.scene
-    if not scene.use_nodes or scene.node_tree is None:
+    tree = compositor_tree(scene, create=False)
+    if not scene.render.use_compositing or tree is None:
         raise RuntimeError("V15 compositor did not survive save/reload")
-    reloaded_node = scene.node_tree.nodes.get(IMAGE_NODE_NAME)
+    reloaded_node = tree.nodes.get(IMAGE_NODE_NAME)
     face = bpy.data.objects.get("CHAR_Antinous")
     camera = bpy.data.objects.get("CAM_Hero")
     if reloaded_node is None or reloaded_node.image is None:
