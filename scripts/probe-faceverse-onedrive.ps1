@@ -12,7 +12,7 @@ $out = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\onedrive-probe-$env:GITHUB_RUN_
 New-Item -ItemType Directory -Path $out -Force | Out-Null
 $curl = (Get-Command curl.exe -ErrorAction Stop).Source
 $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/151.0.0.0 Safari/537.36'
-$rows = @()
+$script:rows = @()
 
 function Invoke-Probe {
   param([string]$Name,[string]$Url,[string]$Mode,[string[]]$Extra)
@@ -28,7 +28,7 @@ function Invoke-Probe {
   $headerText = if (Test-Path $headers) { Get-Content -LiteralPath $headers -Raw } else { '' }
   $locations = @([regex]::Matches($headerText,'(?im)^location:\s*(.+)$') | ForEach-Object { $_.Groups[1].Value.Trim() })
   $locationHosts = @($locations | ForEach-Object { try { ([Uri]$_).Host } catch { 'invalid' } } | Select-Object -Unique)
-  $rows += [ordered]@{
+  $script:rows += [ordered]@{
     name=$Name; mode=$Mode; curl_exit=$exit; summary=$summary; bytes=$length; sha256=$hash;
     location_count=$locations.Count; location_hosts=$locationHosts;
     begins_with_html = if ($length -gt 0) { ([Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($body)[0..([Math]::Min($length-1,31))]) -match '<!DOCTYPE|<html') } else { $false }
@@ -43,9 +43,10 @@ foreach ($entry in $shares.GetEnumerator()) {
 }
 
 $report = [ordered]@{
-  classification='PROBE_COMPLETE'; workflow_run_id=$env:GITHUB_RUN_ID; source='official FaceVerse v4 README OneDrive shares'; probes=$rows
+  classification='PROBE_COMPLETE'; workflow_run_id=$env:GITHUB_RUN_ID; source='official FaceVerse v4 README OneDrive shares'; probes=$script:rows
 }
 $report | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $out 'probe.json') -Encoding utf8
 "FACEVERSE_ONEDRIVE_PROBE_OUTPUT=$out" | Add-Content -LiteralPath $env:GITHUB_ENV
 Write-Host "FACEVERSE_ONEDRIVE_PROBE=COMPLETE"
+Write-Host "PROBE_COUNT=$($script:rows.Count)"
 Write-Host "REPORT=$(Join-Path $out 'probe.json')"
