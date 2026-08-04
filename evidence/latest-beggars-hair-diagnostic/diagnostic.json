@@ -1,0 +1,19 @@
+{
+  "classification": "USER_VISUAL_REVIEW_REQUIRED",
+  "diagnostic_workflow_run_id": "30864318706",
+  "frame": 60,
+  "hair_strand_count": 86,
+  "purpose": "Determine whether the procedural scalp cap and random hair curves are the dominant occluders of the reconstructed face.",
+  "resolution": [
+    960,
+    540
+  ],
+  "source_blend": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30863735416\\artifact\\beggars_photoreal_recreation.blend",
+  "source_workflow_run_id": "30863735416",
+  "variants": [
+    "variant_a_raw_face_no_hair.png",
+    "variant_b_raw_face_original_strands.png",
+    "variant_c_back_cap_no_strands.png",
+    "variant_d_back_cap_rear_strands.png"
+  ]
+}
