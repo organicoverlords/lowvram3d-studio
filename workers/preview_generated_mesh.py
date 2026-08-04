@@ -131,8 +131,21 @@ def main(argv: list[str] | None = None) -> int:
     # glTF stores a vertex per face corner wherever normals differ, so a
     # flat-shaded export loads as one disconnected body per triangle. Merge
     # before asking anything about topology, or every mesh looks like soup.
-    topology = mesh.copy()
-    topology.merge_vertices()
+    #
+    # Merging makes the *statistics* right and leaves the *file* wrong, and for
+    # a long time this receipt reported a tidy 9 bodies for a mesh that was
+    # 149,960 disconnected triangles on disk. Unreal does not merge on import:
+    # it took six times the vertex data it needed, which is the likeliest cause
+    # of the import handler timeouts. The ratio is now reported rather than
+    # quietly normalised away, because a known quirk that is always corrected
+    # for is indistinguishable from one that has been fixed.
+    #
+    # Weld by *position* only. merge_vertices() refuses to merge vertices whose
+    # UVs differ, and a textured mesh must split vertices at every UV seam --
+    # so a correctly seamed mesh reports as thousands of "bodies" while the
+    # unwelded soup it replaced reported nine. Body count is a question about
+    # geometry, and the answer must not depend on how the thing is textured.
+    topology = trimesh.Trimesh(vertices=vertices, faces=faces, process=True)
     extent = vertices.max(axis=0) - vertices.min(axis=0)
     receipt = {
         "schema_version": "generated_mesh_preview_v1",
@@ -147,6 +160,13 @@ def main(argv: list[str] | None = None) -> int:
         "euler_number": int(topology.euler_number),
         "body_count": int(len(topology.split(only_watertight=False))),
         "merged_vertices": int(len(topology.vertices)),
+        "vertex_split_ratio": round(
+            len(vertices) / max(len(topology.vertices), 1), 3),
+        # 3.0 is exactly soup: every triangle carrying its own three vertices.
+        # A correctly textured mesh sits well below it -- the barn lands at 1.70
+        # once its unobserved faces are split off at UV seams, which is real
+        # seaming rather than a broken export. The gate is set above that.
+        "unwelded": bool(len(vertices) > len(topology.vertices) * 2.5),
     }
     receipt_path = Path(args.receipt) if args.receipt else out.with_suffix(".json")
     receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n",
