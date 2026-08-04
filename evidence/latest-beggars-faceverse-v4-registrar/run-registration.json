@@ -1,15 +1,15 @@
 {
   "classification": "RUN_REGISTERED",
   "conclusion": null,
-  "created_at": "2026-08-04T01:53:43Z",
+  "created_at": "2026-08-04T01:56:48Z",
   "event": "workflow_dispatch",
   "head_branch": "agent/blender-beggars-scene-20260804",
-  "head_sha": "9002e2274c98b7f5b963c54fb82c0e069eaa1526",
-  "observed_at": "2026-08-04T01:53:48Z",
+  "head_sha": "86bb0022a35357b2ab98a6fe5dd4e47400a7e776",
+  "observed_at": "2026-08-04T01:56:53Z",
   "status": "pending",
-  "updated_at": "2026-08-04T01:53:45Z",
-  "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30870133231",
-  "workflow_name": "Beggars FaceVerse v4 visual preflight 30870133231",
+  "updated_at": "2026-08-04T01:56:50Z",
+  "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30870288168",
+  "workflow_name": "Beggars FaceVerse v4 visual preflight 30870288168",
   "workflow_path": ".github/workflows/beggars-faceverse-v4-preflight.yml",
-  "workflow_run_id": 30870133231
+  "workflow_run_id": 30870288168
 }
