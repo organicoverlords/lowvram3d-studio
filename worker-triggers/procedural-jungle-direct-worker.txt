@@ -1,8 +1,8 @@
-run=45
-requested=2026-08-04T18:22:00+03:00
+run=46
+requested=2026-08-04T18:27:00+03:00
 mode=github-self-hosted-v3-visual-overhaul
-repair_commit=5225c8260dda25dab00078e3e26f060862dcd705
-repair_scope=optional-append-condition-and-required-utf8-byte-gate
+repair_commit=711fcb29bda02d7ac642eefee939043755da23b5
+repair_scope=exact-historical-character-guard-and-write-line-byte-patch
 pinned_worker_source=0b30584a12ffc5b961a0890a851aca82d6b381fb
 installer_sha256=8caff1745534e6c73ae21b86a6cb5ee035bad5512741a1c5561bc3b649a348d5
 codex=false
