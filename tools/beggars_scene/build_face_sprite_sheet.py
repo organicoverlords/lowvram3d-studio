@@ -40,16 +40,12 @@ def stabilize_boxes(boxes: np.ndarray) -> np.ndarray:
         raise RuntimeError("No valid tracked face boxes were available for sprite stabilization")
     global_side = float(np.median(valid_sides))
 
-    # Preserve tracker metadata such as confidence columns while stabilizing
-    # only the geometric x1/y1/x2/y2 coordinates.
     stabilized = boxes.copy()
     for index in range(len(boxes)):
         left = max(0, index - 2)
         right = min(len(boxes), index + 3)
-        local_centers = centers[left:right]
-        local_sides = sides[left:right]
-        center = np.median(local_centers, axis=0)
-        side = float(np.median(local_sides))
+        center = np.median(centers[left:right], axis=0)
+        side = float(np.median(sides[left:right]))
         side = float(np.clip(side, global_side * 0.82, global_side * 1.18))
         stabilized[index, :4] = (
             center[0] - side * 0.5,
@@ -119,6 +115,41 @@ def neutralize_warm_cast(image_bgr: np.ndarray, alpha: np.ndarray) -> tuple[np.n
     return corrected, [float(value) for value in gains]
 
 
+def remove_lower_caption_artifacts(
+    crop_bgr: np.ndarray,
+    alpha: np.ndarray,
+) -> tuple[np.ndarray, float]:
+    height, width = alpha.shape
+    if height < 8 or width < 8:
+        return alpha, 0.0
+
+    hsv = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2HSV)
+    value = hsv[:, :, 2]
+    saturation = hsv[:, :, 1]
+    blue = crop_bgr[:, :, 0]
+    green = crop_bgr[:, :, 1]
+    red = crop_bgr[:, :, 2]
+    rows = np.arange(height, dtype=np.int32)[:, None]
+    lower_band = rows >= int(round(height * 0.76))
+
+    neutral_bright = (value >= 125) & (saturation <= 155)
+    cyan_bright = (blue >= 92) & (green >= 92) & (red <= 150)
+    caption = lower_band & (alpha > 8) & (neutral_bright | cyan_bright)
+    if np.any(caption):
+        radius = max(1, int(round(max(height, width) * 0.004)))
+        kernel = cv2.getStructuringElement(
+            cv2.MORPH_ELLIPSE,
+            (radius * 2 + 1, radius * 2 + 1),
+        )
+        caption = cv2.dilate(caption.astype(np.uint8), kernel, iterations=1) > 0
+
+    original_foreground = max(int(np.count_nonzero(alpha > 8)), 1)
+    cleaned = alpha.copy()
+    cleaned[caption] = 0
+    removed_fraction = float(np.count_nonzero(caption) / original_foreground)
+    return cleaned, removed_fraction
+
+
 def make_face_cell(
     image_bgr: np.ndarray,
     vertices: np.ndarray,
@@ -152,6 +183,7 @@ def make_face_cell(
     alpha = cv2.dilate(alpha, kernel, iterations=1)
     sigma = max(0.8, float(max(crop.shape[:2])) * 0.005)
     alpha = cv2.GaussianBlur(alpha, (0, 0), sigmaX=sigma, sigmaY=sigma)
+    alpha, caption_removed_fraction = remove_lower_caption_artifacts(crop, alpha)
 
     corrected, gains = neutralize_warm_cast(crop, alpha)
     rgba = cv2.cvtColor(corrected, cv2.COLOR_BGR2BGRA)
@@ -161,6 +193,7 @@ def make_face_cell(
         "crop_bounds": [int(value) for value in bounds],
         "stabilized_box": [float(value) for value in stabilized_box],
         "mask_coverage_fraction": float(np.mean(alpha > 8)),
+        "caption_removed_foreground_fraction": caption_removed_fraction,
         "color_balance_gains_bgr": gains,
     }
 
@@ -228,10 +261,11 @@ def main() -> int:
         raise SystemExit(f"Could not write derived face sprite sheet: {output_image}")
 
     crop_sides = [report["crop_bounds"][2] - report["crop_bounds"][0] for report in frame_reports]
+    caption_removed = [report["caption_removed_foreground_fraction"] for report in frame_reports]
     report = {
         "classification": "PROVEN",
         "policy": "DERIVED_FACE_ONLY_RGBA_SPRITE_SHEET_RAW_REFERENCE_EXCLUDED",
-        "crop_route": "SMOOTHED_DETECTOR_BOX_WITH_DENSE_FACE_ALPHA",
+        "crop_route": "SMOOTHED_DETECTOR_BOX_WITH_DENSE_FACE_ALPHA_AND_LOWER_CAPTION_REJECTION",
         "color_route": "MASKED_GRAY_WORLD_BALANCE_AND_SATURATION_REDUCTION",
         "frame_count": frame_count,
         "columns": columns,
@@ -239,6 +273,8 @@ def main() -> int:
         "cell_size": args.cell_size,
         "sheet_dimensions": [int(sheet.shape[1]), int(sheet.shape[0])],
         "alpha_coverage_fraction": float(np.mean(sheet[:, :, 3] > 8)),
+        "caption_removed_fraction_mean": float(np.mean(caption_removed)),
+        "caption_removed_fraction_max": float(np.max(caption_removed)),
         "crop_side_min": int(min(crop_sides)),
         "crop_side_max": int(max(crop_sides)),
         "raw_frames_packaged": False,
