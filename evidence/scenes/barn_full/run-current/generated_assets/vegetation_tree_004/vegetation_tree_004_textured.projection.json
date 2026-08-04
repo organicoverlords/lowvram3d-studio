@@ -1,11 +1,13 @@
 {
+  "albedo_gamma": 0.3884,
+  "albedo_target_luminance": 114.8,
   "classification": "PROVEN",
   "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\crop.png",
   "facing_min": 0.2,
   "fill_rgb": [
-    35.1,
-    33.8,
-    29.0
+    118.0,
+    116.3,
+    109.6
   ],
   "flat_filled_face_fraction": 0.1536,
   "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
@@ -14,9 +16,17 @@
   "observed_face_fraction": 0.4264,
   "observed_from": "single view. observed_face_fraction was genuinely seen; mirrored_face_fraction carries a mirrored copy of it and is plausible invention, not evidence; flat_filled_face_fraction is the grazing band, where a projection could only smear",
   "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
-  "output_bytes": 4732600,
+  "output_bytes": 4806496,
   "projection": "object_space_front_minus_z",
   "schema_version": "crop_projection_v1",
+  "source_mean_luminance": 32.6,
+  "subject_box_norm_xyxy": [
+    0.0689,
+    0.2773,
+    0.8824,
+    0.7227
+  ],
+  "subject_fraction_of_crop": 0.3624,
   "texture_size": [
     1649,
     1641

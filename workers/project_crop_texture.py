@@ -55,6 +55,43 @@ FACING_MIN = 0.2
 # unobserved face is mapped into.
 FILL_STRIP_PX = 8
 
+# Target mean for the base colour, as a fraction of white.
+#
+# The crop is a photograph: the subject's appearance under one particular sky,
+# with that sky's exposure and shadow baked in. Base colour is meant to be
+# reflectance. Using the photograph raw makes a barn shot against a storm sky
+# into a near-zero albedo -- 77% of its pixels sit below 50/255, median 34 --
+# and then the renderer lights it a second time. The result is the brown blob:
+# every plank and every board is in there, compressed into the bottom sixth of
+# the range where nothing is distinguishable.
+#
+# Normalising is not cosmetic and not cheating; it is the difference between a
+# photograph and an albedo map. It is done with a gamma so that black stays
+# black, white stays white and the ordering of every pixel is preserved -- a
+# flat gain would clip the roof highlights off.
+ALBEDO_TARGET = 0.45
+# Below this the subject is too dark to normalise without amplifying sensor
+# noise into visible mush; above it, leave the photograph alone.
+ALBEDO_FLOOR = 0.02
+
+
+def _subject_box(crop_path):
+    """Normalised bounds of the matted subject inside its (padded) crop."""
+    import numpy as np
+    from PIL import Image
+
+    image = Image.open(crop_path)
+    if image.mode != "RGBA":
+        return (0.0, 0.0, 1.0, 1.0)
+    alpha = np.asarray(image.convert("RGBA"))[:, :, 3] > 128
+    if not alpha.any():
+        return (0.0, 0.0, 1.0, 1.0)
+    rows = np.flatnonzero(alpha.any(axis=1))
+    cols = np.flatnonzero(alpha.any(axis=0))
+    height, width = alpha.shape
+    return (cols[0] / width, rows[0] / height,
+            (cols[-1] + 1) / width, (rows[-1] + 1) / height)
+
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -89,9 +126,19 @@ def main(argv: list[str] | None = None) -> int:
     # Object-space front projection: mesh +X is the image's right and mesh +Y is
     # its up, so u runs with X and v runs *against* Y -- glTF's v origin is the
     # top of the texture, not the bottom.
+    #
+    # Mapped to the subject's own alpha bounding box, not to the whole image.
+    # The crop handed over is square-padded for the generator, which conditions
+    # on a square and letterboxes anything else; for an 819x266 barn that is a
+    # 950x950 image with the subject across 28% of its height. Mapping the mesh
+    # to the full image put every plank into a band a quarter of the way up and
+    # left the rest addressing transparent padding -- the brown blob.
+    subject_box = _subject_box(crop_path)
     u = (vertices[:, 0] - low[0]) / span[0]
     v = 1.0 - (vertices[:, 1] - low[1]) / span[1]
     uv = np.clip(np.stack([u, v], axis=-1), 0.0, 1.0)
+    uv[:, 0] = subject_box[0] + uv[:, 0] * (subject_box[2] - subject_box[0])
+    uv[:, 1] = subject_box[1] + uv[:, 1] * (subject_box[3] - subject_box[1])
 
     # Only the grazing band is redirected to the flat strip, by duplicating its
     # vertices and mapping the copies there. Duplicating just this band keeps
@@ -122,6 +169,19 @@ def main(argv: list[str] | None = None) -> int:
     covered = alpha[:, :, 0] > 0.5
     fill = (pixels[covered][:, :3].mean(axis=0) if covered.any()
             else np.array([128.0, 128.0, 128.0]))
+    covered_mask = covered
+    # De-light before anything else: gamma-map the subject so its mean lands at
+    # a plausible reflectance. Measured on the subject only, because the matted
+    # background would drag the mean wherever the fill happens to sit.
+    subject = pixels[:, :, :3][covered] / 255.0
+    observed_mean = float(subject.mean()) if covered.any() else 0.0
+    albedo_gamma = 1.0
+    if ALBEDO_FLOOR < observed_mean < ALBEDO_TARGET:
+        albedo_gamma = float(np.log(ALBEDO_TARGET) / np.log(observed_mean))
+        pixels[:, :, :3] = 255.0 * np.power(
+            np.clip(pixels[:, :, :3] / 255.0, 0.0, 1.0), albedo_gamma)
+        fill = 255.0 * np.power(np.clip(fill / 255.0, 0.0, 1.0), albedo_gamma)
+
     flattened = pixels[:, :, :3] * alpha + fill[None, None, :] * (1.0 - alpha)
     # Append the flat-colour strip the unobserved faces are mapped into, and
     # rescale the observed UVs so they still address the crop itself.
@@ -161,6 +221,13 @@ def main(argv: list[str] | None = None) -> int:
         "texture_size": list(texture.size),
         "mask_coverage": round(float(covered.mean()), 4),
         "fill_rgb": [round(float(c), 1) for c in fill],
+        "albedo_gamma": round(albedo_gamma, 4),
+        "source_mean_luminance": round(observed_mean * 255.0, 1),
+        "albedo_target_luminance": round(ALBEDO_TARGET * 255.0, 1),
+        "subject_box_norm_xyxy": [round(float(v), 4) for v in subject_box],
+        "subject_fraction_of_crop": round(
+            float((subject_box[2] - subject_box[0])
+                  * (subject_box[3] - subject_box[1])), 4),
         # Stated so nothing downstream reads a textured mesh as an observed one.
         "observed_from": (
             "single view. observed_face_fraction was genuinely seen; "
