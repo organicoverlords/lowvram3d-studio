@@ -24,10 +24,10 @@ if ($LASTEXITCODE -ne 0 -or $ActualBlob -ne $BaseBlob) {
     throw "Literal-marker repair base identity mismatch: expected=$BaseBlob actual=$ActualBlob"
 }
 
-$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-literal-counter-$Head"
+$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-counter-assignment-$Head"
 if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
-$PatchedWrapper = Join-Path $TempRoot 'run-procedural-jungle-literal-counter.ps1'
+$PatchedWrapper = Join-Path $TempRoot 'run-procedural-jungle-counter-assignment.ps1'
 $BaseLines = @(& git show "$BaseCommit`:$WrapperPath")
 if ($LASTEXITCODE -ne 0 -or $BaseLines.Count -lt 10) { throw 'Could not read the literal-marker runtime wrapper' }
 $WrapperText = $BaseLines -join "`n"
@@ -35,14 +35,14 @@ $WrapperText = $BaseLines -join "`n"
 $InsertionMarker = '$AssemblyNew ='
 $InsertionMatches = [regex]::Matches($WrapperText, [regex]::Escape($InsertionMarker)).Count
 if ($InsertionMatches -ne 1) { throw "Could not prove unique FixCode insertion point; matches=$InsertionMatches" }
-$Injection = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('JE9sZENvdW50TGluZSA9ICckTG93ZXJQTWF0Y2hlcyA9IFtyZWdleF06Ok1hdGNoZXMoJENhcHR1cmVCbG9jaywgJydcJHBcYicnKS5Db3VudCcKJE5ld0NvdW50TGluZXMgPSBbVGV4dC5FbmNvZGluZ106OlVURjguR2V0U3RyaW5nKFtDb252ZXJ0XTo6RnJvbUJhc2U2NFN0cmluZygnSkV4dmQyVnlVRlJ2YTJWdUlEMGdKeVJ3Sndva1RHOTNaWEpRVFdGMFkyaGxjeUE5SUNna1EyRndkSFZ5WlVKc2IyTnJMa3hsYm1kMGFDQXRJQ1JEWVhCMGRYSmxRbXh2WTJzdVVtVndiR0ZqWlNna1RHOTNaWEpRVkc5clpXNHNJQ2NuS1M1TVpXNW5kR2dwSUM4Z0pFeHZkMlZ5VUZSdmEyVnVMa3hsYm1kMGFBPT0nKSkKJE9sZENvdW50TWF0Y2hlcyA9IFtyZWdleF06Ok1hdGNoZXMoJEZpeENvZGUsIFtyZWdleF06OkVzY2FwZSgkT2xkQ291bnRMaW5lKSkuQ291bnQKaWYgKCRPbGRDb3VudE1hdGNoZXMgLW5lIDEpIHsKICAgIHRocm93ICJDb3VsZCBub3QgcHJvdmUgdW5pcXVlIGxvd2VyY2FzZSBjYXB0dXJlLXBhdHRlcm4gY291bnRlcjsgbWF0Y2hlcz0kT2xkQ291bnRNYXRjaGVzIgp9CiRGaXhDb2RlID0gJEZpeENvZGUuUmVwbGFjZSgkT2xkQ291bnRMaW5lLCAkTmV3Q291bnRMaW5lcykKV3JpdGUtSG9zdCAnSlVOR0xFX0xJVEVSQUxfQ0FQVFVSRV9UT0tFTl9DT1VOVEVSX1BBVENIPVBST1ZFTicK'))
+$Injection = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('JENvdW50ZXJQYXR0ZXJuID0gJyg/bSleXCRMb3dlclBNYXRjaGVzWyBcdF0qPVteXHJcbl0qJCcKJENvdW50ZXJNYXRjaGVzID0gW3JlZ2V4XTo6TWF0Y2hlcygkRml4Q29kZSwgJENvdW50ZXJQYXR0ZXJuKS5Db3VudAppZiAoJENvdW50ZXJNYXRjaGVzIC1uZSAxKSB7CiAgICB0aHJvdyAiQ291bGQgbm90IHByb3ZlIHVuaXF1ZSBsb3dlcmNhc2UgY2FwdHVyZS1wYXR0ZXJuIGNvdW50ZXIgYXNzaWdubWVudDsgbWF0Y2hlcz0kQ291bnRlck1hdGNoZXMiCn0KJE5ld0NvdW50ZXJMaW5lcyA9IFtUZXh0LkVuY29kaW5nXTo6VVRGOC5HZXRTdHJpbmcoW0NvbnZlcnRdOjpGcm9tQmFzZTY0U3RyaW5nKCdKRXh2ZDJWeVVGUnZhMlZ1SUQwZ0p5UndKd29rVEc5M1pYSlFUV0YwWTJobGN5QTlJQ2drUTJGd2RIVnlaVUpzYjJOckxreGxibWQwYUNBdElDUkRZWEIwZFhKbFFteHZZMnN1VW1Wd2JHRmpaU2drVEc5M1pYSlFWRzlyWlc0c0lDY25LUzVNWlc1bmRHZ3BJQzhnSkV4dmQyVnlVRlJ2YTJWdUxreGxibWQwYUE9PScpKQokRml4Q29kZSA9IFtyZWdleF06OlJlcGxhY2UoJEZpeENvZGUsICRDb3VudGVyUGF0dGVybiwgW1RleHQuUmVndWxhckV4cHJlc3Npb25zLk1hdGNoRXZhbHVhdG9yXXsgcGFyYW0oJE1hdGNoKSAkTmV3Q291bnRlckxpbmVzIH0sIDEpCldyaXRlLUhvc3QgJ0pVTkdMRV9MSVRFUkFMX0NBUFRVUkVfQ09VTlRFUl9BU1NJR05NRU5UX1BBVENIPVBST1ZFTicK'))
 $WrapperText = $WrapperText.Replace($InsertionMarker, $Injection + "`n" + $InsertionMarker)
 [IO.File]::WriteAllText($PatchedWrapper, $WrapperText, (New-Object Text.UTF8Encoding($false)))
 
-Write-Host "LITERAL_COUNTER_BASE_COMMIT=$BaseCommit"
-Write-Host "LITERAL_COUNTER_BASE_BLOB=$BaseBlob"
-Write-Host 'JUNGLE_LITERAL_COUNTER_INJECTION=PROVEN'
+Write-Host "COUNTER_ASSIGNMENT_BASE_COMMIT=$BaseCommit"
+Write-Host "COUNTER_ASSIGNMENT_BASE_BLOB=$BaseBlob"
+Write-Host 'JUNGLE_COUNTER_ASSIGNMENT_INJECTION=PROVEN'
 
 & $PatchedWrapper -ExpectedBranch $ExpectedBranch
 $WorkerExit = $LASTEXITCODE
-if ($WorkerExit -ne 0) { throw "Literal-counter jungle worker failed with exit code $WorkerExit" }
+if ($WorkerExit -ne 0) { throw "Counter-assignment jungle worker failed with exit code $WorkerExit" }
