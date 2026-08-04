@@ -24,10 +24,10 @@ if ($LASTEXITCODE -ne 0 -or $ActualBlob -ne $BaseBlob) {
     throw "Runtime repair base identity mismatch: expected=$BaseBlob actual=$ActualBlob"
 }
 
-$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-write-context-$Head"
+$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-capture-path-fix-$Head"
 if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
-$DiagnosticWrapper = Join-Path $TempRoot 'run-procedural-jungle-write-context.ps1'
+$PatchedWrapper = Join-Path $TempRoot 'run-procedural-jungle-capture-path-fix.ps1'
 $BaseLines = @(& git show "$BaseCommit`:$WrapperPath")
 if ($LASTEXITCODE -ne 0 -or $BaseLines.Count -lt 10) { throw 'Could not read the proven runtime repair wrapper' }
 $WrapperText = $BaseLines -join "`n"
@@ -35,16 +35,32 @@ $WrapperText = $BaseLines -join "`n"
 $AssemblyOld = '$t=$t.Replace($m,$m+"`n"+$x);Set-Content $o $t -Encoding utf8'
 $AssemblyMatches = [regex]::Matches($WrapperText, [regex]::Escape($AssemblyOld)).Count
 if ($AssemblyMatches -ne 1) { throw "Could not prove unique runtime-payload assembly line; matches=$AssemblyMatches" }
-$DiagnosticCode = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('JFJlY292ZXJ5TGluZXMgPSBAKCRSZWNvdmVyeVRleHQgLXNwbGl0ICJgcj9gbiIpCiRDb250ZXh0U3RhcnQgPSA5MAokQ29udGV4dEVuZCA9IFtNYXRoXTo6TWluKDE1NSwgJFJlY292ZXJ5TGluZXMuQ291bnQpCldyaXRlLUhvc3QgIlJVTlRJTUVfV1JJVEVfQ09OVEVYVF9UT1RBTF9MSU5FUz0kKCRSZWNvdmVyeUxpbmVzLkNvdW50KSIKZm9yICgkSW5kZXggPSAkQ29udGV4dFN0YXJ0OyAkSW5kZXggLWxlICRDb250ZXh0RW5kOyAkSW5kZXgrKykgewogICAgV3JpdGUtSG9zdCAiUlVOVElNRV9XUklURV9DT05URVhUPSRJbmRleGA6JCgkUmVjb3ZlcnlMaW5lc1skSW5kZXggLSAxXSkiCn0KdGhyb3cgJ1JVTlRJTUVfV1JJVEVfQ09OVEVYVF9ESUFHTk9TVElDX0NPTVBMRVRFJwo='))
-$AssemblyNew = '$t=$t.Replace($m,$m+"`n"+$x+"`n"+$DiagnosticCode);[IO.File]::WriteAllText($o,$t,(New-Object Text.UTF8Encoding($false)))'
+$FixCode = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('JENhcHR1cmVCbG9ja1N0YXJ0TWFya2VyID0gIiRQPUpvaW4tUGF0aCAkU291cmNlUm9vdCAncHJvamVjdF90ZW1wbGF0ZVxTb3VyY2VcUHJvY2VkdXJhbEp1bmdsZTU4XE p1bmdsZVByb29mRGlyZWN0b3IuY3BwJyIKJENhcHR1cmVCbG9ja0VuZE1hcmtlciA9ICJXcml0ZS1Ib3N0ICdKVU5HTEVfREVMQVlFRF9WSUVXVEFSR0VUX0NBUFRVUkVfUEFUQ0g9UFJPVkVOJyIKJENhcHR1cmVCbG9ja1N0YXJ0ID0gJFJlY292ZXJ5VGV4dC5JbmRleE9mKCRDYXB0dXJlQmxvY2tTdGFydE1hcmtlciwgW1N0cmluZ0NvbXBhcmlzb25dOjpPcmRpbmFsKQokQ2FwdHVyZUJsb2NrRW5kID0gJFJlY292ZXJ5VGV4dC5JbmRleE9mKCRDYXB0dXJlQmxvY2tFbmRNYXJrZXIsIFtTdHJpbmdDb21wYXJpc29uXTo6T3JkaW5hbCkKaWYgKCRDYXB0dXJlQmxvY2tTdGFydCAtbHQgMCAtb3IgJENhcHR1cmVCbG9ja0VuZCAtbGUgJENhcHR1cmVCbG9ja1N0YXJ0KSB7CiAgICB0aHJvdyAiQ291bGQgbm90IGxvY2F0ZSBKdW5nbGVQcm9vZkRpcmVjdG9yIGNhcHR1cmUgcGF0Y2ggYmxvY2s6IHN0YXJ0PSRDYXB0dXJlQmxvY2tTdGFydCBlbmQ9JENhcHR1cmVCbG9ja0VuZCIKfQokQ2FwdHVyZUJsb2NrID0gJFJlY292ZXJ5VGV4dC5TdWJzdHJpbmcoJENhcHR1cmVCbG9ja1N0YXJ0LCAkQ2FwdHVyZUJsb2NrRW5kIC0gJENhcHR1cmVCbG9ja1N0YXJ0KQokTG93ZXJQTWF0Y2hlcyA9IFtyZWdleF06Ok1hdGNoZXMoJENhcHR1cmVCbG9jaywgJ1wkcFxiJykuQ291bnQKaWYgKCRMb3dlclBNYXRjaGVzIC1uZSAzKSB7CiAgICB0aHJvdyAiVW5leHBlY3RlZCBsb3dlcmNhc2UgY2FwdHVyZS1wYXR0ZXJuIHZhcmlhYmxlIGNvdW50OiAkTG93ZXJQTWF0Y2hlcyIKfQokRml4ZWRDYXB0dXJlQmxvY2sgPSAkQ2FwdHVyZUJsb2NrLlJlcGxhY2UoJyRwJywgJyRDYXB0dXJlUGF0dGVybicpCiRSZWNvdmVyeVRleHQgPSAkUmVjb3ZlcnlUZXh0LlN1YnN0cmluZygwLCAkQ2FwdHVyZUJsb2NrU3RhcnQpICsgJEZpeGVkQ2FwdHVyZUJsb2NrICsgJFJlY292ZXJ5VGV4dC5TdWJzdHJpbmcoJENhcHR1cmVCbG9ja0VuZCkKV3JpdGUtSG9zdCAnSlVOR0xFX0NBUFRVUkVfUEFUVEVSTl9QQVRIX0NPTExJU0lPTl9QQVRDSD1QUk9WRU4nCldyaXRlLUhvc3QgIkpVTkdMRV9DQVB UVVJFX1BBVFRFUk5fUkVGRVJFTkNFU19SRU5BTUVEPSRMb3dlclBNYXRjaGVzIgoKJFBzNTFXcml0ZVBhdHRlcm4gPSAnKD9tKV4oPzxpbmRlbnQ+WyBcdF0qKVNldC1Db250ZW50IC1MaXRlcmFsUGF0aCAoPzxwYXRoPlwkW0EtWmEtel9dW0EtWmEtejAtOV8uXSopIC1WYWx1ZSAoPzx2YWx1ZT5cJFtBLVphLXpfXVtBLVphLXowLTlfLl0qKSAtRW5jb2RpbmcgdXRmOFsgXHRdKiQnCiRQczUxV3JpdGVNYXRjaGVzID0gQChbcmVnZXhdOjpNYXRjaGVzKCRSZWNvdmVyeVRleHQsICRQczUxV3JpdGVQYXR0ZXJuKSkKaWYgKCRQczUxV3JpdGVNYXRjaGVzLkNvdW50IC1uZSA3KSB7CiAgICAkTWF0Y2hlZExpbmVzID0gKCRQczUxV3JpdGVNYXRjaGVzIHwgRm9yRWFjaC1PYmplY3QgeyAkXy5WYWx1ZS5UcmltKCkgfSkgLWpvaW4gJyB8ICcKICAgIHRocm93ICJVbmV4cGVjdGVkIFBvd2VyU2hlbGwgNS4xIFNldC1Db250ZW50IGNvbXBhdGliaWxpdHkgdGFyZ2V0IGNvdW50OiAkKCRQczUxV3JpdGVNYXRjaGVzLkNvdW50KTsgbGluZXM9JE1hdGNoZWRMaW5lcyIKfQokUHM1MVdyaXRlRXZhbHVhdG9yID0gW1RleHQuUmVndWxhckV4cHJlc3Npb25zLk1hdGNoRXZhbHVhdG9yXXsKICAgIHBhcmFtKFtUZXh0LlJlZ3VsYXJFeHByZXNzaW9ucy5NYXRjaF0kTWF0Y2gpCiAgICAkSW5kZW50ID0gJE1hdGNoLkdyb3Vwc1snaW5kZW50J10uVmFsdWUKICAgICRQYXRoRXhwcmVzc2lvbiA9ICRNYXRjaC5Hcm91cHNbJ3BhdGgnXS5WYWx1ZQogICAgJFZhbHVlRXhwcmVzc2lvbiA9ICRNYXRjaC5Hcm91cHNbJ3ZhbHVlJ10uVmFsdWUKICAgIHJldHVybiAkSW5kZW50ICsgJ1tJTy5GaWxlXTo6V3JpdGVBbGxUZXh0KFtzdHJpbmddKCcgKyAkUGF0aEV4cHJlc3Npb24gKyAnKSwgW3N0cmluZ10oJyArICRWYWx1ZUV4cHJlc3Npb24gKyAnKSwgKE5ldy1PYmplY3QgVGV4dC5VVEY4RW5jb2RpbmcoJGZhbHNlKSkpJwp9CiRSZWNvdmVyeVRleHQgPSBbcmVnZXhdOjpSZXBsYWNlKCRSZWNvdmVyeVRleHQsICRQczUxV3JpdGVQYXR0ZXJuLCAkUHM1MVdyaXRlRXZhbHVhdG9yKQokUHM1MVJlbWFpbmluZyA9IEAoW3JlZ2V4XTo6TWF0Y2hlcygkUmVjb3ZlcnlUZXh0LCAkUHM1MVdyaXRlUGF0dGVybikpCmlmICgkUHM1MVJlbWFpbmluZy5Db3VudCAtbmUgMCkgewogICAgdGhyb3cgIlBvd2VyU2hlbGwgNS4xIFNldC1Db250ZW50IGNvbXBhdGliaWxpdHkgY2FsbHMgcmVtYWluOiAkKCRQczUxUmVtYWluaW5nLkNvdW50KSIKfQpXcml0ZS1Ib3N0ICdQT1dFUlNIRUxMNTEfR0VORVJBVEVEX1dSSVRFU19QQVRDSD1QUk9WRU4nCldyaXRlLUhvc3QgIlBPV0VSU0hFTEw1MV9HRU5FUkFURURfV1JJVEVTX1BBVENIRUQ9JCgkUHM1MVdyaXRlTWF0Y2hlcy5Db3VudCkiCg=='))
+$AssemblyNew = '$t=$t.Replace($m,$m+"`n"+$x+"`n"+$FixCode);[IO.File]::WriteAllText($o,$t,(New-Object Text.UTF8Encoding($false)))'
 $WrapperText = $WrapperText.Replace($AssemblyOld, $AssemblyNew)
-[IO.File]::WriteAllText($DiagnosticWrapper, $WrapperText, (New-Object Text.UTF8Encoding($false)))
+[IO.File]::WriteAllText($PatchedWrapper, $WrapperText, (New-Object Text.UTF8Encoding($false)))
 
-Write-Host "RUNTIME_DIAGNOSTIC_BASE_COMMIT=$BaseCommit"
-Write-Host "RUNTIME_DIAGNOSTIC_BASE_BLOB=$BaseBlob"
-Write-Host 'RUNTIME_WRITE_CONTEXT_DIAGNOSTIC_INJECTION=PROVEN'
+# Never accept or upload stale visual/runtime proof from an earlier attempt.
+$OutputRoot = 'C:\AI\ProceduralJungle\20260804'
+$ProofRoot = Join-Path $OutputRoot 'proof'
+if (Test-Path -LiteralPath $ProofRoot) {
+    Get-ChildItem -LiteralPath $ProofRoot -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like 'capture_*.png' -or $_.Name -in @('gameplay_runtime_proof.json', 'contact_sheet.png', 'visual_capture_audit.json') } |
+        Remove-Item -Force
+}
+foreach ($StalePath in @(
+    (Join-Path $OutputRoot 'acceptance.json'),
+    (Join-Path $RepoRoot 'evidence\latest-procedural-jungle\acceptance.json'),
+    (Join-Path $RepoRoot 'evidence\latest-procedural-jungle\workflow_receipt.json')
+)) {
+    if (Test-Path -LiteralPath $StalePath) { Remove-Item -LiteralPath $StalePath -Force }
+}
 
-& $DiagnosticWrapper -ExpectedBranch $ExpectedBranch
+Write-Host "RUNTIME_REPAIR_BASE_COMMIT=$BaseCommit"
+Write-Host "RUNTIME_REPAIR_BASE_BLOB=$BaseBlob"
+Write-Host 'JUNGLE_CAPTURE_PATH_COLLISION_FIX_INJECTION=PROVEN'
+Write-Host 'STALE_JUNGLE_PROOF_CLEARED=PROVEN'
+
+& $PatchedWrapper -ExpectedBranch $ExpectedBranch
 $WorkerExit = $LASTEXITCODE
-if ($WorkerExit -ne 0) { throw "Runtime write-context diagnostic exited with code $WorkerExit" }
-throw 'Runtime write-context diagnostic unexpectedly completed without the fail-fast marker'
+if ($WorkerExit -ne 0) { throw "Capture-path-fixed jungle worker failed with exit code $WorkerExit" }
