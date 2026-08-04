@@ -1,26 +1,26 @@
 {
-  "active_run_count": 5,
+  "active_run_count": 3,
   "classification": "QUEUE_CENSUS_PROVEN",
-  "observed_at": "2026-08-04T01:58:16Z",
+  "observed_at": "2026-08-04T03:19:38Z",
   "runs": [
     {
       "conclusion": null,
-      "created_at": "2026-08-04T01:57:49Z",
+      "created_at": "2026-08-04T03:19:31Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "d0eed0bd1b9e5a66989ea0324b6c905cc1ccc151",
+      "head_sha": "48b83e52e5548b7f35dbc26df10f36e4cd96d75d",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 91870869676,
+          "id": 91882883158,
           "labels": [
             "ubuntu-latest"
           ],
           "name": "inspect-queue",
           "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000021828",
-          "started_at": "2026-08-04T01:58:03Z",
+          "runner_name": "GitHub Actions 1000021853",
+          "started_at": "2026-08-04T03:19:34Z",
           "status": "in_progress",
           "steps": [
             {
@@ -56,126 +56,109 @@
           ]
         }
       ],
-      "name": "Beggars runner queue probe 30870338825",
+      "name": "Beggars runner queue probe 30874422070",
       "path": ".github/workflows/beggars-runner-queue-probe.yml",
-      "run_id": 30870338825,
+      "run_id": 30874422070,
       "status": "in_progress",
-      "updated_at": "2026-08-04T01:58:04Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30870338825"
+      "updated_at": "2026-08-04T03:19:34Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30874422070"
     },
     {
       "conclusion": null,
-      "created_at": "2026-08-04T01:56:48Z",
-      "event": "workflow_dispatch",
+      "created_at": "2026-08-04T03:18:28Z",
+      "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "86bb0022a35357b2ab98a6fe5dd4e47400a7e776",
+      "head_sha": "35bcd0eb7e10bcfcef560e1a5ff3a6da196ede84",
       "jobs": [
+        {
+          "completed_at": "2026-08-04T03:18:39Z",
+          "conclusion": "success",
+          "id": 91882737872,
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "name": "register",
+          "runner_group_name": "GitHub Actions",
+          "runner_name": "GitHub Actions 1000021852",
+          "started_at": "2026-08-04T03:18:30Z",
+          "status": "completed",
+          "steps": [
+            {
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Publish exact run identity",
+              "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 6,
+              "status": "completed"
+            },
+            {
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 7,
+              "status": "completed"
+            }
+          ]
+        },
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 91870725750,
+          "id": 91882762277,
           "labels": [
             "self-hosted",
             "Windows",
             "X64"
           ],
-          "name": "reconstruct-and-render-one-head",
-          "runner_group_name": "",
-          "runner_name": "",
-          "started_at": "2026-08-04T01:56:50Z",
+          "name": "fuse-and-render",
+          "runner_group_name": null,
+          "runner_name": null,
+          "started_at": "2026-08-04T03:18:39Z",
           "status": "queued",
           "steps": []
         }
       ],
-      "name": "Beggars FaceVerse v4 visual preflight 30870288168",
-      "path": ".github/workflows/beggars-faceverse-v4-preflight.yml",
-      "run_id": 30870288168,
-      "status": "pending",
-      "updated_at": "2026-08-04T01:56:50Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30870288168"
+      "name": "Beggars FaceVerse identity fusion 30874373589",
+      "path": ".github/workflows/beggars-faceverse-identity-fusion.yml",
+      "run_id": 30874373589,
+      "status": "queued",
+      "updated_at": "2026-08-04T03:18:39Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30874373589"
     },
     {
       "conclusion": null,
-      "created_at": "2026-08-04T01:54:17Z",
+      "created_at": "2026-08-04T03:06:47Z",
       "event": "pull_request",
       "head_branch": "feature/procedural-jungle-playable-20260804",
-      "head_sha": "a41793f31891efd21600bf8502e989d48b6fa674",
+      "head_sha": "5d8a1086073f218a4f2ed35d9f91fd1b89b00fed",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 91870344872,
+          "id": 91881048178,
           "labels": [
             "self-hosted",
             "Windows",
             "X64"
           ],
           "name": "build-and-prove",
-          "runner_group_name": "",
-          "runner_name": "",
-          "started_at": "2026-08-04T01:54:18Z",
-          "status": "queued",
-          "steps": []
-        }
-      ],
-      "name": "Jungle PR 15 walking panda",
-      "path": ".github/workflows/procedural-jungle-pr-local-worker.yml",
-      "run_id": 30870162326,
-      "status": "queued",
-      "updated_at": "2026-08-04T01:54:18Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30870162326"
-    },
-    {
-      "conclusion": null,
-      "created_at": "2026-08-04T01:54:14Z",
-      "event": "push",
-      "head_branch": "feature/procedural-jungle-playable-20260804",
-      "head_sha": "a41793f31891efd21600bf8502e989d48b6fa674",
-      "jobs": [
-        {
-          "completed_at": null,
-          "conclusion": null,
-          "id": 91870336613,
-          "labels": [
-            "self-hosted",
-            "Windows",
-            "X64"
-          ],
-          "name": "build-and-prove",
-          "runner_group_name": "",
-          "runner_name": "",
-          "started_at": "2026-08-04T01:54:15Z",
-          "status": "queued",
-          "steps": []
-        }
-      ],
-      "name": "Procedural jungle and walking panda 30870159728",
-      "path": ".github/workflows/procedural-jungle-local-worker.yml",
-      "run_id": 30870159728,
-      "status": "queued",
-      "updated_at": "2026-08-04T01:54:14Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30870159728"
-    },
-    {
-      "conclusion": null,
-      "created_at": "2026-08-04T01:53:55Z",
-      "event": "push",
-      "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "b5d0a28c947280bee191ac5c5fd6d423ec646355",
-      "jobs": [
-        {
-          "completed_at": null,
-          "conclusion": null,
-          "id": 91870287594,
-          "labels": [
-            "self-hosted",
-            "Windows",
-            "X64"
-          ],
-          "name": "audit-model-pair",
           "runner_group_name": "Default",
           "runner_name": "LOWVRAM3D-KONE",
-          "started_at": "2026-08-04T01:55:18Z",
+          "started_at": "2026-08-04T03:13:53Z",
           "status": "in_progress",
           "steps": [
             {
@@ -186,43 +169,55 @@
             },
             {
               "conclusion": "success",
-              "name": "Checkout exact audit source",
+              "name": "Checkout exact jungle branch",
               "number": 2,
               "status": "completed"
             },
             {
-              "conclusion": null,
-              "name": "Audit cached FaceVerse pair",
+              "conclusion": "success",
+              "name": "Verify trusted repository and branch",
               "number": 3,
+              "status": "completed"
+            },
+            {
+              "conclusion": null,
+              "name": "Run deterministic direct worker",
+              "number": 4,
               "status": "in_progress"
             },
             {
               "conclusion": null,
-              "name": "Publish compact audit receipt",
-              "number": 4,
-              "status": "pending"
-            },
-            {
-              "conclusion": null,
-              "name": "Upload pair audit",
+              "name": "Gate acceptance evidence",
               "number": 5,
               "status": "pending"
             },
             {
               "conclusion": null,
-              "name": "Post Checkout exact audit source",
-              "number": 10,
+              "name": "Commit compact proof",
+              "number": 6,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Upload proof artifacts",
+              "number": 7,
+              "status": "pending"
+            },
+            {
+              "conclusion": null,
+              "name": "Post Checkout exact jungle branch",
+              "number": 14,
               "status": "pending"
             }
           ]
         }
       ],
-      "name": "Beggars FaceVerse pair audit 30870142965",
-      "path": ".github/workflows/beggars-faceverse-pair-audit.yml",
-      "run_id": 30870142965,
+      "name": "Jungle PR 15 walking panda",
+      "path": ".github/workflows/procedural-jungle-pr-local-worker.yml",
+      "run_id": 30873797949,
       "status": "in_progress",
-      "updated_at": "2026-08-04T01:55:18Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30870142965"
+      "updated_at": "2026-08-04T03:13:54Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30873797949"
     }
   ]
 }
