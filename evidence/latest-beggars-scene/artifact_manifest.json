@@ -1,0 +1,65 @@
+{
+  "automated_build_and_validation": "PROVEN",
+  "classification": "USER_VISUAL_REVIEW_REQUIRED",
+  "files": [
+    {
+      "bytes": 18947807,
+      "name": "beggars_photoreal_recreation.blend",
+      "sha256": "cf83a2214b60a3e9cd67d420afc68f5ef10ed6cab607fd341451196f3905ad26"
+    },
+    {
+      "bytes": 1026120,
+      "name": "hero_clean_render.png",
+      "sha256": "aab517af1ff7b70971044ca1c9ce92ac06cfea1792a2421cd285d159fd3dce2f"
+    },
+    {
+      "bytes": 980742,
+      "name": "wide_scene_proof.png",
+      "sha256": "61fd38056c18f3f42f70ae989b0386e245e93b1837d43dc7beab36643d983e34"
+    },
+    {
+      "bytes": 2672,
+      "name": "scene_receipt.json",
+      "sha256": "dbb28473788c33108c2844e2df5a6da3acea37fcbd4225ecf53cdaa507c33752"
+    },
+    {
+      "bytes": 1056726,
+      "name": "beggars_photoreal_recreation.mp4",
+      "sha256": "3e247ba402a83ae6e87a6325b2fa384c086b283da50db992e59a327068d12edd"
+    },
+    {
+      "bytes": 2294797,
+      "name": "contact_sheet.png",
+      "sha256": "28cd4fbee4ca915e83ea2bab775cb801d3a0fea49b06c090387bd6b834064ffc"
+    },
+    {
+      "bytes": 1007271,
+      "name": "proof_frame_01.png",
+      "sha256": "332ccdc84bb34ccc52fa05919438bc5a0d55207260953f38143617c85b05f911"
+    },
+    {
+      "bytes": 1026241,
+      "name": "proof_frame_02.png",
+      "sha256": "1c210adbb2e2f08a01363255954c6c41c7f11baeedf1adb2c90cb260c09d0d3b"
+    },
+    {
+      "bytes": 1041248,
+      "name": "proof_frame_03.png",
+      "sha256": "19daa19e2a14b3c0877af3c2acca61c4ce8e42928db0a6022e6a3c06eeb17149"
+    },
+    {
+      "bytes": 966,
+      "name": "reference_reconstruction_report.json",
+      "sha256": "afe083a5e8c961d11da0a6bde95fe619d6f8ab2186b212b224495e7c84bb13d9"
+    },
+    {
+      "bytes": 1000,
+      "name": "worker_receipt.json",
+      "sha256": "340feb3c33286cc4c1c8ea43463df2e1e7d5c230177caf3de8e27fc5b50b4628"
+    }
+  ],
+  "head_sha": "c535d9551dbf6a7edc0860b3e72f25eb1a38abee",
+  "meme_clip_match": "NOT_PROVEN_PENDING_USER_REVIEW",
+  "reference_media_in_artifact": false,
+  "workflow_run_id": "30885922243"
+}

@@ -1,0 +1,75 @@
+{
+  "actor_voice_cloned": false,
+  "animated_shape_keys": 40,
+  "automated_validation": "PROVEN",
+  "claim_policy": "The scene, animation, renders and save/reload are machine-proven. Meme likeness and photoreal match remain NOT_PROVEN until user review.",
+  "classification": "USER_VISUAL_REVIEW_REQUIRED",
+  "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\artifact\\contact_sheet.png",
+  "face_triangles": 76073,
+  "face_vertices": 38365,
+  "final_video": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\artifact\\beggars_photoreal_recreation.mp4",
+  "final_video_metadata": {
+    "duration_seconds": 4.0,
+    "fps": 24.0,
+    "frame_count": 96,
+    "resolution": [
+      1280,
+      720
+    ]
+  },
+  "fps": 24,
+  "frame_range": [
+    1,
+    96
+  ],
+  "hair_strands": 42,
+  "likeness_match": "NOT_PROVEN_PENDING_USER_REVIEW",
+  "outputs": {
+    "blend": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\artifact\\beggars_photoreal_recreation.blend",
+    "hero_render": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\artifact\\hero_clean_render.png",
+    "proof_frames": [
+      "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\artifact\\proof_frame_01.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\artifact\\proof_frame_02.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\artifact\\proof_frame_03.png"
+    ],
+    "silent_video": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\artifact\\beggars_photoreal_recreation_silent.mp4",
+    "wide_render": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\artifact\\wide_scene_proof.png"
+  },
+  "reference_media_packaged": false,
+  "reference_media_uploaded": false,
+  "reload_validation": {
+    "blend_reloaded": true,
+    "camera": "CAM_Hero",
+    "frame_end": 96,
+    "frame_start": 1,
+    "missing_required_objects": [],
+    "object_count": 93
+  },
+  "render_engine": "BLENDER_EEVEE",
+  "required_objects": [
+    "CAM_Hero",
+    "CAM_Wide",
+    "CHAR_Antinous",
+    "CHAR_Beggar",
+    "SET_BanquetHall",
+    "PROP_FeastTable",
+    "LIGHT_WarmKey",
+    "LIGHT_WarmRim"
+  ],
+  "resolution": [
+    1280,
+    720
+  ],
+  "scene_id": "beggars-banquet-meme-clip-match-20260804",
+  "set": {
+    "background_suitors": 5,
+    "bokeh_lights": 7,
+    "goblets": 4
+  },
+  "source_of_truth": "the exact checked-out github.sha on the dedicated branch",
+  "tracked_input_frames": 40,
+  "workflow": {
+    "head_sha": "c535d9551dbf6a7edc0860b3e72f25eb1a38abee",
+    "run_id": "30885922243"
+  }
+}

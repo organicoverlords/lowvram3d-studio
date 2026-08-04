@@ -1,0 +1,23 @@
+{
+  "classification": "PROVEN",
+  "keyframe_index": 17,
+  "keyframe_output": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\_reference_private\\selected_keyframe.png",
+  "keyframe_source_frame": 19,
+  "output_npz": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\_reference_private\\face_sequence.npz",
+  "reference_media_policy": "Extracted frames and source clip are local temporary inputs and must not be committed or uploaded.",
+  "route": "YUNET_TRACK_PLUS_3DDFA_V2_ONNX",
+  "sample_stride": 1,
+  "sampled_fps": 10.0,
+  "sampled_frame_count": 40,
+  "smoothing": 0.68,
+  "source_clip": "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\run-30885922243\\_reference_private\\download\\source.mp4",
+  "source_dimensions": [
+    480,
+    360
+  ],
+  "source_fps": 10.0,
+  "source_frame_count": 42,
+  "third_party_commit": "1b6c67601abffc1e9f248b291708aef0e43b55ae",
+  "triangle_count": 76073,
+  "vertex_count": 38365
+}
