@@ -1,26 +1,26 @@
 {
-  "active_run_count": 2,
+  "active_run_count": 1,
   "classification": "QUEUE_CENSUS_PROVEN",
-  "observed_at": "2026-08-04T04:43:48Z",
+  "observed_at": "2026-08-04T04:53:19Z",
   "runs": [
     {
       "conclusion": null,
-      "created_at": "2026-08-04T04:43:40Z",
+      "created_at": "2026-08-04T04:53:13Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "59b0cb2933f4f7af97d0b201985259d438578b75",
+      "head_sha": "85518023a4a7126c4fe19f6ddd70b297916e54d8",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 91894735350,
+          "id": 91896074306,
           "labels": [
             "ubuntu-latest"
           ],
           "name": "inspect-queue",
           "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000021898",
-          "started_at": "2026-08-04T04:43:43Z",
+          "runner_name": "GitHub Actions 1000021901",
+          "started_at": "2026-08-04T04:53:15Z",
           "status": "in_progress",
           "steps": [
             {
@@ -56,125 +56,12 @@
           ]
         }
       ],
-      "name": "Beggars runner queue probe 30878519038",
+      "name": "Beggars runner queue probe 30878982177",
       "path": ".github/workflows/beggars-runner-queue-probe.yml",
-      "run_id": 30878519038,
+      "run_id": 30878982177,
       "status": "in_progress",
-      "updated_at": "2026-08-04T04:43:44Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30878519038"
-    },
-    {
-      "conclusion": null,
-      "created_at": "2026-08-04T04:36:19Z",
-      "event": "push",
-      "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "973717c207e2ac3b4e6c67323ded450a86856e4d",
-      "jobs": [
-        {
-          "completed_at": "2026-08-04T04:40:57Z",
-          "conclusion": "success",
-          "id": 91894332765,
-          "labels": [
-            "ubuntu-latest"
-          ],
-          "name": "register",
-          "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000021896",
-          "started_at": "2026-08-04T04:40:50Z",
-          "status": "completed",
-          "steps": [
-            {
-              "conclusion": "success",
-              "name": "Set up job",
-              "number": 1,
-              "status": "completed"
-            },
-            {
-              "conclusion": "success",
-              "name": "Run actions/checkout@v4",
-              "number": 2,
-              "status": "completed"
-            },
-            {
-              "conclusion": "success",
-              "name": "Publish exact run identity",
-              "number": 3,
-              "status": "completed"
-            },
-            {
-              "conclusion": "success",
-              "name": "Post Run actions/checkout@v4",
-              "number": 6,
-              "status": "completed"
-            },
-            {
-              "conclusion": "success",
-              "name": "Complete job",
-              "number": 7,
-              "status": "completed"
-            }
-          ]
-        },
-        {
-          "completed_at": null,
-          "conclusion": null,
-          "id": 91894367452,
-          "labels": [
-            "self-hosted",
-            "Windows",
-            "X64"
-          ],
-          "name": "build-and-render",
-          "runner_group_name": "Default",
-          "runner_name": "LOWVRAM3D-KONE",
-          "started_at": "2026-08-04T04:43:29Z",
-          "status": "in_progress",
-          "steps": [
-            {
-              "conclusion": "success",
-              "name": "Set up job",
-              "number": 1,
-              "status": "completed"
-            },
-            {
-              "conclusion": "success",
-              "name": "Checkout exact conforming-hair v7 source",
-              "number": 2,
-              "status": "completed"
-            },
-            {
-              "conclusion": null,
-              "name": "Apply complete v7 recursion compatibility",
-              "number": 3,
-              "status": "in_progress"
-            },
-            {
-              "conclusion": null,
-              "name": "Run conforming-hair Blender v7 preflight",
-              "number": 4,
-              "status": "pending"
-            },
-            {
-              "conclusion": null,
-              "name": "Upload conforming-hair Blender v7 preflight",
-              "number": 5,
-              "status": "pending"
-            },
-            {
-              "conclusion": null,
-              "name": "Post Checkout exact conforming-hair v7 source",
-              "number": 10,
-              "status": "pending"
-            }
-          ]
-        }
-      ],
-      "name": "Beggars Blender FaceVerse v7 guarded preflight 30878169523",
-      "path": ".github/workflows/beggars-blender-faceverse-v7-preflight.yml",
-      "run_id": 30878169523,
-      "status": "in_progress",
-      "updated_at": "2026-08-04T04:43:30Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30878169523"
+      "updated_at": "2026-08-04T04:53:16Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30878982177"
     }
   ]
 }
