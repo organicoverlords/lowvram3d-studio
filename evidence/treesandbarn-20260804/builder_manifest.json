@@ -1,0 +1,8 @@
+{
+  "available_builder_count": 9,
+  "classification": "PROVEN",
+  "filename_not_used_for_selection": true,
+  "schema_version": "builder_manifest_v2",
+  "selected": {},
+  "selection_source": "SceneSpec semantic classes and representation manifest"
+}

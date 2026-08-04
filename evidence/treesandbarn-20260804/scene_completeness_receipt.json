@@ -1,0 +1,32 @@
+{
+  "all_major_regions_accounted_for": true,
+  "classification": "PROVEN",
+  "interactive_regions_require_geometry_collision_navigation": true,
+  "regions": [
+    {
+      "collision_policy": "none",
+      "completion_state": "source_visible",
+      "confidence": 0.5,
+      "evidence_source": [
+        "source_image"
+      ],
+      "independent_geometry": false,
+      "interactive_complete": false,
+      "layer_type": "visual_shell",
+      "material_policy": "local_material",
+      "navigation_policy": "ignored",
+      "region_id": "visual_shell_001",
+      "repair_owner": "background",
+      "representation": "VISUAL_SHELL",
+      "responsible_builder": "background",
+      "semantic_class": "visual_shell",
+      "source_shell_only": true,
+      "spec_reference": "visual_shell_001",
+      "validation_method": "scene_spec_and_layer_receipt"
+    }
+  ],
+  "scene_id": "treesandbarn_20260804",
+  "schema_version": "scene_completeness_receipt_v1",
+  "unresolved_regions": [],
+  "visual_shell_not_counted_as_editable": true
+}

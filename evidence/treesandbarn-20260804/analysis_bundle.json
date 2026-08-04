@@ -1,0 +1,108 @@
+{
+  "analysis_mode": "cpu_bootstrap",
+  "camera": {
+    "contract_status": "REQUIRES_ANALYSIS",
+    "hypothesis": "unresolved_single_view_camera",
+    "projection": "perspective",
+    "source_view_id": "source",
+    "uncertainty": 1.0
+  },
+  "classification": "PROVEN",
+  "coordinate_system": {
+    "handedness": "right",
+    "units": "meters",
+    "up_axis": "Z"
+  },
+  "depth": {
+    "confidence": 0.0,
+    "representation": "unknown_depth_bands",
+    "uncertainty": "requires_depth_estimator"
+  },
+  "depth_bands": [
+    {
+      "confidence": 0.2,
+      "far_m": 100.0,
+      "id": "unknown_001",
+      "near_m": 0.1
+    }
+  ],
+  "image_quality": {
+    "alpha_present": true,
+    "decode": "PROVEN",
+    "dimensions_px": [
+      1448,
+      1086
+    ],
+    "exposure_uncertainty": "NOT_ESTIMATED",
+    "mean_rgb": [
+      55.8056,
+      53.6982,
+      45.818
+    ],
+    "stddev_rgb": [
+      38.1814,
+      37.2462,
+      36.5357
+    ]
+  },
+  "material_regions": [],
+  "object_instances": [],
+  "regions": [
+    {
+      "bbox_norm_xyxy": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ],
+      "confidence": 0.5,
+      "id": "visual_shell_001",
+      "layer_type": "visual_shell",
+      "representation": "visual_shell",
+      "uncertainty": "semantic_analysis_not_instantiated"
+    }
+  ],
+  "resource_budgets": {
+    "gpu_work_requested": false,
+    "max_triangles": 1500000,
+    "max_vram_mb": 6144
+  },
+  "scene_id": "treesandbarn_20260804",
+  "schema_version": "analysis_bundle_v1",
+  "source": {
+    "dimensions_px": [
+      1448,
+      1086
+    ],
+    "kind": "single_image",
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+    "sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b"
+  },
+  "structural_features": [],
+  "support_relationships": [],
+  "surface_orientation": {
+    "confidence": 0.0,
+    "representation": "unknown_normals_or_slopes",
+    "uncertainty": "requires_surface_estimator"
+  },
+  "uncertainties": [
+    {
+      "description": "CPU bootstrap has not inferred reliable semantic regions",
+      "fallback": "visual_shell_and_unresolved",
+      "id": "semantic_bootstrap",
+      "severity": "high"
+    }
+  ],
+  "visibility": [
+    {
+      "classification": "fully_visible",
+      "completion_policy": "visual_shell_only",
+      "region_id": "visual_shell_001"
+    }
+  ],
+  "world_scale": {
+    "confidence": 0.0,
+    "status": "UNRESOLVED",
+    "units": "meters"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "classification": "REJECTED",
+  "default_grey_allowed": false,
+  "manual_assignments": 0,
+  "record_count": 0,
+  "records": [],
+  "schema_version": "material_build_receipt_v1",
+  "source": "scene_content_manifest"
+}

@@ -1,0 +1,227 @@
+{
+  "actors": [],
+  "builders": {
+    "architecture": {
+      "actor_count": 0,
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": []
+    },
+    "crossing": {
+      "actor_count": 0,
+      "builder_id": "crossing",
+      "builder_version": "1.0.0",
+      "classification": "NOT_PROVEN",
+      "region_ids": []
+    },
+    "environment": {
+      "actor_count": 0,
+      "builder_id": "environment",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": []
+    },
+    "terrain": {
+      "actor_count": 0,
+      "builder_id": "terrain",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": []
+    },
+    "vegetation": {
+      "actor_count": 0,
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": []
+    },
+    "water": {
+      "actor_count": 0,
+      "builder_id": "water",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": []
+    }
+  },
+  "classification": "PROVEN",
+  "deterministic_seed": 0,
+  "inputs": {
+    "analysis_bundle_schema": "analysis_bundle_v1",
+    "camera_contract": {
+      "contract_status": "REQUIRES_ANALYSIS",
+      "hypothesis": "unresolved_single_view_camera",
+      "projection": "perspective",
+      "source_view_id": "source",
+      "uncertainty": 1.0
+    },
+    "contours": {},
+    "depth_bands": {
+      "records": [
+        {
+          "confidence": 0.2,
+          "far_m": 100.0,
+          "id": "unknown_001",
+          "near_m": 0.1
+        }
+      ]
+    },
+    "material_plan": {
+      "classification": "PROVEN",
+      "default_grey_allowed": false,
+      "global_fallback": "neutral_local_material",
+      "regions": [
+        {
+          "fallback": "local_material",
+          "material_family": "local_material",
+          "observed": true,
+          "region_id": "visual_shell_001",
+          "semantic_class": "visual_shell"
+        }
+      ],
+      "schema_version": "scene_material_analysis_v1"
+    },
+    "representation_manifest": {
+      "classification": "PROVEN",
+      "records": [
+        {
+          "confidence": 0.5,
+          "fallback": "visual_shell",
+          "materially_visible": true,
+          "region_id": "visual_shell_001",
+          "representations": [
+            "visual_shell"
+          ],
+          "selected": "visual_shell",
+          "semantic_class": "visual_shell",
+          "source_camera_important": true
+        }
+      ],
+      "schema_version": "representation_manifest_v1",
+      "selection_policy": "semantic class, confidence, visibility, gameplay role, camera importance, and budgets"
+    },
+    "semantic_masks": {
+      "regions": [
+        {
+          "bbox_norm_xyxy": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "confidence": 0.5,
+          "id": "visual_shell_001",
+          "layer_type": "visual_shell",
+          "representation": "visual_shell",
+          "uncertainty": "semantic_analysis_not_instantiated"
+        }
+      ]
+    },
+    "support_relationships": {
+      "relationships": []
+    },
+    "visibility": {
+      "classification": "PROVEN",
+      "full_reconstruction_claim": false,
+      "policy": "source-visible fidelity with conservative bounded completion",
+      "records": [
+        {
+          "completion_policy": "visual_shell_only",
+          "confidence": 0.5,
+          "decorative": false,
+          "gameplay_only": false,
+          "hidden_geometry_inferred": false,
+          "region_id": "visual_shell_001",
+          "source_visible_evidence": true,
+          "visibility": "fully_visible"
+        }
+      ],
+      "schema_version": "visibility_manifest_v1"
+    },
+    "world_anchors": {
+      "landmarks": []
+    }
+  },
+  "layers": {
+    "architecture": {
+      "actors": [],
+      "builder_id": "architecture",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [],
+      "resource_budget": {
+        "triangles": 200000
+      },
+      "schema_version": "scene_architecture_build_instructions_v1"
+    },
+    "crossing": {
+      "actors": [],
+      "builder_id": "crossing",
+      "builder_version": "1.0.0",
+      "classification": "NOT_PROVEN",
+      "region_ids": [],
+      "resource_budget": {
+        "triangles": 50000
+      },
+      "schema_version": "scene_crossing_build_instructions_v1"
+    },
+    "environment": {
+      "actors": [],
+      "builder_id": "environment",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [],
+      "resource_budget": {
+        "draw_calls": 10
+      },
+      "schema_version": "scene_environment_build_instructions_v1"
+    },
+    "terrain": {
+      "actors": [],
+      "builder_id": "terrain",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [],
+      "resource_budget": {
+        "triangles": 100000
+      },
+      "schema_version": "scene_terrain_build_instructions_v1"
+    },
+    "vegetation": {
+      "actors": [],
+      "builder_id": "vegetation",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [],
+      "resource_budget": {
+        "instances": 1000
+      },
+      "schema_version": "scene_vegetation_build_instructions_v1"
+    },
+    "water": {
+      "actors": [],
+      "builder_id": "water",
+      "builder_version": "1.0.0",
+      "classification": "PROVEN",
+      "region_ids": [],
+      "resource_budget": {
+        "triangles": 20000
+      },
+      "schema_version": "scene_water_build_instructions_v1"
+    }
+  },
+  "manifest_hash": "38c5550a02ca2953d2ff05653f97b5b85bc6f4c35b4a270513fe9d4c69303483",
+  "manual_only_actor_count": 0,
+  "materials": {
+    "classification": "PROVEN",
+    "default_grey_allowed": false,
+    "records": [],
+    "schema_version": "scene_material_build_manifest_v1"
+  },
+  "override_count": 0,
+  "overrides": [],
+  "rebuild_policy": "delete_generated_map_and_scene_local_assets_then_reapply_manifest",
+  "scene_id": "treesandbarn_20260804",
+  "schema_version": "scene_content_manifest_v1",
+  "source_image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b"
+}
