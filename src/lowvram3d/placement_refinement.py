@@ -187,6 +187,20 @@ def refine(placement: dict[str, Any], plane: dict[str, float] | None,
     inferred = [index for index, a in enumerate(actors) if a.get("inferred")]
     for index in inferred:
         targets[index] = None
+    # A surface's extent is not set by its visible pixels. Terrain runs to the
+    # horizon and out of frame on every side, so its projection is clipped and
+    # the ratio against a grass-region bbox is an artefact of the clamp rather
+    # than a measurement -- the barn scene's ground planes read 3.0 and 23.6
+    # against the barn's honest 1.12.
+    #
+    # On that scene this changes nothing, because both slabs already straddle
+    # the camera and were dropped above. It is here for the surface that does
+    # not: a distant water plane projects finitely and would otherwise be
+    # optimised towards the size of whatever patch of it happened to be visible.
+    surfaces = [index for index, a in enumerate(actors)
+                if a.get("kind") in SURFACE_KINDS]
+    for index in surfaces:
+        targets[index] = None
     grounded = np.array([a.get("kind") in GROUNDED_KINDS for a in actors])
     solid = [index for index, a in enumerate(actors)
              if a.get("kind") not in SURFACE_KINDS]
@@ -294,6 +308,7 @@ def refine(placement: dict[str, Any], plane: dict[str, float] | None,
         },
         "unprojectable_actor_count": len(unprojectable),
         "inferred_actor_count": len(inferred),
+        "surface_actor_count": len(surfaces),
         "optimiser": {"method": "L-BFGS-B", "success": bool(solution.success),
                       "iterations": int(solution.nit)},
     }
