@@ -1,5 +1,5 @@
 {
-  "purpose": "Identify whether the canonical Blender v6 registrar or diagnostic is active, queued, or rejected before worker assignment.",
-  "canonical_blender_v6_trigger_commit": "15c4e791d98cb7a14cf505babeb0e8ec5217fa95",
-  "requested_at": "2026-08-04T06:55:00+03:00"
+  "purpose": "Identify the current active and queued self-hosted jobs before the refined Blender v6 run 30877403228 is assigned.",
+  "refined_blender_v6_run_id": 30877403228,
+  "requested_at": "2026-08-04T07:18:00+03:00"
 }
