@@ -1,0 +1,7 @@
+{
+  "classification": "REJECTED",
+  "error": "Exception: StaticMeshComponent: Failed to find property 'collision_profile_name' for attribute 'collision_profile_name' on 'StaticMeshComponent'",
+  "gpu_work_requested": false,
+  "schema_version": "hybrid_level_build_receipt_v1",
+  "traceback": "Traceback (most recent call last):\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/build_scene_from_spec.py\", line 350, in main\n    receipt = build(args)\n              ^^^^^^^^^^^\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/build_scene_from_spec.py\", line 250, in build\n    source_mesh_collision = _set_collision(source_mesh_actors[0], enabled=False, navigation=False)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/build_scene_from_spec.py\", line 147, in _set_collision\n    \"collision_profile\": str(component.get_editor_property(\"collision_profile_name\")),\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nException: StaticMeshComponent: Failed to find property 'collision_profile_name' for attribute 'collision_profile_name' on 'StaticMeshComponent'\n"
+}

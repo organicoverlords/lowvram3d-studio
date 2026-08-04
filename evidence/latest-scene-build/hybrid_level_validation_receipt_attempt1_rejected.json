@@ -1,0 +1,6 @@
+{
+  "classification": "REJECTED",
+  "error": "RuntimeError: source visual shell collision is not disabled: <CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+  "schema_version": "hybrid_level_validation_receipt_v1",
+  "traceback": "Traceback (most recent call last):\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/validate_scene_from_spec.py\", line 207, in main\n    receipt = validate(args)\n              ^^^^^^^^^^^^^^\n  File \"C:/Users/Lauri/Desktop/lowvram3d-scene-smoke-20260803/unreal/validate_scene_from_spec.py\", line 138, in validate\n    raise RuntimeError(f\"source visual shell collision is not disabled: {collision}\")\nRuntimeError: source visual shell collision is not disabled: <CollisionEnabled.QUERY_AND_PHYSICS: 3>\n"
+}

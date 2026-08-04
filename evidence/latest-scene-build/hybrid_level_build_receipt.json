@@ -1,0 +1,190 @@
+{
+  "bounded_correction": "persisted_collision_profiles_on_existing_generated_output",
+  "castle_proxy": {
+    "collision": {
+      "can_ever_affect_navigation": true,
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "collision_profile": "BlockAll"
+    },
+    "dimensions_cm": {
+      "depth_cm": 725.0,
+      "height_cm": 1540.317654822154,
+      "width_cm": 1293.10617935687
+    },
+    "label": "SP_GameplayProxy_Castle_V1",
+    "navigation_intent": "walkable",
+    "record": {
+      "class": "StaticMeshActor",
+      "label": "SP_GameplayProxy_Castle_V1",
+      "location_cm": [
+        1000.0,
+        2800.0,
+        1270.158827411077
+      ],
+      "name": "StaticMeshActor_0",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        12.931061793568698,
+        7.25,
+        15.403176548221541
+      ],
+      "tags": [
+        "castle_proxy",
+        "gameplay_proxy",
+        "replaceable",
+        "scene_spec_generated",
+        "unpromoted"
+      ]
+    }
+  },
+  "classification": "PROVEN",
+  "errors": [],
+  "gpu_work_requested": false,
+  "lighting_present": {
+    "directional_light": true,
+    "sky_light": true
+  },
+  "navigation_proof": "intent_only_not_full_navigation_proof",
+  "output_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "pcg_work_started": false,
+  "player_start": {
+    "class": "PlayerStart",
+    "label": "SP_PlayerStart_Castle_V1",
+    "location_cm": [
+      1000.0,
+      2800.0,
+      700.0
+    ],
+    "name": "PlayerStart_0",
+    "rotation_deg": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "tags": [
+      "gameplay_proxy",
+      "replaceable",
+      "scene_spec_generated",
+      "unpromoted"
+    ]
+  },
+  "proxy_not_promoted": true,
+  "proxy_plan_sha256": "51d27507ab3c97dae30240555b6ffc14b32b690a05f5484ad9b6e37b61b91d4f",
+  "reload_result": true,
+  "save_result": true,
+  "scene_spec_id": "castlegrounds_hybrid_authoritative_v1",
+  "scene_spec_sha256": "83eda7f2dc4240a24622606834a7fe3ee1a38af7a43ef7fdbefaab99764fc73c",
+  "schema_version": "hybrid_level_build_receipt_v1",
+  "source_camera": {
+    "class": "CameraActor",
+    "field_of_view_deg": 66.50838470458984,
+    "label": "Castlegrounds_Camera_Source",
+    "location_cm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "name": "CameraActor_5",
+    "rotation_deg": [
+      -0.0,
+      0.0,
+      89.99999999999999
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "tags": [
+      "ImageToSceneSmoke20260803"
+    ]
+  },
+  "source_camera_contract_preserved": true,
+  "source_camera_fov_deg": 66.50838470458984,
+  "source_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "source_map_file": "..\\..\\..\\..\\..\\..\\Users\\Lauri\\Desktop\\UnrealAITest58\\Content\\AgentProof\\ImageToSceneSmoke_20260803\\Maps\\L_Castlegrounds_ImageToScene_Smoke.umap",
+  "source_map_sha256_after": "39547be52ab21f3f6b0d99c0f2a2f93103a5c0ebf9da56435e37feae04cc15f9",
+  "source_map_sha256_before": "39547be52ab21f3f6b0d99c0f2a2f93103a5c0ebf9da56435e37feae04cc15f9",
+  "source_map_unmodified": true,
+  "source_mesh_actor": {
+    "class": "StaticMeshActor",
+    "label": "Castlegrounds_ReconstructedMesh",
+    "location_cm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "name": "StaticMeshActor_1",
+    "rotation_deg": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "tags": [
+      "CastlegroundsSourceMeshV2",
+      "ImageToSceneSmoke20260803",
+      "MoGe2P2P5D",
+      "source_locked",
+      "source_mesh_v2",
+      "visual_only",
+      "visual_shell"
+    ]
+  },
+  "source_mesh_asset": "/Game/AgentProof/ImageToSceneSmoke_20260803/Geometry/CastlegroundsSourceMeshV2/castlegrounds_source_mesh_v2/StaticMeshes/castlegrounds_source_mesh_v2.castlegrounds_source_mesh_v2",
+  "source_mesh_collision": {
+    "can_ever_affect_navigation": false,
+    "collision_enabled": "<CollisionEnabled.NO_COLLISION: 0>",
+    "collision_profile": "NoCollision"
+  },
+  "source_mesh_remains_visual_only": true,
+  "source_visual_shell_preserved": true,
+  "walkable_ground": {
+    "collision": {
+      "can_ever_affect_navigation": true,
+      "collision_enabled": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>",
+      "collision_profile": "BlockAll"
+    },
+    "label": "SP_GameplayGround_Castle_V1",
+    "record": {
+      "class": "StaticMeshActor",
+      "label": "SP_GameplayGround_Castle_V1",
+      "location_cm": [
+        1000.0,
+        2800.0,
+        450.0
+      ],
+      "name": "StaticMeshActor_2",
+      "rotation_deg": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        30.0,
+        30.0,
+        1.0
+      ],
+      "tags": [
+        "gameplay_proxy",
+        "replaceable",
+        "scene_spec_generated",
+        "unpromoted",
+        "walkable_ground"
+      ]
+    }
+  }
+}

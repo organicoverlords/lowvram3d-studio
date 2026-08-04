@@ -1,0 +1,80 @@
+{
+  "schema_version": "hybrid_level_execution_receipt_v1",
+  "classification": "PROVEN",
+  "repository": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803",
+  "branch": "agent/scene-pipeline-smoke-20260803",
+  "starting_commit": "de18e32dc92b0082d9dddbbb431da934f218d9e3",
+  "source_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_ImageToScene_Smoke",
+  "output_map": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+  "source_map_sha256": "39547be52ab21f3f6b0d99c0f2a2f93103a5c0ebf9da56435e37feae04cc15f9",
+  "commandlet": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor-Cmd.exe",
+  "attempts": [
+    {
+      "attempt": 1,
+      "classification": "REJECTED",
+      "reason": "UE5.8 StaticMeshComponent has no editor property collision_enabled",
+      "receipt": "evidence/latest-scene-build/hybrid_level_build_receipt_attempt1_rejected.json",
+      "log": "C:\\AI\\ScenePipelineSmoke\\20260803\\hybrid_build_commandlet.log",
+      "exit_code": 0
+    },
+    {
+      "attempt": 2,
+      "classification": "REJECTED",
+      "reason": "UE5.8 StaticMeshComponent has no editor property collision_profile_name",
+      "receipt": "evidence/latest-scene-build/hybrid_level_build_receipt_attempt2_rejected.json",
+      "log": "C:\\AI\\ScenePipelineSmoke\\20260803\\hybrid_build_commandlet_attempt2.log",
+      "exit_code": 0
+    },
+    {
+      "attempt": 3,
+      "classification": "PROVEN",
+      "reason": "Fresh build created and reloaded output map",
+      "receipt": "evidence/latest-scene-build/hybrid_level_build_receipt.json",
+      "log": "C:\\AI\\ScenePipelineSmoke\\20260803\\hybrid_build_commandlet_attempt3.log",
+      "exit_code": 0
+    },
+    {
+      "attempt": 4,
+      "classification": "REJECTED",
+      "reason": "Fresh validator exposed non-persistent source collision state",
+      "receipt": "evidence/latest-scene-build/hybrid_level_validation_receipt_attempt1_rejected.json",
+      "log": "C:\\AI\\ScenePipelineSmoke\\20260803\\hybrid_validate_commandlet.log",
+      "exit_code": 0
+    },
+    {
+      "attempt": 5,
+      "classification": "PROVEN",
+      "reason": "Persisted NoCollision profile on generated output",
+      "receipt": "evidence/latest-scene-build/hybrid_level_build_receipt.json",
+      "log": "C:\\AI\\ScenePipelineSmoke\\20260803\\hybrid_build_commandlet_repair.log",
+      "exit_code": 0
+    },
+    {
+      "attempt": 6,
+      "classification": "PROVEN",
+      "reason": "Fresh process reloaded and validated output map",
+      "receipt": "evidence/latest-scene-build/hybrid_level_validation_receipt.json",
+      "log": "C:\\AI\\ScenePipelineSmoke\\20260803\\hybrid_validate_commandlet_after_repair.log",
+      "exit_code": 0
+    }
+  ],
+  "proof_gates": {
+    "scene_spec_to_unreal_manifest": "PROVEN",
+    "protected_source_map": "PROVEN",
+    "source_visual_shell_preserved": "PROVEN",
+    "source_camera_contract": "PROVEN",
+    "gameplay_proxy_dimensions_and_center": "PROVEN",
+    "proxy_not_promoted": "PROVEN",
+    "walkable_ground": "PROVEN",
+    "player_start": "PROVEN",
+    "fresh_process_save_reload": "PROVEN",
+    "source_map_hash_unchanged": "PROVEN",
+    "gpu_work": "NOT_REQUESTED",
+    "pcg_work": "NOT_REQUESTED"
+  },
+  "output_artifact": {
+    "unreal_map_package": "/Game/AgentProof/ImageToSceneSmoke_20260803/Maps/L_Castlegrounds_Hybrid_V1",
+    "build_receipt": "evidence/latest-scene-build/hybrid_level_build_receipt.json",
+    "validation_receipt": "evidence/latest-scene-build/hybrid_level_validation_receipt.json"
+  }
+}
