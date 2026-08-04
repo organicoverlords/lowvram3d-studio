@@ -221,10 +221,20 @@ def plan(placement: dict[str, Any]) -> list[dict[str, Any]]:
     for job in jobs.values():
         if not job["shared_across_instances"]:
             continue
-        # Condition on a middle instance: the ends of a scatter region are the
-        # most likely to be clipped by the region's own bounding box.
+        # Condition on the largest instance.
+        #
+        # This used to take the middle one, which made sense when instances were
+        # even slices of a diced region: the ends were the most likely to be
+        # clipped by the region's own bounding box. Now that an instance is a
+        # connected component, they are real objects of wildly different sizes,
+        # and "middle" is meaningless. On the barn scene it picked a 347-pixel
+        # speck of foliage over the 466,647-pixel tree beside it, produced a
+        # 39x21 crop, and the region was skipped for being too small to
+        # condition on -- so the one real tree in the photograph went ungenerated
+        # a second time, for a completely different reason.
         members = job["actor_indices"]
-        chosen = members[len(members) // 2]
+        chosen = max(members, key=lambda index: (
+            placement["actors"][index].get("cluster_pixel_count") or 0))
         actor = placement["actors"][chosen]
         region_bbox = [float(v) for v in actor.get(
             "region_bbox_norm_xyxy", job["crop_bbox_norm_xyxy"])]
@@ -232,6 +242,13 @@ def plan(placement: dict[str, Any]) -> list[dict[str, Any]]:
             [float(v) for v in actor["source_bbox_norm_xyxy"]], region_bbox)
         job["conditioned_on_actor_index"] = chosen
         job["instance_count"] = len(members)
+        # One mesh is reused for every instance of the region. That is right for
+        # near-identical instances and wrong for a tree beside a shrub, so record
+        # how lopsided they are rather than let the reuse pass unremarked.
+        sizes = [placement["actors"][index].get("cluster_pixel_count") or 0
+                 for index in members]
+        job["conditioned_on_pixel_share"] = round(
+            max(sizes) / max(sum(sizes), 1), 4)
     return sorted(jobs.values(), key=lambda job: job["asset_id"])
 
 

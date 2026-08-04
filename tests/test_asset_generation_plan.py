@@ -332,3 +332,40 @@ def test_a_region_from_an_older_run_still_generates():
     for actor in placement["actors"]:
         actor.pop("separable", None)
     assert plan(placement)[0]["separable"] is True
+
+
+def test_the_biggest_instance_is_the_one_conditioned_on():
+    """Instances are objects now, so "middle" picks whatever happens to sort there.
+
+    On the barn scene that was a 347-pixel speck of foliage next to a
+    466,647-pixel tree: the crop came out 39x21 and the region was skipped for
+    being too small, leaving the photograph's one real tree ungenerated.
+    """
+    placement = place(segmentation(
+        region("vegetation_tree_005", "vegetation", "tree", (0.0, 0.1, 0.9, 0.7))))
+    actors = [a for a in placement["actors"] if a["kind"] == "scatter_instance"]
+    assert len(actors) >= 2
+    for position, actor in enumerate(actors):
+        actor["cluster_pixel_count"] = 100
+        actor["source_bbox_norm_xyxy"] = [0.40, 0.30, 0.42, 0.32]
+    biggest = actors[-1]
+    biggest["cluster_pixel_count"] = 500_000
+    biggest["source_bbox_norm_xyxy"] = [0.05, 0.15, 0.85, 0.65]
+
+    job = plan(placement)[0]
+    chosen = placement["actors"][job["conditioned_on_actor_index"]]
+    assert chosen is biggest
+    # And the crop is the big one's window, not a speck's.
+    assert job["crop_bbox_norm_xyxy"][2] - job["crop_bbox_norm_xyxy"][0] > 0.5
+
+
+def test_lopsided_instances_are_recorded_not_hidden():
+    """One mesh serves every instance; say so when they are nothing alike."""
+    placement = place(segmentation(
+        region("vegetation_tree_005", "vegetation", "tree", (0.0, 0.1, 0.9, 0.7))))
+    actors = [a for a in placement["actors"] if a["kind"] == "scatter_instance"]
+    for actor in actors:
+        actor["cluster_pixel_count"] = 100
+    actors[0]["cluster_pixel_count"] = 900_000
+
+    assert plan(placement)[0]["conditioned_on_pixel_share"] > 0.99
