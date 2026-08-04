@@ -133,9 +133,32 @@ def _measured_extent(selected):
     }
 
 
-def cluster_region_points(points, selection, observed, width, height,
-                          max_clusters=MAX_CLUSTERS):
-    """Split one region's observed points into spatially coherent clumps.
+def connected_components(observed, min_pixels=MIN_CLUSTER_POINTS):
+    """Split a region mask into its disconnected pieces, largest first.
+
+    This is the one instance signal available without an instance model: two
+    trees with sky between them are two components, and no amount of clustering
+    3D points is needed to know it. Two trees whose canopies touch are one
+    component, and nothing here can tell otherwise -- which is the honest
+    boundary of what a semantic mask can support, and why the design notes rank
+    a real instance model first.
+    """
+    import numpy as np
+    from scipy import ndimage
+
+    labelled, count = ndimage.label(observed)
+    pieces = []
+    for index in range(1, count + 1):
+        piece = labelled == index
+        if piece.sum() >= min_pixels:
+            pieces.append(piece)
+    pieces.sort(key=lambda p: -p.sum())
+    return pieces
+
+
+def _cluster_one_mass(points, selection, observed, width, height,
+                      max_clusters=MAX_CLUSTERS):
+    """Split one connected mass into spatially coherent clumps.
 
     Returns image-space descriptions -- normalised centroid, depth, pixel bbox
     -- rather than world points, so placement keeps a single unprojection and a
@@ -204,6 +227,69 @@ def cluster_region_points(points, selection, observed, width, height,
         })
     clusters.sort(key=lambda c: -c["pixel_count"])
     return clusters
+
+
+def _slices_for_shape(points, piece):
+    """How many objects a connected mass plausibly contains, from its shape.
+
+    The count used to come from pixel count alone, which meant any region with
+    enough pixels was diced -- a single clean tree became six clumps because it
+    was photographed close up. Pixel count measures how much of the image a
+    thing occupies, not how many things it is.
+
+    Shape does carry a signal: a tree is roughly as wide as it is tall, and a
+    hedge line is several times wider. Slicing by that ratio at least ties the
+    number of pieces to a measurement instead of to resolution. It is still a
+    decomposition rather than instance detection, which is why everything it
+    produces is marked `separable: false`.
+    """
+    import numpy as np
+
+    coords = points[piece]
+    coords = coords[np.isfinite(coords).all(axis=1)]
+    if len(coords) < MIN_CLUSTER_POINTS:
+        return 1
+    extent = _measured_extent(coords)["size"]
+    lateral = max(extent[0], extent[1])
+    upright = max(extent[2], 1e-3)
+    return max(1, int(round(lateral / upright)))
+
+
+def cluster_region_points(points, selection, observed, width, height,
+                          max_clusters=MAX_CLUSTERS):
+    """Split a region into instances, saying which ones are actually instances.
+
+    Connected components first, because that is measured: a tree with sky either
+    side of it is its own object, and the pipeline can say so without a model.
+    Only a component too large to be one thing is subdivided further, and those
+    slices are marked `separable: false` -- they are a decomposition of one mass
+    for placement, not objects in their own right.
+
+    Downstream this is what lets the generator refuse a crop with no subject and
+    the overlap audit stop counting a hedge against itself, both of which were
+    previously rediscovering the same fact from their own side.
+    """
+    pieces = connected_components(observed)
+    if not pieces:
+        return _cluster_one_mass(points, selection, observed, width, height,
+                                 max_clusters)
+
+    total = sum(int(piece.sum()) for piece in pieces)
+    clusters = []
+    for component_id, piece in enumerate(pieces):
+        pixels = int(piece.sum())
+        # Share the cluster budget by size, so one large mass does not consume
+        # every slot and leave real separate objects unrepresented.
+        budget = max(1, int(round(max_clusters * pixels / max(total, 1))))
+        budget = min(budget, _slices_for_shape(points, piece))
+        found = _cluster_one_mass(points, selection, piece, width, height, budget)
+        for cluster in found:
+            cluster["component_id"] = component_id
+            cluster["component_pixel_count"] = pixels
+            cluster["separable"] = bool(len(found) == 1)
+        clusters.extend(found)
+    clusters.sort(key=lambda c: -c["pixel_count"])
+    return clusters[:max_clusters]
 
 
 def segment(image_path: Path, model_name: str = SEG_MODEL,
