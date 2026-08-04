@@ -3,8 +3,8 @@
   "defects": [
     {
       "automatic_repair_safe": false,
-      "defect_id": "missing_source_view_render",
-      "repair_owner": "unreal_assembly|source_view_validation",
+      "defect_id": "geometry_comparison_metrics_missing",
+      "repair_owner": "camera_estimation|semantic_segmentation|unreal_assembly",
       "severity": "high",
       "stage": "source_view_validation"
     }

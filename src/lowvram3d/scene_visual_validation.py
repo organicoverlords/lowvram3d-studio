@@ -41,8 +41,32 @@ def compare_source_view(source_path: str | Path, render_path: str | Path, spec: 
             defects.append({"defect_id": "mostly_blank_render", "stage": "visual_shell_generation|unreal_assembly", "severity": "high", "repair_owner": "camera_estimation|representation_selection", "automatic_repair_safe": False})
         if mean_delta > 70:
             defects.append({"defect_id": "colour_distribution_mismatch", "stage": "material_harmonization", "severity": "medium", "repair_owner": "material_generation|material_harmonization", "automatic_repair_safe": True})
-        classification = "PROVEN" if not defects else "REJECTED"
-    return {"schema_version": "source_view_validation_v1", "classification": classification, "tier": tier, "source": source, "render": render, "metrics": {"landmark_reprojection": "NOT_PROVEN", "silhouette_overlap": "NOT_PROVEN", "semantic_region_overlap": "NOT_PROVEN", "major_edge_alignment": "NOT_PROVEN", "colour_distribution": "PROVEN" if not defects else "REJECTED", "depth_ordering": "NOT_PROVEN"}, "defects": defects, "threshold_policy": {"smoke_render_non_dark_min": 0.03, "smoke_mean_rgb_delta_max": 70.0}}
+        if not defects:
+            defects.append({"defect_id": "geometry_comparison_metrics_missing", "stage": "source_view_validation", "severity": "high", "repair_owner": "camera_estimation|semantic_segmentation|unreal_assembly", "automatic_repair_safe": False})
+            classification = "NOT_PROVEN"
+        else:
+            classification = "REJECTED"
+    return {"schema_version": "source_view_validation_v1", "classification": classification, "tier": tier, "source": source, "render": render, "metrics": {"landmark_reprojection": "NOT_PROVEN", "silhouette_overlap": "NOT_PROVEN", "semantic_region_overlap": "NOT_PROVEN", "major_edge_alignment": "NOT_PROVEN", "colour_distribution": "PROVEN" if not defects or all(item.get("defect_id") == "geometry_comparison_metrics_missing" for item in defects) else "REJECTED", "depth_ordering": "NOT_PROVEN"}, "defects": defects, "threshold_policy": {"smoke_render_non_dark_min": 0.03, "smoke_mean_rgb_delta_max": 70.0}}
+
+
+def write_source_comparison(source_path: str | Path, render_path: str | Path, output_path: str | Path) -> dict[str, Any]:
+    """Write an honest side-by-side comparison image for human review."""
+    from PIL import Image, ImageDraw
+
+    source = Image.open(source_path).convert("RGB")
+    render = Image.open(render_path).convert("RGB")
+    width = max(source.width, render.width)
+    height = max(source.height, render.height) + 32
+    canvas = Image.new("RGB", (width * 2, height), (32, 32, 32))
+    canvas.paste(source.resize((width, height - 32)), (0, 32))
+    canvas.paste(render.resize((width, height - 32)), (width, 32))
+    draw = ImageDraw.Draw(canvas)
+    draw.text((8, 8), "SOURCE", fill=(255, 255, 255))
+    draw.text((width + 8, 8), "RENDER", fill=(255, 255, 255))
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(output)
+    return {"path": str(output.resolve()), "dimensions_px": list(canvas.size)}
 
 
 def build_offset_validation(render_records: list[Mapping[str, Any]], tier: str = "smoke") -> dict[str, Any]:

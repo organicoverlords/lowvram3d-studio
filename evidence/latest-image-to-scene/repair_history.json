@@ -5,8 +5,8 @@
     {
       "affected_region": null,
       "automatic_repair_safe": false,
-      "defect_id": "missing_source_view_render",
-      "proposed_correction": "unreal_assembly|source_view_validation",
+      "defect_id": "geometry_comparison_metrics_missing",
+      "proposed_correction": "camera_estimation|semantic_segmentation|unreal_assembly",
       "responsible_stage": "source_view_validation",
       "result": "PENDING_USER_OR_LIVE_EDITOR",
       "retry_count": 0,

@@ -27,7 +27,7 @@ from .scene_graph import build_scene_graph, validate_scene_graph
 from .scene_material_analysis import build_material_regions
 from .scene_representation import build_representation_manifest
 from .scene_visibility import build_visibility_manifest
-from .scene_visual_validation import compare_source_view, repair_history
+from .scene_visual_validation import compare_source_view, repair_history, write_source_comparison
 
 
 def _sha256(path: Path) -> str:
@@ -190,9 +190,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     _write_json(evidence / "environment_plan.json", {"schema_version": "environment_plan_v1", "classification": "PROVEN" if args.input_kind == "scene" else "NOT_APPLICABLE", "lighting": spec.get("lighting", {}), "atmosphere": spec.get("atmosphere", {}), "fallback": "lightweight_sky_and_fog"})
     _write_json(evidence / "water_crossing_plan.json", {"schema_version": "water_crossing_plan_v1", "classification": "PROVEN" if args.input_kind == "scene" and (spec.get("splines") or any(str(item.get("layer_type")) in {"water", "crossing"} for item in spec.get("regions", []))) else "NOT_APPLICABLE", "splines": spec.get("splines", []), "navigation_policy": "water_excluded_crossing_walkable"})
     _write_json(evidence / "gameplay_plan.json", {"schema_version": "gameplay_plan_v1", "classification": "PROVEN" if args.input_kind == "scene" else "NOT_APPLICABLE", "interactive_regions": [str(item.get("id")) for item in spec.get("regions", []) if item.get("interactive") or item.get("walkable")], "fallback": "bounded_gameplay_proxy"})
-    source_render = evidence / "screenshots" / "source_view_render.png"
-    if source_render.is_file():
+    source_render = next((candidate for candidate in (evidence / "screenshots" / "source_view_render.png", evidence / "screenshots" / "source_camera.png", evidence / "screenshots" / "front.png") if candidate.is_file()), None)
+    if source_render is not None:
         source_view_validation = compare_source_view(image, source_render, spec, args.quality_tier)
+        source_view_validation["render_path"] = str(source_render.resolve())
+        source_view_render = evidence / "source_view_render.png"
+        if source_render.resolve() != source_view_render.resolve():
+            from PIL import Image
+            Image.open(source_render).convert("RGB").save(source_view_render)
+        source_view_validation["canonical_render_path"] = str(source_view_render.resolve())
+        source_view_validation["comparison_image"] = write_source_comparison(image, source_render, evidence / "source_view_comparison.png")
     else:
         source_view_validation = {"schema_version": "source_view_validation_v1", "classification": "NOT_PROVEN", "reason": "render_not_available", "defects": [{"defect_id": "missing_source_view_render", "stage": "source_view_validation", "severity": "high", "repair_owner": "unreal_assembly|source_view_validation", "automatic_repair_safe": False}]}
     offset_view_validation = {"schema_version": "offset_view_validation_v1", "classification": "NOT_PROVEN", "reason": "live_editor_capture_required", "views": [], "defects": [{"defect_id": "missing_offset_views", "stage": "offset_view_validation", "severity": "high", "repair_owner": "unseen_world_completion", "automatic_repair_safe": False}]}

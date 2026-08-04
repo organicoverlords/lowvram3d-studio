@@ -1,14 +1,71 @@
 {
+  "canonical_render_path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-image-to-scene\\source_view_render.png",
   "classification": "NOT_PROVEN",
+  "comparison_image": {
+    "dimensions_px": [
+      2896,
+      1118
+    ],
+    "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-image-to-scene\\source_view_comparison.png"
+  },
   "defects": [
     {
       "automatic_repair_safe": false,
-      "defect_id": "missing_source_view_render",
-      "repair_owner": "unreal_assembly|source_view_validation",
+      "defect_id": "geometry_comparison_metrics_missing",
+      "repair_owner": "camera_estimation|semantic_segmentation|unreal_assembly",
       "severity": "high",
       "stage": "source_view_validation"
     }
   ],
-  "reason": "render_not_available",
-  "schema_version": "source_view_validation_v1"
+  "metrics": {
+    "colour_distribution": "PROVEN",
+    "depth_ordering": "NOT_PROVEN",
+    "landmark_reprojection": "NOT_PROVEN",
+    "major_edge_alignment": "NOT_PROVEN",
+    "semantic_region_overlap": "NOT_PROVEN",
+    "silhouette_overlap": "NOT_PROVEN"
+  },
+  "render": {
+    "dimensions_px": [
+      532,
+      540
+    ],
+    "mean_rgb": [
+      115.7519,
+      135.0278,
+      155.8522
+    ],
+    "non_dark_fraction": 1.0,
+    "sha256": "b14764474bb041b9e6589218974b9989dedc62d5762b72019a595fae1f606a08",
+    "stddev_rgb": [
+      21.6622,
+      21.6888,
+      20.9771
+    ]
+  },
+  "render_path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\latest-image-to-scene\\screenshots\\source_camera.png",
+  "schema_version": "source_view_validation_v1",
+  "source": {
+    "dimensions_px": [
+      1448,
+      1086
+    ],
+    "mean_rgb": [
+      85.8509,
+      94.7048,
+      89.7347
+    ],
+    "non_dark_fraction": 0.9998690007427531,
+    "sha256": "e8ea9e307327169d998df9fd6757db718e5647ac46fc8235f971416e132df6ba",
+    "stddev_rgb": [
+      46.8231,
+      46.6602,
+      52.4598
+    ]
+  },
+  "threshold_policy": {
+    "smoke_mean_rgb_delta_max": 70.0,
+    "smoke_render_non_dark_min": 0.03
+  },
+  "tier": "smoke"
 }
