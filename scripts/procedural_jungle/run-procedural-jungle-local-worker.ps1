@@ -42,16 +42,21 @@ if ($MarkerMatches.Count -ne 1) {
 
 $EvidenceFixes = @'
 # Workflow run 30861450720 proved that generated materials are created correctly,
-# but EditorAssetSubsystem.load_asset logs a hard error when probing a path that
-# does not exist yet. Guard those probes with does_asset_exist so first creation
-# is clean while existing-asset update behavior remains unchanged.
+# but load_asset logs a hard error when probing a path that does not exist yet.
+# Guard every assignment-form loader call with the same receiver's existence test.
 $SceneScript = Join-Path $SourceRoot 'unreal\procedural_jungle\build_unreal_scene.py'
 if (-not (Test-Path -LiteralPath $SceneScript)) { throw "Decoded Unreal scene script missing: $SceneScript" }
 $SceneText = Get-Content -LiteralPath $SceneScript -Raw
-$AssetLoadPattern = '(?im)^(?<indent>[ \t]*)(?<lhs>[A-Za-z_][A-Za-z0-9_]*)[ \t]*=[ \t]*(?<receiver>[A-Za-z_][A-Za-z0-9_]*asset[A-Za-z0-9_]*)\.load_asset\((?<arg>[^()\r\n]+)\)[ \t]*$'
-$AssetLoadMatches = [regex]::Matches($SceneText, $AssetLoadPattern)
-if ($AssetLoadMatches.Count -lt 1 -or $AssetLoadMatches.Count -gt 16) {
-    throw "Unexpected unguarded EditorAssetSubsystem load count: $($AssetLoadMatches.Count)"
+$AssetLoadCandidatePattern = '(?m)^[ \t]*[A-Za-z_][A-Za-z0-9_]*[ \t]*=[^\r\n]*\.load_asset\([^\r\n]*$'
+$AssetLoadCandidates = @([regex]::Matches($SceneText, $AssetLoadCandidatePattern))
+$AssetLoadPattern = '(?m)^(?<indent>[ \t]*)(?<lhs>[A-Za-z_][A-Za-z0-9_]*)[ \t]*=[ \t]*(?<receiver>[A-Za-z_][A-Za-z0-9_.]*)\.load_asset\((?<arg>.+)\)[ \t]*$'
+$AssetLoadMatches = @([regex]::Matches($SceneText, $AssetLoadPattern))
+if ($AssetLoadCandidates.Count -lt 1 -or $AssetLoadCandidates.Count -gt 16) {
+    throw "Unexpected assignment-form load_asset candidate count: $($AssetLoadCandidates.Count)"
+}
+if ($AssetLoadMatches.Count -ne $AssetLoadCandidates.Count) {
+    $CandidateText = ($AssetLoadCandidates | ForEach-Object { $_.Value.Trim() }) -join ' | '
+    throw "Not every assignment-form load_asset call has a simple dotted receiver: matches=$($AssetLoadMatches.Count) candidates=$($AssetLoadCandidates.Count) lines=$CandidateText"
 }
 $AssetLoadEvaluator = [Text.RegularExpressions.MatchEvaluator]{
     param([Text.RegularExpressions.Match]$Match)
@@ -62,6 +67,10 @@ $AssetLoadEvaluator = [Text.RegularExpressions.MatchEvaluator]{
     return "$Indent$Left = $Receiver.load_asset($Argument) if $Receiver.does_asset_exist($Argument) else None"
 }
 $SceneText = [regex]::Replace($SceneText, $AssetLoadPattern, $AssetLoadEvaluator)
+$RemainingAssignmentLoads = @([regex]::Matches($SceneText, $AssetLoadCandidatePattern))
+if ($RemainingAssignmentLoads.Count -ne 0) {
+    throw "Assignment-form load_asset calls remain after guard patch: $($RemainingAssignmentLoads.Count)"
+}
 Set-Content -LiteralPath $SceneScript -Value $SceneText -Encoding utf8
 Write-Host 'UNREAL_ASSET_LOAD_GUARD_PATCH=PROVEN'
 Write-Host "UNREAL_ASSET_LOADS_GUARDED=$($AssetLoadMatches.Count)"
