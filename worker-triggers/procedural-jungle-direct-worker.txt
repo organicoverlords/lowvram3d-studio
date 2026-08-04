@@ -1,8 +1,8 @@
-run=53
-requested=2026-08-04T19:02:00+03:00
+run=54
+requested=2026-08-04T19:08:00+03:00
 mode=github-self-hosted-v3-visual-overhaul
-repair_commit=2bae0ef64cbffd2bb9269b7f09015ee89b9d4ed6
-repair_scope=unique-two-line-coexistence-anchor-for-checked-in-decoded-guard-patch
+repair_commit=7a8c21cb565fa65d4fdf1a659e27b691039d52ab
+repair_scope=structural-last-anchor-checked-in-decoded-guard-patch
 coexistence_wrapper_source=498e600c5873377fd0f55b8179b86ec62780b32c
 patch_script=scripts\procedural_jungle\patch_decoded_build_unreal_guard.py
 installer_sha256=8caff1745534e6c73ae21b86a6cb5ee035bad5512741a1c5561bc3b649a348d5
