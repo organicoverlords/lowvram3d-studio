@@ -1,5 +1,5 @@
-name: Patch jungle Unreal ownership preflight
-run-name: Jungle safe Unreal process preflight patch ${{ github.run_id }}
+name: Patch duplicate jungle Unreal guard
+run-name: Jungle inner Unreal guard dedup ${{ github.run_id }}
 
 on:
   push:
@@ -23,71 +23,69 @@ jobs:
           clean: true
           fetch-depth: 0
 
-      - name: Insert fail-closed owned-editor preflight
+      - name: Insert post-install duplicate-guard removal
         shell: python
         run: |
           from pathlib import Path
 
           path = Path("scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1")
           text = path.read_text(encoding="utf-8")
-          marker = "JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_V1"
-          anchor = "$BuildPath = Join-Path $ExtractRoot 'scripts\\procedural_jungle\\build-procedural-jungle.ps1'"
+          marker = "JUNGLE_INNER_UNREAL_GUARD_DEDUP_V1"
           if marker in text:
-              raise SystemExit("owned-editor preflight already exists")
+              raise SystemExit("inner Unreal guard dedup patch already exists")
+
+          anchor = '''Write-Host "JUNGLE_GPU_PREBUILD_UTIL_PERCENT=$GpuUtilPercent"
+
+'@
+$PatchedText = $PatchedText.Substring(0, $PreflightStart) + $CoexistencePreflight.TrimEnd() + "`n" + $PatchedText.Substring($BuildIndex)'''
           if text.count(anchor) != 1:
-              raise SystemExit(f"unexpected build anchor count: {text.count(anchor)}")
+              raise SystemExit(f"unexpected coexistence-tail anchor count: {text.count(anchor)}")
 
-          block = r'''$OwnedProjectRoot = 'C:\Users\Lauri\Desktop\ProceduralJungle58'
-          $ProcessLogRoot = 'C:\AI\ProceduralJungle\20260804\logs'
-          New-Item -ItemType Directory -Path $ProcessLogRoot -Force | Out-Null
-          $ProcessLogPath = Join-Path $ProcessLogRoot 'unreal_process_preflight.log'
-          $ExistingUnreal = @(Get-CimInstance Win32_Process -Filter "Name = 'UnrealEditor.exe'" -ErrorAction Stop)
-          $ProcessLines = New-Object Collections.Generic.List[string]
-          foreach ($Entry in $ExistingUnreal) {
-              $NativeProcess = Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue
-              $Responding = if ($NativeProcess) { [string]$NativeProcess.Responding } else { 'UNKNOWN' }
-              $WindowTitle = if ($NativeProcess) { [string]$NativeProcess.MainWindowTitle } else { '' }
-              $ProcessLines.Add(("PID={0};CREATED={1};RESPONDING={2};TITLE={3};PATH={4};COMMAND={5}" -f $Entry.ProcessId, $Entry.CreationDate, $Responding, $WindowTitle, $Entry.ExecutablePath, $Entry.CommandLine))
-          }
-          [IO.File]::WriteAllLines($ProcessLogPath, $ProcessLines, (New-Object Text.UTF8Encoding($false)))
+          block = r'''Write-Host "JUNGLE_GPU_PREBUILD_UTIL_PERCENT=$GpuUtilPercent"
 
-          $UnownedUnreal = @($ExistingUnreal | Where-Object {
-              -not $_.CommandLine -or $_.CommandLine.IndexOf($OwnedProjectRoot, [StringComparison]::OrdinalIgnoreCase) -lt 0
-          })
-          if ($UnownedUnreal.Count -gt 0) {
-              $Ids = @($UnownedUnreal | ForEach-Object { $_.ProcessId }) -join ','
-              throw "Unrelated Unreal Editor process(es) are running; refusing to interfere. PID(s): $Ids. Evidence: $ProcessLogPath"
-          }
+$InnerBuildPath = Join-Path $ExtractRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
+$InnerBuildLines = New-Object 'System.Collections.Generic.List[string]'
+foreach ($InnerLine in @(Get-Content -LiteralPath $InnerBuildPath)) {
+    [void]$InnerBuildLines.Add([string]$InnerLine)
+}
+$GuardStarts = @()
+for ($InnerIndex = 0; $InnerIndex -lt $InnerBuildLines.Count; $InnerIndex++) {
+    if ($InnerBuildLines[$InnerIndex].Trim() -eq '$ExistingUnreal = @(Get-Process UnrealEditor, UnrealEditor-Cmd -ErrorAction SilentlyContinue)') {
+        $GuardStarts += $InnerIndex
+    }
+}
+if ($GuardStarts.Count -ne 1) {
+    throw "Unexpected inner Unreal guard start count: $($GuardStarts.Count)"
+}
+$GuardStart = [int]$GuardStarts[0]
+if ($GuardStart + 3 -ge $InnerBuildLines.Count -or
+    $InnerBuildLines[$GuardStart + 1].Trim() -ne 'if ($ExistingUnreal.Count -gt 0) {' -or
+    $InnerBuildLines[$GuardStart + 2].IndexOf('Unreal Editor is already running; refusing to interfere', [StringComparison]::Ordinal) -lt 0 -or
+    $InnerBuildLines[$GuardStart + 3].Trim() -ne '}') {
+    throw 'Inner Unreal guard shape differs from the audited four-line block'
+}
+$InnerBuildLines.RemoveRange($GuardStart, 4)
+$InnerBuildLines.Insert($GuardStart, "Write-Host 'JUNGLE_INNER_UNREAL_GUARD_DEDUP_V1=PROVEN'")
+[IO.File]::WriteAllLines($InnerBuildPath, $InnerBuildLines, (New-Object Text.UTF8Encoding($false)))
+$InnerBuildVerify = Get-Content -LiteralPath $InnerBuildPath -Raw
+if ($InnerBuildVerify -match 'Unreal Editor is already running; refusing to interfere') {
+    throw 'Duplicate blanket Unreal guard remains after dedup patch'
+}
+Write-Host 'JUNGLE_INNER_UNREAL_GUARD_DEDUP_PATCH=PROVEN'
 
-          foreach ($Entry in $ExistingUnreal) {
-              $NativeProcess = Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue
-              if (-not $NativeProcess) { continue }
-              $RequestedClose = $false
-              if ($NativeProcess.MainWindowHandle -ne 0) {
-                  $RequestedClose = $NativeProcess.CloseMainWindow()
-              }
-              $Deadline = (Get-Date).AddSeconds(20)
-              while ((Get-Date) -lt $Deadline -and (Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue)) {
-                  Start-Sleep -Milliseconds 500
-              }
-              if (Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue) {
-                  throw "Pipeline-owned Unreal Editor PID $($Entry.ProcessId) did not close gracefully; force termination is not authorized. CloseRequested=$RequestedClose Evidence=$ProcessLogPath"
-              }
-          }
-          Write-Host 'JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_V1=PROVEN'
-          Write-Host "JUNGLE_EXISTING_UNREAL_PROCESS_COUNT=$($ExistingUnreal.Count)"
+'@
+$PatchedText = $PatchedText.Substring(0, $PreflightStart) + $CoexistencePreflight.TrimEnd() + "`n" + $PatchedText.Substring($BuildIndex)'''
 
-          '''
-          path.write_text(text.replace(anchor, block + anchor), encoding="utf-8")
-          print("JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_PATCH=PROVEN")
+          path.write_text(text.replace(anchor, block), encoding="utf-8")
+          print("JUNGLE_INNER_UNREAL_GUARD_DEDUP_WORKER_PATCH=PROVEN")
 
-      - name: Commit preflight patch
+      - name: Commit worker patch
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          grep -q 'JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_V1' scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
+          grep -q 'JUNGLE_INNER_UNREAL_GUARD_DEDUP_V1' scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
           git add -- scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
-          git commit -m "fix(jungle): safely classify existing Unreal editor"
+          git commit -m "fix(jungle): deduplicate inner Unreal process guard"
           git push origin HEAD:feature/procedural-jungle-playable-20260804
