@@ -253,8 +253,14 @@ for index, spec in enumerate(PLACEMENT["actors"]):
     if kind == "scatter_instance":
         label = f"{label}_{spec.get('instance_index', index):02d}"
     actor.set_actor_label(label)
+    # The region tag lets the overlap audit tell "two clumps of one hedge touch"
+    # apart from "the barn is inside a tree". Without it both were counted the
+    # same, and a scene's worst-overlap figure was dominated by instances of a
+    # single region abutting each other, which is what instances of one region
+    # are supposed to do.
     actor.set_editor_property("tags", [OWNER_TAG, kind, spec["layer_type"],
                                        spec["semantic_label"],
+                                       "region:%s" % spec["region_id"],
                                        "generated" if generated else "primitive"])
     record = {"label": label, "kind": kind, "layer": spec["layer_type"],
               "source": "generated" if generated else "primitive",

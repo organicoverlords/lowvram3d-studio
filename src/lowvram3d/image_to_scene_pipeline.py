@@ -416,7 +416,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             unreal_receipt["overlap_audit"] = {
                 k: v for k, v in overlaps.items()
                 if k in ("classification", "overlapping_pair_count",
-                         "buried_pair_count", "worst_fraction")}
+                         "cross_region_pair_count", "buried_pair_count",
+                         "worst_fraction", "worst_fraction_any_pair")}
     state["unreal_build"] = {k: v for k, v in unreal_receipt.items() if k != "capture"}
 
     built = bool(unreal_receipt.get("available") and unreal_receipt.get("spawned_count"))
