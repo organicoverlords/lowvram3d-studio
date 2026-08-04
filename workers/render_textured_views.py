@@ -34,7 +34,16 @@ UP = (0.0, 1.0, 0.0)
 LIGHT = (-0.3, 0.6, -0.75)
 # How much normal shading to mix over the flat colour. Enough to read the form,
 # little enough that the texture is still what dominates.
-SHADE_STRENGTH = 0.45
+#
+# Kept low deliberately. At 0.45 this view rendered the barn at mean luminance
+# 28 against the crop's own 38 -- darkening a genuinely dark subject by a
+# further quarter and making the asset look worse than it is. The point of this
+# view is to judge a texture, so the texture must survive it.
+SHADE_STRENGTH = 0.22
+# Mid grey, not white. A near-black subject on white reads as a silhouette
+# whatever its texture, which is exactly the misjudgement this view exists to
+# prevent.
+BACKGROUND = 190
 
 
 def render(vertices, faces, uv, texture, forward, up, size):
@@ -71,7 +80,7 @@ def render(vertices, faces, uv, texture, forward, up, size):
     shade = 1.0 - SHADE_STRENGTH + SHADE_STRENGTH * shade
 
     height_px, width_px = texture.shape[:2]
-    image = np.full((size, size, 3), 255.0)
+    image = np.full((size, size, 3), float(BACKGROUND))
     zbuffer = np.full((size, size), np.inf)
 
     for index in np.argsort(-depth):
@@ -154,7 +163,8 @@ def main(argv: list[str] | None = None) -> int:
         panels.append(render(vertices, faces, uv, texture, forward,
                              UP, args.size))
 
-    sheet = Image.new("RGB", (args.size * len(panels), args.size + 22), "white")
+    sheet = Image.new("RGB", (args.size * len(panels), args.size + 22),
+                      (BACKGROUND, BACKGROUND, BACKGROUND))
     draw = ImageDraw.Draw(sheet)
     for position, ((name, _), panel) in enumerate(zip(VIEWS, panels)):
         sheet.paste(Image.fromarray(panel), (position * args.size, 22))

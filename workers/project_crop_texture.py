@@ -33,12 +33,23 @@ from pathlib import Path
 # the silhouette do not land on the crop's very edge pixel.
 EDGE_PAD = 0.01
 
-# A face is textured from the crop only if it actually faces the conditioning
-# camera. Below this, the projection is smearing a few pixels along the whole
-# length of a surface the camera never saw properly -- the visible streaking on
-# the barn's sides -- and a flat colour is a more honest and better-looking
-# answer than a stretched one. cos 78 degrees: generous, because a roof pitch
-# is steeply angled and still genuinely observed.
+# Faces fall into three cases against the conditioning camera, and only one of
+# them is a problem.
+#
+#   normal_z > +FACING_MIN   observed        -- the real appearance
+#   normal_z < -FACING_MIN   back-facing     -- a clean mirrored copy
+#   |normal_z| <= FACING_MIN grazing         -- the actual defect
+#
+# An earlier version flat-filled everything that was not observed, which on the
+# barn meant 60% of the mesh when the streaking it was aimed at accounts for
+# 21%. The back-facing 40% samples the texture perfectly well: its UVs vary
+# across the surface exactly as the front's do, so it comes out as a mirrored
+# barn rather than a smear. That is invention, and it is recorded as such, but
+# it is plausible invention and it looks like a building. A flat black slab does
+# not, and "honest" is not a licence to ship something worse.
+#
+# Only the grazing band is filled flat, because only there does the projection
+# stretch a handful of pixels down a whole surface.
 FACING_MIN = 0.2
 # Width in pixels of the flat-colour strip appended to the texture, which every
 # unobserved face is mapped into.
@@ -82,16 +93,16 @@ def main(argv: list[str] | None = None) -> int:
     v = 1.0 - (vertices[:, 1] - low[1]) / span[1]
     uv = np.clip(np.stack([u, v], axis=-1), 0.0, 1.0)
 
-    # Only faces pointing at the conditioning camera get the crop. The rest --
-    # the back, and anything grazing enough that a handful of pixels would be
-    # stretched down its whole length -- are given a flat fill instead, by
-    # duplicating their vertices and mapping the copies into a strip appended to
-    # the texture. Duplicating only these faces keeps the welding done at
-    # decimation: the barn goes from 74,556 vertices to about 110,000, not back
-    # to three per triangle.
+    # Only the grazing band is redirected to the flat strip, by duplicating its
+    # vertices and mapping the copies there. Duplicating just this band keeps
+    # the welding done at decimation rather than returning to three vertices
+    # per triangle.
     faces = np.asarray(mesh.faces)
-    observed = mesh.face_normals[:, 2] > FACING_MIN
-    unobserved = np.flatnonzero(~observed)
+    facing = mesh.face_normals[:, 2]
+    observed = facing > FACING_MIN
+    mirrored = facing < -FACING_MIN
+    grazing = ~observed & ~mirrored
+    unobserved = np.flatnonzero(grazing)
     if len(unobserved):
         used = np.unique(faces[unobserved])
         remap = np.full(len(vertices), -1, dtype=np.int64)
@@ -140,9 +151,11 @@ def main(argv: list[str] | None = None) -> int:
         "output_bytes": output.stat().st_size,
         "projection": "object_space_front_minus_z",
         "facing_min": FACING_MIN,
-        "textured_face_count": int(observed.sum()),
-        "flat_filled_face_count": int((~observed).sum()),
-        "textured_face_fraction": round(float(observed.mean()), 4),
+        "observed_face_fraction": round(float(observed.mean()), 4),
+        "mirrored_face_fraction": round(float(mirrored.mean()), 4),
+        "flat_filled_face_fraction": round(float(grazing.mean()), 4),
+        # What carries image-derived colour at all, observed or mirrored.
+        "textured_face_fraction": round(float((observed | mirrored).mean()), 4),
         "vertices": int(len(vertices)),
         "triangles": int(len(mesh.faces)),
         "texture_size": list(texture.size),
@@ -150,9 +163,10 @@ def main(argv: list[str] | None = None) -> int:
         "fill_rgb": [round(float(c), 1) for c in fill],
         # Stated so nothing downstream reads a textured mesh as an observed one.
         "observed_from": (
-            "single view; faces below the facing threshold are flat-filled "
-            "rather than smeared, so textured_face_fraction is the share of "
-            "this mesh's appearance that was actually observed"),
+            "single view. observed_face_fraction was genuinely seen; "
+            "mirrored_face_fraction carries a mirrored copy of it and is "
+            "plausible invention, not evidence; flat_filled_face_fraction is "
+            "the grazing band, where a projection could only smear"),
     }
     receipt_path = (Path(args.receipt) if args.receipt
                     else output.with_suffix(".projection.json"))

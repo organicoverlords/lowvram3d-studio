@@ -7,20 +7,21 @@
     33.8,
     29.0
   ],
-  "flat_filled_face_count": 82608,
+  "flat_filled_face_fraction": 0.1536,
   "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
   "mask_coverage": 0.1803,
-  "observed_from": "single view; faces below the facing threshold are flat-filled rather than smeared, so textured_face_fraction is the share of this mesh's appearance that was actually observed",
+  "mirrored_face_fraction": 0.42,
+  "observed_face_fraction": 0.4264,
+  "observed_from": "single view. observed_face_fraction was genuinely seen; mirrored_face_fraction carries a mirrored copy of it and is plausible invention, not evidence; flat_filled_face_fraction is the grazing band, where a projection could only smear",
   "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
-  "output_bytes": 5151020,
+  "output_bytes": 4732600,
   "projection": "object_space_front_minus_z",
   "schema_version": "crop_projection_v1",
   "texture_size": [
     1649,
     1641
   ],
-  "textured_face_count": 61403,
-  "textured_face_fraction": 0.4264,
+  "textured_face_fraction": 0.8464,
   "triangles": 144011,
-  "vertices": 123847
+  "vertices": 102926
 }
