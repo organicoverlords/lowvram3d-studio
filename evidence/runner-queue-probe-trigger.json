@@ -1,5 +1,5 @@
 {
-  "purpose": "Locate the silhouette-backed faceplate bust diagnostic without a 3D cranium shell.",
-  "target_head_sha": "e982683134aba168e97c38afd4943db37ffc1412",
-  "requested_at": "2026-08-04T18:57:00+03:00"
+  "purpose": "Locate the alpha-footprint-sized unlit head silhouette diagnostic.",
+  "target_head_sha": "c00f736b8b988071754d6139915bfe306185b808",
+  "requested_at": "2026-08-04T19:04:00+03:00"
 }
