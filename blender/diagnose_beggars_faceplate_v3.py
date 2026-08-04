@@ -62,31 +62,8 @@ def principled(name: str, color: tuple[float, float, float, float], roughness: f
     if bsdf.inputs.get("Roughness"):
         bsdf.inputs["Roughness"].default_value = roughness
     if bsdf.inputs.get("Specular IOR Level"):
-        bsdf.inputs["Specular IOR Level"].default_value = 0.20
-    if bsdf.inputs.get("Subsurface Weight"):
-        bsdf.inputs["Subsurface Weight"].default_value = 0.025 if "SKIN" in name else 0.0
+        bsdf.inputs["Specular IOR Level"].default_value = 0.18
     return material
-
-
-def create_neck(
-    name: str,
-    location: Vector,
-    radius: float,
-    depth: float,
-    material: bpy.types.Material,
-) -> bpy.types.Object:
-    bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=radius, depth=depth, location=location)
-    obj = bpy.context.object
-    obj.name = name
-    obj.scale.y = 0.76
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    obj.data.materials.append(material)
-    bevel = obj.modifiers.new("NeckSoftEdge", "BEVEL")
-    bevel.width = radius * 0.16
-    bevel.segments = 4
-    for polygon in obj.data.polygons:
-        polygon.use_smooth = True
-    return obj
 
 
 def create_robe_bust(
@@ -98,12 +75,12 @@ def create_robe_bust(
     height: float,
     material: bpy.types.Material,
 ) -> bpy.types.Object:
-    top_half = width * 0.31
-    shoulder_half = width * 0.64
-    bottom_half = width * 0.82
+    top_half = width * 0.16
+    shoulder_half = width * 0.61
+    bottom_half = width * 0.84
     bottom_z = top_z - height
-    shoulder_z = top_z - height * 0.20
-    back_y = front_y + height * 0.30
+    shoulder_z = top_z - height * 0.17
+    back_y = front_y + height * 0.28
     vertices = [
         (center_x - top_half, front_y, top_z),
         (center_x + top_half, front_y, top_z),
@@ -135,7 +112,7 @@ def create_robe_bust(
     bpy.context.collection.objects.link(obj)
     mesh.materials.append(material)
     bevel = obj.modifiers.new("RobeSoftForm", "BEVEL")
-    bevel.width = width * 0.055
+    bevel.width = width * 0.045
     bevel.segments = 6
     return obj
 
@@ -235,57 +212,52 @@ def main() -> int:
     center = (minimum + maximum) * 0.5
     height = max(maximum.z - minimum.z, 0.1)
     width = max(maximum.x - minimum.x, 0.1)
-    front_y = center.y + height * 0.12
 
-    robe = principled("MAT_FACEPLATE_V8_ROBE", (0.006, 0.005, 0.009, 1.0), 0.86)
-    skin = principled("MAT_FACEPLATE_V8_SKIN", (0.15, 0.074, 0.060, 1.0), 0.58)
-    trim = principled("MAT_FACEPLATE_V8_TRIM", (0.22, 0.070, 0.018, 1.0), 0.42)
+    robe = principled("MAT_FACEPLATE_V9_ROBE", (0.005, 0.0045, 0.008, 1.0), 0.88)
+    dark_trim = principled("MAT_FACEPLATE_V9_DARK_TRIM", (0.018, 0.010, 0.015, 1.0), 0.72)
 
-    face_plate.location.z -= height * 0.065
-    neck = create_neck(
-        "DIAG_V8_Neck",
-        Vector((center.x, front_y + height * 0.10, minimum.z - height * 0.12)),
-        width * 0.145,
-        height * 0.46,
-        skin,
-    )
+    face_plate.location.z -= height * 0.105
+    robe_top = minimum.z - height * 0.075
+    robe_front_y = center.y + height * 0.16
     robe_obj = create_robe_bust(
-        "DIAG_V8_RobeBust",
+        "DIAG_V9_RobeBust",
         center.x,
-        front_y + height * 0.16,
-        minimum.z - height * 0.08,
-        width * 1.62,
-        height * 1.10,
+        robe_front_y,
+        robe_top,
+        width * 1.72,
+        height * 1.18,
         robe,
     )
     render(scene, output_dir / "variant_02_natural_bust.png")
 
-    collar_y = center.y - height * 0.010
-    collar_z = minimum.z - height * 0.04
+    collar_y = center.y - height * 0.005
+    collar_center_z = robe_top - height * 0.055
     collar_left = create_curve(
-        "DIAG_V8_VCollar_L",
+        "DIAG_V9_VCollar_L",
         [
-            Vector((center.x - width * 0.40, collar_y, collar_z + height * 0.03)),
-            Vector((center.x - width * 0.16, collar_y, collar_z - height * 0.08)),
-            Vector((center.x, collar_y, collar_z - height * 0.17)),
+            Vector((center.x - width * 0.28, collar_y, collar_center_z + height * 0.035)),
+            Vector((center.x - width * 0.10, collar_y, collar_center_z - height * 0.035)),
+            Vector((center.x, collar_y, collar_center_z - height * 0.105)),
         ],
-        width * 0.026,
-        trim,
+        width * 0.018,
+        dark_trim,
     )
     collar_right = create_curve(
-        "DIAG_V8_VCollar_R",
+        "DIAG_V9_VCollar_R",
         [
-            Vector((center.x, collar_y, collar_z - height * 0.17)),
-            Vector((center.x + width * 0.16, collar_y, collar_z - height * 0.08)),
-            Vector((center.x + width * 0.40, collar_y, collar_z + height * 0.03)),
+            Vector((center.x, collar_y, collar_center_z - height * 0.105)),
+            Vector((center.x + width * 0.10, collar_y, collar_center_z - height * 0.035)),
+            Vector((center.x + width * 0.28, collar_y, collar_center_z + height * 0.035)),
         ],
-        width * 0.026,
-        trim,
+        width * 0.018,
+        dark_trim,
     )
+    face_plate.scale.x *= 1.06
+    face_plate.scale.z *= 1.06
     camera.data.dof.use_dof = False
     render(scene, output_dir / "variant_03_larger_face.png")
 
-    diagnostic_objects = [neck, robe_obj, collar_left, collar_right]
+    diagnostic_objects = [robe_obj, collar_left, collar_right]
     report = {
         "classification": "VISUAL_DIAGNOSTIC",
         "source_blend": str(blend_path),
@@ -296,8 +268,8 @@ def main() -> int:
         "diagnostic_objects": [object_snapshot(obj) for obj in diagnostic_objects],
         "variant_policy": {
             "variant_01": "derived animated face plate only",
-            "variant_02": "face plate lowered onto a single beveled robe bust and compact neck",
-            "variant_03": "variant 02 plus a narrow V-neck trim; no capsule collar or head backing",
+            "variant_02": "face lowered directly onto a raised single-piece beveled robe; exposed neck absent",
+            "variant_03": "variant 02 with subtle dark V neckline and six-percent larger face",
         },
     }
     (output_dir / "diagnostic.json").write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
