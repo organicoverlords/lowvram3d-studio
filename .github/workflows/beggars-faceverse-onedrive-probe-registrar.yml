@@ -1,0 +1,46 @@
+name: Beggars FaceVerse OneDrive probe registrar
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [agent/blender-beggars-scene-20260804]
+    paths:
+      - evidence/faceverse-onedrive-probe-registrar-trigger.json
+      - .github/workflows/beggars-faceverse-onedrive-probe-registrar.yml
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/blender-beggars-scene-20260804
+          fetch-depth: 0
+      - name: Locate latest probe run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_json="$(gh api 'repos/${{ github.repository }}/actions/runs?branch=agent%2Fblender-beggars-scene-20260804&per_page=100' --jq '[.workflow_runs[] | select(.path==".github/workflows/beggars-faceverse-onedrive-probe.yml")] | sort_by(.created_at) | last')"
+          test "$run_json" != "null"
+          mkdir -p evidence/latest-beggars-faceverse-onedrive-probe
+          printf '%s\n' "$run_json" | jq '{classification:"RUN_REGISTERED",workflow_run_id:.id,status,conclusion,head_sha,head_branch,url:.html_url,created_at,updated_at}' > evidence/latest-beggars-faceverse-onedrive-probe/run-registration.json
+      - name: Publish registration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add evidence/latest-beggars-faceverse-onedrive-probe/run-registration.json
+          git commit -m "evidence(scene): register OneDrive probe run ${{ github.run_id }}" || exit 0
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if git push origin HEAD:agent/blender-beggars-scene-20260804; then exit 0; fi
+            sleep 2
+          done
+          exit 1
