@@ -1,7 +1,7 @@
 name: Beggars meme Blender recreation v2
 run-name: Beggars meme recreation v2 ${{ github.run_id }}
 
-# registration-trigger: 2026-08-04T09:36:00+03:00
+# registration-trigger: 2026-08-04T09:51:00+03:00
 
 on:
   workflow_dispatch:
@@ -12,6 +12,8 @@ on:
       - .github/workflows/beggars-scene-local-worker-v2.yml
       - scripts/ensure-beggars-v2-runtime.ps1
       - scripts/apply-beggars-blender-runtime-compat.ps1
+      - scripts/apply-beggars-visual-repair.ps1
+      - scripts/finalize-beggars-scene-evidence.ps1
       - scripts/run-beggars-scene-v2.ps1
       - configs/scene/beggars_banquet_recreation_v1.json
       - tools/beggars_scene/prepare_reference_sequence.py
@@ -54,12 +56,31 @@ jobs:
             throw "Blender runtime compatibility patch failed with exit code $LASTEXITCODE"
           }
 
+      - name: Apply bounded visual repair
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-visual-repair.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Beggars visual repair failed with exit code $LASTEXITCODE"
+          }
+
       - name: Run memory-bounded reconstruction and Blender build
+        id: build
+        continue-on-error: true
         shell: powershell
         run: |
           & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\run-beggars-scene-v2.ps1
           if ($LASTEXITCODE -ne 0) {
-            throw "Beggars scene v2 failed with exit code $LASTEXITCODE"
+            throw "Beggars scene v2 returned exit code $LASTEXITCODE"
+          }
+
+      - name: Validate outputs and publish compact evidence
+        if: always()
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\finalize-beggars-scene-evidence.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Beggars evidence finalization failed with exit code $LASTEXITCODE"
           }
 
       - name: Upload Blender recreation artifact
