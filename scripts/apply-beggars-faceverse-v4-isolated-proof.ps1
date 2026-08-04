@@ -39,14 +39,14 @@ for pattern in ('*.pth', 'sitecustomize.py', 'usercustomize.py'):
     for path in sorted(root.glob(pattern)):
         text = path.read_text(encoding='utf-8', errors='replace') if path.suffix in {'.pth', '.py'} else ''
         records.append({'path': str(path), 'bytes': path.stat().st_size, 'mentions_package_mutation': any(token in text.lower() for token in ('pip', 'uv ', 'torch==', 'onnxscript', 'subprocess'))})
-print('FACEVERSE_STARTUP_HOOK_AUDIT=' + json.dumps(records, sort_keys=True))
-print('FACEVERSE_USER_SITE=' + str(site.getusersitepackages()))
-print('FACEVERSE_ISOLATED_SYS_PATH=' + json.dumps(sys.path))
+print('FACEVERSE_STARTUP_HOOK_AUDIT=' + json.dumps(records, sort_keys=True), flush=True)
+print('FACEVERSE_USER_SITE=' + str(site.getusersitepackages()), flush=True)
+print('FACEVERSE_ISOLATED_SYS_PATH=' + json.dumps(sys.path), flush=True)
 "@
     $previousPreference = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
-        & $VenvPython -I -S -c "import sys; sys.path.insert(0,r'$sitePackages'); $isolationAudit"
+        & $VenvPython -I -u -c $isolationAudit
         $isolationAuditExit = $LASTEXITCODE
     }
     finally {
@@ -57,22 +57,19 @@ print('FACEVERSE_ISOLATED_SYS_PATH=' + json.dumps(sys.path))
     }
 
     $torchGuard = @"
-import json, sys
-sys.path.insert(0, r'$sitePackages')
-import torch
+import json, torch
 assert torch.__version__.startswith('2.5.1'), torch.__version__
 assert torch.version.cuda == '11.8', torch.version.cuda
 assert torch.cuda.is_available(), 'CUDA is unavailable'
-print('FACEVERSE_CUDA_TORCH_GUARD=' + json.dumps({'version': torch.__version__, 'cuda': torch.version.cuda, 'device': torch.cuda.get_device_name(0)}, sort_keys=True))
+print('FACEVERSE_CUDA_TORCH_GUARD=' + json.dumps({'version': torch.__version__, 'cuda': torch.version.cuda, 'device': torch.cuda.get_device_name(0)}, sort_keys=True), flush=True)
 "@
-    & $VenvPython -I -S -c $torchGuard
+    & $VenvPython -I -u -X faulthandler -c $torchGuard
     if ($LASTEXITCODE -ne 0) {
         throw 'FaceVerse CUDA Torch guard failed before isolated proof.'
     }
 
     $proofBootstrap = @"
 import runpy, sys
-sys.path.insert(0, r'$sitePackages')
 sys.argv = [
     r'$proofScript',
     '--faceverse-root', r'$SourceRoot',
@@ -89,6 +86,7 @@ runpy.run_path(r'$proofScript', run_name='__main__')
     $previousPythonNoUserSite = $env:PYTHONNOUSERSITE
     $previousPythonPath = $env:PYTHONPATH
     $previousPythonSafePath = $env:PYTHONSAFEPATH
+    $previousPythonUnbuffered = $env:PYTHONUNBUFFERED
     $previousPipNoIndex = $env:PIP_NO_INDEX
     $previousPipIndexUrl = $env:PIP_INDEX_URL
     $previousUvOffline = $env:UV_OFFLINE
@@ -96,21 +94,23 @@ runpy.run_path(r'$proofScript', run_name='__main__')
         $env:PYTHONNOUSERSITE = '1'
         $env:PYTHONPATH = ''
         $env:PYTHONSAFEPATH = '1'
+        $env:PYTHONUNBUFFERED = '1'
         $env:PIP_NO_INDEX = '1'
         $env:PIP_INDEX_URL = 'http://127.0.0.1:9/disabled'
         $env:UV_OFFLINE = '1'
-        Invoke-Native -FilePath $VenvPython -ArgumentList @('-I','-S','-c',$proofBootstrap) -FailureMessage 'FaceVerse v4 isolated single-frame proof failed'
+        Invoke-Native -FilePath $VenvPython -ArgumentList @('-I','-u','-X','faulthandler','-c',$proofBootstrap) -FailureMessage 'FaceVerse v4 isolated single-frame proof failed'
     }
     finally {
         $env:PYTHONNOUSERSITE = $previousPythonNoUserSite
         $env:PYTHONPATH = $previousPythonPath
         $env:PYTHONSAFEPATH = $previousPythonSafePath
+        $env:PYTHONUNBUFFERED = $previousPythonUnbuffered
         $env:PIP_NO_INDEX = $previousPipNoIndex
         $env:PIP_INDEX_URL = $previousPipIndexUrl
         $env:UV_OFFLINE = $previousUvOffline
     }
 
-    & $VenvPython -I -S -c $torchGuard
+    & $VenvPython -I -u -X faulthandler -c $torchGuard
     if ($LASTEXITCODE -ne 0) {
         throw 'FaceVerse CUDA Torch guard failed after isolated proof; the environment was mutated.'
     }
