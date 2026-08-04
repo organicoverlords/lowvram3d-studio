@@ -67,9 +67,9 @@ $AssetLoadEvaluator = [Text.RegularExpressions.MatchEvaluator]{
     return "$Indent$Left = $Receiver.load_asset($Argument) if $Receiver.does_asset_exist($Argument) else None"
 }
 $SceneText = [regex]::Replace($SceneText, $AssetLoadPattern, $AssetLoadEvaluator)
-$RemainingAssignmentLoads = @([regex]::Matches($SceneText, $AssetLoadCandidatePattern))
-if ($RemainingAssignmentLoads.Count -ne 0) {
-    throw "Assignment-form load_asset calls remain after guard patch: $($RemainingAssignmentLoads.Count)"
+$RemainingUnguardedLoads = @([regex]::Matches($SceneText, $AssetLoadPattern))
+if ($RemainingUnguardedLoads.Count -ne 0) {
+    throw "Unguarded assignment-form load_asset calls remain after patch: $($RemainingUnguardedLoads.Count)"
 }
 Set-Content -LiteralPath $SceneScript -Value $SceneText -Encoding utf8
 Write-Host 'UNREAL_ASSET_LOAD_GUARD_PATCH=PROVEN'
