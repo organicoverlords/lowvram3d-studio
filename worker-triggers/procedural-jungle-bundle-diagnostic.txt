@@ -1,6 +1,8 @@
 requested=2026-08-04T08:17:00+03:00
-mode=cloud-bundle-integrity-diagnostic
+mode=cloud-bundle-partial-extraction
 scope=procedural-jungle-visual-overhaul
+workflow_commit=eb5050493b6088f3f54418ab1a6d93bc2afd79aa
 blender=false
 unreal=false
 gpu=false
+expected_result=DIAGNOSTIC_COMMITTED_TO_BRANCH
