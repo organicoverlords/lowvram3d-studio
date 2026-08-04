@@ -261,3 +261,35 @@ class MiniTurboTelemetryTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ConditioningDimensionsTest(unittest.TestCase):
+    """The multiview path rebinds `conditioning` from an image to a dict.
+
+    Telemetry read `.size` off it regardless, which killed every multiview run
+    one statement before the pipeline was built. The failure surfaced as
+    "'dict' object has no attribute 'size'" and was misread twice as an
+    hy3dgen incompatibility.
+    """
+
+    class FakeImage:
+        def __init__(self, size):
+            self.size = size
+
+    def test_single_image_reports_a_flat_pair(self):
+        image = self.FakeImage((950, 950))
+        self.assertEqual(
+            telemetry._conditioning_dimensions(image), [950, 950])
+
+    def test_view_dict_reports_a_size_per_named_view(self):
+        views = {"front": self.FakeImage((950, 950)),
+                 "left": self.FakeImage((512, 512))}
+        self.assertEqual(
+            telemetry._conditioning_dimensions(views),
+            {"front": [950, 950], "left": [512, 512]})
+
+    def test_view_dict_is_json_serialisable(self):
+        # It is written into a JSONL trace, so a tuple-keyed or tuple-valued
+        # result would fail at the point of recording rather than here.
+        views = {"front": self.FakeImage((950, 950))}
+        json.dumps(telemetry._conditioning_dimensions(views))

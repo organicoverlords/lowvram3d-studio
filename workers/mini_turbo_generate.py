@@ -250,6 +250,23 @@ def verify_real_glb(path: Path, started_at: float) -> None:
 MULTIVIEW_NAMES = {"front", "left", "back", "right"}
 
 
+def _conditioning_dimensions(conditioning):
+    """Sizes of the conditioning, whether it is one image or a dict of views.
+
+    Trivial, and it exists as a named function because getting it wrong cost
+    two runs and an incorrect diagnosis. `conditioning` is rebound from a PIL
+    image to a {view: image} dict on the multiview path, and the telemetry line
+    a few statements later still read `.size` off it. The resulting "'dict'
+    object has no attribute 'size'" was blamed on hy3dgen and on the mv
+    checkpoint in turn, when it never reached either -- the pipeline had not
+    been constructed yet. Telemetry that crashes the run it is measuring is
+    worse than no telemetry, so this branch is tested rather than inlined.
+    """
+    if isinstance(conditioning, dict):
+        return {name: list(view.size) for name, view in conditioning.items()}
+    return list(conditioning.size)
+
+
 def load_conditioning_image(image_path: Path):
     from PIL import Image
 
@@ -373,7 +390,21 @@ def main() -> int:
         # A single-view checkpoint given a dict, or an mv checkpoint given one
         # image, both fail deep inside the preprocessor, so the mismatch is
         # checked here where the message can say which it was.
-        if args.view:
+        # Detect the checkpoint's own expectation rather than trusting the
+        # caller. An mv checkpoint handed a single image dies as
+        # "'Image' object has no attribute 'items'" several frames inside the
+        # preprocessor, which names neither the checkpoint nor the argument.
+        config_path = model_root / args.subfolder / "config.yaml"
+        multiview_checkpoint = (
+            config_path.is_file()
+            and "MVImageProcessorV2" in config_path.read_text(encoding="utf-8"))
+        payload["multiview_checkpoint"] = multiview_checkpoint
+        if args.view and not multiview_checkpoint:
+            raise RuntimeError(
+                f"MULTIVIEW_VIEWS_ON_SINGLE_VIEW_CHECKPOINT:{args.subfolder} "
+                "declares ImageProcessorV2 and takes one image")
+
+        if args.view or multiview_checkpoint:
             views = {}
             for spec in args.view:
                 name, _, path = spec.partition("=")
@@ -397,7 +428,7 @@ def main() -> int:
                    views=sorted(views))
         else:
             payload["multiview"] = False
-        _trace(trace_path, "conditioning_loaded", torch, diagnostic=args.diagnostic_telemetry, boundary_name="conditioning_loaded", image_dimensions=list(conditioning.size))
+        _trace(trace_path, "conditioning_loaded", torch, diagnostic=args.diagnostic_telemetry, boundary_name="conditioning_loaded", image_dimensions=_conditioning_dimensions(conditioning))
 
         pipeline = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained(
             str(model_root),
