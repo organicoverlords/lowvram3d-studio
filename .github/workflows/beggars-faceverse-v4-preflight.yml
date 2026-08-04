@@ -36,33 +36,21 @@ jobs:
           clean: true
           fetch-depth: 0
 
-      - name: Register exact FaceVerse preflight run
+      - name: Prepare clean run identity
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          $evidence = 'evidence\latest-beggars-faceverse-v4'
-          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-          [ordered]@{
-            classification = 'RUN_REGISTERED'
-            workflow_run_id = [long]'${{ github.run_id }}'
-            status = 'in_progress'
-            conclusion = $null
-            head_sha = '${{ github.sha }}'
-            head_branch = '${{ github.ref_name }}'
-            url = 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-          } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'run-registration.json') -Encoding utf8
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- (Join-Path $evidence 'run-registration.json')
-          git commit -m "evidence(scene): register FaceVerse v4 preflight ${{ github.run_id }}"
-          for ($attempt = 1; $attempt -le 4; $attempt++) {
-            git pull --rebase origin agent/blender-beggars-scene-20260804
-            if ($LASTEXITCODE -ne 0) { throw "FaceVerse registration rebase failed on attempt $attempt" }
-            git push origin HEAD:agent/blender-beggars-scene-20260804
-            if ($LASTEXITCODE -eq 0) { break }
-            if ($attempt -eq 4) { throw 'Could not publish FaceVerse preflight registration' }
-            Start-Sleep -Seconds 2
+          git rebase --abort 2>$null
+          if (Test-Path -LiteralPath '.git\rebase-merge') {
+            Remove-Item -LiteralPath '.git\rebase-merge' -Recurse -Force
           }
+          if (Test-Path -LiteralPath '.git\rebase-apply') {
+            Remove-Item -LiteralPath '.git\rebase-apply' -Recurse -Force
+          }
+          Write-Host 'FACEVERSE_RUN_ID=${{ github.run_id }}'
+          Write-Host 'FACEVERSE_HEAD_SHA=${{ github.sha }}'
+          Write-Host 'FACEVERSE_RUN_URL=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          Write-Host 'FACEVERSE_RUN_IDENTITY=PROVEN'
 
       - name: Apply FaceVerse Python discovery compatibility
         shell: powershell
@@ -112,28 +100,44 @@ jobs:
             throw "FaceVerse v4 preflight failed with exit code $LASTEXITCODE"
           }
 
-      - name: Commit compact FaceVerse receipts
+      - name: Commit run-specific FaceVerse receipts
         if: always()
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
+          git rebase --abort 2>$null
           git checkout -- scripts\run-beggars-faceverse-v4-preflight.ps1
-          $evidence = 'evidence\latest-beggars-faceverse-v4'
+          $evidence = 'evidence\beggars-faceverse-v4-runs\${{ github.run_id }}'
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          [ordered]@{
+            workflow_run_id = [long]'${{ github.run_id }}'
+            head_sha = '${{ github.sha }}'
+            head_branch = '${{ github.ref_name }}'
+            url = 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'run-identity.json') -Encoding utf8
           if ($env:FACEVERSE_V4_OUTPUT -and (Test-Path -LiteralPath $env:FACEVERSE_V4_OUTPUT)) {
             Get-ChildItem -LiteralPath $env:FACEVERSE_V4_OUTPUT -Filter '*.json' -File | ForEach-Object {
               Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $evidence $_.Name) -Force
             }
           }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- $evidence
           if (@(git diff --cached --name-only).Count -gt 0) {
-            git commit -m "evidence(scene): record FaceVerse v4 preflight ${{ github.run_id }}"
+            git commit -m "evidence(scene): record FaceVerse v4 run ${{ github.run_id }}"
             for ($attempt = 1; $attempt -le 4; $attempt++) {
-              git pull --rebase origin agent/blender-beggars-scene-20260804
-              if ($LASTEXITCODE -ne 0) { throw "FaceVerse receipt rebase failed on attempt $attempt" }
+              git fetch origin agent/blender-beggars-scene-20260804
+              if ($LASTEXITCODE -ne 0) { throw "FaceVerse receipt fetch failed on attempt $attempt" }
+              git rebase origin/agent/blender-beggars-scene-20260804
+              if ($LASTEXITCODE -ne 0) {
+                git rebase --abort 2>$null
+                if ($attempt -eq 4) { throw 'Could not rebase run-specific FaceVerse receipts' }
+                Start-Sleep -Seconds 2
+                continue
+              }
               git push origin HEAD:agent/blender-beggars-scene-20260804
               if ($LASTEXITCODE -eq 0) { break }
-              if ($attempt -eq 4) { throw 'Could not publish FaceVerse preflight receipts' }
+              if ($attempt -eq 4) { throw 'Could not publish run-specific FaceVerse receipts' }
               Start-Sleep -Seconds 2
             }
           }
