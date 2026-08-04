@@ -1,8 +1,8 @@
-run=27
-requested=2026-08-04T06:00:00+03:00
+run=28
+requested=2026-08-04T06:04:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=2932d9b6465dbd0c0532a832bcf359367911a34e
-repair_scope=literal-capture-marker-path-collision-powershell5-writes-runtime-visual-acceptance
+repair_commit=74de6c48bb6e528b55a0066d2d077a93c720770b
+repair_scope=literal-capture-token-counter-path-collision-powershell5-writes-runtime-visual-acceptance
 codex=false
 claude=false
 magicmusic=false
