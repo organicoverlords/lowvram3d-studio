@@ -1,0 +1,43 @@
+name: Export jungle visual overhaul bundle
+run-name: Jungle visual bundle diagnostic ${{ github.run_id }}
+
+on:
+  push:
+    branches:
+      - feature/procedural-jungle-playable-20260804
+    paths:
+      - worker-triggers/procedural-jungle-bundle-diagnostic.txt
+
+permissions:
+  contents: read
+
+jobs:
+  export-bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/procedural-jungle-playable-20260804
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify bundle inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git branch --show-current)" = "feature/procedural-jungle-playable-20260804"
+          test "$(find worker-bundles/procedural-jungle-visual-overhaul -maxdepth 1 -type f -name 'chunk-*.b64' | wc -l)" -eq 4
+          sha256sum worker-bundles/procedural-jungle-visual-overhaul/chunk-*.b64
+          wc -c worker-bundles/procedural-jungle-visual-overhaul/chunk-*.b64
+
+      - name: Upload exact committed bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: jungle-visual-overhaul-bundle-${{ github.run_id }}
+          path: |
+            worker-bundles/procedural-jungle-visual-overhaul/chunk-*.b64
+            scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
+          if-no-files-found: error
+          retention-days: 2
