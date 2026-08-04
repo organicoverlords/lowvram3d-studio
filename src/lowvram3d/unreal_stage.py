@@ -91,16 +91,18 @@ def import_generated_meshes(generated_assets: dict[str, Any],
                           "MESH_IMPORT_REQUEST", timeout=120.0)
             result = bridge.python_json(code, "result", timeout=timeout)
         except Exception as exc:
-            # Ask again with the import already on disk: the second call takes
-            # the reuse path and returns immediately once the editor is done.
+            # The editor is still importing. Poll in *query-only* mode: asking
+            # the importer again would start a second import of the same file
+            # on every poll, which is worse than waiting.
             deadline = time.monotonic() + settle_timeout
+            probe = {**request, "query_only": True}
             result = None
             while time.monotonic() < deadline:
                 time.sleep(20.0)
                 try:
-                    bridge.python("MESH_IMPORT_REQUEST = " + json.dumps(request),
+                    bridge.python("MESH_IMPORT_REQUEST = " + json.dumps(probe),
                                   "MESH_IMPORT_REQUEST", timeout=120.0)
-                    result = bridge.python_json(code, "result", timeout=timeout)
+                    result = bridge.python_json(code, "result", timeout=300.0)
                     break
                 except Exception:
                     continue

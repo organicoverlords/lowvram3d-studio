@@ -44,7 +44,12 @@ def find_static_mesh(path):
 
 
 existing = find_static_mesh(DESTINATION)
-if existing is not None and not REQUEST.get("force_reimport"):
+if REQUEST.get("query_only"):
+    # The caller is polling after a handler timeout. Starting another import
+    # here would queue a fresh copy of the one already running, every poll.
+    report["query_only"] = True
+    mesh = existing
+elif existing is not None and not REQUEST.get("force_reimport"):
     mesh = existing
     report["reused_existing"] = True
 else:
