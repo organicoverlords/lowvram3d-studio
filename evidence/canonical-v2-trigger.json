@@ -1,7 +1,8 @@
 {
-  "purpose": "Dispatch one projective-textured canonical face visual diagnostic and register its exact GitHub Actions run ID.",
+  "purpose": "Dispatch the corrected projective-textured canonical face visual diagnostic and register its exact GitHub Actions run ID.",
   "renderer_commit": "b926a5086d61a5292a33921b8d31b5ecbf204288",
+  "import_compat_commit": "4dbea0e113f9a15cca98dd6628e9c62ab6494f51",
   "runner_patch_commit": "d81ae639f436c7f03c4d00a35affca4d2fff1a48",
-  "workflow_commit": "db7529384b7b880d17db1a737d6f3a10c3683761",
-  "requested_at": "2026-08-04T03:39:00+03:00"
+  "workflow_commit": "27e2f619183481d10e926d9e8e75a2e30430390e",
+  "requested_at": "2026-08-04T03:47:00+03:00"
 }
