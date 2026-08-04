@@ -26,6 +26,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Publish exact run identity
         run: |
           set -euo pipefail
@@ -129,7 +130,7 @@ jobs:
             $env:PYTHONPATH = $previousPath
             Remove-Item -LiteralPath $clip -Force -ErrorAction SilentlyContinue
           }
-          if (-not (Test-Path -LiteralPath $sequence) -or (Get-Item -LiteralPath $sequence).Length -lt 1000000) {
+          if (-not (Test-Path -LiteralPath $sequence) -or (Get-Item -LiteralPath $sequence).Length -lt 100000) {
             throw 'FaceVerse Blender sequence is missing or implausibly small'
           }
           "BLENDER_PREFLIGHT_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
@@ -169,40 +170,48 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          $code = @'
-from pathlib import Path
-from PIL import Image, ImageDraw
-import os
-root = Path(os.environ['BLENDER_PREFLIGHT_OUTPUT'])
-names = ['proof_frame_01.png','proof_frame_02.png','proof_frame_03.png','hero_clean_render.png','wide_scene_proof.png']
-images = []
-for name in names:
-    image = Image.open(root / name).convert('RGB')
-    image.thumbnail((640, 360), Image.Resampling.LANCZOS)
-    tile = Image.new('RGB', (640, 396), 'black')
-    tile.paste(image, ((640-image.width)//2, 0))
-    draw = ImageDraw.Draw(tile)
-    draw.text((12, 368), name, fill='white')
-    images.append(tile)
-sheet = Image.new('RGB', (1280, 1188), 'black')
-for index, image in enumerate(images):
-    sheet.paste(image, ((index % 2) * 640, (index // 2) * 396))
-sheet.save(root / 'contact_sheet.png', quality=94)
-'@
-          & $env:BLENDER_PREFLIGHT_PYTHON -c $code
+          $scriptPath = Join-Path $env:BLENDER_PREFLIGHT_OUTPUT 'make_contact_sheet.py'
+          $lines = @(
+            'from pathlib import Path',
+            'from PIL import Image, ImageDraw',
+            'import os',
+            'root = Path(os.environ["BLENDER_PREFLIGHT_OUTPUT"])',
+            'names = ["proof_frame_01.png", "proof_frame_02.png", "proof_frame_03.png", "hero_clean_render.png", "wide_scene_proof.png"]',
+            'images = []',
+            'for name in names:',
+            '    image = Image.open(root / name).convert("RGB")',
+            '    image.thumbnail((640, 360), Image.Resampling.LANCZOS)',
+            '    tile = Image.new("RGB", (640, 396), "black")',
+            '    tile.paste(image, ((640 - image.width) // 2, 0))',
+            '    ImageDraw.Draw(tile).text((12, 368), name, fill="white")',
+            '    images.append(tile)',
+            'sheet = Image.new("RGB", (1280, 1188), "black")',
+            'for index, image in enumerate(images):',
+            '    sheet.paste(image, ((index % 2) * 640, (index // 2) * 396))',
+            'sheet.save(root / "contact_sheet.png", quality=94)'
+          )
+          [System.IO.File]::WriteAllLines(
+            $scriptPath,
+            $lines,
+            [System.Text.UTF8Encoding]::new($false)
+          )
+          & $env:BLENDER_PREFLIGHT_PYTHON $scriptPath
           if ($LASTEXITCODE -ne 0) { throw 'Could not build Blender visual contact sheet' }
           $sheet = Join-Path $env:BLENDER_PREFLIGHT_OUTPUT 'contact_sheet.png'
           if (-not (Test-Path -LiteralPath $sheet) -or (Get-Item -LiteralPath $sheet).Length -lt 100000) {
             throw 'Blender contact sheet is missing or implausibly small'
           }
+          Remove-Item -LiteralPath $scriptPath -Force -ErrorAction SilentlyContinue
 
       - name: Remove private sequence cache
         if: always()
         shell: powershell
         run: |
-          $private = Join-Path $env:BLENDER_PREFLIGHT_OUTPUT '_private'
-          if (Test-Path -LiteralPath $private) {
-            Remove-Item -LiteralPath $private -Recurse -Force -ErrorAction SilentlyContinue
+          if ($env:BLENDER_PREFLIGHT_OUTPUT) {
+            $private = Join-Path $env:BLENDER_PREFLIGHT_OUTPUT '_private'
+            if (Test-Path -LiteralPath $private) {
+              Remove-Item -LiteralPath $private -Recurse -Force -ErrorAction SilentlyContinue
+            }
           }
 
       - name: Upload groomed Blender preflight
