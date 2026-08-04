@@ -9,8 +9,10 @@ on:
     paths:
       - scripts/run-beggars-canonical-diagnostic.ps1
       - scripts/apply-beggars-canonical-runtime-compat.ps1
+      - scripts/apply-beggars-canonical-v2-runner.ps1
       - tools/beggars_scene/build_canonical_face_sequence.py
       - blender/diagnose_beggars_canonical_face.py
+      - blender/diagnose_beggars_canonical_face_v2.py
       - .github/workflows/beggars-canonical-face-diagnostic.yml
 
 permissions:
@@ -76,6 +78,14 @@ jobs:
             throw "Canonical Blender compatibility failed with exit code $LASTEXITCODE"
           }
 
+      - name: Route diagnostic through landmark v2 renderer
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-canonical-v2-runner.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Canonical landmark v2 routing failed with exit code $LASTEXITCODE"
+          }
+
       - name: Rebuild track and render canonical variants
         shell: powershell
         run: |
@@ -89,7 +99,7 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          git checkout -- blender\diagnose_beggars_canonical_face.py
+          git checkout -- blender\diagnose_beggars_canonical_face.py scripts\run-beggars-canonical-diagnostic.ps1
           $evidence = 'evidence\latest-beggars-canonical-diagnostic'
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
           if ($env:CANONICAL_DIAGNOSTIC_OUTPUT -and (Test-Path -LiteralPath $env:CANONICAL_DIAGNOSTIC_OUTPUT)) {
