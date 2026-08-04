@@ -1,6 +1,8 @@
 {
-  "purpose": "Dispatch exactly one workflow_dispatch FaceVerse v4 preflight after the uv-first Python compatibility repair and record its run ID.",
-  "workflow_commit": "989dcdb0b2c1219b23864c1f32283abacf25959e",
+  "purpose": "Dispatch exactly one workflow_dispatch FaceVerse v4 preflight after uv-first Python provisioning and native-process diagnostic repairs, then record its run ID.",
+  "workflow_commit": "f6c9687010d7d34bbfd9b3b6f3c902ac80022828",
+  "python_compat_commit": "0f60941499a3482ca2c532ec1c143fc6b64e1253",
+  "native_compat_commit": "5c50dd5ddf8d6a2bd80a3be766149b23dc4a9e33",
   "registrar_commit": "ac6f8d9b3c42b6e85685942f4189fe2d9bbabf10",
-  "requested_at": "2026-08-04T04:05:00+03:00"
+  "requested_at": "2026-08-04T04:13:00+03:00"
 }
