@@ -52,6 +52,9 @@ CM_PER_M = 100.0
 
 GENERATED = REQUEST.get("generated_assets") or {}
 MESH_DIR = f"{PACKAGE_ROOT}/GeneratedMeshes"
+MATERIAL_DIR = f"{PACKAGE_ROOT}/Materials"
+REGION_MATERIAL_PATH = f"{MATERIAL_DIR}/M_RegionColour"
+_COLOUR_MATERIALS = {}
 # Mini Turbo conditions on a view of the subject and writes it facing the
 # camera, which the importer places along Unreal -Y. The structural scene's
 # camera looks down +X, so a generated mesh is turned to face back down -X.
@@ -111,6 +114,58 @@ for spec in PLACEMENT["actors"]:
     mesh_width_m = 2.0 * yawed[1] * scale / CM_PER_M
     slot_width_m = max(size[1], 1e-3)
     instance_stride[region_id] = max(1, int(round(mesh_width_m / slot_width_m)))
+
+def region_colour_material(colour):
+    """A material instance tinted to a region's own mean colour.
+
+    Primitives otherwise render default white, so ground, water and every
+    unbuilt volume read as the same blank slab and hide whatever stands on
+    them. One instance per distinct colour, cached.
+    """
+    key = tuple(int(c) for c in colour)
+    if key in _COLOUR_MATERIALS:
+        return _COLOUR_MATERIALS[key]
+
+    parent = unreal.load_asset(REGION_MATERIAL_PATH)
+    if parent is None:
+        tools = unreal.AssetToolsHelpers.get_asset_tools()
+        package, name = REGION_MATERIAL_PATH.rsplit("/", 1)
+        parent = tools.create_asset(name, package, unreal.Material,
+                                    unreal.MaterialFactoryNew())
+        expression = unreal.MaterialEditingLibrary.create_material_expression(
+            parent, unreal.MaterialExpressionVectorParameter, -400, 0)
+        expression.set_editor_property("parameter_name", "BaseColour")
+        # Pin names are per-expression and a wrong one fails *silently*,
+        # leaving the input unconnected. Connect, then verify.
+        for pin in ("", "RGB", "RGBA"):
+            unreal.MaterialEditingLibrary.connect_material_property(
+                expression, pin, unreal.MaterialProperty.MP_BASE_COLOR)
+            unreal.MaterialEditingLibrary.recompile_material(parent)
+            if unreal.MaterialEditingLibrary.get_material_property_input_node(
+                    parent, unreal.MaterialProperty.MP_BASE_COLOR):
+                break
+        else:
+            raise RuntimeError("could not connect BaseColour to Base Color")
+        unreal.EditorAssetLibrary.save_loaded_asset(parent)
+
+    path = "%s/MI_%02X%02X%02X" % ((MATERIAL_DIR,) + key)
+    instance = unreal.load_asset(path)
+    if instance is None:
+        tools = unreal.AssetToolsHelpers.get_asset_tools()
+        package, name = path.rsplit("/", 1)
+        instance = tools.create_asset(
+            name, package, unreal.MaterialInstanceConstant,
+            unreal.MaterialInstanceConstantFactoryNew())
+        instance.set_editor_property("parent", parent)
+        # sRGB bytes to the linear values a material parameter expects.
+        linear = [(c / 255.0) ** 2.2 for c in key]
+        unreal.MaterialEditingLibrary.set_material_instance_vector_parameter_value(
+            instance, "BaseColour",
+            unreal.LinearColor(linear[0], linear[1], linear[2], 1.0))
+        unreal.EditorAssetLibrary.save_loaded_asset(instance)
+    _COLOUR_MATERIALS[key] = instance
+    return instance
+
 
 spawned = []
 skipped_instances = []
@@ -180,6 +235,13 @@ for index, spec in enumerate(PLACEMENT["actors"]):
             location.x + (location.x - float(centre.x)),
             location.y + (location.y - float(centre.y)),
             location.z + (location.z - anchor_z)), False, True)
+
+    # Only primitives need tinting; a generated mesh brings its own texture.
+    colour = spec.get("mean_colour_srgb")
+    if generated is None and colour:
+        component = actor.get_component_by_class(unreal.StaticMeshComponent)
+        if component is not None:
+            component.set_material(0, region_colour_material(colour))
 
     label = spec["region_id"]
     if kind == "scatter_instance":

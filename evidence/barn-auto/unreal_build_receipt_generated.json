@@ -11,17 +11,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        5.3,
-        6.3,
-        7.09
+        2.37,
+        2.82,
+        3.17
       ],
       "requested_size_m": [
-        10.94,
-        10.94,
-        7.09
+        1.35,
+        9.29,
+        3.17
       ],
       "source": "generated",
-      "uniform_scale": 3.60317
+      "uniform_scale": 1.61091
     },
     {
       "kind": "scatter_instance",
@@ -29,17 +29,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        5.09,
-        6.06,
-        6.82
+        3.0,
+        3.57,
+        4.02
       ],
       "requested_size_m": [
-        5.28,
-        7.88,
-        6.82
+        3.44,
+        6.87,
+        4.02
       ],
       "source": "generated",
-      "uniform_scale": 3.46377
+      "uniform_scale": 2.0417
     },
     {
       "kind": "scatter_instance",
@@ -47,17 +47,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        2.44,
-        2.9,
-        3.26
+        2.26,
+        2.69,
+        3.03
       ],
       "requested_size_m": [
-        1.51,
-        6.98,
-        3.26
+        2.96,
+        5.93,
+        3.03
       ],
       "source": "generated",
-      "uniform_scale": 1.65616
+      "uniform_scale": 1.53826
     },
     {
       "kind": "scatter_instance",
@@ -65,17 +65,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        2.71,
-        3.23,
-        3.63
+        2.38,
+        2.83,
+        3.18
       ],
       "requested_size_m": [
-        2.43,
-        6.89,
-        3.63
+        5.81,
+        9.73,
+        3.18
       ],
       "source": "generated",
-      "uniform_scale": 1.84591
+      "uniform_scale": 1.61649
     },
     {
       "kind": "scatter_instance",
@@ -83,17 +83,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        2.85,
-        3.39,
-        3.81
+        3.41,
+        4.06,
+        4.56
       ],
       "requested_size_m": [
-        2.39,
-        9.27,
-        3.81
+        2.52,
+        4.79,
+        4.56
       ],
       "source": "generated",
-      "uniform_scale": 1.93612
+      "uniform_scale": 2.31806
     },
     {
       "kind": "scatter_instance",
@@ -101,17 +101,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        3.26,
-        3.88,
-        4.37
+        2.82,
+        3.36,
+        3.78
       ],
       "requested_size_m": [
-        2.06,
-        7.08,
-        4.37
+        5.63,
+        11.37,
+        3.78
       ],
       "source": "generated",
-      "uniform_scale": 2.21947
+      "uniform_scale": 1.92028
     },
     {
       "kind": "scatter_instance",
@@ -119,17 +119,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        5.93,
-        7.06,
-        7.94
+        2.95,
+        3.51,
+        3.95
       ],
       "requested_size_m": [
-        4.15,
-        8.22,
-        7.94
+        5.76,
+        10.07,
+        3.95
       ],
       "source": "generated",
-      "uniform_scale": 4.03271
+      "uniform_scale": 2.00461
     },
     {
       "kind": "scatter_instance",
@@ -137,17 +137,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        5.74,
-        6.83,
-        7.69
+        3.38,
+        4.02,
+        4.53
       ],
       "requested_size_m": [
-        5.58,
-        10.36,
-        7.69
+        3.93,
+        4.67,
+        4.53
       ],
       "source": "generated",
-      "uniform_scale": 3.90477
+      "uniform_scale": 2.30028
     },
     {
       "kind": "scatter_instance",
@@ -155,17 +155,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        2.56,
-        3.04,
-        3.42
+        3.89,
+        4.63,
+        5.21
       ],
       "requested_size_m": [
-        1.16,
-        6.19,
-        3.42
+        5.58,
+        6.83,
+        5.21
       ],
       "source": "generated",
-      "uniform_scale": 1.73742
+      "uniform_scale": 2.64522
     },
     {
       "kind": "scatter_instance",
@@ -173,17 +173,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        4.82,
-        5.74,
-        6.46
+        2.52,
+        3.0,
+        3.38
       ],
       "requested_size_m": [
-        4.73,
-        8.12,
-        6.46
+        6.13,
+        6.13,
+        3.38
       ],
       "source": "generated",
-      "uniform_scale": 3.2803
+      "uniform_scale": 1.71606
     },
     {
       "kind": "scatter_instance",
@@ -191,17 +191,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        2.85,
-        3.39,
-        3.82
+        1.11,
+        1.32,
+        1.49
       ],
       "requested_size_m": [
-        7.5,
-        14.61,
-        3.82
+        2.56,
+        2.56,
+        1.49
       ],
       "source": "generated",
-      "uniform_scale": 1.93899
+      "uniform_scale": 0.7544
     },
     {
       "kind": "scatter_instance",
@@ -209,17 +209,17 @@
       "layer": "vegetation",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
       "placed_size_m": [
-        1.92,
-        2.28,
-        2.56
+        25.09,
+        29.85,
+        33.59
       ],
       "requested_size_m": [
-        1.24,
-        8.78,
-        2.56
+        198.52,
+        198.52,
+        33.59
       ],
       "source": "generated",
-      "uniform_scale": 1.30299
+      "uniform_scale": 17.06259
     },
     {
       "kind": "structure",
@@ -227,17 +227,17 @@
       "layer": "architecture",
       "mesh": "/Game/AgentProof/BarnGen/GeneratedMeshes/architecture_house_025/architecture_house_025_textured/StaticMeshes/architecture_house_025_textured.architecture_house_025_textured",
       "placed_size_m": [
-        8.98,
-        12.01,
-        4.68
+        6.83,
+        9.13,
+        3.56
       ],
       "requested_size_m": [
-        8.62,
-        14.36,
-        4.68
+        7.13,
+        11.88,
+        3.56
       ],
       "source": "generated",
-      "uniform_scale": 6.0884
+      "uniform_scale": 4.62859
     }
   ],
   "generated_import_failures": [],

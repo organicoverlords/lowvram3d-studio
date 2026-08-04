@@ -85,8 +85,10 @@ def _receding_surface(region: dict[str, Any], fov_x: float, aspect: float
     # bbox centre answers a different question -- how far below the camera the
     # middle of the box is -- and for a plane spanning an order of magnitude in
     # depth that is neither its near height nor its far one.
-    measured = (region.get("surface") or {}).get("height_m")
-    centre_height = (float(measured) if measured is not None
+    # Negated: the measurement is a drop below the camera in MoGe's Y-down
+    # frame, and this function returns a position in Unreal's Z-up one.
+    drop = (region.get("surface") or {}).get("drop_below_camera_m")
+    centre_height = (-float(drop) if drop is not None
                      else unproject((x0 + x1) * 0.5, (y0 + y1) * 0.5, median,
                                     fov_x, aspect)[2])
     centre = ((near + far) * 0.5, (left[1] + right[1]) * 0.5, centre_height)
@@ -163,10 +165,21 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
             skipped.append(region["id"])
             continue
 
-        centre, width, height = _footprint(region, fov_x, aspect)
-        depth_band = region.get("depth_m", {})
-        thickness = max(0.5, float(depth_band.get("far", 0.0))
-                        - float(depth_band.get("near", 0.0)))
+        measured = region.get("measured_unreal_m")
+        if measured:
+            # Where the region's points actually are, already in this frame.
+            # Preferred over unprojecting a bounding box at one depth, which
+            # answers a different question for anything with depth extent and
+            # disagrees with the measurement by metres.
+            centre = tuple(float(v) for v in measured["centroid"])
+            thickness = max(0.5, float(measured["size"][0]))
+            width = max(float(measured["size"][1]), 0.5)
+            height = max(float(measured["size"][2]), 0.5)
+        else:
+            centre, width, height = _footprint(region, fov_x, aspect)
+            depth_band = region.get("depth_m", {})
+            thickness = max(0.5, float(depth_band.get("far", 0.0))
+                            - float(depth_band.get("near", 0.0)))
 
         bbox = [float(v) for v in region["bbox_norm_xyxy"]]
         common = {
@@ -183,19 +196,28 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
             # generator needs the second to know how far it may widen a crop.
             "source_bbox_norm_xyxy": bbox,
             "region_bbox_norm_xyxy": bbox,
+            # So a region that keeps its primitive is at least the right colour.
+            "mean_colour_srgb": region.get("mean_colour_srgb"),
         }
 
         if layer in ("terrain", "water"):
-            # Terrain runs away from the camera, so its depth band is the extent
-            # along +X and its width belongs at the far edge, not the median.
-            surface, lateral, depth_span = _receding_surface(region, fov_x, aspect)
+            if measured:
+                # A surface is flat: keep its measured footprint and drop the
+                # vertical spread, which for ground is slope and noise rather
+                # than thickness.
+                surface, lateral, depth_span = centre, width, thickness
+                sized_at = "measured_points"
+            else:
+                surface, lateral, depth_span = _receding_surface(
+                    region, fov_x, aspect)
+                sized_at = "far_depth_edge"
             actors.append({
                 **common,
                 "kind": "ground_plane" if layer == "terrain" else "water_surface",
                 "location_cm": [c * CM_PER_M for c in surface],
                 "size_m": [max(depth_span, 1.0), max(lateral, 1.0),
                            0.2 if layer == "terrain" else 0.05],
-                "sized_at": "far_depth_edge",
+                "sized_at": sized_at,
             })
 
         elif layer == "architecture":
@@ -216,11 +238,19 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
             for index, cluster in enumerate(region["clusters"]):
                 cluster_bbox = [float(v) for v in cluster["bbox_norm_xyxy"]]
                 cluster_depth = cluster["depth_m"]
-                cluster_region = {**region, "bbox_norm_xyxy": cluster_bbox,
-                                  "depth_m": cluster_depth}
-                centre_c, width_c, height_c = _footprint(cluster_region, fov_x, aspect)
-                thickness_c = max(0.5, float(cluster_depth.get("far", 0.0))
-                                  - float(cluster_depth.get("near", 0.0)))
+                cluster_measured = cluster.get("measured_unreal_m")
+                if cluster_measured:
+                    centre_c = tuple(float(v) for v in cluster_measured["centroid"])
+                    thickness_c = max(0.5, float(cluster_measured["size"][0]))
+                    width_c = max(float(cluster_measured["size"][1]), 0.5)
+                    height_c = max(float(cluster_measured["size"][2]), 0.5)
+                else:
+                    cluster_region = {**region, "bbox_norm_xyxy": cluster_bbox,
+                                      "depth_m": cluster_depth}
+                    centre_c, width_c, height_c = _footprint(
+                        cluster_region, fov_x, aspect)
+                    thickness_c = max(0.5, float(cluster_depth.get("far", 0.0))
+                                      - float(cluster_depth.get("near", 0.0)))
                 actors.append({
                     **common,
                     "kind": "scatter_instance",

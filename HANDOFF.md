@@ -196,6 +196,18 @@ else had failed.
      vegetation to the terrain would hide it; separating trunks would fix it.
    - The crop for a scatter region is still a chunk of hedge, so the mesh is a
      blob. Accurate to the input, and not a tree.
+
+   **Placement now takes every position and size from measured points**
+   (`measured_unreal_m`, converted to Unreal's frame once, in segmentation)
+   rather than unprojecting a bounding box at one depth. Mixing the two methods
+   is what put the ground plane 3.6 m above the barn's base — the ground was
+   measured and the barn unprojected, and MoGe's ground is not flat here (1.3 m
+   below the camera at 2.3 m out, 4.9 m below at 13.5 m). Overlapping pairs
+   11 → 1, buried 0.
+
+   Regions that keep a primitive are tinted to their own mean source colour.
+   Everything rendered default white before, so ground, water and every unbuilt
+   volume read as the same blank slab and hid whatever stood on them.
 2. **Better texturing than a single-view projection.** `workers/project_crop_texture.py`
    projects each asset's conditioning crop back onto it, along the mesh's own
    −Z, mapping the front-facing bounding box to the crop. The generator aligns

@@ -25,247 +25,538 @@
       "clusters": [
         {
           "bbox_norm_xyxy": [
-            0.59945,
-            0.43002,
-            0.92196,
-            0.7081
+            0.35428,
+            0.04972,
+            0.85843,
+            0.27716
           ],
           "centroid_norm_xy": [
-            0.77665,
-            0.57556
+            0.61462,
+            0.16724
           ],
           "depth_m": {
-            "far": 28.681,
-            "median": 16.478,
-            "near": 15.117
+            "far": 12.995,
+            "median": 12.188,
+            "near": 11.648
           },
-          "pixel_count": 56052
+          "measured_unreal_m": {
+            "centroid": [
+              12.188,
+              3.021,
+              6.362
+            ],
+            "max": [
+              12.995,
+              7.396,
+              8.181
+            ],
+            "min": [
+              11.648,
+              -1.89,
+              5.01
+            ],
+            "size": [
+              1.347,
+              9.286,
+              3.171
+            ]
+          },
+          "pixel_count": 95592
         },
         {
           "bbox_norm_xyxy": [
-            0.0,
-            0.5046,
-            0.18923,
-            0.72284
+            0.16436,
+            0.19613,
+            0.53453,
+            0.48803
           ],
           "centroid_norm_xy": [
-            0.08896,
-            0.6214
+            0.38069,
+            0.33227
           ],
           "depth_m": {
-            "far": 23.699,
-            "median": 19.815,
-            "near": 18.42
+            "far": 14.931,
+            "median": 12.853,
+            "near": 11.496
           },
-          "pixel_count": 50078
+          "measured_unreal_m": {
+            "centroid": [
+              12.853,
+              -3.337,
+              3.578
+            ],
+            "max": [
+              14.931,
+              0.155,
+              5.267
+            ],
+            "min": [
+              11.496,
+              -6.712,
+              1.248
+            ],
+            "size": [
+              3.435,
+              6.867,
+              4.019
+            ]
+          },
+          "pixel_count": 83236
         },
         {
           "bbox_norm_xyxy": [
-            0.23688,
-            0.25599,
-            0.5587,
-            0.41344
-          ],
-          "centroid_norm_xy": [
-            0.41176,
-            0.32801
-          ],
-          "depth_m": {
-            "far": 15.345,
-            "median": 13.585,
-            "near": 11.625
-          },
-          "pixel_count": 48994
-        },
-        {
-          "bbox_norm_xyxy": [
-            0.51934,
-            0.25691,
+            0.52348,
+            0.25506,
             0.84116,
             0.48527
           ],
           "centroid_norm_xy": [
-            0.68424,
-            0.35601
+            0.66642,
+            0.3445
           ],
           "depth_m": {
-            "far": 14.54,
-            "median": 12.085,
-            "near": 11.585
+            "far": 14.597,
+            "median": 12.171,
+            "near": 11.637
           },
-          "pixel_count": 46997
+          "measured_unreal_m": {
+            "centroid": [
+              12.171,
+              4.411,
+              3.193
+            ],
+            "max": [
+              14.597,
+              7.198,
+              4.361
+            ],
+            "min": [
+              11.637,
+              1.27,
+              1.333
+            ],
+            "size": [
+              2.96,
+              5.928,
+              3.028
+            ]
+          },
+          "pixel_count": 58412
         },
         {
           "bbox_norm_xyxy": [
-            0.1616,
-            0.34438,
-            0.52624,
-            0.71823
-          ],
-          "centroid_norm_xy": [
-            0.33526,
-            0.43087
-          ],
-          "depth_m": {
-            "far": 15.724,
-            "median": 13.466,
-            "near": 11.523
-          },
-          "pixel_count": 42465
-        },
-        {
-          "bbox_norm_xyxy": [
-            0.32735,
-            0.38214,
-            0.72859,
+            0.20097,
+            0.37385,
+            0.71961,
             0.55985
           ],
           "centroid_norm_xy": [
-            0.51186,
-            0.4743
+            0.46771,
+            0.46531
           ],
           "depth_m": {
-            "far": 20.14,
-            "median": 16.633,
-            "near": 14.495
+            "far": 19.566,
+            "median": 15.748,
+            "near": 13.752
           },
-          "pixel_count": 37389
+          "measured_unreal_m": {
+            "centroid": [
+              15.748,
+              -0.519,
+              0.804
+            ],
+            "max": [
+              19.566,
+              3.232,
+              2.404
+            ],
+            "min": [
+              13.752,
+              -6.499,
+              -0.778
+            ],
+            "size": [
+              5.814,
+              9.731,
+              3.182
+            ]
+          },
+          "pixel_count": 55610
         },
         {
           "bbox_norm_xyxy": [
-            0.03867,
-            0.28177,
-            0.27417,
-            0.51565
+            0.6174,
+            0.44107,
+            0.92196,
+            0.7081
           ],
           "centroid_norm_xy": [
-            0.1745,
-            0.41288
+            0.80826,
+            0.59875
           ],
           "depth_m": {
-            "far": 24.197,
-            "median": 20.93,
-            "near": 18.612
+            "far": 17.602,
+            "median": 16.221,
+            "near": 15.086
           },
-          "pixel_count": 35581
+          "measured_unreal_m": {
+            "centroid": [
+              16.221,
+              10.607,
+              -2.54
+            ],
+            "max": [
+              17.602,
+              12.646,
+              -0.063
+            ],
+            "min": [
+              15.086,
+              7.859,
+              -4.626
+            ],
+            "size": [
+              2.515,
+              4.786,
+              4.563
+            ]
+          },
+          "pixel_count": 43743
         },
         {
           "bbox_norm_xyxy": [
-            0.47583,
-            0.15746,
-            0.79351,
-            0.32413
+            0.0,
+            0.56998,
+            0.22997,
+            0.72284
           ],
           "centroid_norm_xy": [
-            0.59036,
-            0.24323
+            0.08786,
+            0.64556
           ],
           "depth_m": {
-            "far": 13.033,
-            "median": 12.251,
-            "near": 11.542
+            "far": 23.831,
+            "median": 19.58,
+            "near": 18.203
           },
-          "pixel_count": 34307
+          "measured_unreal_m": {
+            "centroid": [
+              19.58,
+              -16.797,
+              -4.595
+            ],
+            "max": [
+              23.831,
+              -13.017,
+              -2.688
+            ],
+            "min": [
+              18.203,
+              -24.39,
+              -6.468
+            ],
+            "size": [
+              5.628,
+              11.373,
+              3.78
+            ]
+          },
+          "pixel_count": 37826
         },
         {
           "bbox_norm_xyxy": [
-            0.2866,
-            0.13904,
-            0.55594,
-            0.27348
+            0.02279,
+            0.43462,
+            0.22721,
+            0.58195
           ],
           "centroid_norm_xy": [
-            0.43338,
-            0.20809
+            0.12149,
+            0.51106
           ],
           "depth_m": {
-            "far": 13.357,
-            "median": 12.165,
-            "near": 11.577
+            "far": 24.228,
+            "median": 20.332,
+            "near": 18.466
           },
-          "pixel_count": 32934
+          "measured_unreal_m": {
+            "centroid": [
+              20.332,
+              -16.406,
+              -0.349
+            ],
+            "max": [
+              24.228,
+              -12.171,
+              1.659
+            ],
+            "min": [
+              18.466,
+              -22.238,
+              -2.287
+            ],
+            "size": [
+              5.762,
+              10.067,
+              3.946
+            ]
+          },
+          "pixel_count": 31027
         },
         {
           "bbox_norm_xyxy": [
-            0.10152,
-            0.45488,
-            0.34738,
+            0.10221,
+            0.42541,
+            0.33356,
             0.71547
           ],
           "centroid_norm_xy": [
-            0.21757,
-            0.57784
+            0.22662,
+            0.57931
           ],
           "depth_m": {
-            "far": 19.1,
-            "median": 15.72,
-            "near": 14.358
+            "far": 17.528,
+            "median": 15.081,
+            "near": 13.601
           },
-          "pixel_count": 29154
+          "measured_unreal_m": {
+            "centroid": [
+              15.081,
+              -8.732,
+              -2.161
+            ],
+            "max": [
+              17.528,
+              -7.128,
+              0.43
+            ],
+            "min": [
+              13.601,
+              -11.798,
+              -4.098
+            ],
+            "size": [
+              3.927,
+              4.67,
+              4.528
+            ]
+          },
+          "pixel_count": 26454
         },
         {
           "bbox_norm_xyxy": [
-            0.46133,
-            0.04972,
-            0.76381,
-            0.19061
+            0.11464,
+            0.27901,
+            0.27831,
+            0.45212
           ],
           "centroid_norm_xy": [
-            0.6208,
-            0.11867
+            0.20277,
+            0.37361
           ],
           "depth_m": {
-            "far": 13.015,
-            "median": 12.327,
-            "near": 11.779
+            "far": 23.464,
+            "median": 20.943,
+            "near": 17.88
           },
-          "pixel_count": 28429
+          "measured_unreal_m": {
+            "centroid": [
+              20.943,
+              -12.693,
+              4.02
+            ],
+            "max": [
+              23.464,
+              -10.601,
+              7.162
+            ],
+            "min": [
+              17.88,
+              -17.427,
+              1.955
+            ],
+            "size": [
+              5.585,
+              6.826,
+              5.207
+            ]
+          },
+          "pixel_count": 21980
         },
         {
           "bbox_norm_xyxy": [
-            0.62914,
-            0.08656,
-            0.85843,
-            0.25875
+            0.59392,
+            0.42173,
+            0.9047,
+            0.66575
           ],
           "centroid_norm_xy": [
-            0.74856,
-            0.15538
+            0.65928,
+            0.48866
           ],
           "depth_m": {
-            "far": 12.869,
-            "median": 11.965,
-            "near": 11.652
+            "far": 29.918,
+            "median": 26.763,
+            "near": 22.107
           },
-          "pixel_count": 24690
+          "measured_unreal_m": {
+            "centroid": [
+              26.763,
+              8.934,
+              0.412
+            ],
+            "max": [
+              29.918,
+              11.32,
+              2.373
+            ],
+            "min": [
+              22.107,
+              5.191,
+              -1.005
+            ],
+            "size": [
+              7.811,
+              6.129,
+              3.378
+            ]
+          },
+          "pixel_count": 12828
+        },
+        {
+          "bbox_norm_xyxy": [
+            0.22238,
+            0.70534,
+            0.2424,
+            0.71823
+          ],
+          "centroid_norm_xy": [
+            0.23079,
+            0.71103
+          ],
+          "depth_m": {
+            "far": 6.881,
+            "median": 2.579,
+            "near": 2.361
+          },
+          "measured_unreal_m": {
+            "centroid": [
+              2.579,
+              -1.465,
+              -0.871
+            ],
+            "max": [
+              6.881,
+              -1.328,
+              -0.783
+            ],
+            "min": [
+              2.361,
+              -3.887,
+              -2.268
+            ],
+            "size": [
+              4.52,
+              2.559,
+              1.485
+            ]
+          },
+          "pixel_count": 227
+        },
+        {
+          "bbox_norm_xyxy": [
+            0.86878,
+            0.5884,
+            0.875,
+            0.60958
+          ],
+          "centroid_norm_xy": [
+            0.8715,
+            0.59917
+          ],
+          "depth_m": {
+            "far": 385.132,
+            "median": 204.079,
+            "near": 132.454
+          },
+          "measured_unreal_m": {
+            "centroid": [
+              204.079,
+              159.553,
+              -31.942
+            ],
+            "max": [
+              385.132,
+              301.49,
+              -21.788
+            ],
+            "min": [
+              132.454,
+              102.975,
+              -55.375
+            ],
+            "size": [
+              252.678,
+              198.516,
+              33.587
+            ]
+          },
+          "pixel_count": 131
         }
       ],
       "confidence": 0.809,
       "depth_m": {
-        "far": 23.12,
-        "median": 14.399,
-        "near": 11.732
+        "far": 23.112,
+        "median": 14.395,
+        "near": 11.728
       },
       "id": "vegetation_tree_004",
       "layer_type": "vegetation",
       "mask_png": "evidence\\barn-auto\\depth\\region_masks\\vegetation_tree_004.png",
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "measured_unreal_m": {
+        "centroid": [
+          14.395,
+          -0.416,
+          2.221
+        ],
+        "max": [
+          23.112,
+          10.746,
+          7.134
+        ],
+        "min": [
+          11.728,
+          -18.002,
+          -4.524
+        ],
+        "size": [
+          11.384,
+          28.748,
+          11.658
+        ]
+      },
+      "observed_fraction": 0.9618,
       "pixel_fraction": 0.3088,
       "representation": "scatter_instances",
       "semantic_label": "tree",
       "surface": {
         "mean_normal": [
-          -0.0135,
-          0.2766,
+          -0.0136,
+          0.2765,
           -0.9609
         ],
         "orientation": "vertical",
         "walkable_candidate": false
       },
       "world_extent_m": [
-        356.892,
-        68.744,
-        412.529
+        356.519,
+        68.68,
+        412.008
       ]
     },
     {
@@ -277,30 +568,57 @@
       ],
       "confidence": 0.795,
       "depth_m": {
-        "far": 455.892,
-        "median": 12.468,
-        "near": 11.446
+        "far": 455.459,
+        "median": 12.464,
+        "near": 11.442
       },
       "id": "sky_sky_002",
       "layer_type": "sky",
       "mask_png": "evidence\\barn-auto\\depth\\region_masks\\sky_sky_002.png",
+      "mean_colour_srgb": [
+        93,
+        93,
+        88
+      ],
+      "measured_unreal_m": {
+        "centroid": [
+          12.464,
+          7.184,
+          1.68
+        ],
+        "max": [
+          455.459,
+          462.035,
+          7.254
+        ],
+        "min": [
+          11.442,
+          -8.827,
+          -59.198
+        ],
+        "size": [
+          444.017,
+          470.863,
+          66.452
+        ]
+      },
       "observed_fraction": 0.0081,
       "pixel_fraction": 0.2949,
       "representation": "backdrop",
       "semantic_label": "sky",
       "surface": {
         "mean_normal": [
-          -0.4739,
+          -0.4741,
           0.1905,
-          -0.8597
+          -0.8596
         ],
         "orientation": "vertical",
         "walkable_candidate": false
       },
       "world_extent_m": [
-        501.468,
-        76.763,
-        536.63
+        501.381,
+        76.774,
+        536.632
       ]
     },
     {
@@ -312,32 +630,59 @@
       ],
       "confidence": 0.787,
       "depth_m": {
-        "far": 10.329,
-        "median": 2.324,
-        "near": 1.567
+        "far": 10.326,
+        "median": 2.323,
+        "near": 1.566
       },
       "id": "terrain_grass_009",
       "layer_type": "terrain",
       "mask_png": "evidence\\barn-auto\\depth\\region_masks\\terrain_grass_009.png",
+      "mean_colour_srgb": [
+        45,
+        41,
+        26
+      ],
+      "measured_unreal_m": {
+        "centroid": [
+          2.323,
+          0.04,
+          -1.326
+        ],
+        "max": [
+          10.326,
+          6.381,
+          -1.156
+        ],
+        "min": [
+          1.566,
+          -3.026,
+          -3.72
+        ],
+        "size": [
+          8.76,
+          9.407,
+          2.564
+        ]
+      },
       "observed_fraction": 1.0,
       "pixel_fraction": 0.28672,
       "representation": "heightfield",
       "semantic_label": "grass",
       "surface": {
-        "height_m": 1.326,
-        "height_spread_m": 2.564,
+        "drop_below_camera_m": 1.326,
+        "drop_spread_m": 2.564,
         "mean_normal": [
           -0.0698,
-          -0.7607,
-          -0.6454
+          -0.7609,
+          -0.645
         ],
         "orientation": "horizontal",
         "walkable_candidate": true
       },
       "world_extent_m": [
-        58.521,
-        8.51,
-        27.456
+        58.531,
+        8.511,
+        27.441
       ]
     },
     {
@@ -349,30 +694,57 @@
       ],
       "confidence": 0.582,
       "depth_m": {
-        "far": 16.735,
-        "median": 13.531,
-        "near": 10.789
+        "far": 16.732,
+        "median": 13.528,
+        "near": 10.785
       },
       "id": "architecture_house_025",
       "layer_type": "architecture",
       "mask_png": "evidence\\barn-auto\\depth\\region_masks\\architecture_house_025.png",
+      "mean_colour_srgb": [
+        44,
+        38,
+        32
+      ],
+      "measured_unreal_m": {
+        "centroid": [
+          13.528,
+          0.933,
+          -2.677
+        ],
+        "max": [
+          16.732,
+          7.238,
+          -0.871
+        ],
+        "min": [
+          10.785,
+          -4.638,
+          -4.427
+        ],
+        "size": [
+          5.947,
+          11.876,
+          3.556
+        ]
+      },
       "observed_fraction": 1.0,
       "pixel_fraction": 0.08192,
       "representation": "structure_mesh",
       "semantic_label": "house",
       "surface": {
         "mean_normal": [
-          -0.1481,
+          -0.1482,
           -0.5444,
-          -0.8257
+          -0.8256
         ],
         "orientation": "vertical",
         "walkable_candidate": false
       },
       "world_extent_m": [
-        16.701,
-        4.901,
-        25.263
+        16.696,
+        4.902,
+        25.249
       ]
     },
     {
@@ -384,20 +756,47 @@
       ],
       "confidence": 0.518,
       "depth_m": {
-        "far": 17.369,
-        "median": 15.864,
-        "near": 14.233
+        "far": 17.361,
+        "median": 15.857,
+        "near": 14.227
       },
       "id": "architecture_hovel_079",
       "layer_type": "architecture",
       "mask_png": "evidence\\barn-auto\\depth\\region_masks\\architecture_hovel_079.png",
+      "mean_colour_srgb": [
+        24,
+        24,
+        22
+      ],
+      "measured_unreal_m": {
+        "centroid": [
+          15.857,
+          -7.268,
+          -2.44
+        ],
+        "max": [
+          17.361,
+          -5.616,
+          0.121
+        ],
+        "min": [
+          14.227,
+          -9.714,
+          -4.992
+        ],
+        "size": [
+          3.134,
+          4.098,
+          5.113
+        ]
+      },
       "observed_fraction": 1.0,
       "pixel_fraction": 0.01768,
       "representation": "structure_mesh",
       "semantic_label": "hovel",
       "surface": {
         "mean_normal": [
-          0.3421,
+          0.3422,
           -0.2337,
           -0.9101
         ],
@@ -405,9 +804,9 @@
         "walkable_candidate": false
       },
       "world_extent_m": [
-        6.621,
-        6.207,
-        9.708
+        6.622,
+        6.208,
+        9.694
       ]
     },
     {
@@ -419,20 +818,47 @@
       ],
       "confidence": 0.509,
       "depth_m": {
-        "far": 214.601,
-        "median": 69.552,
-        "near": 15.529
+        "far": 214.336,
+        "median": 69.47,
+        "near": 15.526
       },
       "id": "terrain_field_029",
       "layer_type": "terrain",
       "mask_png": "evidence\\barn-auto\\depth\\region_masks\\terrain_field_029.png",
+      "mean_colour_srgb": [
+        61,
+        58,
+        46
+      ],
+      "measured_unreal_m": {
+        "centroid": [
+          69.47,
+          65.982,
+          -14.281
+        ],
+        "max": [
+          214.336,
+          181.374,
+          -3.29
+        ],
+        "min": [
+          15.526,
+          13.474,
+          -32.785
+        ],
+        "size": [
+          198.81,
+          167.9,
+          29.495
+        ]
+      },
       "observed_fraction": 0.9949,
       "pixel_fraction": 0.00874,
       "representation": "heightfield",
       "semantic_label": "field",
       "surface": {
-        "height_m": 14.296,
-        "height_spread_m": 29.524,
+        "drop_below_camera_m": 14.281,
+        "drop_spread_m": 29.495,
         "mean_normal": [
           -0.2057,
           -0.977,
@@ -442,9 +868,9 @@
         "walkable_candidate": true
       },
       "world_extent_m": [
-        404.567,
-        65.619,
-        490.386
+        404.651,
+        65.458,
+        490.393
       ]
     }
   ],

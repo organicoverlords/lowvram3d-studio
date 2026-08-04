@@ -83,6 +83,25 @@ MIN_CLUSTER_POINTS = 64
 CLUSTER_ITERATIONS = 12
 
 
+def _measured_extent(selected):
+    """Where a set of MoGe points actually sits, in Unreal's frame and metres.
+
+    MoGe is X right, Y down, Z forward; Unreal is X forward, Y right, Z up.
+    """
+    import numpy as np
+
+    forward, right, up = selected[:, 2], selected[:, 0], -selected[:, 1]
+    low = [float(np.percentile(axis, 5)) for axis in (forward, right, up)]
+    high = [float(np.percentile(axis, 95)) for axis in (forward, right, up)]
+    centre = [float(np.median(axis)) for axis in (forward, right, up)]
+    return {
+        "centroid": [round(v, 3) for v in centre],
+        "min": [round(v, 3) for v in low],
+        "max": [round(v, 3) for v in high],
+        "size": [round(high[axis] - low[axis], 3) for axis in range(3)],
+    }
+
+
 def cluster_region_points(points, selection, observed, width, height,
                           max_clusters=MAX_CLUSTERS):
     """Split one region's observed points into spatially coherent clumps.
@@ -139,6 +158,7 @@ def cluster_region_points(points, selection, observed, width, height,
         depths = coords[member][:, 2]
         clusters.append({
             "pixel_count": int(member.sum()),
+            "measured_unreal_m": _measured_extent(coords[member]),
             "centroid_norm_xy": [round(float(member_x.mean()) / width, 5),
                                  round(float(member_y.mean()) / height, 5)],
             "bbox_norm_xyxy": [round(float(member_x.min()) / width, 5),
@@ -224,6 +244,13 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
                                round(float(xs.max() + 1) / width, 4),
                                round(float(ys.max() + 1) / height, 4)],
             "confidence": round(min(0.95, 0.5 + fraction), 3),
+            # Regions that keep a primitive render default white, which makes
+            # ground, water and every unbuilt volume read as the same blank
+            # slab and hides whatever is standing on them. One mean colour per
+            # region is nearly free here, where the image already is.
+            "mean_colour_srgb": [int(c) for c in
+                                 np.asarray(image, dtype=np.uint8)[selection]
+                                 .reshape(-1, 3).mean(axis=0).round()],
         }
 
         # Keep the mask, not just its bounding box. A downstream generator needs
@@ -274,10 +301,28 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
                 # to 10.3 m is neither its near height nor its far one -- it put
                 # the ground 3.7 m above the barn's base and sliced the building
                 # in half. MoGe's Y is up, so the median is the answer directly.
+                # The region's actual occupancy, converted once, here, into the
+                # frame the builders use: Unreal's X forward, Y right, Z up,
+                # from MoGe's X right, Y down, Z forward.
+                #
+                # Placement used to unproject a bounding box at a single depth
+                # instead. That answers a different question for anything with
+                # depth extent, and mixing the two methods is what put the
+                # ground plane 3.6 m above the barn's base -- the ground was
+                # measured and the barn was unprojected, and MoGe's ground is
+                # not flat (1.3 m below the camera at 2.3 m out, 4.9 m below at
+                # 13.5 m). Percentiles rather than min/max, so one stray point
+                # does not size the actor.
+                region["measured_unreal_m"] = _measured_extent(selected)
+
                 if (region.get("surface") or {}).get("orientation") == "horizontal":
-                    region["surface"]["height_m"] = round(
+                    # MoGe's Y is down, so a positive median is a surface below
+                    # the camera. Named for what it measures rather than "height",
+                    # because the sign is the whole question and a consumer in a
+                    # Z-up frame has to negate it.
+                    region["surface"]["drop_below_camera_m"] = round(
                         float(np.median(selected[:, 1])), 3)
-                    region["surface"]["height_spread_m"] = round(
+                    region["surface"]["drop_spread_m"] = round(
                         float(np.percentile(selected[:, 1], 95)
                               - np.percentile(selected[:, 1], 5)), 3)
 

@@ -2,18 +2,23 @@
   "actor_count": 16,
   "actors": [
     {
-      "cluster_depth_m": 16.444,
-      "cluster_pixel_count": 54895,
+      "cluster_depth_m": 12.188,
+      "cluster_pixel_count": 95592,
       "confidence": 0.809,
       "instance_index": 0,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        1644.3999999999999,
-        912.2538668622617,
-        -539.7066914465997
+        1218.8,
+        302.09999999999997,
+        477.65000000000003
       ],
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -23,30 +28,35 @@
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
-        10.937640653824094,
-        10.937640653824094,
-        7.092695145450076
+        1.347,
+        9.286,
+        3.171
       ],
       "source_bbox_norm_xyxy": [
-        0.60566,
-        0.43462,
-        0.92196,
-        0.7081
+        0.35428,
+        0.04972,
+        0.85843,
+        0.27716
       ]
     },
     {
-      "cluster_depth_m": 19.809,
-      "cluster_pixel_count": 50064,
+      "cluster_depth_m": 12.853,
+      "cluster_pixel_count": 83236,
       "confidence": 0.809,
       "instance_index": 1,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        1980.9,
-        -1688.6794479749465,
-        -696.1998992070572
+        1285.3,
+        -333.70000000000005,
+        156.84999999999997
       ],
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -56,30 +66,35 @@
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
-        5.275000000000002,
-        7.88260078543358,
-        6.8182851374505535
+        3.435,
+        6.867,
+        4.019
       ],
       "source_bbox_norm_xyxy": [
-        0.0,
-        0.5046,
-        0.18923,
-        0.72284
+        0.16436,
+        0.19613,
+        0.53453,
+        0.48803
       ]
     },
     {
-      "cluster_depth_m": 12.2,
-      "cluster_pixel_count": 43975,
+      "cluster_depth_m": 12.171,
+      "cluster_pixel_count": 58412,
       "confidence": 0.809,
       "instance_index": 2,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        1220.0,
-        207.29469232654174,
-        333.0889621471007
+        1217.1,
+        441.09999999999997,
+        167.9
       ],
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -89,129 +104,149 @@
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
-        1.508000000000001,
-        6.980802695798518,
-        3.2600810384485754
+        2.96,
+        5.928,
+        3.028
       ],
       "source_bbox_norm_xyxy": [
-        0.44475,
-        0.15746,
-        0.71685,
-        0.32689
-      ]
-    },
-    {
-      "cluster_depth_m": 12.448,
-      "cluster_pixel_count": 42717,
-      "confidence": 0.809,
-      "instance_index": 3,
-      "kind": "scatter_instance",
-      "layer_type": "vegetation",
-      "location_cm": [
-        1244.8,
-        -344.38199324929917,
-        285.6347077256035
-      ],
-      "observed_fraction": 0.9619,
-      "region_bbox_norm_xyxy": [
-        0.0,
-        0.0497,
-        0.922,
-        0.7228
-      ],
-      "region_id": "vegetation_tree_004",
-      "semantic_label": "tree",
-      "size_m": [
-        2.433,
-        6.887639864985983,
-        3.6336017393535442
-      ],
-      "source_bbox_norm_xyxy": [
-        0.23688,
-        0.16943,
-        0.5,
-        0.35451
-      ]
-    },
-    {
-      "cluster_depth_m": 14.579,
-      "cluster_pixel_count": 41586,
-      "confidence": 0.809,
-      "instance_index": 4,
-      "kind": "scatter_instance",
-      "layer_type": "vegetation",
-      "location_cm": [
-        1457.9,
-        14.82317395657933,
-        55.046553958713496
-      ],
-      "observed_fraction": 0.9619,
-      "region_bbox_norm_xyxy": [
-        0.0,
-        0.0497,
-        0.922,
-        0.7228
-      ],
-      "region_id": "vegetation_tree_004",
-      "semantic_label": "tree",
-      "size_m": [
-        2.3930000000000007,
-        9.273757787229886,
-        3.8111805842342408
-      ],
-      "source_bbox_norm_xyxy": [
-        0.35359,
-        0.31031,
-        0.65608,
-        0.47606
-      ]
-    },
-    {
-      "cluster_depth_m": 12.033,
-      "cluster_pixel_count": 41477,
-      "confidence": 0.809,
-      "instance_index": 5,
-      "kind": "scatter_instance",
-      "layer_type": "vegetation",
-      "location_cm": [
-        1203.3,
-        509.3968516332353,
-        27.954705272555678
-      ],
-      "observed_fraction": 0.9619,
-      "region_bbox_norm_xyxy": [
-        0.0,
-        0.0497,
-        0.922,
-        0.7228
-      ],
-      "region_id": "vegetation_tree_004",
-      "semantic_label": "tree",
-      "size_m": [
-        2.061,
-        7.077556971924692,
-        4.368942770397164
-      ],
-      "source_bbox_norm_xyxy": [
-        0.56146,
+        0.52348,
         0.25506,
         0.84116,
         0.48527
       ]
     },
     {
-      "cluster_depth_m": 13.108,
-      "cluster_pixel_count": 39488,
+      "cluster_depth_m": 15.748,
+      "cluster_pixel_count": 55610,
+      "confidence": 0.809,
+      "instance_index": 3,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1574.8,
+        -51.9,
+        -78.69999999999999
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        5.814,
+        9.731,
+        3.182
+      ],
+      "source_bbox_norm_xyxy": [
+        0.20097,
+        0.37385,
+        0.71961,
+        0.55985
+      ]
+    },
+    {
+      "cluster_depth_m": 16.221,
+      "cluster_pixel_count": 43743,
+      "confidence": 0.809,
+      "instance_index": 4,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1622.1,
+        1060.6999999999998,
+        -482.15000000000003
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.515,
+        4.786,
+        4.563
+      ],
+      "source_bbox_norm_xyxy": [
+        0.6174,
+        0.44107,
+        0.92196,
+        0.7081
+      ]
+    },
+    {
+      "cluster_depth_m": 19.58,
+      "cluster_pixel_count": 37826,
+      "confidence": 0.809,
+      "instance_index": 5,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1957.9999999999998,
+        -1679.7,
+        -648.5
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        5.628,
+        11.373,
+        3.78
+      ],
+      "source_bbox_norm_xyxy": [
+        0.0,
+        0.56998,
+        0.22997,
+        0.72284
+      ]
+    },
+    {
+      "cluster_depth_m": 20.332,
+      "cluster_pixel_count": 31027,
       "confidence": 0.809,
       "instance_index": 6,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        1310.8,
-        -521.607002349757,
-        -451.1584954398913
+        2033.2,
+        -1640.6,
+        -232.20000000000002
       ],
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -221,30 +256,35 @@
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
-        4.1530000000000005,
-        8.223655502881494,
-        7.938222933556771
+        5.762,
+        10.067,
+        3.946
       ],
       "source_bbox_norm_xyxy": [
-        0.1616,
-        0.33425,
-        0.45994,
-        0.71823
+        0.02279,
+        0.43462,
+        0.22721,
+        0.58195
       ]
     },
     {
-      "cluster_depth_m": 20.92,
-      "cluster_pixel_count": 35572,
+      "cluster_depth_m": 15.081,
+      "cluster_pixel_count": 26454,
       "confidence": 0.809,
       "instance_index": 7,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        2092.0,
-        -1511.4944138019944,
-        -51.63620025030839
+        1508.1,
+        -873.1999999999999,
+        -442.5
       ],
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -254,30 +294,35 @@
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
-        5.579000000000001,
-        10.360234427218398,
-        7.686370102435663
+        3.927,
+        4.67,
+        4.528
       ],
       "source_bbox_norm_xyxy": [
-        0.03867,
-        0.28269,
-        0.27417,
-        0.51565
+        0.10221,
+        0.42541,
+        0.33356,
+        0.71547
       ]
     },
     {
-      "cluster_depth_m": 12.015,
-      "cluster_pixel_count": 33980,
+      "cluster_depth_m": 20.943,
+      "cluster_pixel_count": 21980,
       "confidence": 0.809,
       "instance_index": 8,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        1201.5,
-        595.8918416163322,
-        509.5191705584156
+        2094.3,
+        -1269.3,
+        141.64999999999998
       ],
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -287,30 +332,35 @@
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
-        1.1649999999999991,
-        6.194526184955207,
-        3.4200394191603243
+        5.585,
+        6.826,
+        5.207
       ],
       "source_bbox_norm_xyxy": [
-        0.61326,
-        0.05064,
-        0.85843,
-        0.23112
+        0.11464,
+        0.27901,
+        0.27831,
+        0.45212
       ]
     },
     {
-      "cluster_depth_m": 15.711,
-      "cluster_pixel_count": 29081,
+      "cluster_depth_m": 26.763,
+      "cluster_pixel_count": 12828,
       "confidence": 0.809,
       "instance_index": 9,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        1571.1000000000001,
-        -910.3769115862484,
-        -533.9110319528825
+        2676.3,
+        893.4,
+        -127.70000000000002
       ],
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -320,30 +370,35 @@
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
-        4.733999999999998,
-        8.122854925878976,
-        6.457134441759949
+        6.129,
+        6.129,
+        3.378
       ],
       "source_bbox_norm_xyxy": [
-        0.10152,
-        0.45488,
-        0.34738,
-        0.71547
+        0.59392,
+        0.42173,
+        0.9047,
+        0.66575
       ]
     },
     {
-      "cluster_depth_m": 17.291,
-      "cluster_pixel_count": 28813,
+      "cluster_depth_m": 2.579,
+      "cluster_pixel_count": 227,
       "confidence": 0.809,
       "instance_index": 10,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        1729.1000000000001,
-        100.44755924731048,
-        -163.21592093081063
+        257.90000000000003,
+        -146.5,
+        -161.35000000000002
       ],
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -353,30 +408,35 @@
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
-        7.503,
-        14.614619905256644,
-        3.8168254458606965
+        2.559,
+        2.559,
+        1.485
       ],
       "source_bbox_norm_xyxy": [
-        0.32666,
-        0.41989,
-        0.72859,
-        0.55985
+        0.22238,
+        0.70534,
+        0.2424,
+        0.71823
       ]
     },
     {
-      "cluster_depth_m": 12.437,
-      "cluster_pixel_count": 25420,
+      "cluster_depth_m": 204.079,
+      "cluster_pixel_count": 131,
       "confidence": 0.809,
       "instance_index": 11,
       "kind": "scatter_instance",
       "layer_type": "vegetation",
       "location_cm": [
-        1243.7,
-        135.46292927493016,
-        626.7465271057871
+        20407.9,
+        15955.3,
+        -4873.55
       ],
-      "observed_fraction": 0.9619,
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
       "region_bbox_norm_xyxy": [
         0.0,
         0.0497,
@@ -386,15 +446,15 @@
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
-        1.2409999999999997,
-        8.777955971144856,
-        2.5648903318838485
+        198.516,
+        198.516,
+        33.587
       ],
       "source_bbox_norm_xyxy": [
-        0.38398,
-        0.04972,
-        0.71961,
-        0.18048
+        0.86878,
+        0.5884,
+        0.875,
+        0.60958
       ]
     },
     {
@@ -402,9 +462,14 @@
       "kind": "ground_plane",
       "layer_type": "terrain",
       "location_cm": [
-        594.7500000000001,
-        0.0,
-        -122.1315653792684
+        232.29999999999998,
+        4.0,
+        -132.6
+      ],
+      "mean_colour_srgb": [
+        45,
+        41,
+        26
       ],
       "observed_fraction": 1.0,
       "region_bbox_norm_xyxy": [
@@ -416,11 +481,11 @@
       "region_id": "terrain_grass_009",
       "semantic_label": "grass",
       "size_m": [
-        8.763,
-        21.720772571831386,
+        8.76,
+        9.407,
         0.2
       ],
-      "sized_at": "far_depth_edge",
+      "sized_at": "measured_points",
       "source_bbox_norm_xyxy": [
         0.0,
         0.6667,
@@ -434,9 +499,14 @@
       "kind": "structure",
       "layer_type": "architecture",
       "location_cm": [
-        1353.0,
-        132.58692675955598,
-        -255.4289989235866
+        1352.8,
+        93.30000000000001,
+        -267.7
+      ],
+      "mean_colour_srgb": [
+        44,
+        38,
+        32
       ],
       "observed_fraction": 1.0,
       "region_bbox_norm_xyxy": [
@@ -448,9 +518,9 @@
       "region_id": "architecture_house_025",
       "semantic_label": "house",
       "size_m": [
-        8.617581196767023,
-        14.362635327945041,
-        4.677530205852148
+        7.1255999999999995,
+        11.876,
+        3.556
       ],
       "source_bbox_norm_xyxy": [
         0.2942,
@@ -465,9 +535,14 @@
       "kind": "structure",
       "layer_type": "architecture",
       "location_cm": [
-        1586.2,
-        -772.8602484617875,
-        -224.65316242512463
+        1585.6999999999998,
+        -726.8,
+        -244.0
+      ],
+      "mean_colour_srgb": [
+        24,
+        24,
+        22
       ],
       "observed_fraction": 1.0,
       "region_bbox_norm_xyxy": [
@@ -479,9 +554,9 @@
       "region_id": "architecture_hovel_079",
       "semantic_label": "hovel",
       "size_m": [
-        4.1868544836825015,
-        6.978090806137502,
-        6.289287865665517
+        2.4587999999999997,
+        4.098,
+        5.113
       ],
       "source_bbox_norm_xyxy": [
         0.1637,
@@ -495,9 +570,14 @@
       "kind": "ground_plane",
       "layer_type": "terrain",
       "location_cm": [
-        11503.150000000001,
-        19690.361614767186,
-        -1470.4666207908965
+        6947.0,
+        6598.2,
+        -1428.1000000000001
+      ],
+      "mean_colour_srgb": [
+        61,
+        58,
+        46
       ],
       "observed_fraction": 0.9949,
       "region_bbox_norm_xyxy": [
@@ -509,11 +589,11 @@
       "region_id": "terrain_field_029",
       "semantic_label": "field",
       "size_m": [
-        199.011,
-        57.340931635626276,
+        198.81,
+        167.9,
         0.2
       ],
-      "sized_at": "far_depth_edge",
+      "sized_at": "measured_points",
       "source_bbox_norm_xyxy": [
         0.8729,
         0.581,
