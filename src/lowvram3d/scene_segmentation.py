@@ -267,6 +267,20 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
                             "walkable_candidate": bool(
                                 verticality > 0.6 and layer in ("terrain", "crossing")),
                         }
+                # A surface's height is a measurement, not something to infer
+                # from a bounding box. Unprojecting a ground region's bbox
+                # centre at its median depth answers "how far below the camera
+                # is the middle of this box", which for a plane spanning 1.6 m
+                # to 10.3 m is neither its near height nor its far one -- it put
+                # the ground 3.7 m above the barn's base and sliced the building
+                # in half. MoGe's Y is up, so the median is the answer directly.
+                if (region.get("surface") or {}).get("orientation") == "horizontal":
+                    region["surface"]["height_m"] = round(
+                        float(np.median(selected[:, 1])), 3)
+                    region["surface"]["height_spread_m"] = round(
+                        float(np.percentile(selected[:, 1], 95)
+                              - np.percentile(selected[:, 1], 5)), 3)
+
                 if layer in CLUSTERED_LAYERS:
                     region["clusters"] = cluster_region_points(
                         points, selection, observed, width, height)

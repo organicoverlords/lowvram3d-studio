@@ -58,26 +58,37 @@ and the Y↔Z swap is a *reflection*, which is correct — it converts right-han
 Y-up glTF into left-handed Z-up Unreal. A mesh that arrives mirrored is mirrored
 in the source file.
 
-**The MoGe reconstruction was upside down, and that was the real bug.**
-`moge_reconstruct` negated Y as well as Z, which is right for OpenCV points with
-Y down; MoGe's Y is already up. The extra negation inverted every reconstruction,
-and an inverted scene cannot be framed by *any* camera pose because the
-correction required is a mirror — which is why scoring always preferred a
-vertically flipped render and why "yaw −50 with centroid framing" was the best
-anyone could find. Fixed by negating only Z, and reversing winding with it.
+**The reconstruction rendered upside down because trimesh flips v on glTF
+export.** It holds UVs bottom-left-origin and flips on write to reach glTF's
+top-left origin, so authoring v in image-row order exports an inverted texture —
+the sky painted along the ground. `moge_reconstruct` now authors v inverted so
+the export flip lands it right way up. The axis conversion was never wrong: MoGe
+returns OpenCV points with Y **down** (confirmed against the model: image top at
+Y −8.18, ground at +1.25), so negating both Y and Z is correct.
 
-Proven before changing the exporter, by transforming an existing reconstruction
-(`workers/reorient_reconstruction.py`) and re-rendering the yaw sweep
-(`scripts/verify_axis_mapping_prediction.py`):
+**Read this part before trusting a render score.** An earlier pass this session
+removed the Y negation instead, flipping the geometry to match the inverted
+texture — two wrongs that cancel from the source camera and nowhere else. It
+scored **1.439** at yaw −90 with no flip, *better than the correct mesh*, because
+a texture-inverted mesh paints bright cloud onto the ground and the source's
+upper region is also bright cloud. The correct mesh honestly renders black where
+MoGe masked the sky and scores **0.533**. Source-view similarity is the
+photometric pipeline's own test and has now certified a world-space-wrong mesh
+twice in this project. Do not use it as a correctness gate.
 
-| yaw | before | after | flip needed after |
+What settles it in a second, without rendering: read the GLB accessors and check
+that vertices carrying the *top* of the texture sit higher in Y than those
+carrying the bottom, and that the sky rows MoGe masked away are missing from the
+**top** of the v range.
+
+| mesh | v range | texture-top verts | texture-bottom verts |
 |---|---|---|---|
-| 0 | 0.134 | 0.152 | identity |
-| −50 (the old workaround) | **0.301** | 0.098 | vflip |
-| **−90 (measured)** | −0.026 | **1.439** | **identity** |
+| **corrected** | **0.050–1.000** | **+8.16** | **−1.24** |
+| geometry-flipped (the wrong fix) | 0.000–0.950 | +1.24 | −8.16 |
+| original | 0.000–0.950 | −1.24 | +8.16 |
 
-Correlation at yaw −90 goes from −0.229 to **+0.780**, silhouette IoU 0.150 →
-**0.526**. The source camera for a reconstruction is **yaw −90**, not yaw 0.
+The source camera for a reconstruction is **yaw −90**, not yaw 0 — that part
+held up, and the corrected mesh wins its sweep with `identity`.
 
 ---
 

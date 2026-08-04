@@ -53,6 +53,46 @@ def unproject(u: float, v: float, depth: float, fov_x_deg: float,
     return (depth, ndc_x * half_x * depth, -ndc_y * half_y * depth)
 
 
+def _receding_surface(region: dict[str, Any], fov_x: float, aspect: float
+                      ) -> tuple[tuple[float, float, float], float, float]:
+    """Box a ground-like surface that recedes from the camera.
+
+    A surface is not a volume seen at one distance, and treating it as one gets
+    both its size and its position wrong. Ground here spans 1.6 m to 10.3 m, so
+    sizing its lateral extent at the *median* depth gave a 4.9 m strip when the
+    frustum is 21.7 m wide at the far edge, and centring it on the median put
+    part of it behind the camera.
+
+    So: extend along +X across the whole observed depth band, and take the
+    lateral width at the band's far edge, where a receding plane is widest.
+    Overshooting the near end is harmless -- ground should be underfoot -- while
+    undershooting the far end leaves the scene standing on a floating strip.
+
+    Height is the plane's own height below the camera, taken at the footprint's
+    vertical centre; a flat ground gives the same answer at any depth.
+    """
+    x0, y0, x1, y1 = region["bbox_norm_xyxy"]
+    band = region.get("depth_m", {})
+    median = float(band.get("median") or 10.0)
+    near = float(band.get("near") or median)
+    far = max(float(band.get("far") or median), near + 0.5)
+
+    left = unproject(x0, (y0 + y1) * 0.5, far, fov_x, aspect)
+    right = unproject(x1, (y0 + y1) * 0.5, far, fov_x, aspect)
+    lateral = abs(right[1] - left[1])
+
+    # Prefer the measured height of the surface's own points. Unprojecting the
+    # bbox centre answers a different question -- how far below the camera the
+    # middle of the box is -- and for a plane spanning an order of magnitude in
+    # depth that is neither its near height nor its far one.
+    measured = (region.get("surface") or {}).get("height_m")
+    centre_height = (float(measured) if measured is not None
+                     else unproject((x0 + x1) * 0.5, (y0 + y1) * 0.5, median,
+                                    fov_x, aspect)[2])
+    centre = ((near + far) * 0.5, (left[1] + right[1]) * 0.5, centre_height)
+    return centre, lateral, far - near
+
+
 def _footprint(region: dict[str, Any], fov_x: float, aspect: float
                ) -> tuple[tuple[float, float, float], float, float]:
     x0, y0, x1, y1 = region["bbox_norm_xyxy"]
@@ -145,18 +185,18 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
             "region_bbox_norm_xyxy": bbox,
         }
 
-        if layer == "terrain":
-            actors.append({**common, "kind": "ground_plane",
-                           "location_cm": [centre[0] * CM_PER_M, centre[1] * CM_PER_M,
-                                           (centre[2] - height * 0.5) * CM_PER_M],
-                           # Terrain runs away from the camera, so its depth
-                           # band is the extent along +X, not a thickness.
-                           "size_m": [thickness, max(width, 1.0), 0.2]})
-
-        elif layer == "water":
-            actors.append({**common, "kind": "water_surface",
-                           "location_cm": [c * CM_PER_M for c in centre],
-                           "size_m": [thickness, max(width, 1.0), 0.05]})
+        if layer in ("terrain", "water"):
+            # Terrain runs away from the camera, so its depth band is the extent
+            # along +X and its width belongs at the far edge, not the median.
+            surface, lateral, depth_span = _receding_surface(region, fov_x, aspect)
+            actors.append({
+                **common,
+                "kind": "ground_plane" if layer == "terrain" else "water_surface",
+                "location_cm": [c * CM_PER_M for c in surface],
+                "size_m": [max(depth_span, 1.0), max(lateral, 1.0),
+                           0.2 if layer == "terrain" else 0.05],
+                "sized_at": "far_depth_edge",
+            })
 
         elif layer == "architecture":
             actors.append({**common, "kind": "structure",

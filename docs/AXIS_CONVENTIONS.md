@@ -36,7 +36,7 @@ Two consequences worth stating plainly:
 A glTF camera looking down −Z therefore looks down Unreal **−Y**, which is
 **yaw −90**, not yaw 0.
 
-## 2. The MoGe reconstruction was upside down
+## 2. The reconstruction rendered upside down
 
 `unreal/measure_reconstruction_orientation.py` recovers the image→world
 orientation of an imported reconstruction without assuming anything: MoGe writes
@@ -60,30 +60,63 @@ Measured on `barn_auto_moge.glb`:
 That last line is the whole story. A vertical mirror is not a rotation, so no
 yaw would ever have worked, and scoring kept preferring a flipped render.
 
-## 3. The fix, and the proof it is the right one
+## 3. The real defect was the UV convention — and the render metric endorsed the wrong fix
 
-The defect is in the export, not the importer. `moge_reconstruct.py` negated
-both Y and Z, which is right if MoGe returns OpenCV points (X right, Y **down**,
-Z forward). It does not — its Y is already up — so the extra negation inverted
-every reconstruction. Only Z is negated now, and face winding is reversed with
-it because a single-axis negation is a reflection.
+**trimesh flips v when it writes glTF.** It holds UVs with the origin at the
+bottom left and flips on export to reach glTF's top-left origin. So authoring v
+in image-row order (row 0 → v 0) exports an *inverted texture*: the sky gets
+painted along the ground. `moge_reconstruct` now authors v inverted on purpose,
+so the export flip lands it right way up.
 
-Verified before changing the exporter, by transforming an existing
-reconstruction (`workers/reorient_reconstruction.py`) and re-rendering it
-against the source across a yaw sweep (`scripts/verify_axis_mapping_prediction.py`):
+The axis conversion was never wrong. MoGe returns OpenCV points with Y **down** —
+confirmed against the model itself, which puts the top of the image at Y −8.18
+and the ground at +1.25 — so negating both Y and Z is correct, and being two
+negations it is a rotation, leaving winding alone.
 
-| yaw | before (combined) | after (combined) | after: flip needed |
+### The wrong fix, and why it looked right
+
+An earlier pass this session removed the Y negation instead. That flipped the
+geometry to match the inverted texture: two wrongs that cancel *from the source
+camera* and from nowhere else. It scored **1.439** against the source at yaw −90
+with no flip needed — a better score than the correct mesh gets.
+
+It scored better *because* it was wrong. With the texture inverted, the ground
+geometry is painted with the image's sky, so the render's upper region is bright
+cloud. The source's upper region is also bright cloud. The metric rewarded a
+luminance-layout coincidence. The correct mesh honestly renders black where MoGe
+masked the sky away, and scores **0.533**.
+
+**Do not use source-view similarity as a correctness gate.** It is the
+photometric pipeline's own test, and this is the second time in this project
+that it has certified a mesh that was wrong in world space.
+
+### What settles it, without rendering anything
+
+Read the GLB's accessors directly and ask two questions of each mesh: are the
+vertices carrying the *top* of the texture higher in Y than those carrying the
+bottom, and where in the v range are the sky rows MoGe masked away?
+
+| mesh | v range | texture-top verts | texture-bottom verts |
 |---|---|---|---|
-| 0 | 0.134 | 0.152 | identity |
-| −50 (the old workaround) | **0.301** | 0.098 | vflip |
-| **−90 (measured)** | −0.026 | **1.439** | **identity** |
-| 90 | 0.136 | 0.136 | vflip |
-| 180 | 0.088 | 0.173 | hflip |
+| **corrected** | **0.050–1.000** | **+8.16** | **−1.24** |
+| geometry-flipped ("the wrong fix") | 0.000–0.950 | +1.24 | −8.16 |
+| original | 0.000–0.950 | −1.24 | +8.16 |
 
-Correlation at yaw −90 goes from −0.229 to **+0.780**, silhouette IoU from 0.150
-to **0.526**, and the winning render needs no flip at all. The old −50°
-workaround was the best of a set of bad options and drops to 0.098 once the real
-defect is gone.
+The sky is masked, so the absent rows must sit at the *top* of the texture —
+v ≈ 0. Only the corrected mesh has that, and only it puts the texture's top on
+the geometry that came from the top of the image. Both facts are properties of
+the file, checkable in a second, and neither can be faked by a coincidence of
+brightness.
+
+Yaw −90 remains correct, and the corrected mesh wins its sweep with `identity`:
+
+| yaw | corrected (combined) | flip needed |
+|---|---|---|
+| 0 | 0.137 | vflip |
+| −50 (the old workaround) | 0.159 | vflip |
+| **−90 (measured)** | **0.533** | **identity** |
+| 90 | 0.136 | vflip |
+| 180 | 0.138 | rot180 |
 
 ## 4. What this means for generated assets
 

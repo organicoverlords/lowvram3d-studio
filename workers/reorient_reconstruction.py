@@ -1,17 +1,23 @@
-"""Re-export a MoGe reconstruction with a corrected up axis, to test the fix.
+"""Mirror a reconstruction's Y axis. Kept as a diagnostic, not as a repair.
 
-`unreal/measure_reconstruction_orientation.py` measured the reconstruction to be
-upside down: the source image's top row lands *below* its bottom row in world
-space. That is a defect in the export, not in Unreal's importer -- the importer
-was measured independently against a probe mesh and maps glTF cleanly.
+**This does not fix the reconstruction, and applying it produces a mesh that is
+wrong in world space.** It is checked in because running it is what exposed the
+real defect, and because that lesson is worth being able to reproduce.
 
-Rather than change `moge_reconstruct.py` and burn a GPU re-run to find out
-whether the theory holds, transform an existing reconstruction and re-render it.
-If the corrected mesh matches the source view without needing a mirror, the fix
-is proven and can be moved into the exporter.
+The story: a reconstruction rendered upside down, so this was written to flip
+its geometry, and the flipped mesh scored 1.439 against the source view where
+the original scored 0.301. That looked conclusive and was not. The texture was
+the thing that was inverted -- trimesh flips v on glTF export, so authoring v in
+image-row order paints the sky along the ground -- and flipping the geometry
+merely made a second wrong cancel the first *from the source camera*. The higher
+score came from the ground being painted with bright cloud, which is what the
+source's upper region also contains.
 
-Negating Y alone is a reflection, so the triangle winding is reversed with it;
-otherwise every face points inward and the surface renders as backfaces.
+The defect is fixed in `moge_reconstruct.py`, at the UVs. See
+`docs/AXIS_CONVENTIONS.md`, and settle questions like this by reading the GLB's
+accessors rather than by scoring a render.
+
+Negating one axis is a reflection, so triangle winding is reversed with it.
 
     py -3.12 workers/reorient_reconstruction.py --input <moge.glb> --output <fixed.glb>
 """

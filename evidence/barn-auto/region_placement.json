@@ -402,9 +402,9 @@
       "kind": "ground_plane",
       "layer_type": "terrain",
       "location_cm": [
-        232.29999999999998,
+        594.7500000000001,
         0.0,
-        -183.18818865946963
+        -122.1315653792684
       ],
       "observed_fraction": 1.0,
       "region_bbox_norm_xyxy": [
@@ -417,9 +417,10 @@
       "semantic_label": "grass",
       "size_m": [
         8.763,
-        4.885018364252522,
+        21.720772571831386,
         0.2
       ],
+      "sized_at": "far_depth_edge",
       "source_bbox_norm_xyxy": [
         0.0,
         0.6667,
@@ -494,9 +495,9 @@
       "kind": "ground_plane",
       "layer_type": "terrain",
       "location_cm": [
-        6960.4,
-        6388.305652797677,
-        -2051.7373006780035
+        11503.150000000001,
+        19690.361614767186,
+        -1470.4666207908965
       ],
       "observed_fraction": 0.9949,
       "region_bbox_norm_xyxy": [
@@ -509,9 +510,10 @@
       "semantic_label": "field",
       "size_m": [
         199.011,
-        18.60358915043154,
+        57.340931635626276,
         0.2
       ],
+      "sized_at": "far_depth_edge",
       "source_bbox_norm_xyxy": [
         0.8729,
         0.581,

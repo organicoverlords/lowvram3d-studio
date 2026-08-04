@@ -14,17 +14,22 @@ that make an oblique view look shredded. Triangles whose vertices disagree in
 depth by more than `edge_rtol` (relative to their own depth) are dropped, which
 leaves a hole where the occluded background genuinely was not observed.
 
-*Axis convention.* MoGe returns points with X right, Y **up** and Z forward, so
-only Z is negated on export to reach glTF's Z-toward-the-viewer. That is a
-reflection, so face winding is reversed with it.
+*Axis convention.* MoGe returns points in OpenCV camera space -- X right, Y
+**down**, Z forward -- confirmed against the model itself, which puts the top of
+the image at Y -8.18 and the ground at +1.25. glTF is Y up and Z toward the
+viewer, so Y and Z are both negated here. Two negations is a rotation about X,
+so winding is unaffected.
 
-This was measured, not assumed, after three sessions of guessing: negating Y as
-well -- correct if MoGe used OpenCV's Y-down convention, which it does not --
-inverts the reconstruction, and an inverted scene cannot be framed by any camera
-pose because the required correction is a mirror. That is the real cause of the
-"180 degree roll" that was previously patched at the Unreal end. Unreal's own
-glTF mapping is clean and was measured separately: glTF (x, y, z) arrives as
-Unreal (x, z, y) at 100 cm per glTF metre. Receipts in `evidence/axis-probe/`.
+Unreal's importer then maps glTF (x, y, z) onto Unreal (x, z, y) at 100 cm per
+glTF metre, measured with a probe mesh. A camera looking down MoGe +Z therefore
+looks down Unreal -Y, which is yaw -90.
+
+The reconstruction rendering upside down for several sessions was **not** this
+conversion. It was the UV convention below: trimesh flips v on glTF export, so
+authoring v in image-row order exports an inverted texture. An earlier fix
+removed the Y negation instead, which made the render upright by inverting the
+geometry to match the inverted texture -- correct from the source camera and
+wrong everywhere else. Receipts in `evidence/axis-probe/`.
 
 Run with the MoGe environment:
 
@@ -65,7 +70,13 @@ def build_mesh(points, colors, mask, edge_rtol: float):
     vertex_colors = colors.reshape(-1, 3)[valid]
 
     # Per-pixel UVs so the source image can be applied as a texture later.
-    us, vs = np.meshgrid(np.linspace(0, 1, width), np.linspace(0, 1, height))
+    #
+    # v is authored *upside down on purpose*: trimesh holds UVs with the origin
+    # at the bottom left and flips them when it writes glTF, which puts the
+    # origin back at the top left where glTF wants it. Handing it image-row
+    # order (row 0 -> v 0) therefore exports the texture inverted, which paints
+    # the sky along the ground and makes a correct mesh render upside down.
+    us, vs = np.meshgrid(np.linspace(0, 1, width), np.linspace(1, 0, height))
     uvs = np.stack([us, vs], axis=-1).reshape(-1, 2)[valid]
 
     top_left = index[:-1, :-1]
@@ -138,20 +149,16 @@ def reconstruct(image_path: Path, output: Path, receipt_path: Path,
     vertices, colors, uvs, faces, dropped, total = build_mesh(
         points, array.astype(np.float64) / 255.0, mask, edge_rtol)
 
-    # MoGe camera space -> glTF: negate Z only (forward -> toward the viewer).
+    # OpenCV camera space -> glTF: negate Y (down -> up) and Z (forward -> back).
+    # Two negations is a rotation about X, so winding is unaffected.
     #
-    # Negating Y as well, on the assumption that MoGe returns OpenCV points with
-    # Y down, is what put every reconstruction in this project upside down.
-    # Measured: with the extra Y negation, the source image's top row lands
-    # *below* its bottom row in world space, and no camera pose reproduces the
-    # source view -- scoring always preferred a vertical mirror, which a rigid
-    # camera cannot produce. Without it, yaw -90 matches the source with no flip
-    # at all. See evidence/axis-probe/.
-    #
-    # Negating one axis is a reflection, so the winding is reversed with it or
-    # every face ends up pointing inward.
-    vertices = vertices * np.array([1.0, 1.0, -1.0])
-    faces = faces[:, ::-1]
+    # Confirmed against the model rather than assumed: MoGe returns Y **down**,
+    # as OpenCV documents -- the top of the image comes back at Y -8.18 and the
+    # ground at +1.25. An earlier session removed this negation because it made
+    # the render come out upright; it did, by inverting the geometry to match an
+    # inverted *texture*, which is the wrong end. The defect was the UV
+    # convention above. See docs/AXIS_CONVENTIONS.md.
+    vertices = vertices * np.array([1.0, -1.0, -1.0])
 
     # Carry appearance as a UV-mapped texture, not vertex colours. Vertex
     # colours quantise the image to one sample per vertex -- at stride 2 that is

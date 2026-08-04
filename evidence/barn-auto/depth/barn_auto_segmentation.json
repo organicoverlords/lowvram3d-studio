@@ -25,21 +25,21 @@
       "clusters": [
         {
           "bbox_norm_xyxy": [
-            0.60566,
-            0.43462,
+            0.59945,
+            0.43002,
             0.92196,
             0.7081
           ],
           "centroid_norm_xy": [
-            0.78005,
-            0.57793
+            0.77665,
+            0.57556
           ],
           "depth_m": {
-            "far": 28.71,
-            "median": 16.444,
-            "near": 15.113
+            "far": 28.681,
+            "median": 16.478,
+            "near": 15.117
           },
-          "pixel_count": 54895
+          "pixel_count": 56052
         },
         {
           "bbox_norm_xyxy": [
@@ -49,141 +49,141 @@
             0.72284
           ],
           "centroid_norm_xy": [
-            0.08894,
-            0.62141
+            0.08896,
+            0.6214
           ],
           "depth_m": {
-            "far": 23.693,
-            "median": 19.809,
-            "near": 18.418
+            "far": 23.699,
+            "median": 19.815,
+            "near": 18.42
           },
-          "pixel_count": 50064
-        },
-        {
-          "bbox_norm_xyxy": [
-            0.44475,
-            0.15746,
-            0.71685,
-            0.32689
-          ],
-          "centroid_norm_xy": [
-            0.56727,
-            0.23773
-          ],
-          "depth_m": {
-            "far": 13.063,
-            "median": 12.2,
-            "near": 11.555
-          },
-          "pixel_count": 43975
+          "pixel_count": 50078
         },
         {
           "bbox_norm_xyxy": [
             0.23688,
-            0.16943,
-            0.5,
-            0.35451
+            0.25599,
+            0.5587,
+            0.41344
           ],
           "centroid_norm_xy": [
-            0.38046,
-            0.26874
+            0.41176,
+            0.32801
           ],
           "depth_m": {
-            "far": 13.925,
-            "median": 12.448,
-            "near": 11.492
+            "far": 15.345,
+            "median": 13.585,
+            "near": 11.625
           },
-          "pixel_count": 42717
+          "pixel_count": 48994
         },
         {
           "bbox_norm_xyxy": [
-            0.35359,
-            0.31031,
-            0.65608,
-            0.47606
-          ],
-          "centroid_norm_xy": [
-            0.49767,
-            0.38614
-          ],
-          "depth_m": {
-            "far": 15.874,
-            "median": 14.579,
-            "near": 13.481
-          },
-          "pixel_count": 41586
-        },
-        {
-          "bbox_norm_xyxy": [
-            0.56146,
-            0.25506,
+            0.51934,
+            0.25691,
             0.84116,
             0.48527
           ],
           "centroid_norm_xy": [
-            0.69871,
-            0.35346
+            0.68424,
+            0.35601
           ],
           "depth_m": {
-            "far": 13.61,
-            "median": 12.033,
-            "near": 11.549
+            "far": 14.54,
+            "median": 12.085,
+            "near": 11.585
           },
-          "pixel_count": 41477
+          "pixel_count": 46997
         },
         {
           "bbox_norm_xyxy": [
             0.1616,
-            0.33425,
-            0.45994,
+            0.34438,
+            0.52624,
             0.71823
           ],
           "centroid_norm_xy": [
-            0.31647,
-            0.42666
+            0.33526,
+            0.43087
           ],
           "depth_m": {
-            "far": 15.63,
-            "median": 13.108,
-            "near": 11.477
+            "far": 15.724,
+            "median": 13.466,
+            "near": 11.523
           },
-          "pixel_count": 39488
+          "pixel_count": 42465
+        },
+        {
+          "bbox_norm_xyxy": [
+            0.32735,
+            0.38214,
+            0.72859,
+            0.55985
+          ],
+          "centroid_norm_xy": [
+            0.51186,
+            0.4743
+          ],
+          "depth_m": {
+            "far": 20.14,
+            "median": 16.633,
+            "near": 14.495
+          },
+          "pixel_count": 37389
         },
         {
           "bbox_norm_xyxy": [
             0.03867,
-            0.28269,
+            0.28177,
             0.27417,
             0.51565
           ],
           "centroid_norm_xy": [
-            0.17452,
-            0.41286
+            0.1745,
+            0.41288
           ],
           "depth_m": {
-            "far": 24.189,
-            "median": 20.92,
-            "near": 18.61
+            "far": 24.197,
+            "median": 20.93,
+            "near": 18.612
           },
-          "pixel_count": 35572
+          "pixel_count": 35581
         },
         {
           "bbox_norm_xyxy": [
-            0.61326,
-            0.05064,
-            0.85843,
-            0.23112
+            0.47583,
+            0.15746,
+            0.79351,
+            0.32413
           ],
           "centroid_norm_xy": [
-            0.72862,
-            0.14762
+            0.59036,
+            0.24323
           ],
           "depth_m": {
-            "far": 12.834,
-            "median": 12.015,
-            "near": 11.669
+            "far": 13.033,
+            "median": 12.251,
+            "near": 11.542
           },
-          "pixel_count": 33980
+          "pixel_count": 34307
+        },
+        {
+          "bbox_norm_xyxy": [
+            0.2866,
+            0.13904,
+            0.55594,
+            0.27348
+          ],
+          "centroid_norm_xy": [
+            0.43338,
+            0.20809
+          ],
+          "depth_m": {
+            "far": 13.357,
+            "median": 12.165,
+            "near": 11.577
+          },
+          "pixel_count": 32934
         },
         {
           "bbox_norm_xyxy": [
@@ -193,58 +193,58 @@
             0.71547
           ],
           "centroid_norm_xy": [
-            0.21725,
-            0.57807
+            0.21757,
+            0.57784
           ],
           "depth_m": {
-            "far": 19.095,
-            "median": 15.711,
-            "near": 14.361
+            "far": 19.1,
+            "median": 15.72,
+            "near": 14.358
           },
-          "pixel_count": 29081
+          "pixel_count": 29154
         },
         {
           "bbox_norm_xyxy": [
-            0.32666,
-            0.41989,
-            0.72859,
-            0.55985
-          ],
-          "centroid_norm_xy": [
-            0.50729,
-            0.48944
-          ],
-          "depth_m": {
-            "far": 22.579,
-            "median": 17.291,
-            "near": 15.076
-          },
-          "pixel_count": 28813
-        },
-        {
-          "bbox_norm_xyxy": [
-            0.38398,
+            0.46133,
             0.04972,
-            0.71961,
-            0.18048
+            0.76381,
+            0.19061
           ],
           "centroid_norm_xy": [
-            0.56474,
-            0.12601
+            0.6208,
+            0.11867
           ],
           "depth_m": {
-            "far": 13.083,
-            "median": 12.437,
-            "near": 11.842
+            "far": 13.015,
+            "median": 12.327,
+            "near": 11.779
           },
-          "pixel_count": 25420
+          "pixel_count": 28429
+        },
+        {
+          "bbox_norm_xyxy": [
+            0.62914,
+            0.08656,
+            0.85843,
+            0.25875
+          ],
+          "centroid_norm_xy": [
+            0.74856,
+            0.15538
+          ],
+          "depth_m": {
+            "far": 12.869,
+            "median": 11.965,
+            "near": 11.652
+          },
+          "pixel_count": 24690
         }
       ],
       "confidence": 0.809,
       "depth_m": {
-        "far": 23.113,
-        "median": 14.397,
-        "near": 11.731
+        "far": 23.12,
+        "median": 14.399,
+        "near": 11.732
       },
       "id": "vegetation_tree_004",
       "layer_type": "vegetation",
@@ -263,9 +263,9 @@
         "walkable_candidate": false
       },
       "world_extent_m": [
-        356.218,
-        68.621,
-        411.62
+        356.892,
+        68.744,
+        412.529
       ]
     },
     {
@@ -277,8 +277,8 @@
       ],
       "confidence": 0.795,
       "depth_m": {
-        "far": 455.614,
-        "median": 12.466,
+        "far": 455.892,
+        "median": 12.468,
         "near": 11.446
       },
       "id": "sky_sky_002",
@@ -298,9 +298,9 @@
         "walkable_candidate": false
       },
       "world_extent_m": [
-        502.38,
-        76.772,
-        536.632
+        501.468,
+        76.763,
+        536.63
       ]
     },
     {
@@ -313,8 +313,8 @@
       "confidence": 0.787,
       "depth_m": {
         "far": 10.329,
-        "median": 2.323,
-        "near": 1.566
+        "median": 2.324,
+        "near": 1.567
       },
       "id": "terrain_grass_009",
       "layer_type": "terrain",
@@ -324,18 +324,20 @@
       "representation": "heightfield",
       "semantic_label": "grass",
       "surface": {
+        "height_m": 1.326,
+        "height_spread_m": 2.564,
         "mean_normal": [
           -0.0698,
           -0.7607,
-          -0.6453
+          -0.6454
         ],
         "orientation": "horizontal",
         "walkable_candidate": true
       },
       "world_extent_m": [
-        58.529,
+        58.521,
         8.51,
-        27.471
+        27.456
       ]
     },
     {
@@ -347,9 +349,9 @@
       ],
       "confidence": 0.582,
       "depth_m": {
-        "far": 16.734,
-        "median": 13.53,
-        "near": 10.787
+        "far": 16.735,
+        "median": 13.531,
+        "near": 10.789
       },
       "id": "architecture_house_025",
       "layer_type": "architecture",
@@ -360,7 +362,7 @@
       "semantic_label": "house",
       "surface": {
         "mean_normal": [
-          -0.1482,
+          -0.1481,
           -0.5444,
           -0.8257
         ],
@@ -368,9 +370,9 @@
         "walkable_candidate": false
       },
       "world_extent_m": [
-        16.7,
+        16.701,
         4.901,
-        25.251
+        25.263
       ]
     },
     {
@@ -382,9 +384,9 @@
       ],
       "confidence": 0.518,
       "depth_m": {
-        "far": 17.364,
-        "median": 15.862,
-        "near": 14.23
+        "far": 17.369,
+        "median": 15.864,
+        "near": 14.233
       },
       "id": "architecture_hovel_079",
       "layer_type": "architecture",
@@ -395,7 +397,7 @@
       "semantic_label": "hovel",
       "surface": {
         "mean_normal": [
-          0.3422,
+          0.3421,
           -0.2337,
           -0.9101
         ],
@@ -403,9 +405,9 @@
         "walkable_candidate": false
       },
       "world_extent_m": [
-        6.622,
+        6.621,
         6.207,
-        9.713
+        9.708
       ]
     },
     {
@@ -417,9 +419,9 @@
       ],
       "confidence": 0.509,
       "depth_m": {
-        "far": 214.537,
-        "median": 69.604,
-        "near": 15.526
+        "far": 214.601,
+        "median": 69.552,
+        "near": 15.529
       },
       "id": "terrain_field_029",
       "layer_type": "terrain",
@@ -429,6 +431,8 @@
       "representation": "heightfield",
       "semantic_label": "field",
       "surface": {
+        "height_m": 14.296,
+        "height_spread_m": 29.524,
         "mean_normal": [
           -0.2057,
           -0.977,
@@ -438,9 +442,9 @@
         "walkable_candidate": true
       },
       "world_extent_m": [
-        404.631,
-        65.557,
-        490.403
+        404.567,
+        65.619,
+        490.386
       ]
     }
   ],
