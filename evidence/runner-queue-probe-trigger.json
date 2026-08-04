@@ -1,5 +1,5 @@
 {
-  "purpose": "Locate the faceplate diagnostic with all support geometry behind the derived face surface.",
-  "target_head_sha": "964205536244726d1d453b0db5e5aa61e20b6c19",
-  "requested_at": "2026-08-04T18:50:00+03:00"
+  "purpose": "Locate the silhouette-backed faceplate bust diagnostic without a 3D cranium shell.",
+  "target_head_sha": "e982683134aba168e97c38afd4943db37ffc1412",
+  "requested_at": "2026-08-04T18:57:00+03:00"
 }
