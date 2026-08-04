@@ -168,15 +168,22 @@ else had failed.
 
 ## 6. Open items, highest leverage first
 
-1. **The scene composition, not the generator.** The generated barn is good; the
-   assembled scene is not. Two specific causes, both upstream of generation:
-   - MoGe gives the tree region a depth band of 11.7–23.1 m while the barn sits
-     at 13.5 m, so the vegetation mass **swallows the building**. Region depth
-     needs to be a surface, not a band, or nearer regions need to carve it.
-   - A "tree" region here is a 28 m hedge line, not a tree. Its crop is
-     therefore a chunk of foliage and its mesh is a blob — accurate to the input
-     and useless as a tree. Instance segmentation would fix the crop, the mesh
-     and the placement at once.
+1. **Vegetation instances, properly.** Regions that get scattered are now split
+   into spatially coherent clumps by k-means over the point map
+   (`cluster_region_points`), each placed at its own depth and size. That was
+   necessary because a semantic class is not an object: this "tree" region's
+   pixels run from 2.4 m to 21 m with a median of 13.46 m — *identical* to the
+   barn's — which is how a building ended up entirely inside a tree.
+
+   Measured effect (`unreal/audit_actor_overlaps.py`): worst barn-vs-tree
+   overlap **1.00 → 0.28**, buried pairs 3 → 1, and the remaining one is the
+   hovel, still a primitive. The scene now reads as a barn with a tree line.
+
+   Two things it does not fix, both wanting real instance segmentation:
+   - Clusters that are pure canopy have no trunk, so they **float**. Snapping
+     vegetation to the terrain would hide it; separating trunks would fix it.
+   - The crop for a scatter region is still a chunk of hedge, so the mesh is a
+     blob. Accurate to the input, and not a tree.
 2. **Texture the generated meshes.** They render as untextured grey. The source
    crop and its mask are already on disk per asset; this is the same projection
    problem the photometric lane already solved once.

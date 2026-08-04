@@ -167,6 +167,34 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
                                       max(height, 1.0)],
                            "assumption": "building depth inferred from width"})
 
+        elif layer in SCATTER_TARGET and region.get("clusters"):
+            # Segmentation split this region into spatially coherent clumps.
+            # Place one instance per clump, each at its *own* depth and size: a
+            # semantic class is not an object, and this region's pixels span
+            # 2.4 m to 21 m with a median identical to the building in front of
+            # it, which is how a barn ended up inside a tree.
+            for index, cluster in enumerate(region["clusters"]):
+                cluster_bbox = [float(v) for v in cluster["bbox_norm_xyxy"]]
+                cluster_depth = cluster["depth_m"]
+                cluster_region = {**region, "bbox_norm_xyxy": cluster_bbox,
+                                  "depth_m": cluster_depth}
+                centre_c, width_c, height_c = _footprint(cluster_region, fov_x, aspect)
+                thickness_c = max(0.5, float(cluster_depth.get("far", 0.0))
+                                  - float(cluster_depth.get("near", 0.0)))
+                actors.append({
+                    **common,
+                    "kind": "scatter_instance",
+                    "instance_index": index,
+                    "source_bbox_norm_xyxy": cluster_bbox,
+                    "cluster_pixel_count": cluster["pixel_count"],
+                    "cluster_depth_m": cluster_depth.get("median"),
+                    "location_cm": [centre_c[0] * CM_PER_M,
+                                    centre_c[1] * CM_PER_M,
+                                    (centre_c[2] - height_c * 0.5) * CM_PER_M],
+                    "size_m": [max(min(width_c, thickness_c), 0.5),
+                               max(width_c, 0.5), max(height_c, 0.5)],
+                })
+
         elif layer in SCATTER_TARGET:
             count = SCATTER_TARGET[layer]
             observed = scatter_offsets(

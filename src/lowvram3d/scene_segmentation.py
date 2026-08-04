@@ -70,6 +70,91 @@ def _labels(model) -> dict[int, str]:
             for k, v in model.config.id2label.items()}
 
 
+# Semantic classes are not objects. One "tree" region here is a 28 m hedge line
+# whose pixels run from 2.4 m to 21 m deep, so a single placement for it is
+# wrong at both ends -- and its median depth (13.46 m) is identical to the
+# barn's, which is how a building ended up entirely inside a tree. Classes that
+# get scattered are split into spatially coherent clumps first, using the point
+# map already computed here. This is instance separation by geometry: cheaper
+# than a panoptic model and grounded in measurements this stage already has.
+CLUSTERED_LAYERS = {"vegetation", "prop", "clutter"}
+MAX_CLUSTERS = 12
+MIN_CLUSTER_POINTS = 64
+CLUSTER_ITERATIONS = 12
+
+
+def cluster_region_points(points, selection, observed, width, height,
+                          max_clusters=MAX_CLUSTERS):
+    """Split one region's observed points into spatially coherent clumps.
+
+    Returns image-space descriptions -- normalised centroid, depth, pixel bbox
+    -- rather than world points, so placement keeps a single unprojection and a
+    single convention. Deterministic: seeded from evenly spaced quantiles of
+    the dominant axis, no RNG, so a rerun reproduces the same scene.
+    """
+    import numpy as np
+
+    ys, xs = np.nonzero(observed)
+    if len(xs) < MIN_CLUSTER_POINTS:
+        return []
+    coords = points[observed]
+    finite = np.isfinite(coords).all(axis=1)
+    coords, xs, ys = coords[finite], xs[finite], ys[finite]
+    if len(coords) < MIN_CLUSTER_POINTS:
+        return []
+
+    count = int(min(max_clusters, max(1, len(coords) // MIN_CLUSTER_POINTS)))
+    if count == 1:
+        labels = np.zeros(len(coords), dtype=int)
+        centres = coords.mean(axis=0, keepdims=True)
+    else:
+        # Scale each axis to unit variance so depth, which spans an order of
+        # magnitude more than the lateral extent, does not dominate the metric.
+        spread = coords.std(axis=0)
+        spread[spread < 1e-6] = 1.0
+        scaled = coords / spread
+        dominant = int(np.argmax(coords.std(axis=0)))
+        order = np.argsort(coords[:, dominant])
+        seeds = order[((np.arange(count) + 0.5) / count * len(order)).astype(int)]
+        centres = scaled[seeds].copy()
+        labels = np.zeros(len(coords), dtype=int)
+        for _ in range(CLUSTER_ITERATIONS):
+            distances = ((scaled[:, None, :] - centres[None, :, :]) ** 2).sum(axis=2)
+            new_labels = distances.argmin(axis=1)
+            if np.array_equal(new_labels, labels):
+                break
+            labels = new_labels
+            for index in range(count):
+                member = labels == index
+                if member.any():
+                    centres[index] = scaled[member].mean(axis=0)
+        centres = centres * spread
+
+    clusters = []
+    for index in range(len(centres)):
+        member = labels == index
+        if member.sum() < MIN_CLUSTER_POINTS:
+            continue
+        member_x, member_y = xs[member], ys[member]
+        depths = coords[member][:, 2]
+        clusters.append({
+            "pixel_count": int(member.sum()),
+            "centroid_norm_xy": [round(float(member_x.mean()) / width, 5),
+                                 round(float(member_y.mean()) / height, 5)],
+            "bbox_norm_xyxy": [round(float(member_x.min()) / width, 5),
+                               round(float(member_y.min()) / height, 5),
+                               round(float(member_x.max() + 1) / width, 5),
+                               round(float(member_y.max() + 1) / height, 5)],
+            "depth_m": {
+                "near": round(float(np.percentile(depths, 5)), 3),
+                "median": round(float(np.median(depths)), 3),
+                "far": round(float(np.percentile(depths, 95)), 3),
+            },
+        })
+    clusters.sort(key=lambda c: -c["pixel_count"])
+    return clusters
+
+
 def segment(image_path: Path, model_name: str = SEG_MODEL,
             with_geometry: bool = True,
             mask_dir: Path | None = None) -> dict[str, Any]:
@@ -182,6 +267,9 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
                             "walkable_candidate": bool(
                                 verticality > 0.6 and layer in ("terrain", "crossing")),
                         }
+                if layer in CLUSTERED_LAYERS:
+                    region["clusters"] = cluster_region_points(
+                        points, selection, observed, width, height)
             else:
                 region["observed_fraction"] = 0.0
                 region["uncertainty"] = "region is masked out of the depth estimate"

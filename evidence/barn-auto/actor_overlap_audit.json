@@ -1,0 +1,325 @@
+{
+  "actor_count": 16,
+  "actors": [
+    {
+      "centre_m": [
+        16.44,
+        9.12,
+        -1.85
+      ],
+      "label": "vegetation_tree_004_00",
+      "size_m": [
+        5.3,
+        6.3,
+        7.09
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        19.81,
+        -16.89,
+        -3.55
+      ],
+      "label": "vegetation_tree_004_01",
+      "size_m": [
+        5.09,
+        6.06,
+        6.82
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        12.2,
+        2.07,
+        4.96
+      ],
+      "label": "vegetation_tree_004_02",
+      "size_m": [
+        2.44,
+        2.9,
+        3.26
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        12.45,
+        -3.44,
+        4.67
+      ],
+      "label": "vegetation_tree_004_03",
+      "size_m": [
+        2.71,
+        3.23,
+        3.63
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        14.58,
+        0.15,
+        2.46
+      ],
+      "label": "vegetation_tree_004_04",
+      "size_m": [
+        2.85,
+        3.39,
+        3.81
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        12.03,
+        5.09,
+        2.46
+      ],
+      "label": "vegetation_tree_004_05",
+      "size_m": [
+        3.26,
+        3.88,
+        4.37
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        13.11,
+        -5.22,
+        -0.54
+      ],
+      "label": "vegetation_tree_004_06",
+      "size_m": [
+        5.93,
+        7.06,
+        7.94
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        20.92,
+        -15.11,
+        3.33
+      ],
+      "label": "vegetation_tree_004_07",
+      "size_m": [
+        5.74,
+        6.83,
+        7.69
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        12.02,
+        5.96,
+        6.81
+      ],
+      "label": "vegetation_tree_004_08",
+      "size_m": [
+        2.56,
+        3.04,
+        3.42
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        15.71,
+        -9.1,
+        -2.11
+      ],
+      "label": "vegetation_tree_004_09",
+      "size_m": [
+        4.82,
+        5.74,
+        6.46
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        17.29,
+        1.0,
+        0.28
+      ],
+      "label": "vegetation_tree_004_10",
+      "size_m": [
+        2.85,
+        3.39,
+        3.82
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        12.44,
+        1.35,
+        7.55
+      ],
+      "label": "vegetation_tree_004_11",
+      "size_m": [
+        1.92,
+        2.28,
+        2.56
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        2.32,
+        0.0,
+        -1.83
+      ],
+      "label": "terrain_grass_009",
+      "size_m": [
+        8.76,
+        4.89,
+        0.2
+      ],
+      "source": "primitive"
+    },
+    {
+      "centre_m": [
+        13.53,
+        1.33,
+        -2.55
+      ],
+      "label": "architecture_house_025",
+      "size_m": [
+        8.98,
+        12.01,
+        4.68
+      ],
+      "source": "generated"
+    },
+    {
+      "centre_m": [
+        15.86,
+        -7.73,
+        -2.25
+      ],
+      "label": "architecture_hovel_079",
+      "size_m": [
+        4.19,
+        6.98,
+        6.29
+      ],
+      "source": "primitive"
+    },
+    {
+      "centre_m": [
+        69.6,
+        63.88,
+        -20.52
+      ],
+      "label": "terrain_field_029",
+      "size_m": [
+        199.01,
+        18.6,
+        0.2
+      ],
+      "source": "primitive"
+    }
+  ],
+  "buried_pair_count": 1,
+  "classification": "PROVEN",
+  "overlapping_pair_count": 11,
+  "overlaps": [
+    {
+      "a": "vegetation_tree_004_09",
+      "a_source": "generated",
+      "b": "architecture_hovel_079",
+      "b_source": "primitive",
+      "fraction_of_smaller": 0.728,
+      "overlap_m3": 130.14
+    },
+    {
+      "a": "vegetation_tree_004_06",
+      "a_source": "generated",
+      "b": "architecture_hovel_079",
+      "b_source": "primitive",
+      "fraction_of_smaller": 0.3056,
+      "overlap_m3": 56.16
+    },
+    {
+      "a": "vegetation_tree_004_10",
+      "a_source": "generated",
+      "b": "architecture_house_025",
+      "b_source": "generated",
+      "fraction_of_smaller": 0.2807,
+      "overlap_m3": 10.36
+    },
+    {
+      "a": "vegetation_tree_004_06",
+      "a_source": "generated",
+      "b": "architecture_house_025",
+      "b_source": "generated",
+      "fraction_of_smaller": 0.2294,
+      "overlap_m3": 76.21
+    },
+    {
+      "a": "vegetation_tree_004_06",
+      "a_source": "generated",
+      "b": "vegetation_tree_004_09",
+      "b_source": "generated",
+      "fraction_of_smaller": 0.2192,
+      "overlap_m3": 39.19
+    },
+    {
+      "a": "vegetation_tree_004_03",
+      "a_source": "generated",
+      "b": "vegetation_tree_004_06",
+      "b_source": "generated",
+      "fraction_of_smaller": 0.1569,
+      "overlap_m3": 5.0
+    },
+    {
+      "a": "vegetation_tree_004_00",
+      "a_source": "generated",
+      "b": "architecture_house_025",
+      "b_source": "generated",
+      "fraction_of_smaller": 0.1136,
+      "overlap_m3": 26.9
+    },
+    {
+      "a": "vegetation_tree_004_02",
+      "a_source": "generated",
+      "b": "vegetation_tree_004_11",
+      "b_source": "generated",
+      "fraction_of_smaller": 0.1035,
+      "overlap_m3": 1.16
+    },
+    {
+      "a": "vegetation_tree_004_02",
+      "a_source": "generated",
+      "b": "vegetation_tree_004_05",
+      "b_source": "generated",
+      "fraction_of_smaller": 0.0515,
+      "overlap_m3": 1.18
+    },
+    {
+      "a": "architecture_house_025",
+      "a_source": "generated",
+      "b": "architecture_hovel_079",
+      "b_source": "primitive",
+      "fraction_of_smaller": 0.0469,
+      "overlap_m3": 8.62
+    },
+    {
+      "a": "vegetation_tree_004_01",
+      "a_source": "generated",
+      "b": "vegetation_tree_004_07",
+      "b_source": "generated",
+      "fraction_of_smaller": 0.0356,
+      "overlap_m3": 7.5
+    }
+  ],
+  "owner_tag": "structural_build_barn_gen",
+  "schema_version": "actor_overlap_audit_v1",
+  "worst_fraction": 0.728
+}
