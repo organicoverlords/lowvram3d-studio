@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import sys
 from pathlib import Path
 
@@ -100,35 +99,12 @@ def open_front_hair_shell(
     delete_vertices = [
         vertex
         for vertex in bm.verts
-        if vertex.co.y < -scale[1] * 0.08 and vertex.co.z < scale[2] * 0.38
+        if vertex.co.y < -scale[1] * 0.04 and vertex.co.z < scale[2] * 0.46
     ]
     bmesh.ops.delete(bm, geom=delete_vertices, context="VERTS")
     bm.to_mesh(obj.data)
     bm.free()
     obj.data.update()
-    return obj
-
-
-def curve(
-    name: str,
-    points: list[Vector],
-    bevel_depth: float,
-    material: bpy.types.Material,
-) -> bpy.types.Object:
-    data = bpy.data.curves.new(name, "CURVE")
-    data.dimensions = "3D"
-    data.resolution_u = 3
-    data.bevel_depth = bevel_depth
-    data.bevel_resolution = 2
-    spline = data.splines.new("BEZIER")
-    spline.bezier_points.add(len(points) - 1)
-    for point, coordinate in zip(spline.bezier_points, points):
-        point.co = coordinate
-        point.handle_left_type = "AUTO"
-        point.handle_right_type = "AUTO"
-    obj = bpy.data.objects.new(name, data)
-    bpy.context.collection.objects.link(obj)
-    data.materials.append(material)
     return obj
 
 
@@ -248,82 +224,68 @@ def main() -> int:
     width = max(maximum.x - minimum.x, 0.1)
     front_y = center.y
 
-    robe = principled("MAT_FACEPLATE_V4_ROBE", (0.004, 0.0045, 0.006, 1.0), 0.86)
-    skin = principled("MAT_FACEPLATE_V4_SKIN", (0.145, 0.070, 0.060, 1.0), 0.58)
-    hair = principled("MAT_FACEPLATE_V4_HAIR", (0.003, 0.0015, 0.001, 1.0), 0.52)
+    robe = principled("MAT_FACEPLATE_V5_ROBE", (0.004, 0.0045, 0.006, 1.0), 0.86)
+    skin = principled("MAT_FACEPLATE_V5_SKIN", (0.145, 0.070, 0.060, 1.0), 0.58)
+    hair = principled("MAT_FACEPLATE_V5_HAIR", (0.003, 0.0015, 0.001, 1.0), 0.52)
 
+    # The plate remains the foremost surface. Every support primitive begins
+    # farther from the camera than the plate's world-space Y coordinate.
+    face_plate.location.y -= height * 0.030
     head = sphere(
-        "DIAG_V4_HeadShell",
-        Vector((center.x, front_y + height * 0.21, center.z + height * 0.025)),
-        (width * 0.58, height * 0.27, height * 0.53),
+        "DIAG_V5_HeadShell",
+        Vector((center.x, front_y + height * 0.46, center.z + height * 0.025)),
+        (width * 0.58, height * 0.22, height * 0.53),
         skin,
     )
     ear_left = sphere(
-        "DIAG_V4_Ear_L",
-        Vector((center.x - width * 0.53, front_y + height * 0.04, center.z - height * 0.015)),
-        (width * 0.085, height * 0.055, height * 0.145),
+        "DIAG_V5_Ear_L",
+        Vector((center.x - width * 0.53, front_y + height * 0.30, center.z - height * 0.015)),
+        (width * 0.085, height * 0.050, height * 0.145),
         skin,
     )
     ear_right = sphere(
-        "DIAG_V4_Ear_R",
-        Vector((center.x + width * 0.53, front_y + height * 0.04, center.z - height * 0.015)),
-        (width * 0.085, height * 0.055, height * 0.145),
+        "DIAG_V5_Ear_R",
+        Vector((center.x + width * 0.53, front_y + height * 0.30, center.z - height * 0.015)),
+        (width * 0.085, height * 0.050, height * 0.145),
         skin,
     )
     neck = sphere(
-        "DIAG_V4_Neck",
-        Vector((center.x, front_y + height * 0.23, minimum.z - height * 0.22)),
-        (width * 0.20, height * 0.14, height * 0.30),
+        "DIAG_V5_Neck",
+        Vector((center.x, front_y + height * 0.38, minimum.z - height * 0.22)),
+        (width * 0.20, height * 0.12, height * 0.30),
         skin,
     )
     torso = sphere(
-        "DIAG_V4_Torso",
-        Vector((center.x, front_y + height * 0.46, minimum.z - height * 0.83)),
-        (width * 1.00, height * 0.36, height * 0.60),
+        "DIAG_V5_Torso",
+        Vector((center.x, front_y + height * 0.52, minimum.z - height * 0.83)),
+        (width * 1.00, height * 0.32, height * 0.60),
         robe,
     )
     shoulder_left = sphere(
-        "DIAG_V4_Shoulder_L",
-        Vector((center.x - width * 0.78, front_y + height * 0.40, minimum.z - height * 0.70)),
-        (width * 0.48, height * 0.28, height * 0.34),
+        "DIAG_V5_Shoulder_L",
+        Vector((center.x - width * 0.78, front_y + height * 0.48, minimum.z - height * 0.70)),
+        (width * 0.48, height * 0.24, height * 0.34),
         robe,
     )
     shoulder_right = sphere(
-        "DIAG_V4_Shoulder_R",
-        Vector((center.x + width * 0.78, front_y + height * 0.40, minimum.z - height * 0.70)),
-        (width * 0.48, height * 0.28, height * 0.34),
+        "DIAG_V5_Shoulder_R",
+        Vector((center.x + width * 0.78, front_y + height * 0.48, minimum.z - height * 0.70)),
+        (width * 0.48, height * 0.24, height * 0.34),
         robe,
     )
-
-    face_plate.location.y -= height * 0.020
     render(scene, output_dir / "variant_02_natural_bust.png")
 
     hair_shell = open_front_hair_shell(
-        "DIAG_V4_OpenFrontHairShell",
-        Vector((center.x, front_y + height * 0.20, center.z + height * 0.19)),
-        (width * 0.60, height * 0.30, height * 0.47),
+        "DIAG_V5_OpenFrontHairShell",
+        Vector((center.x, front_y + height * 0.48, center.z + height * 0.19)),
+        (width * 0.60, height * 0.24, height * 0.47),
         hair,
     )
-    hair_curves = []
-    for index in range(18):
-        t = index / 17.0
-        x = center.x + width * (-0.48 + 0.96 * t)
-        arch = 1.0 - ((t - 0.5) / 0.5) ** 2
-        z0 = center.z + height * (0.36 + 0.20 * arch)
-        points = [
-            Vector((x, front_y - height * 0.018, z0)),
-            Vector((x + width * 0.025 * math.sin(index * 1.7), front_y + height * 0.07, z0 + height * 0.035)),
-            Vector((x + width * 0.035 * math.sin(index * 1.2 + 0.7), front_y + height * 0.19, z0 - height * 0.13)),
-        ]
-        hair_curves.append(
-            curve(f"DIAG_V4_Hairline_{index:02d}", points, width * 0.0055, hair)
-        )
-
     target = Vector((center.x, center.y, center.z - height * 0.18))
     area_light(
-        "DIAG_V4_FrontFill",
+        "DIAG_V5_FrontFill",
         Vector((center.x + width * 1.4, front_y - height * 2.6, center.z + height * 1.3)),
-        420.0,
+        360.0,
         (0.72, 0.78, 1.0),
         height * 2.3,
         target,
@@ -342,13 +304,12 @@ def main() -> int:
             shoulder_left,
             shoulder_right,
             hair_shell,
-            *hair_curves,
         )
     ]
     report["variant_policy"] = {
         "variant_01": "derived face plate only; all rejected primitive shell geometry hidden",
-        "variant_02": "skin head shell, ears, neck and dark robe; no hair shell",
-        "variant_03": "open-front back/top hair shell plus fine hairline curves and neutral fill",
+        "variant_02": "faceplate foreground with skin shell, ears, neck and robe behind it",
+        "variant_03": "same depth-safe bust plus a rear/top open-front hair shell",
     }
     (output_dir / "diagnostic.json").write_text(
         json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
