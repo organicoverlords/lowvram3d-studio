@@ -1,0 +1,8 @@
+{
+  "classification": "PROVEN",
+  "exclusive_gpu_policy": true,
+  "gpu_work_requested": false,
+  "max_triangles": 1500000,
+  "max_vram_mb": 6144,
+  "schema_version": "performance_validation_v1"
+}

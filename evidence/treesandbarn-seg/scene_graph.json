@@ -1,0 +1,132 @@
+{
+  "classification": "PROVEN",
+  "edges": [
+    {
+      "confidence": 0.55,
+      "evidence": "semantic_adjacency",
+      "fallback": "terrain_affinity",
+      "source": "vegetation_region_001",
+      "target": "terrain_003",
+      "type": "grows_on"
+    },
+    {
+      "confidence": 0.55,
+      "evidence": "semantic_adjacency",
+      "fallback": "terrain_affinity",
+      "source": "vegetation_region_001",
+      "target": "terrain_006",
+      "type": "grows_on"
+    },
+    {
+      "confidence": 0.55,
+      "evidence": "semantic_adjacency",
+      "fallback": "conservative_support",
+      "source": "architecture_004",
+      "target": "terrain_003",
+      "type": "supported_by"
+    },
+    {
+      "confidence": 0.55,
+      "evidence": "semantic_adjacency",
+      "fallback": "conservative_support",
+      "source": "architecture_004",
+      "target": "terrain_006",
+      "type": "supported_by"
+    },
+    {
+      "confidence": 0.55,
+      "evidence": "semantic_adjacency",
+      "fallback": "conservative_support",
+      "source": "architecture_005",
+      "target": "terrain_003",
+      "type": "supported_by"
+    },
+    {
+      "confidence": 0.55,
+      "evidence": "semantic_adjacency",
+      "fallback": "conservative_support",
+      "source": "architecture_005",
+      "target": "terrain_006",
+      "type": "supported_by"
+    }
+  ],
+  "nodes": [
+    {
+      "confidence": 0.809,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "vegetation_region_001",
+      "semantic_class": "vegetation",
+      "source_id": "vegetation_tree_004"
+    },
+    {
+      "confidence": 0.795,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "background_geometry_002",
+      "semantic_class": "sky_or_ceiling",
+      "source_id": "sky_sky_002"
+    },
+    {
+      "confidence": 0.787,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "terrain_003",
+      "semantic_class": "terrain",
+      "source_id": "terrain_grass_009"
+    },
+    {
+      "confidence": 0.582,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "architecture_004",
+      "semantic_class": "architecture",
+      "source_id": "architecture_house_025"
+    },
+    {
+      "confidence": 0.518,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "architecture_005",
+      "semantic_class": "architecture",
+      "source_id": "architecture_hovel_079"
+    },
+    {
+      "confidence": 0.509,
+      "evidence": [
+        "source_image"
+      ],
+      "gameplay_role": "visual",
+      "id": "terrain_006",
+      "semantic_class": "terrain",
+      "source_id": "terrain_field_029"
+    }
+  ],
+  "relationship_types": [
+    "sits_on",
+    "attached_to",
+    "inside",
+    "contains",
+    "spans",
+    "crosses",
+    "connects",
+    "occludes",
+    "behind",
+    "in_front_of",
+    "grows_on",
+    "supported_by",
+    "adjacent_to"
+  ],
+  "schema_version": "scene_graph_v1",
+  "uncertainty_policy": "unsupported relationships remain unresolved"
+}

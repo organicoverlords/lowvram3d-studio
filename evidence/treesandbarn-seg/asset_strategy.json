@@ -1,0 +1,96 @@
+{
+  "asset_search_may_not_block_smoke": true,
+  "classification": "PROVEN",
+  "records": [
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "procedural_unreal_mesh",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "vegetation_tree_004",
+      "scale_suitability": "scene_contract",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    },
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "visual_shell_fallback",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "sky_sky_002",
+      "scale_suitability": "scene_contract",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    },
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "procedural_unreal_mesh",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "terrain_grass_009",
+      "scale_suitability": "scene_contract",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    },
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "procedural_unreal_mesh",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "architecture_house_025",
+      "scale_suitability": "scene_contract",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    },
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "procedural_unreal_mesh",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "architecture_hovel_079",
+      "scale_suitability": "scene_contract",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    },
+    {
+      "candidate_assets": [],
+      "chosen_strategy": "procedural_unreal_mesh",
+      "collision_suitability": "noninteractive",
+      "fallback": "visual_shell_fallback",
+      "material_compatibility": "local_material",
+      "reason": "semantic class, confidence, representation, and bounded fallback policy",
+      "region_id": "terrain_field_029",
+      "scale_suitability": "scene_contract",
+      "silhouette_suitability": "bounded_low_detail",
+      "texture_memory_estimate_mb": 8,
+      "triangle_estimate": 10000
+    }
+  ],
+  "schema_version": "asset_strategy_v1",
+  "strategies": [
+    "reuse_project_asset",
+    "reuse_engine_asset",
+    "procedural_unreal_primitives",
+    "procedural_unreal_mesh",
+    "procedural_blender_mesh",
+    "image_conditioned_generation",
+    "approved_asset_library",
+    "source_projection",
+    "visual_shell_fallback"
+  ]
+}

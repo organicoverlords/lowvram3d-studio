@@ -121,7 +121,31 @@ def analyze_image(path: str | Path, scene_id: str, dimensions: tuple[int, int],
         "resource_budgets": {"max_vram_mb": 6144, "max_triangles": 1500000, "gpu_work_requested": False},
     }
     if depth_receipt and depth_receipt.get("available"):
-        return _apply_depth(bundle, depth_receipt)
+        bundle = _apply_depth(bundle, depth_receipt)
+        segmentation = depth_receipt.get("segmentation")
+        if segmentation and segmentation.get("regions"):
+            # Real semantic regions replace the single visual_shell placeholder.
+            # Asset strategy can only choose between representations when the
+            # regions carry classes; with one shell it always fell back to a
+            # primitive, which is why the builders emitted scaled cubes.
+            bundle["regions"] = segmentation["regions"]
+            bundle["semantic_analysis"] = {
+                "status": "RESOLVED",
+                "model": segmentation.get("model"),
+                "region_count": segmentation.get("region_count"),
+                "layers_present": segmentation.get("layers_present"),
+                "unmapped_labels": segmentation.get("unmapped_labels", []),
+            }
+            bundle["visibility"] = [
+                {"region_id": region["id"],
+                 "classification": "fully_visible" if region.get("observed_fraction", 0) > 0.9
+                 else "partially_observed",
+                 "completion_policy": "single_view_front_surface_only"}
+                for region in segmentation["regions"]
+            ]
+            bundle["uncertainties"] = [u for u in bundle["uncertainties"]
+                                       if u.get("id") != "semantic_bootstrap"]
+        return bundle
     if depth_receipt is not None:
         bundle["uncertainties"].append({
             "id": "depth_estimator_unavailable",

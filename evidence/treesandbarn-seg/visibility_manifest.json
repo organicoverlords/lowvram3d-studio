@@ -1,0 +1,68 @@
+{
+  "classification": "PROVEN",
+  "full_reconstruction_claim": false,
+  "policy": "source-visible fidelity with conservative bounded completion",
+  "records": [
+    {
+      "completion_policy": "conservative_extrusion",
+      "confidence": 0.809,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": true,
+      "region_id": "vegetation_tree_004",
+      "source_visible_evidence": false,
+      "visibility": "ambiguous"
+    },
+    {
+      "completion_policy": "conservative_extrusion",
+      "confidence": 0.795,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": true,
+      "region_id": "sky_sky_002",
+      "source_visible_evidence": false,
+      "visibility": "ambiguous"
+    },
+    {
+      "completion_policy": "terrain_continuation",
+      "confidence": 0.787,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": true,
+      "region_id": "terrain_grass_009",
+      "source_visible_evidence": false,
+      "visibility": "ambiguous"
+    },
+    {
+      "completion_policy": "conservative_extrusion",
+      "confidence": 0.582,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": true,
+      "region_id": "architecture_house_025",
+      "source_visible_evidence": false,
+      "visibility": "ambiguous"
+    },
+    {
+      "completion_policy": "conservative_extrusion",
+      "confidence": 0.518,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": true,
+      "region_id": "architecture_hovel_079",
+      "source_visible_evidence": false,
+      "visibility": "ambiguous"
+    },
+    {
+      "completion_policy": "terrain_continuation",
+      "confidence": 0.509,
+      "decorative": false,
+      "gameplay_only": false,
+      "hidden_geometry_inferred": true,
+      "region_id": "terrain_field_029",
+      "source_visible_evidence": false,
+      "visibility": "ambiguous"
+    }
+  ],
+  "schema_version": "visibility_manifest_v1"
+}

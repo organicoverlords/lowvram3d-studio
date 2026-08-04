@@ -1,0 +1,16 @@
+{
+  "classification": "PARTIAL",
+  "filename_not_used_for_selection": true,
+  "gates": {
+    "budget_validation": "PROVEN",
+    "builder_selection": "PROVEN",
+    "camera_depth_contract": "RESOLVED",
+    "image_ingest": "PROVEN",
+    "scene_completeness_plan": "PROVEN",
+    "scene_spec_generation": "PROVEN",
+    "scene_spec_validation": "PROVEN"
+  },
+  "input_kind": "scene",
+  "schema_version": "scene_generalization_receipt_v1",
+  "source_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b"
+}

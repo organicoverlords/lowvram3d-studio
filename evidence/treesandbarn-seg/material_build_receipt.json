@@ -1,0 +1,52 @@
+{
+  "classification": "PROVEN",
+  "default_grey_allowed": false,
+  "manual_assignments": 0,
+  "record_count": 6,
+  "records": [
+    {
+      "actor_id": "terrain_terrain_grass_009_terrain_grass_009",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "rock_or_ground",
+      "semantic_region_id": "terrain_grass_009"
+    },
+    {
+      "actor_id": "terrain_terrain_field_029_terrain_field_029",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "rock_or_ground",
+      "semantic_region_id": "terrain_field_029"
+    },
+    {
+      "actor_id": "architecture_architecture_house_025_architecture_house_025",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "local_architecture",
+      "semantic_region_id": "architecture_house_025"
+    },
+    {
+      "actor_id": "architecture_architecture_hovel_079_architecture_hovel_079",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "local_architecture",
+      "semantic_region_id": "architecture_hovel_079"
+    },
+    {
+      "actor_id": "vegetation_vegetation_tree_004_vegetation_instance_000",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "biome_local",
+      "semantic_region_id": "vegetation_tree_004"
+    },
+    {
+      "actor_id": "environment_sky_sky_002",
+      "assignment": "pipeline_manifest",
+      "default_grey_allowed": false,
+      "material_class": "environment",
+      "semantic_region_id": "sky_sky_002"
+    }
+  ],
+  "schema_version": "material_build_receipt_v1",
+  "source": "scene_content_manifest"
+}

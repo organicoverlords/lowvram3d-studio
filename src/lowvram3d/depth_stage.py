@@ -81,6 +81,21 @@ def reconstruct_depth(image: Path, work_dir: Path, scene_id: str,
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     receipt["available"] = True
     receipt["interpreter"] = str(python)
+
+    # Semantic regions run in the same environment and are what let the
+    # structural builders plan against classes instead of one shell. A failure
+    # here degrades the bundle to depth-only rather than failing the run.
+    segmentation_path = work_dir / f"{scene_id}_segmentation.json"
+    seg = subprocess.run(
+        [str(python), "-m", "lowvram3d.scene_segmentation",
+         "--image", str(image), "--receipt", str(segmentation_path),
+         "--overlay", str(work_dir / f"{scene_id}_segmentation.png")],
+        capture_output=True, text=True, timeout=timeout, env=env)
+    if seg.returncode == 0 and segmentation_path.is_file():
+        receipt["segmentation"] = json.loads(
+            segmentation_path.read_text(encoding="utf-8"))
+    else:
+        receipt["segmentation_error"] = (seg.stderr or "")[-1000:]
     return receipt
 
 

@@ -1,0 +1,81 @@
+{
+  "classification": "PARTIAL",
+  "composition_manifest_hash": "7ffc57a122aba16f2c32faa69833e56b8623ec7e97b861e3659991545d6e795f",
+  "disable_neural": false,
+  "enable_pcg": false,
+  "gpu_work_requested": false,
+  "graph_hash": "fad5aa6b614ce1b8286966b01a96aef4afa7ad63c4f42bb3c276dae6e75745bb",
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+  "input_hashes": {
+    "builder_manifest": "a47090951680ef3bf416e052133cd45e4e496f25ec57795793e50c26bd1954e1",
+    "representation_manifest": "7115229f162a18546e2b03821600e19eb7fe8d9bb13acf475033b757b2cc100b",
+    "scene_spec": "223f85b528a75ccc937d23b650a2a4a949ae81b388d72e02fae7442cc04ad08c",
+    "source_image": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b"
+  },
+  "input_kind": "scene",
+  "layer_receipts": {},
+  "max_triangles": 1500000,
+  "max_vram_mb": 6144,
+  "next_action": "RUN_BOUNDED_UNREAL_LAYER_BUILDERS",
+  "output_map": "C:/Program Files/Git/Game/AgentProof/TreesAndBarnSeg/treesandbarn_seg/Maps/L_treesandbarn_seg_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "preview",
+  "repair_routes": {
+    "floating_architecture": "scene_graph_construction|architecture_generation",
+    "grey_default_material": "material_generation|material_harmonization",
+    "incorrect_object_classification": "semantic_segmentation|instance_decomposition",
+    "navmesh_crossing_water": "gameplay_planning|navigation_generation",
+    "offset_view_hole": "unseen_world_completion|world_continuation",
+    "source_silhouette_mismatch": "camera_estimation|representation_selection|terrain_generation|architecture_generation",
+    "vegetation_in_water": "vegetation_planning|vegetation_generation"
+  },
+  "resume": false,
+  "scene_id": "treesandbarn_seg",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "ccce20416573fc69191abf0cd4d35be48ef493286577966d912b22e7553a0773",
+      "input_hash": "232d6eae2804f2bb6edf7a06afc0cb7160de403fb8f5ae8abe90b89594004d72",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\treesandbarn-seg\\architecture_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "completeness": {
+      "classification": "PARTIAL",
+      "config_hash": "bd0d0a16daf6893d8ec9249093b19013c167c29f7fd174589ed589052e482a37",
+      "input_hash": "9c86752ff24a08794d1a94018d95b29e767ab698c97bb38e52a6cef381781a96",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\treesandbarn-seg\\scene_completeness_receipt.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "scene_composition": {
+      "classification": "PROVEN",
+      "config_hash": "aa091b4984e4ac586de1e34602f13d5cfd0b3a2629347206f5565ba28588bae1",
+      "input_hash": "9263daa47014bccdd5dd98a137bdf4d4b93e00af506a4451f24e88cbb6b66db8",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\treesandbarn-seg\\scene_content_manifest.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "acacc04da7b4fa18a2673766a3312d7e3a8d6a537e67626d2105ba6385da7cba",
+      "input_hash": "232d6eae2804f2bb6edf7a06afc0cb7160de403fb8f5ae8abe90b89594004d72",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\treesandbarn-seg\\terrain_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "c127d7194d17e5eb596b8823cddb6aeb73044d4b5aebb47c5b8d97f7eb02b73f",
+      "input_hash": "232d6eae2804f2bb6edf7a06afc0cb7160de403fb8f5ae8abe90b89594004d72",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\treesandbarn-seg\\vegetation_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    }
+  },
+  "started_at": "2026-08-04T06:21:12.877055+00:00",
+  "updated_at": "2026-08-04T06:21:12.877055+00:00"
+}
