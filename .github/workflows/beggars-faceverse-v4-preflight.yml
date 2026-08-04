@@ -12,6 +12,7 @@ on:
       - scripts/run-beggars-faceverse-v4-preflight.ps1
       - scripts/apply-beggars-faceverse-v4-python-compat.ps1
       - scripts/apply-beggars-faceverse-v4-native-compat.ps1
+      - scripts/apply-beggars-faceverse-v4-venv-compat.ps1
       - .github/workflows/beggars-faceverse-v4-preflight.yml
 
 permissions:
@@ -75,6 +76,14 @@ jobs:
           & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceverse-v4-native-compat.ps1
           if ($LASTEXITCODE -ne 0) {
             throw "FaceVerse native-process compatibility failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Apply FaceVerse uv venv compatibility
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceverse-v4-venv-compat.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "FaceVerse uv-venv compatibility failed with exit code $LASTEXITCODE"
           }
 
       - name: Run bounded FaceVerse v4 proof
