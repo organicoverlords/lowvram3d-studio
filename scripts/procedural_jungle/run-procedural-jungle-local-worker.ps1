@@ -6,184 +6,68 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-function Get-CleanBase64Bytes {
-    param(
-        [Parameter(Mandatory=$true)][string]$Directory,
-        [Parameter(Mandatory=$true)][int]$ExpectedChunkCount
-    )
-    $Chunks = @(Get-ChildItem -LiteralPath $Directory -Filter 'chunk-*.b64' -File | Sort-Object Name)
-    if ($Chunks.Count -ne $ExpectedChunkCount) {
-        throw "Unexpected chunk count at ${Directory}: expected=$ExpectedChunkCount actual=$($Chunks.Count)"
-    }
-    $Builder = New-Object Text.StringBuilder
-    foreach ($Chunk in $Chunks) {
-        $Text = Get-Content -LiteralPath $Chunk.FullName -Raw
-        [void]$Builder.Append(($Text -replace '\s', ''))
-    }
-    if ($Builder.Length -lt 1) { throw "Empty encoded bundle: $Directory" }
-    return [Convert]::FromBase64String($Builder.ToString())
-}
-
 $RepoRoot = (git rev-parse --show-toplevel).Trim()
 if (-not $RepoRoot) { throw 'Not inside a Git repository' }
 Set-Location -LiteralPath $RepoRoot
+
 $Remote = (git config --get remote.origin.url).Trim()
 $Branch = (git branch --show-current).Trim()
 $Head = (git rev-parse HEAD).Trim()
 $Status = @(git status --short)
 if ($Remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $Remote" }
 if ($Branch -ne $ExpectedBranch) { throw "Branch mismatch: $Branch" }
-if ($Status.Count -ne 0) { throw "Repository is dirty before V3 worker: $($Status -join '; ')" }
+if ($Status.Count -ne 0) { throw "Repository is dirty before V3 byte-length wrapper: $($Status -join '; ')" }
+
 git fetch origin $Branch --quiet
 $RemoteHead = (git rev-parse "origin/$Branch").Trim()
 if ($Head -ne $RemoteHead) { throw "Checkout head differs from remote: $Head vs $RemoteHead" }
 
-$BaseBundleRoot = Join-Path $RepoRoot 'worker-bundles\procedural-jungle-direct-worker'
-$BaseBytes = Get-CleanBase64Bytes -Directory $BaseBundleRoot -ExpectedChunkCount 9
-$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-v3-$Head"
+$SourceCommit = '0b30584a12ffc5b961a0890a851aca82d6b381fb'
+$RelativePath = 'scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1'
+$SourceLines = @(git show "${SourceCommit}:$RelativePath")
+if ($LASTEXITCODE -ne 0 -or $SourceLines.Count -lt 100) {
+    throw "Unable to recover pinned V3 worker from $SourceCommit"
+}
+$SourceText = ($SourceLines -join "`n") + "`n"
+
+$AppendPattern = '(?m)^if \(\$InstallerText\.Length -eq 46900\) \{ \$InstallerText \+= "`n" \}\r?\n'
+$LengthPattern = '(?m)^if \(\$InstallerText\.Length -ne 46901\) \{ throw "V3 installer byte-safe text length mismatch: expected=46901 actual=\$\(\$InstallerText\.Length\)" \}\r?\n'
+$WriteLine = '[IO.File]::WriteAllText($Installer, $InstallerText, $Utf8NoBom)'
+$ByteCheck = @'
+[IO.File]::WriteAllText($Installer, $InstallerText, $Utf8NoBom)
+$InstallerByteLength = ([IO.File]::ReadAllBytes($Installer)).Length
+if ($InstallerByteLength -ne 46901) {
+    throw "V3 installer UTF-8 byte length mismatch: expected=46901 actual=$InstallerByteLength"
+}
+'@
+
+if ([regex]::Matches($SourceText, $AppendPattern).Count -ne 1) {
+    throw 'Pinned worker append-line match count is not exactly one'
+}
+if ([regex]::Matches($SourceText, $LengthPattern).Count -ne 1) {
+    throw 'Pinned worker character-length guard match count is not exactly one'
+}
+if (($SourceText.Split($WriteLine).Count - 1) -ne 1) {
+    throw 'Pinned worker WriteAllText match count is not exactly one'
+}
+
+$PatchedText = [regex]::Replace($SourceText, $AppendPattern, '', 1)
+$PatchedText = [regex]::Replace($PatchedText, $LengthPattern, '', 1)
+$PatchedText = $PatchedText.Replace($WriteLine, $ByteCheck.TrimEnd())
+if ($PatchedText -match 'InstallerText\.Length -ne 46901' -or $PatchedText -match 'InstallerText\.Length -eq 46900') {
+    throw 'Character-count installer guard remains after patching'
+}
+if ($PatchedText -notmatch 'InstallerByteLength -ne 46901') {
+    throw 'UTF-8 byte-length installer guard was not installed'
+}
+
+$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-v3-bytefix-$Head"
 if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
-$BaseZip = Join-Path $TempRoot 'base-worker.zip'
-$ExtractRoot = Join-Path $TempRoot 'worker'
-$OverlayReport = Join-Path $TempRoot 'overlay_installation.json'
-[IO.File]::WriteAllBytes($BaseZip, $BaseBytes)
-$BaseSha = (Get-FileHash -LiteralPath $BaseZip -Algorithm SHA256).Hash.ToLowerInvariant()
-Expand-Archive -LiteralPath $BaseZip -DestinationPath $ExtractRoot -Force
+$PatchedWorker = Join-Path $TempRoot 'run-procedural-jungle-v3-bytefixed.ps1'
+[IO.File]::WriteAllText($PatchedWorker, $PatchedText, (New-Object Text.UTF8Encoding($false)))
 
-$RequiredBaseFiles = @(
-    'blender\procedural_jungle\generate_jungle_assets.py',
-    'blender\procedural_jungle\rig_animate_panda.py',
-    'scripts\procedural_jungle\build-procedural-jungle.ps1',
-    'scripts\procedural_jungle\validate_generated.py',
-    'scripts\procedural_jungle\make_contact_sheet.py',
-    'unreal\procedural_jungle\build_unreal_scene.py',
-    'unreal\procedural_jungle\audit_unreal_scene.py',
-    'project_template\Source\ProceduralJungle58\JungleProofDirector.cpp',
-    'project_template\Source\ProceduralJungle58\PandaWalkerCharacter.cpp',
-    'project_template\Source\ProceduralJungle58\JunglePopulationActor.cpp'
-)
-foreach ($Relative in $RequiredBaseFiles) {
-    $Path = Join-Path $ExtractRoot $Relative
-    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "Base worker file missing after ZIP expansion: $Relative" }
-}
-
-$PythonCandidates = @(
-    "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
-    $(if (Get-Command python.exe -ErrorAction SilentlyContinue) { (Get-Command python.exe).Source } else { $null })
-) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
-$Python = $PythonCandidates | Select-Object -First 1
-if (-not $Python) { throw 'No Python interpreter is available for the V3 overlay installer' }
-$InstallerBundleRoot = Join-Path $RepoRoot 'worker-bundles\procedural-jungle-v3-installer'
-$InstallerFragments = @(Get-ChildItem -LiteralPath $InstallerBundleRoot -Filter 'chunk-*.pyfrag' -File | Sort-Object Name)
-if ($InstallerFragments.Count -ne 6) {
-    throw "Unexpected V3 installer fragment count: expected=6 actual=$($InstallerFragments.Count)"
-}
-$InstallerBuilder = New-Object Text.StringBuilder
-foreach ($Fragment in $InstallerFragments) {
-    [void]$InstallerBuilder.Append((Get-Content -LiteralPath $Fragment.FullName -Raw))
-}
-$InstallerText = $InstallerBuilder.ToString().Replace("`r`n", "`n")
-if ($InstallerText.Length -eq 46900) { $InstallerText += "`n" }
-if ($InstallerText.Length -ne 46901) { throw "V3 installer byte-safe text length mismatch: expected=46901 actual=$($InstallerText.Length)" }
-$Installer = Join-Path $TempRoot 'apply-procedural-jungle-v3-overlay.py'
-$Utf8NoBom = New-Object Text.UTF8Encoding($false)
-[IO.File]::WriteAllText($Installer, $InstallerText, $Utf8NoBom)
-$InstallerSha = (Get-FileHash -LiteralPath $Installer -Algorithm SHA256).Hash.ToLowerInvariant()
-$DiagnosticLogRoot = 'C:\AI\ProceduralJungle\20260804\logs'
-New-Item -ItemType Directory -Path $DiagnosticLogRoot -Force | Out-Null
-Get-ChildItem -LiteralPath $DiagnosticLogRoot -Filter 'jungle-v3-installer-*' -File -ErrorAction SilentlyContinue | Remove-Item -Force
-[IO.File]::WriteAllText((Join-Path $DiagnosticLogRoot 'jungle-v3-installer-reconstructed.py.log'), $InstallerText, $Utf8NoBom)
-$FragmentMetadata = New-Object Collections.Generic.List[string]
-for ($Index = 0; $Index -lt $InstallerFragments.Count; $Index++) {
-    $FragmentText = (Get-Content -LiteralPath $InstallerFragments[$Index].FullName -Raw).Replace("`r`n", "`n")
-    $FragmentPath = Join-Path $DiagnosticLogRoot ("jungle-v3-installer-fragment-{0:D2}.py.log" -f $Index)
-    [IO.File]::WriteAllText($FragmentPath, $FragmentText, $Utf8NoBom)
-    $FragmentSha = (Get-FileHash -LiteralPath $FragmentPath -Algorithm SHA256).Hash.ToLowerInvariant()
-    $FragmentMetadata.Add(("INDEX={0};NAME={1};LENGTH={2};SHA256={3}" -f $Index, $InstallerFragments[$Index].Name, $FragmentText.Length, $FragmentSha))
-}
-[IO.File]::WriteAllLines((Join-Path $DiagnosticLogRoot 'jungle-v3-installer-fragments.log'), $FragmentMetadata, $Utf8NoBom)
-$ExpectedInstallerSha = '8caff1745534e6c73ae21b86a6cb5ee035bad5512741a1c5561bc3b649a348d5'
-if ($InstallerSha -ne $ExpectedInstallerSha) {
-    throw "V3 installer hash mismatch: expected=$ExpectedInstallerSha actual=$InstallerSha"
-}
-& $Python $Installer --target $ExtractRoot --report $OverlayReport
-if ($LASTEXITCODE -ne 0) { throw "V3 overlay installer failed with exit code $LASTEXITCODE" }
-$Overlay = Get-Content -LiteralPath $OverlayReport -Raw | ConvertFrom-Json
-if ($Overlay.classification -ne 'PROVEN' -or $Overlay.marker -ne 'JUNGLE_VISUAL_OVERHAUL_V3_INSTALLER' -or [int]$Overlay.file_count -ne 11) {
-    throw "V3 overlay installation rejected: $($Overlay | ConvertTo-Json -Compress)"
-}
-
-$FinalGenerator = Get-Content -LiteralPath (Join-Path $ExtractRoot 'blender\procedural_jungle\generate_jungle_assets.py') -Raw
-$FinalBuild = Get-Content -LiteralPath (Join-Path $ExtractRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1') -Raw
-$FinalProof = Get-Content -LiteralPath (Join-Path $ExtractRoot 'project_template\Source\ProceduralJungle58\JungleProofDirector.cpp') -Raw
-if ($FinalGenerator -notmatch 'procedural_jungle_manifest_v3' -or $FinalGenerator -notmatch 'DENSE_JUNGLE_VISUAL_ASSETS_GENERATED') { throw 'V3 generator markers missing after installation' }
-if ($FinalBuild -match 'RenderOffScreen' -or $FinalBuild -match 'utf8NoBOM') { throw 'Rejected runtime flag or unsupported encoding remains after V3 installation' }
-if ($FinalProof -notmatch 'PrepareNextCapture' -or $FinalProof -notmatch 'panda_framed_capture_count') { throw 'V3 proof-camera implementation missing after installation' }
-
-Write-Host "JUNGLE_BASE_WORKER_ZIP_SHA256=$BaseSha"
-Write-Host 'JUNGLE_BASE_WORKER_DECODE=PROVEN'
-Write-Host "JUNGLE_VISUAL_OVERHAUL_V3_INSTALLER_SHA256=$InstallerSha"
-Write-Host 'JUNGLE_VISUAL_OVERHAUL_V3_INSTALLATION=PROVEN'
-Write-Host "JUNGLE_VISUAL_OVERHAUL_V3_FILE_COUNT=$($Overlay.file_count)"
-Write-Host "JUNGLE_WORKER_HEAD=$Head"
-Write-Host 'CODEX_INVOKED=FALSE'
-Write-Host 'CLAUDE_INVOKED=FALSE'
-Write-Host 'MAGICMUSIC_INVOKED=FALSE'
-
-$OwnedProjectRoot = 'C:\Users\Lauri\Desktop\ProceduralJungle58'
-$ProcessLogRoot = 'C:\AI\ProceduralJungle\20260804\logs'
-New-Item -ItemType Directory -Path $ProcessLogRoot -Force | Out-Null
-$ProcessLogPath = Join-Path $ProcessLogRoot 'unreal_process_preflight.log'
-$ExistingUnreal = @(Get-CimInstance Win32_Process -Filter "Name = 'UnrealEditor.exe'" -ErrorAction Stop)
-$ProcessLines = New-Object Collections.Generic.List[string]
-foreach ($Entry in $ExistingUnreal) {
-    $NativeProcess = Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue
-    $Responding = if ($NativeProcess) { [string]$NativeProcess.Responding } else { 'UNKNOWN' }
-    $WindowTitle = if ($NativeProcess) { [string]$NativeProcess.MainWindowTitle } else { '' }
-    $ProcessLines.Add(("PID={0};CREATED={1};RESPONDING={2};TITLE={3};PATH={4};COMMAND={5}" -f $Entry.ProcessId, $Entry.CreationDate, $Responding, $WindowTitle, $Entry.ExecutablePath, $Entry.CommandLine))
-}
-[IO.File]::WriteAllLines($ProcessLogPath, $ProcessLines, (New-Object Text.UTF8Encoding($false)))
-
-$UnownedUnreal = @($ExistingUnreal | Where-Object {
-    -not $_.CommandLine -or $_.CommandLine.IndexOf($OwnedProjectRoot, [StringComparison]::OrdinalIgnoreCase) -lt 0
-})
-if ($UnownedUnreal.Count -gt 0) {
-    $Ids = @($UnownedUnreal | ForEach-Object { $_.ProcessId }) -join ','
-    throw "Unrelated Unreal Editor process(es) are running; refusing to interfere. PID(s): $Ids. Evidence: $ProcessLogPath"
-}
-
-foreach ($Entry in $ExistingUnreal) {
-    $NativeProcess = Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue
-    if (-not $NativeProcess) { continue }
-    $RequestedClose = $false
-    if ($NativeProcess.MainWindowHandle -ne 0) {
-        $RequestedClose = $NativeProcess.CloseMainWindow()
-    }
-    $Deadline = (Get-Date).AddSeconds(20)
-    while ((Get-Date) -lt $Deadline -and (Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue)) {
-        Start-Sleep -Milliseconds 500
-    }
-    if (Get-Process -Id $Entry.ProcessId -ErrorAction SilentlyContinue) {
-        throw "Pipeline-owned Unreal Editor PID $($Entry.ProcessId) did not close gracefully; force termination is not authorized. CloseRequested=$RequestedClose Evidence=$ProcessLogPath"
-    }
-}
-Write-Host 'JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_V1=PROVEN'
-Write-Host "JUNGLE_EXISTING_UNREAL_PROCESS_COUNT=$($ExistingUnreal.Count)"
-
-$BuildPath = Join-Path $ExtractRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
-& powershell -NoProfile -ExecutionPolicy Bypass -File $BuildPath -SourceRoot $ExtractRoot
-if ($LASTEXITCODE -ne 0) { throw "Procedural-jungle V3 pipeline failed with exit code $LASTEXITCODE" }
-
-$AcceptancePath = 'C:\AI\ProceduralJungle\20260804\acceptance.json'
-if (-not (Test-Path -LiteralPath $AcceptancePath -PathType Leaf)) { throw "Acceptance output missing: $AcceptancePath" }
-$Acceptance = Get-Content -LiteralPath $AcceptancePath -Raw | ConvertFrom-Json
-if ($Acceptance.classification -ne 'JUNGLE_PANDA_PLAYABLE_PROVEN') { throw "Playable acceptance rejected: $($Acceptance.classification)" }
-if ($Acceptance.visual_quality_classification -ne 'DENSE_JUNGLE_VISUAL_QUALITY_PROVEN') { throw "Visual acceptance rejected: $($Acceptance.visual_quality_classification)" }
-if ([int]$Acceptance.generated_variant_count -lt 50) { throw 'V3 variant count below 50' }
-if ([int]$Acceptance.generated_instance_count -lt 4000) { throw 'V3 instance count below 4000' }
-if ([int]$Acceptance.canopy_instance_count -lt 650) { throw 'V3 canopy count below 650' }
-if ([int]$Acceptance.understory_instance_count -lt 3150) { throw 'V3 understory count below 3150' }
-if ([int]$Acceptance.panda_framed_capture_count -lt 4) { throw 'V3 panda-framed captures below 4' }
-if ([int]$Acceptance.vegetation_rich_frame_count -lt 6) { throw 'V3 vegetation-rich frames below 6' }
-Write-Host 'JUNGLE_VISUAL_OVERHAUL_V3=PROVEN'
-Write-Host ($Acceptance | ConvertTo-Json -Depth 30)
+Write-Host "JUNGLE_V3_PINNED_WORKER_SOURCE=$SourceCommit"
+Write-Host 'JUNGLE_V3_UTF8_BYTE_LENGTH_GUARD_PATCH=PROVEN'
+& powershell -NoProfile -ExecutionPolicy Bypass -File $PatchedWorker -ExpectedBranch $ExpectedBranch
+if ($LASTEXITCODE -ne 0) { throw "Byte-fixed V3 worker failed with exit code $LASTEXITCODE" }
