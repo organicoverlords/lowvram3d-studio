@@ -103,6 +103,7 @@ def main() -> int:
         "hero": output_dir / "hero_clean_render.png",
         "wide": output_dir / "wide_scene_proof.png",
         "receipt": output_dir / "scene_receipt.json",
+        "sprite_report": output_dir / "face_sprite_sheet_report.json",
         "video": final_video,
     }
     minimums = {
@@ -110,6 +111,7 @@ def main() -> int:
         "hero": 50_000,
         "wide": 50_000,
         "receipt": 500,
+        "sprite_report": 500,
         "video": 100_000,
     }
     for name, path in required.items():
@@ -123,6 +125,22 @@ def main() -> int:
     ensure_file(contact_sheet, 80_000)
 
     receipt = json.loads(required["receipt"].read_text(encoding="utf-8"))
+    sprite_report = json.loads(required["sprite_report"].read_text(encoding="utf-8"))
+    if sprite_report.get("classification") != "PROVEN":
+        raise SystemExit(f"Derived face sprite sheet is not proven: {sprite_report}")
+    if sprite_report.get("raw_frames_packaged") is not False:
+        raise SystemExit("Derived face sprite sheet did not prove raw-frame exclusion")
+    if sprite_report.get("source_clip_packaged") is not False:
+        raise SystemExit("Derived face sprite sheet did not prove source-clip exclusion")
+    if receipt.get("derived_face_only_sprite_in_blend") is not True:
+        raise SystemExit("Scene receipt did not prove that the derived face-only sprite is packed in the blend")
+    if receipt.get("raw_reference_media_packaged") is not False:
+        raise SystemExit("Scene receipt did not prove raw-reference exclusion")
+    if receipt.get("face_plate_object") != "CHAR_Antinous_FacePlate":
+        raise SystemExit(f"Unexpected face-plate object: {receipt.get('face_plate_object')}")
+    if "CHAR_Antinous_FacePlate" not in receipt.get("required_objects", []):
+        raise SystemExit("Face plate is absent from save/reload required objects")
+
     receipt["workflow"] = {
         "run_id": str(args.workflow_run_id),
         "head_sha": args.head_sha,
@@ -131,6 +149,9 @@ def main() -> int:
     receipt["final_video_metadata"] = video_metadata(final_video)
     receipt["contact_sheet"] = str(contact_sheet)
     receipt["reference_media_uploaded"] = False
+    receipt["raw_reference_media_uploaded"] = False
+    receipt["reference_media_field_scope"] = "RAW_SOURCE_CLIP_AND_EXTRACTED_FRAMES_ONLY"
+    receipt["derived_face_sprite_sheet_report"] = str(required["sprite_report"])
     receipt["automated_validation"] = "PROVEN"
     receipt["likeness_match"] = "NOT_PROVEN_PENDING_USER_REVIEW"
     required["receipt"].write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
@@ -140,6 +161,7 @@ def main() -> int:
         required["hero"],
         required["wide"],
         required["receipt"],
+        required["sprite_report"],
         required["video"],
         contact_sheet,
         *proof_paths,
@@ -164,6 +186,10 @@ def main() -> int:
         "workflow_run_id": str(args.workflow_run_id),
         "head_sha": args.head_sha,
         "reference_media_in_artifact": False,
+        "raw_reference_media_in_artifact": False,
+        "reference_media_field_scope": "RAW_SOURCE_CLIP_AND_EXTRACTED_FRAMES_ONLY",
+        "derived_face_only_sprite_in_blend": True,
+        "derived_face_sprite_policy": sprite_report["policy"],
         "files": manifest_files,
     }
     manifest_path = output_dir / "artifact_manifest.json"
