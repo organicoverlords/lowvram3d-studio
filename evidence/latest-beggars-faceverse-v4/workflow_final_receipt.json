@@ -4,12 +4,12 @@
     "route":  "FACEVERSE_V4_RESNET50_SINGLE_FRAME_FULL_HEAD",
     "repository":  "organicoverlords/lowvram3d-studio",
     "branch":  "agent/blender-beggars-scene-20260804",
-    "head_sha":  "0529601bf145d728dd860e15fb2e8d4a72ec416d",
-    "workflow_run_id":  "30867518043",
-    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30867518043",
-    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\faceverse-v4-preflight-30867518043",
+    "head_sha":  "8f29d8bdc45ff17a43941a804049b1d6d66e4cb1",
+    "workflow_run_id":  "30868001817",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30868001817",
+    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\faceverse-v4-preflight-30868001817",
     "source_commit":  "19c67cc4d7234b1ea7d55a185a2cb55fd49bb877",
     "reference_media_upload_scope":  "EXCLUDED",
     "reference_media_deleted":  true,
-    "recorded_at":  "2026-08-04T01:09:39.8883467Z"
+    "recorded_at":  "2026-08-04T01:14:33.0210888Z"
 }
