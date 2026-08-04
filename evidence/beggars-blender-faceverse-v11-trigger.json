@@ -1,0 +1,8 @@
+{
+  "purpose": "Render one bounded exact-UV v11 proof using the undeformed mesh that generated the projection coordinates, preserving only the rear hair cap and assigning dedicated mouth and tooth materials.",
+  "builder_commit": "bdb7ae463246efc276821a84472d4f9c753da9bf",
+  "runner_commit": "e9c5984e6f7395c3380a82d6cf7f922f4394b83a",
+  "workflow_commit": "e6c1442215891d7c8f021c2acac298555212ce88",
+  "visual_baseline_run": 30880208062,
+  "requested_at": "2026-08-04T08:41:00+03:00"
+}
