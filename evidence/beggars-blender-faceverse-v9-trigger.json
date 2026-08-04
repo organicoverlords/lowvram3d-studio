@@ -1,0 +1,8 @@
+{
+  "purpose": "Render one bounded v9 still proof with a smaller fitted hairline, darker skin, hidden segmented teeth, smooth dental surface and retained v8 anatomy correction.",
+  "builder_commit": "ac23577131bfa5f7d2489e26ca3e920fb60342c2",
+  "runner_commit": "2e5fa83d0c970675937fa893d9c43d629fd9d828",
+  "workflow_commit": "f1a9dc009020e7e0805b3a2868f3656575eb9c63",
+  "visual_baseline_run": 30879048461,
+  "requested_at": "2026-08-04T08:03:00+03:00"
+}
