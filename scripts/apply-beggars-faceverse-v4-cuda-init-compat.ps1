@@ -36,7 +36,7 @@ $new = @'
 if ($text.Contains($old)) {
     $text = $text.Replace($old, $new)
 }
-elif ($text.Contains('faceverse_stage("CUDA_CONTEXT_BEGIN")')) {
+elseif ($text.Contains('faceverse_stage("CUDA_CONTEXT_BEGIN")')) {
     Write-Host 'FACEVERSE_CUDA_INIT_COMPAT=ALREADY_APPLIED'
 }
 else {
