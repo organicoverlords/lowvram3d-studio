@@ -1,0 +1,22 @@
+{
+  "classification": "PROVEN",
+  "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\crop.png",
+  "fill_rgb": [
+    24.3,
+    24.3,
+    22.4
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_lod.glb",
+  "mask_coverage": 0.2687,
+  "observed_from": "single view; sides stretch along the projection axis",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_textured.glb",
+  "output_bytes": 16248144,
+  "projection": "object_space_front_minus_z",
+  "schema_version": "crop_projection_v1",
+  "texture_size": [
+    339,
+    305
+  ],
+  "triangles": 150000,
+  "vertices": 449890
+}

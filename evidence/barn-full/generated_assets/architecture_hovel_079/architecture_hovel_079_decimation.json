@@ -1,0 +1,14 @@
+{
+  "blender_exit_code": 0,
+  "classification": "PROVEN",
+  "decimated": true,
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079.glb",
+  "input_triangles": 287818,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_lod.glb",
+  "output_bytes": 12598296,
+  "output_triangles": 150000,
+  "ratio": 0.521163,
+  "reduction": 0.4788,
+  "schema_version": "mesh_decimation_v1",
+  "target_triangles": 150000
+}

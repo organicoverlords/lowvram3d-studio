@@ -1,0 +1,84 @@
+{
+  "classification": "PROVEN",
+  "failures": [],
+  "imported_count": 3,
+  "meshes": {
+    "architecture_house_025": {
+      "classification": "PROVEN",
+      "destination": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_house_025",
+      "extent_cm": [
+        97.88177108764648,
+        73.18510437011719,
+        38.14345741271973
+      ],
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
+      "glb_bytes": 16431476,
+      "imported_object_paths": [
+        "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_house_025/architecture_house_025_textured/Textures/architecture_house_025_textured_texture_0.architecture_house_025_textured_texture_0",
+        "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_house_025/architecture_house_025_textured/Materials/architecture_house_025_textured_material_0.architecture_house_025_textured_material_0",
+        "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_house_025/architecture_house_025_textured/StaticMeshes/architecture_house_025_textured.architecture_house_025_textured"
+      ],
+      "nanite_disabled": true,
+      "nanite_enabled": false,
+      "package_name": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_house_025/architecture_house_025_textured/StaticMeshes/architecture_house_025_textured",
+      "reused_existing": false,
+      "schema_version": "generated_mesh_import_v1",
+      "source_sha256": "5f4e4462badbd57d289c485a4d59b185c0d8505088e55e43abb87512d52750b1",
+      "static_mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_house_025/architecture_house_025_textured/StaticMeshes/architecture_house_025_textured.architecture_house_025_textured",
+      "triangles": 149997,
+      "vertices": 449931
+    },
+    "architecture_hovel_079": {
+      "classification": "PROVEN",
+      "destination": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_hovel_079",
+      "extent_cm": [
+        98.33815383911133,
+        26.51549243927002,
+        94.23532104492188
+      ],
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_textured.glb",
+      "glb_bytes": 16248144,
+      "imported_object_paths": [
+        "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_hovel_079/architecture_hovel_079_textured/Textures/architecture_hovel_079_textured_texture_0.architecture_hovel_079_textured_texture_0",
+        "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_hovel_079/architecture_hovel_079_textured/Materials/architecture_hovel_079_textured_material_0.architecture_hovel_079_textured_material_0",
+        "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_hovel_079/architecture_hovel_079_textured/StaticMeshes/architecture_hovel_079_textured.architecture_hovel_079_textured"
+      ],
+      "nanite_disabled": true,
+      "nanite_enabled": false,
+      "package_name": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_hovel_079/architecture_hovel_079_textured/StaticMeshes/architecture_hovel_079_textured",
+      "reused_existing": false,
+      "schema_version": "generated_mesh_import_v1",
+      "source_sha256": "71b1d3587f781b4d7831a348349f27477b5f0bdd96350a2d142da894d7a738df",
+      "static_mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_hovel_079/architecture_hovel_079_textured/StaticMeshes/architecture_hovel_079_textured.architecture_hovel_079_textured",
+      "triangles": 150000,
+      "vertices": 449890
+    },
+    "vegetation_tree_004": {
+      "classification": "PROVEN",
+      "destination": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004",
+      "extent_cm": [
+        97.9129638671875,
+        8.320032358169556,
+        56.658151626586914
+      ],
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
+      "glb_bytes": 16313748,
+      "imported_object_paths": [
+        "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/Textures/vegetation_tree_004_textured_texture_0.vegetation_tree_004_textured_texture_0",
+        "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/Materials/vegetation_tree_004_textured_material_0.vegetation_tree_004_textured_material_0",
+        "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured"
+      ],
+      "nanite_disabled": true,
+      "nanite_enabled": false,
+      "package_name": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured",
+      "reused_existing": false,
+      "schema_version": "generated_mesh_import_v1",
+      "source_sha256": "faab62a99be8ea4fe39d89d3758445c315643e92bab2d060121fa0f092370d4b",
+      "static_mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+      "triangles": 150000,
+      "vertices": 449862
+    }
+  },
+  "package_root": "/Game/AgentProof/BarnFull",
+  "schema_version": "generated_mesh_import_receipt_v1"
+}

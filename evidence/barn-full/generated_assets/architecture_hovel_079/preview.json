@@ -1,0 +1,23 @@
+{
+  "body_count": 8,
+  "classification": "PROVEN",
+  "euler_number": -51,
+  "extent": [
+    1.9668,
+    1.8847,
+    0.5303
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_textured.glb",
+  "merged_vertices": 74949,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\preview.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 150000,
+  "vertices": 449890,
+  "view_coverage": {
+    "front": 0.2637,
+    "side": 0.0876,
+    "three_quarter": 0.2068,
+    "top": 0.0818
+  },
+  "watertight": true
+}

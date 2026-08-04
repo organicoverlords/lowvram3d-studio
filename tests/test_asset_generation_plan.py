@@ -194,23 +194,30 @@ def test_full_ladder_survives_when_the_card_has_room():
     assert ladder_for_headroom(LADDER, 6000) == (LADDER, [])
 
 
-def test_unaffordable_top_rung_is_dropped():
+def test_unaffordable_rungs_are_dropped():
     """Starting a rung without the memory for it costs the whole generation.
 
     On this card it does not fail as OutOfMemoryError -- it fails as a
     misaligned address minutes in, having spent the run.
     """
-    ladder, dropped = ladder_for_headroom(LADDER, 3980)
-    assert ladder == "320:2000,256:1500"
-    assert [d["rung"] for d in dropped] == ["384:3000"]
-    assert dropped[0]["free_mb"] == 3980
+    top = max(MEASURED_PEAK_VRAM_MB)
+    ladder, dropped = ladder_for_headroom(LADDER, MEASURED_PEAK_VRAM_MB[top] - 1)
+    assert not ladder.startswith(f"{top}:")
+    assert [d["rung"] for d in dropped] == [f"{top}:3000"]
 
 
-def test_rungs_with_no_measured_peak_are_never_dropped():
+def test_rungs_with_no_measured_requirement_are_never_dropped():
     """Only drop a rung there is evidence against."""
-    assert 320 not in MEASURED_PEAK_VRAM_MB
+    assert 256 not in MEASURED_PEAK_VRAM_MB
     ladder, _ = ladder_for_headroom(LADDER, 10)
-    assert ladder.startswith("320:")
+    assert ladder.startswith("256:")
+
+
+def test_every_dropped_rung_has_a_recorded_requirement():
+    _, dropped = ladder_for_headroom(LADDER, 10)
+    for entry in dropped:
+        resolution = int(entry["rung"].partition(":")[0])
+        assert MEASURED_PEAK_VRAM_MB[resolution] == entry["needs_mb"]
 
 
 def test_unreadable_vram_leaves_the_ladder_alone():

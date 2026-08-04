@@ -1,0 +1,22 @@
+{
+  "classification": "PROVEN",
+  "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\crop.png",
+  "fill_rgb": [
+    29.3,
+    28.0,
+    23.0
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+  "mask_coverage": 0.6902,
+  "observed_from": "single view; sides stretch along the projection axis",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
+  "output_bytes": 16313748,
+  "projection": "object_space_front_minus_z",
+  "schema_version": "crop_projection_v1",
+  "texture_size": [
+    437,
+    222
+  ],
+  "triangles": 150000,
+  "vertices": 449864
+}

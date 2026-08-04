@@ -1,0 +1,14 @@
+{
+  "blender_exit_code": 0,
+  "classification": "PROVEN",
+  "decimated": true,
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+  "input_triangles": 558352,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+  "output_bytes": 12599244,
+  "output_triangles": 149997,
+  "ratio": 0.268648,
+  "reduction": 0.7314,
+  "schema_version": "mesh_decimation_v1",
+  "target_triangles": 150000
+}

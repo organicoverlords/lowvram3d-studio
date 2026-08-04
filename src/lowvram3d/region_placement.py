@@ -38,6 +38,14 @@ SCATTER_TARGET = {"vegetation": 12, "prop": 6}
 # Classes that describe appearance rather than occupancy.
 NON_PLACED = {"sky"}
 
+# Below this the model was not confident enough for the label to be treated as
+# an object. Set from measurement: on this scene the real regions score
+# 0.89-0.98 and the two spurious ones 0.62.
+MIN_PLACEMENT_CONFIDENCE = 0.7
+# Classes where an uncertain label means the thing may not exist at all. A
+# surface is exempt: unsure between "field" and "grass" is still ground.
+CONFIDENCE_GATED_LAYERS = {"architecture", "prop", "object", "clutter"}
+
 # A canopy clump sitting this far above the ground needs something holding it
 # up, and a trunk is that thin a fraction of the crown it carries.
 MIN_TRUNK_HEIGHT = 0.5
@@ -191,11 +199,34 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
 
     actors: list[dict[str, Any]] = []
     skipped: list[str] = []
+    excluded: list[dict[str, Any]] = []
 
     for region in segmentation["regions"]:
         layer = region["layer_type"]
         if layer in NON_PLACED:
             skipped.append(region["id"])
+            excluded.append({"id": region["id"], "reason": "describes appearance, "
+                                                           "not occupancy"})
+            continue
+
+        # A label the model was unsure of is not an object. ADE20K's "hovel"
+        # landed on a dark gap between two tree trunks here, and it was built as
+        # a second building in a picture containing one barn -- and generated a
+        # mesh for it, at ten GPU-minutes a run. The old confidence could not
+        # have caught that: it was `0.5 + pixel_fraction`, a function of size.
+        #
+        # Objects only. For a surface, low confidence means the model could not
+        # decide between "field" and "grass", and either way the ground is
+        # there; dropping it took the floor out from under the scene.
+        confidence = region.get("confidence")
+        if (layer in CONFIDENCE_GATED_LAYERS and confidence is not None
+                and confidence < MIN_PLACEMENT_CONFIDENCE):
+            skipped.append(region["id"])
+            excluded.append({
+                "id": region["id"], "semantic_label": region.get("semantic_label"),
+                "confidence": confidence,
+                "reason": f"model confidence {confidence:.3f} is below "
+                          f"{MIN_PLACEMENT_CONFIDENCE}"})
             continue
 
         measured = region.get("measured_unreal_m")
@@ -395,6 +426,9 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None,
         "actor_count": len(actors),
         "kinds": sorted({a["kind"] for a in actors}),
         "skipped_regions": skipped,
+        # Why each one was skipped, so a missing object is explicable rather
+        # than simply absent.
+        "excluded_regions": excluded,
         "actors": actors,
     }
 

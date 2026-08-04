@@ -22,6 +22,7 @@ from typing import Any
 UEMCP_DIR = Path(__file__).resolve().parents[2] / "unreal"
 BUILDER = UEMCP_DIR / "build_structural_scene.py"
 MESH_IMPORTER = UEMCP_DIR / "import_generated_mesh.py"
+OVERLAP_AUDIT = UEMCP_DIR / "audit_actor_overlaps.py"
 
 
 def normalise_package_root(value: str | None) -> str | None:
@@ -199,6 +200,29 @@ def build_scene(placement: dict[str, Any], scene_id: str,
                 "builder": str(BUILDER)}
 
     receipt["available"] = True
+    return receipt
+
+
+def audit_overlaps(scene_id: str, timeout: float = 600.0) -> dict[str, Any]:
+    """Check no actor is standing inside another, as a build gate.
+
+    Interpenetration is the failure mode a structural scene fails silently:
+    every receipt reads PROVEN while a building sits inside a tree. It is also
+    measurable, so it does not need to be noticed by eye in a render that may
+    never be framed to show it.
+    """
+    try:
+        bridge = _bridge()
+        _assign_json(bridge, "OVERLAP_AUDIT_REQUEST",
+                     {"owner_tag": f"structural_build_{scene_id}"})
+        receipt = bridge.python_json(
+            OVERLAP_AUDIT.read_text(encoding="utf-8"), "result", timeout=timeout)
+    except Exception as exc:
+        return {"available": False, "reason": f"{type(exc).__name__}: {exc}"}
+    receipt["available"] = True
+    # Half an actor's volume inside another is a collision, not a scene.
+    receipt["classification"] = (
+        "PROVEN" if not receipt.get("buried_pair_count") else "NOT_PROVEN")
     return receipt
 
 

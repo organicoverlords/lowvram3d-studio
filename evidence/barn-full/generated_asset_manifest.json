@@ -1,0 +1,414 @@
+{
+  "actors_served": 16,
+  "assets": [
+    {
+      "actor_indices": [
+        15
+      ],
+      "asset_id": "architecture_house_025",
+      "crop_bbox_norm_xyxy": [
+        0.2942,
+        0.5101,
+        0.799,
+        0.7293
+      ],
+      "crop_box_px": [
+        382,
+        540,
+        1201,
+        806
+      ],
+      "crop_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\crop.png",
+      "crop_size_px": [
+        819,
+        266
+      ],
+      "decimated_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+      "decimation": {
+        "blender_exit_code": 0,
+        "classification": "PROVEN",
+        "decimated": true,
+        "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+        "input_triangles": 558352,
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+        "output_bytes": 12599244,
+        "output_triangles": 149997,
+        "ratio": 0.268648,
+        "reduction": 0.7314,
+        "schema_version": "mesh_decimation_v1",
+        "target_triangles": 150000
+      },
+      "dropped_octree_rungs": [
+        {
+          "free_mb": 3882,
+          "needs_mb": 5200,
+          "rung": "384:3000"
+        }
+      ],
+      "exit_code": 0,
+      "generation_attempts": [
+        {
+          "error": "CUDA error: misaligned address\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKI",
+          "exit_code": 1,
+          "octree_ladder": "320:2000,256:1500",
+          "outcome": "failed"
+        },
+        {
+          "error": null,
+          "exit_code": 0,
+          "octree_ladder": "256:1500",
+          "outcome": "ok"
+        }
+      ],
+      "generation_seconds": 690.3,
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
+      "glb_bytes": 16431476,
+      "glb_sha256": "5f4e4462badbd57d289c485a4d59b185c0d8505088e55e43abb87512d52750b1",
+      "layer_type": "architecture",
+      "mask_coverage": 0.5913,
+      "mask_png": "evidence\\barn-full\\depth\\region_masks\\architecture_house_025.png",
+      "matte": "segmentation_mask",
+      "mesh_bodies": 17,
+      "mesh_extent": [
+        1.9576,
+        0.7629,
+        1.4637
+      ],
+      "mesh_watertight": false,
+      "octree_resolution": 256,
+      "peak_vram_mb": 4137,
+      "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\preview.png",
+      "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025.glb",
+      "raw_triangles": 558352,
+      "region_id": "architecture_house_025",
+      "semantic_label": "house",
+      "shared_across_instances": false,
+      "status": "generated",
+      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:12<00:00,  5.28it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
+      "texture_projection": {
+        "classification": "PROVEN",
+        "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\crop.png",
+        "fill_rgb": [
+          44.1,
+          38.1,
+          32.4
+        ],
+        "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+        "mask_coverage": 0.5913,
+        "observed_from": "single view; sides stretch along the projection axis",
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
+        "output_bytes": 16431476,
+        "projection": "object_space_front_minus_z",
+        "schema_version": "crop_projection_v1",
+        "texture_size": [
+          819,
+          266
+        ],
+        "textured": true,
+        "triangles": 149997,
+        "vertices": 449931
+      },
+      "too_small": false,
+      "triangles": 149997,
+      "vertices": 277868,
+      "view_coverage": {
+        "front": 0.2686,
+        "side": 0.2712,
+        "three_quarter": 0.2987,
+        "top": 0.4187
+      },
+      "vram_headroom": {
+        "checked": true,
+        "free_mb_at_start": 3882,
+        "free_mb_before": 3897,
+        "required_mb": 5200,
+        "sufficient": false,
+        "waited_seconds": 241.7
+      }
+    },
+    {
+      "actor_indices": [
+        16
+      ],
+      "asset_id": "architecture_hovel_079",
+      "crop_bbox_norm_xyxy": [
+        0.1637,
+        0.4641,
+        0.3729,
+        0.7155
+      ],
+      "crop_box_px": [
+        219,
+        488,
+        558,
+        793
+      ],
+      "crop_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\crop.png",
+      "crop_size_px": [
+        339,
+        305
+      ],
+      "decimated_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_lod.glb",
+      "decimation": {
+        "blender_exit_code": 0,
+        "classification": "PROVEN",
+        "decimated": true,
+        "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079.glb",
+        "input_triangles": 287818,
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_lod.glb",
+        "output_bytes": 12598296,
+        "output_triangles": 150000,
+        "ratio": 0.521163,
+        "reduction": 0.4788,
+        "schema_version": "mesh_decimation_v1",
+        "target_triangles": 150000
+      },
+      "dropped_octree_rungs": [
+        {
+          "free_mb": 3892,
+          "needs_mb": 5200,
+          "rung": "384:3000"
+        }
+      ],
+      "exit_code": 0,
+      "generation_attempts": [
+        {
+          "error": null,
+          "exit_code": 0,
+          "octree_ladder": "320:2000,256:1500",
+          "outcome": "ok"
+        }
+      ],
+      "generation_seconds": 626.0,
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_textured.glb",
+      "glb_bytes": 16248144,
+      "glb_sha256": "71b1d3587f781b4d7831a348349f27477b5f0bdd96350a2d142da894d7a738df",
+      "layer_type": "architecture",
+      "mask_coverage": 0.2687,
+      "mask_png": "evidence\\barn-full\\depth\\region_masks\\architecture_hovel_079.png",
+      "matte": "segmentation_mask",
+      "mesh_bodies": 8,
+      "mesh_extent": [
+        1.9668,
+        1.8847,
+        0.5303
+      ],
+      "mesh_watertight": true,
+      "octree_resolution": 320,
+      "peak_vram_mb": 4264,
+      "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\preview.png",
+      "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079.glb",
+      "raw_triangles": 287818,
+      "region_id": "architecture_hovel_079",
+      "semantic_label": "hovel",
+      "shared_across_instances": false,
+      "status": "generated",
+      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:25<00:00,  2.50it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
+      "texture_projection": {
+        "classification": "PROVEN",
+        "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\crop.png",
+        "fill_rgb": [
+          24.3,
+          24.3,
+          22.4
+        ],
+        "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_lod.glb",
+        "mask_coverage": 0.2687,
+        "observed_from": "single view; sides stretch along the projection axis",
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079_textured.glb",
+        "output_bytes": 16248144,
+        "projection": "object_space_front_minus_z",
+        "schema_version": "crop_projection_v1",
+        "texture_size": [
+          339,
+          305
+        ],
+        "textured": true,
+        "triangles": 150000,
+        "vertices": 449890
+      },
+      "too_small": false,
+      "triangles": 150000,
+      "vertices": 143858,
+      "view_coverage": {
+        "front": 0.2637,
+        "side": 0.0876,
+        "three_quarter": 0.2068,
+        "top": 0.0818
+      },
+      "vram_headroom": {
+        "checked": true,
+        "free_mb_at_start": 3892,
+        "free_mb_before": 3792,
+        "required_mb": 5200,
+        "sufficient": false,
+        "waited_seconds": 241.6
+      }
+    },
+    {
+      "actor_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "asset_id": "vegetation_tree_004",
+      "conditioned_on_actor_index": 7,
+      "crop_bbox_norm_xyxy": [
+        0.5884,
+        0.08656,
+        0.85843,
+        0.26888
+      ],
+      "crop_box_px": [
+        829,
+        82,
+        1266,
+        304
+      ],
+      "crop_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\crop.png",
+      "crop_size_px": [
+        437,
+        222
+      ],
+      "decimated_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+      "decimation": {
+        "blender_exit_code": 0,
+        "classification": "PROVEN",
+        "decimated": true,
+        "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004.glb",
+        "input_triangles": 161268,
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+        "output_bytes": 12597672,
+        "output_triangles": 150000,
+        "ratio": 0.930129,
+        "reduction": 0.0699,
+        "schema_version": "mesh_decimation_v1",
+        "target_triangles": 150000
+      },
+      "dropped_octree_rungs": [
+        {
+          "free_mb": 3840,
+          "needs_mb": 5200,
+          "rung": "384:3000"
+        }
+      ],
+      "exit_code": 0,
+      "generation_attempts": [
+        {
+          "error": "CUDA error: misaligned address\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKI",
+          "exit_code": 1,
+          "octree_ladder": "320:2000,256:1500",
+          "outcome": "failed"
+        },
+        {
+          "error": null,
+          "exit_code": 0,
+          "octree_ladder": "256:1500",
+          "outcome": "ok"
+        }
+      ],
+      "generation_seconds": 460.7,
+      "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
+      "glb_bytes": 16313748,
+      "glb_sha256": "faab62a99be8ea4fe39d89d3758445c315643e92bab2d060121fa0f092370d4b",
+      "instance_count": 14,
+      "layer_type": "vegetation",
+      "mask_coverage": 0.6902,
+      "mask_png": "evidence\\barn-full\\depth\\region_masks\\vegetation_tree_004.png",
+      "matte": "segmentation_mask",
+      "mesh_bodies": 6,
+      "mesh_extent": [
+        1.9583,
+        1.1332,
+        0.1664
+      ],
+      "mesh_watertight": true,
+      "octree_resolution": 256,
+      "peak_vram_mb": 4027,
+      "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\preview.png",
+      "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004.glb",
+      "raw_triangles": 161268,
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "shared_across_instances": true,
+      "status": "generated",
+      "stderr_tail": "lume Decoding: 100%|##########| 64/64 [00:09<00:00,  6.41it/s]\nC:\\AI\\HY3D2\\Hunyuan3D-2\\hy3dgen\\shapegen\\models\\autoencoders\\volume_decoders.py:95: UserWarning: Using a non-tuple sequence for multidimensional indexing is deprecated and will be changed in pytorch 2.9; use x[tuple(seq)] instead of x[seq]. In pytorch 2.9 this will be interpreted as tensor index, x[torch.tensor(seq)], which will result either in an error or a different result (Triggered internally at C:\\actions-runner\\_work\\pytorch\\pytorch\\pytorch\\torch\\csrc\\autograd\\python_variable_indexing.cpp:312.)\n  sliced = padded[slice_dims]\n",
+      "texture_projection": {
+        "classification": "PROVEN",
+        "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\crop.png",
+        "fill_rgb": [
+          29.3,
+          28.0,
+          23.0
+        ],
+        "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_lod.glb",
+        "mask_coverage": 0.6902,
+        "observed_from": "single view; sides stretch along the projection axis",
+        "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
+        "output_bytes": 16313748,
+        "projection": "object_space_front_minus_z",
+        "schema_version": "crop_projection_v1",
+        "texture_size": [
+          437,
+          222
+        ],
+        "textured": true,
+        "triangles": 150000,
+        "vertices": 449864
+      },
+      "too_small": false,
+      "triangles": 150000,
+      "vertices": 80611,
+      "view_coverage": {
+        "front": 0.3168,
+        "side": 0.0608,
+        "three_quarter": 0.4356,
+        "top": 0.034
+      },
+      "vram_headroom": {
+        "checked": true,
+        "free_mb_at_start": 3840,
+        "free_mb_before": 3903,
+        "required_mb": 5200,
+        "sufficient": false,
+        "waited_seconds": 241.4
+      }
+    }
+  ],
+  "classification": "PROVEN",
+  "failed_count": 0,
+  "generated_count": 3,
+  "generator": "hunyuan3d_mini_turbo",
+  "octree_ladder": "384:3000,320:2000,256:1500",
+  "planned_asset_count": 3,
+  "runtime": {
+    "available": true,
+    "interpreter": "C:\\AI\\HY3D2\\python_standalone\\python.exe",
+    "model_root": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct",
+    "source_tree": "C:\\AI\\HY3D2\\Hunyuan3D-2",
+    "subfolder": "hunyuan3d-dit-v2-mini-turbo",
+    "weights": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\\model.fp16.safetensors"
+  },
+  "runtime_checks": {
+    "interpreter": true,
+    "model_root": true,
+    "source_tree": true,
+    "weights": true
+  },
+  "schema_version": "generated_asset_manifest_v1",
+  "skipped_count": 0,
+  "source_image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "steps": 5,
+  "triangle_budget": 150000
+}

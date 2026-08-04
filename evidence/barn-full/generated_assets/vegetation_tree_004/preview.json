@@ -1,0 +1,23 @@
+{
+  "body_count": 6,
+  "classification": "PROVEN",
+  "euler_number": -23,
+  "extent": [
+    1.9583,
+    1.1332,
+    0.1664
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
+  "merged_vertices": 74977,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\vegetation_tree_004\\preview.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 150000,
+  "vertices": 449864,
+  "view_coverage": {
+    "front": 0.3168,
+    "side": 0.0608,
+    "three_quarter": 0.4356,
+    "top": 0.034
+  },
+  "watertight": true
+}

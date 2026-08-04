@@ -1,0 +1,670 @@
+{
+  "actor_count": 17,
+  "actors": [
+    {
+      "cluster_depth_m": 12.443,
+      "cluster_pixel_count": 64448,
+      "confidence": 0.942,
+      "instance_index": 0,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1244.3,
+        -167.3,
+        353.8
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.292,
+        7.439,
+        2.196
+      ],
+      "source_bbox_norm_xyxy": [
+        0.23688,
+        0.17772,
+        0.62362,
+        0.34899
+      ]
+    },
+    {
+      "cluster_depth_m": 19.811,
+      "cluster_pixel_count": 50089,
+      "confidence": 0.942,
+      "instance_index": 1,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1981.1,
+        -1698.9,
+        -658.85
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        5.281,
+        10.588,
+        5.419
+      ],
+      "source_bbox_norm_xyxy": [
+        0.0,
+        0.5046,
+        0.18923,
+        0.72284
+      ]
+    },
+    {
+      "cluster_depth_m": 12.081,
+      "cluster_pixel_count": 48242,
+      "confidence": 0.942,
+      "instance_index": 2,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1208.1,
+        483.2,
+        164.0
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        1.966,
+        5.178,
+        3.078
+      ],
+      "source_bbox_norm_xyxy": [
+        0.54144,
+        0.25506,
+        0.84116,
+        0.48527
+      ]
+    },
+    {
+      "cluster_depth_m": 12.085,
+      "cluster_pixel_count": 46007,
+      "confidence": 0.942,
+      "instance_index": 3,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1208.5,
+        519.2,
+        498.55
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        1.153,
+        4.727,
+        3.075
+      ],
+      "source_bbox_norm_xyxy": [
+        0.59461,
+        0.04972,
+        0.85843,
+        0.26796
+      ]
+    },
+    {
+      "cluster_depth_m": 16.223,
+      "cluster_pixel_count": 43876,
+      "confidence": 0.942,
+      "instance_index": 4,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1622.3,
+        1060.9,
+        -480.15
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.549,
+        4.77,
+        4.535
+      ],
+      "source_bbox_norm_xyxy": [
+        0.68715,
+        0.44107,
+        0.92196,
+        0.7081
+      ]
+    },
+    {
+      "cluster_depth_m": 14.706,
+      "cluster_pixel_count": 41617,
+      "confidence": 0.942,
+      "instance_index": 5,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1470.6,
+        11.5,
+        107.19999999999999
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        2.26,
+        6.528,
+        2.666
+      ],
+      "source_bbox_norm_xyxy": [
+        0.35566,
+        0.32873,
+        0.68992,
+        0.48895
+      ]
+    },
+    {
+      "cluster_depth_m": 13.004,
+      "cluster_pixel_count": 41197,
+      "confidence": 0.942,
+      "instance_index": 6,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1300.3999999999999,
+        -496.90000000000003,
+        15.700000000000003
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        4.141,
+        5.343,
+        2.972
+      ],
+      "source_bbox_norm_xyxy": [
+        0.1616,
+        0.3186,
+        0.45649,
+        0.71823
+      ]
+    },
+    {
+      "cluster_depth_m": 20.926,
+      "cluster_pixel_count": 35584,
+      "confidence": 0.942,
+      "instance_index": 7,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        2092.6,
+        -1392.0,
+        -80.94999999999999
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        5.592,
+        10.408,
+        6.925
+      ],
+      "source_bbox_norm_xyxy": [
+        0.03867,
+        0.28177,
+        0.27417,
+        0.51565
+      ]
+    },
+    {
+      "confidence": 0.942,
+      "inferred": "not observed; spans the fitted ground plane to the canopy this instance was measured at",
+      "instance_index": 7,
+      "kind": "trunk_support",
+      "layer_type": "vegetation",
+      "location_cm": [
+        2092.6,
+        -1392.0,
+        -300.3415319999999
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        0.67104,
+        0.67104,
+        4.387830639999999
+      ],
+      "source_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ]
+    },
+    {
+      "cluster_depth_m": 12.336,
+      "cluster_pixel_count": 30061,
+      "confidence": 0.942,
+      "instance_index": 8,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1233.6000000000001,
+        135.4,
+        540.9000000000001
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        1.534,
+        5.724,
+        2.812
+      ],
+      "source_bbox_norm_xyxy": [
+        0.37086,
+        0.06814,
+        0.66091,
+        0.22928
+      ]
+    },
+    {
+      "cluster_depth_m": 15.702,
+      "cluster_pixel_count": 29195,
+      "confidence": 0.942,
+      "instance_index": 9,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1570.2,
+        -901.9,
+        -401.55
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        4.744,
+        6.265,
+        4.203
+      ],
+      "source_bbox_norm_xyxy": [
+        0.10152,
+        0.45488,
+        0.34738,
+        0.71547
+      ]
+    },
+    {
+      "cluster_depth_m": 17.408,
+      "cluster_pixel_count": 25497,
+      "confidence": 0.942,
+      "instance_index": 10,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        1740.8000000000002,
+        6.7,
+        -109.74999999999999
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        6.17,
+        9.182,
+        2.419
+      ],
+      "source_bbox_norm_xyxy": [
+        0.32735,
+        0.41989,
+        0.72376,
+        0.55985
+      ]
+    },
+    {
+      "cluster_depth_m": 27.451,
+      "cluster_pixel_count": 11254,
+      "confidence": 0.942,
+      "instance_index": 11,
+      "kind": "scatter_instance",
+      "layer_type": "vegetation",
+      "location_cm": [
+        2745.1,
+        939.7,
+        -126.4
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        5.627,
+        5.627,
+        3.29
+      ],
+      "source_bbox_norm_xyxy": [
+        0.60014,
+        0.42726,
+        0.9047,
+        0.66575
+      ]
+    },
+    {
+      "confidence": 0.942,
+      "inferred": "not observed; spans the fitted ground plane to the canopy this instance was measured at",
+      "instance_index": 11,
+      "kind": "trunk_support",
+      "layer_type": "vegetation",
+      "location_cm": [
+        2745.1,
+        939.7,
+        -348.1333295
+      ],
+      "mean_colour_srgb": [
+        35,
+        34,
+        29
+      ],
+      "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
+      "region_id": "vegetation_tree_004",
+      "semantic_label": "tree",
+      "size_m": [
+        0.67524,
+        0.67524,
+        4.43466659
+      ],
+      "source_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ]
+    },
+    {
+      "confidence": 0.9688,
+      "kind": "ground_plane",
+      "layer_type": "terrain",
+      "location_cm": [
+        232.29999999999998,
+        4.0,
+        -132.6
+      ],
+      "mean_colour_srgb": [
+        45,
+        41,
+        26
+      ],
+      "observed_fraction": 1.0,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.6667,
+        1.0,
+        1.0
+      ],
+      "region_id": "terrain_grass_009",
+      "semantic_label": "grass",
+      "size_m": [
+        8.762,
+        9.408,
+        0.2
+      ],
+      "sized_at": "measured_points",
+      "source_bbox_norm_xyxy": [
+        0.0,
+        0.6667,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "assumption": "building depth inferred from width",
+      "confidence": 0.8891,
+      "kind": "structure",
+      "layer_type": "architecture",
+      "location_cm": [
+        1352.9,
+        93.30000000000001,
+        -267.7
+      ],
+      "mean_colour_srgb": [
+        44,
+        38,
+        32
+      ],
+      "observed_fraction": 1.0,
+      "region_bbox_norm_xyxy": [
+        0.2942,
+        0.5101,
+        0.799,
+        0.7293
+      ],
+      "region_id": "architecture_house_025",
+      "semantic_label": "house",
+      "size_m": [
+        7.1255999999999995,
+        11.876,
+        3.556
+      ],
+      "source_bbox_norm_xyxy": [
+        0.2942,
+        0.5101,
+        0.799,
+        0.7293
+      ]
+    },
+    {
+      "confidence": 0.6196,
+      "kind": "ground_plane",
+      "layer_type": "terrain",
+      "location_cm": [
+        6962.2,
+        6610.4,
+        -1431.3
+      ],
+      "mean_colour_srgb": [
+        61,
+        58,
+        46
+      ],
+      "observed_fraction": 0.9949,
+      "region_bbox_norm_xyxy": [
+        0.8729,
+        0.581,
+        1.0,
+        0.6869
+      ],
+      "region_id": "terrain_field_029",
+      "semantic_label": "field",
+      "size_m": [
+        198.976,
+        168.16,
+        0.2
+      ],
+      "sized_at": "measured_points",
+      "source_bbox_norm_xyxy": [
+        0.8729,
+        0.581,
+        1.0,
+        0.6869
+      ]
+    }
+  ],
+  "aspect_ratio": 1.3333333333333333,
+  "camera_fov_x_deg": 92.87311873027492,
+  "classification": "PROVEN",
+  "excluded_regions": [
+    {
+      "id": "sky_sky_002",
+      "reason": "describes appearance, not occupancy"
+    },
+    {
+      "confidence": 0.6221,
+      "id": "architecture_hovel_079",
+      "reason": "model confidence 0.622 is below 0.7",
+      "semantic_label": "hovel"
+    }
+  ],
+  "kinds": [
+    "ground_plane",
+    "scatter_instance",
+    "structure",
+    "trunk_support"
+  ],
+  "schema_version": "region_placement_v1",
+  "skipped_regions": [
+    "sky_sky_002",
+    "architecture_hovel_079"
+  ],
+  "withdrawn_trunk_supports": 7
+}

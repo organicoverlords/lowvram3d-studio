@@ -1,0 +1,51 @@
+{
+  "success": true,
+  "selected_generator": "mini_turbo",
+  "generator_locked": true,
+  "fallback_generators_allowed": [],
+  "transport": "direct-local-weights",
+  "comfyui_url": null,
+  "comfyui_workflow": null,
+  "model_root": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct",
+  "model_subfolder": "hunyuan3d-dit-v2-mini-turbo",
+  "source_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\crop.png",
+  "prompt": "",
+  "target_fbx_used": false,
+  "texture_pipeline_run": false,
+  "rig_pipeline_run": false,
+  "diagnostics_trace": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\generation_trace.jsonl",
+  "seed": 12345,
+  "steps": 5,
+  "octree_ladder": "320:2000,256:1500",
+  "diagnostic_telemetry": false,
+  "source_image_sha256": "bd735b1b090f378d76278ae3d4236811f6f6af4f89a51757b00ef08074fcf1fa",
+  "weights": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mini-direct\\hunyuan3d-dit-v2-mini-turbo\\model.fp16.safetensors",
+  "weights_bytes": 3822584202,
+  "torch": "2.8.0+cu126",
+  "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "conditioning_source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\crop.png",
+  "matte": "shaman_matte.py",
+  "conditioning_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\mini_turbo_conditioning.png",
+  "image_dimensions": [
+    339,
+    305
+  ],
+  "flashvdm": true,
+  "octree_resolution": 320,
+  "num_chunks": 2000,
+  "attempts": [
+    {
+      "octree_resolution": 320,
+      "num_chunks": 2000,
+      "status": "ok",
+      "peak_vram_mb": 4264
+    }
+  ],
+  "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\generated_assets\\architecture_hovel_079\\architecture_hovel_079.glb",
+  "raw_glb_sha256": "a6bf19aed550c74f1471959034903b01e32911cc3a603147f359e9c47d7d8fdc",
+  "raw_glb_bytes": 5180932,
+  "raw_vertices": 143858,
+  "raw_triangles": 287818,
+  "generation_seconds": 626.0,
+  "guidance_scale": 5.0
+}

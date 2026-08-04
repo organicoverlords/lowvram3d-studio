@@ -229,6 +229,14 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
         upsampled = torch.nn.functional.interpolate(
             logits, size=(height, width), mode="bilinear", align_corners=False)
         labels = upsampled.argmax(dim=1)[0].cpu().numpy()
+        # What the model actually believed, per pixel. Softmax on the *logits*
+        # rather than the upsampled tensor: the latter is 150 channels at full
+        # resolution, roughly a gigabyte, on a card this pipeline is already
+        # sharing.
+        certainty = torch.nn.functional.interpolate(
+            torch.softmax(logits, dim=1).amax(dim=1, keepdim=True),
+            size=(height, width), mode="bilinear", align_corners=False)
+        certainty = certainty[0, 0].cpu().numpy()
 
     names = _labels(model)
 
@@ -275,7 +283,13 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
                                round(float(ys.min()) / height, 4),
                                round(float(xs.max() + 1) / width, 4),
                                round(float(ys.max() + 1) / height, 4)],
-            "confidence": round(min(0.95, 0.5 + fraction), 3),
+            # The model's own mean probability over this region's pixels.
+            # This used to be `0.5 + pixel_fraction`, which is a function of
+            # size and nothing else -- so a dark gap between two tree trunks,
+            # labelled "hovel", scored 0.52 and was built as a second building
+            # in a picture containing one barn.
+            "confidence": round(float(certainty[selection].mean()), 4),
+            "confidence_p10": round(float(np.percentile(certainty[selection], 10)), 4),
             # Regions that keep a primitive render default white, which makes
             # ground, water and every unbuilt volume read as the same blank
             # slab and hides whatever is standing on them. One mean colour per

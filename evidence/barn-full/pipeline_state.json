@@ -1,0 +1,404 @@
+{
+  "classification": "SCENE_BUILT_WITH_GENERATED_ASSETS",
+  "composition_manifest_hash": "7ffc57a122aba16f2c32faa69833e56b8623ec7e97b861e3659991545d6e795f",
+  "disable_neural": false,
+  "enable_pcg": false,
+  "generated_assets": {
+    "actors_using_generated_meshes": 14,
+    "classification": "PROVEN",
+    "failed_count": 0,
+    "generated_count": 3,
+    "geometry_source": "mixed",
+    "requested": true
+  },
+  "gpu_work_requested": false,
+  "graph_hash": "fad5aa6b614ce1b8286966b01a96aef4afa7ad63c4f42bb3c276dae6e75745bb",
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+  "input_hashes": {
+    "builder_manifest": "a47090951680ef3bf416e052133cd45e4e496f25ec57795793e50c26bd1954e1",
+    "representation_manifest": "7115229f162a18546e2b03821600e19eb7fe8d9bb13acf475033b757b2cc100b",
+    "scene_spec": "fe31be33d3117435e0a009aa4263beefc355c3014b8736172e78d456ade5a2fd",
+    "source_image": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b"
+  },
+  "input_kind": "scene",
+  "layer_receipts": {},
+  "max_triangles": 1500000,
+  "max_vram_mb": 6144,
+  "next_action": "TEXTURE_GENERATED_ASSETS",
+  "output_map": "C:/Program Files/Git/Game/AgentProof/BarnFull/barn_full/Maps/L_barn_full_Generated",
+  "project": "C:\\Users\\Lauri\\Desktop\\UnrealAITest58\\UnrealAITest58.uproject",
+  "quality_tier": "preview",
+  "repair_routes": {
+    "floating_architecture": "scene_graph_construction|architecture_generation",
+    "grey_default_material": "material_generation|material_harmonization",
+    "incorrect_object_classification": "semantic_segmentation|instance_decomposition",
+    "navmesh_crossing_water": "gameplay_planning|navigation_generation",
+    "offset_view_hole": "unseen_world_completion|world_continuation",
+    "source_silhouette_mismatch": "camera_estimation|representation_selection|terrain_generation|architecture_generation",
+    "vegetation_in_water": "vegetation_planning|vegetation_generation"
+  },
+  "resume": false,
+  "scene_id": "barn_full",
+  "schema_version": "image_to_scene_pipeline_state_v1",
+  "source_map_protected": true,
+  "stages": {
+    "architecture_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "ccce20416573fc69191abf0cd4d35be48ef493286577966d912b22e7553a0773",
+      "input_hash": "68f1c624876d782f54fd9086a4e8513c62c76460eb29d619c543c59d4bf3a9d2",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\architecture_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "completeness": {
+      "classification": "PARTIAL",
+      "config_hash": "bd0d0a16daf6893d8ec9249093b19013c167c29f7fd174589ed589052e482a37",
+      "input_hash": "a33251c596042623638ac107d8bad19272bcf179a730582a0fa5be5544c7d408",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\scene_completeness_receipt.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "scene_composition": {
+      "classification": "PROVEN",
+      "config_hash": "aa091b4984e4ac586de1e34602f13d5cfd0b3a2629347206f5565ba28588bae1",
+      "input_hash": "5adcb3db27cf4c6d7c9c0dddd627f418f4b47e6122228baef9e303e46e1b9b56",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\scene_content_manifest.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "terrain_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "acacc04da7b4fa18a2673766a3312d7e3a8d6a537e67626d2105ba6385da7cba",
+      "input_hash": "68f1c624876d782f54fd9086a4e8513c62c76460eb29d619c543c59d4bf3a9d2",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\terrain_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    },
+    "vegetation_plan": {
+      "classification": "NOT_APPLICABLE",
+      "config_hash": "c127d7194d17e5eb596b8823cddb6aeb73044d4b5aebb47c5b8d97f7eb02b73f",
+      "input_hash": "68f1c624876d782f54fd9086a4e8513c62c76460eb29d619c543c59d4bf3a9d2",
+      "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-full\\vegetation_plan.json",
+      "reused": false,
+      "stage_version": "1.0.0"
+    }
+  },
+  "started_at": "2026-08-04T17:18:11.133258+00:00",
+  "unreal_build": {
+    "available": true,
+    "camera_fov_deg": 92.87233692760601,
+    "camera_label": "barn_full_Camera_Source",
+    "classification": "PROVEN",
+    "generated_actor_count": 14,
+    "generated_actors": [
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_00",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.43,
+          5.09,
+          2.95
+        ],
+        "requested_size_m": [
+          2.84,
+          5.45,
+          2.95
+        ],
+        "source": "generated",
+        "uniform_scale": 2.60068
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_01",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.31,
+          3.67,
+          2.12
+        ],
+        "requested_size_m": [
+          1.59,
+          6.55,
+          2.12
+        ],
+        "source": "generated",
+        "uniform_scale": 1.87175
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_02",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.79,
+          9.35,
+          5.41
+        ],
+        "requested_size_m": [
+          5.28,
+          10.59,
+          5.41
+        ],
+        "source": "generated",
+        "uniform_scale": 4.77689
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_03",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.32,
+          3.79,
+          2.19
+        ],
+        "requested_size_m": [
+          3.62,
+          6.71,
+          2.19
+        ],
+        "source": "generated",
+        "uniform_scale": 1.93529
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_04",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.67,
+          7.84,
+          4.54
+        ],
+        "requested_size_m": [
+          2.54,
+          4.77,
+          4.54
+        ],
+        "source": "generated",
+        "uniform_scale": 4.00295
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_05",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.36,
+          4.21,
+          2.44
+        ],
+        "requested_size_m": [
+          4.21,
+          7.0,
+          2.44
+        ],
+        "source": "generated",
+        "uniform_scale": 2.14973
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_06",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.5,
+          5.9,
+          3.41
+        ],
+        "requested_size_m": [
+          6.13,
+          8.16,
+          3.41
+        ],
+        "source": "generated",
+        "uniform_scale": 3.01281
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_07",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.33,
+          3.84,
+          2.22
+        ],
+        "requested_size_m": [
+          1.19,
+          4.66,
+          2.22
+        ],
+        "source": "generated",
+        "uniform_scale": 1.96177
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_08",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          1.02,
+          11.97,
+          6.93
+        ],
+        "requested_size_m": [
+          5.58,
+          10.39,
+          6.93
+        ],
+        "source": "generated",
+        "uniform_scale": 6.11474
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_09",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.62,
+          7.26,
+          4.2
+        ],
+        "requested_size_m": [
+          4.73,
+          6.28,
+          4.2
+        ],
+        "source": "generated",
+        "uniform_scale": 3.7082
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_10",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.28,
+          3.31,
+          1.91
+        ],
+        "requested_size_m": [
+          1.22,
+          6.53,
+          1.91
+        ],
+        "source": "generated",
+        "uniform_scale": 1.68908
+      },
+      {
+        "kind": "scatter_instance",
+        "label": "vegetation_tree_004_11",
+        "layer": "vegetation",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "placed_size_m": [
+          0.49,
+          5.74,
+          3.32
+        ],
+        "requested_size_m": [
+          5.76,
+          5.76,
+          3.32
+        ],
+        "source": "generated",
+        "uniform_scale": 2.92985
+      },
+      {
+        "kind": "structure",
+        "label": "architecture_house_025",
+        "layer": "architecture",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_house_025/architecture_house_025_textured/StaticMeshes/architecture_house_025_textured.architecture_house_025_textured",
+        "placed_size_m": [
+          6.82,
+          9.13,
+          3.56
+        ],
+        "requested_size_m": [
+          7.13,
+          11.88,
+          3.56
+        ],
+        "source": "generated",
+        "uniform_scale": 4.66266
+      },
+      {
+        "kind": "structure",
+        "label": "architecture_hovel_079",
+        "layer": "architecture",
+        "mesh": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_hovel_079/architecture_hovel_079_textured/StaticMeshes/architecture_hovel_079_textured.architecture_hovel_079_textured",
+        "placed_size_m": [
+          1.44,
+          5.34,
+          5.12
+        ],
+        "requested_size_m": [
+          2.46,
+          4.1,
+          5.12
+        ],
+        "source": "generated",
+        "uniform_scale": 2.71395
+      }
+    ],
+    "generated_import_failures": [],
+    "generated_mesh_yaw_deg": -90.0,
+    "generated_meshes": {
+      "architecture_house_025": {
+        "extent_cm": [
+          97.88177108764648,
+          73.18510437011719,
+          38.14345741271973
+        ],
+        "path": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_house_025/architecture_house_025_textured/StaticMeshes/architecture_house_025_textured.architecture_house_025_textured",
+        "triangles": 149997
+      },
+      "architecture_hovel_079": {
+        "extent_cm": [
+          98.33815383911133,
+          26.51549243927002,
+          94.23532104492188
+        ],
+        "path": "/Game/AgentProof/BarnFull/GeneratedMeshes/architecture_hovel_079/architecture_hovel_079_textured/StaticMeshes/architecture_hovel_079_textured.architecture_hovel_079_textured",
+        "triangles": 150000
+      },
+      "vegetation_tree_004": {
+        "extent_cm": [
+          97.9129638671875,
+          8.320032358169556,
+          56.658151626586914
+        ],
+        "path": "/Game/AgentProof/BarnFull/GeneratedMeshes/vegetation_tree_004/vegetation_tree_004_textured/StaticMeshes/vegetation_tree_004_textured.vegetation_tree_004_textured",
+        "triangles": 150000
+      }
+    },
+    "geometry_source": "mixed",
+    "instance_stride": {
+      "vegetation_tree_004": 1
+    },
+    "kinds": [
+      "ground_plane",
+      "scatter_instance",
+      "structure",
+      "trunk_support"
+    ],
+    "layers": [
+      "architecture",
+      "terrain",
+      "vegetation"
+    ],
+    "map": "/Game/AgentProof/BarnFull/Maps/L_barn_full",
+    "primitive_actor_count": 4,
+    "removed_stale_actors": 0,
+    "scene_id": "barn_full",
+    "schema_version": "structural_build_receipt_v2",
+    "skipped_instance_count": 0,
+    "skipped_instances": [],
+    "spawned_count": 18
+  },
+  "updated_at": "2026-08-04T17:18:11.133258+00:00"
+}

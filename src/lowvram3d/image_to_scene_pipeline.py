@@ -18,8 +18,8 @@ from .scene_completeness import audit_scene_completeness
 from .depth_stage import reconstruct_depth
 from .region_placement import place as place_regions
 from .asset_generation import generate as generate_region_assets
-from .unreal_stage import (build_scene, capture_scene, import_generated_meshes,
-                           normalise_package_root)
+from .unreal_stage import (audit_overlaps, build_scene, capture_scene,
+                           import_generated_meshes, normalise_package_root)
 from .scene_analysis import analyze_image
 from .scene_paths import derive_scene_paths
 from .scene_registry import builder_manifest
@@ -351,6 +351,16 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                                  float(unreal_receipt.get("camera_fov_deg", 90.0)))
             _write_json(evidence / "structural_capture_receipt.json", shot)
             unreal_receipt["capture"] = shot
+            # Interpenetration is what a structural scene gets wrong silently:
+            # a building inside a tree with every receipt reading PROVEN. It is
+            # measurable, so measure it rather than hope a render is framed to
+            # show it.
+            overlaps = audit_overlaps(args.scene_id)
+            _write_json(evidence / "actor_overlap_audit.json", overlaps)
+            unreal_receipt["overlap_audit"] = {
+                k: v for k, v in overlaps.items()
+                if k in ("classification", "overlapping_pair_count",
+                         "buried_pair_count", "worst_fraction")}
     state["unreal_build"] = {k: v for k, v in unreal_receipt.items() if k != "capture"}
 
     built = bool(unreal_receipt.get("available") and unreal_receipt.get("spawned_count"))

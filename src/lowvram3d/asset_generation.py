@@ -71,13 +71,24 @@ DEFAULT_TRIANGLE_BUDGET = 150_000
 # So: wait for real headroom before starting, rather than waiting a fixed time
 # and hoping. The pause is the fallback for when free VRAM cannot be read.
 DEFAULT_SETTLE_SECONDS = 45.0
-# Measured peaks per octree rung, from this project's own receipts. Only 384 has
-# been observed enough times to trust (4,597 / 5,017 / 5,017 MB across three
-# runs); the lower rungs are left unmeasured on purpose rather than guessed, so
-# the gate only ever drops a rung it has evidence against.
-MEASURED_PEAK_VRAM_MB = {384: 5200}
+# Free VRAM each octree rung needs, from this project's own receipts. Every
+# entry is backed by an observation, and rungs without one are never dropped:
+#
+#   384 -- torch peaks of 4,597 / 5,017 / 5,017 MB across three runs.
+#   320 -- failed with `misaligned address` at 3,965 MB free.
+#   256 -- succeeded at that same 3,965 MB free, torch peak 4,137 MB.
+#
+# The thresholds sit above the observed torch peaks because torch's
+# `max_memory_allocated` counts its own allocations, not what the driver and a
+# co-resident editor are holding, so it reads low against `nvidia-smi`.
+MEASURED_PEAK_VRAM_MB = {384: 5200, 320: 4300}
 REQUIRED_FREE_VRAM_MB = 5200
-VRAM_WAIT_SECONDS = 240.0
+# Short on purpose. This absorbs a *transient* -- a just-finished generation or
+# an import releasing memory -- and nothing more. When an editor is holding two
+# gigabytes the headroom is never coming, and waiting four minutes per asset to
+# discover that only makes the run slower; the ladder gate below handles the
+# steady state by dropping to a rung that fits.
+VRAM_WAIT_SECONDS = 60.0
 
 # Mini Turbo is installed standalone: its own Python, hy3dgen as a source tree
 # on PYTHONPATH, and weights under a model root that is not either of those.
