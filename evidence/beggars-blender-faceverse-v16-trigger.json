@@ -1,0 +1,6 @@
+{
+  "request": "render a clean Blender body plate and externally alpha-composite seven feathered source-head placements",
+  "visual_gate": "manual inspection required; washed Blender compositor and floating-face routes rejected",
+  "branch": "agent/blender-beggars-scene-20260804",
+  "requested_at": "2026-08-04T20:47:00Z"
+}
