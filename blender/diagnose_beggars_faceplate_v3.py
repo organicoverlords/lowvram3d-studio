@@ -28,20 +28,15 @@ def choose_eevee(scene: bpy.types.Scene) -> str:
     raise RuntimeError("No compatible Eevee engine is available")
 
 
-def look_at(obj: bpy.types.Object, target: Vector) -> None:
-    obj.rotation_euler = (target - obj.location).to_track_quat("-Z", "Y").to_euler()
-
-
 def object_snapshot(obj: bpy.types.Object) -> dict:
     materials = []
     if getattr(obj, "data", None) is not None:
-        for material in getattr(obj.data, "materials", ()):
-            if material is not None:
-                materials.append(material.name)
+        materials = [material.name for material in obj.data.materials if material]
     return {
         "name": obj.name,
         "type": obj.type,
         "location": [float(value) for value in obj.location],
+        "rotation_euler": [float(value) for value in obj.rotation_euler],
         "scale": [float(value) for value in obj.scale],
         "hide_render": bool(obj.hide_render),
         "materials": materials,
@@ -50,9 +45,10 @@ def object_snapshot(obj: bpy.types.Object) -> dict:
 
 def bounds_world(obj: bpy.types.Object) -> tuple[Vector, Vector]:
     corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
-    minimum = Vector((min(point.x for point in corners), min(point.y for point in corners), min(point.z for point in corners)))
-    maximum = Vector((max(point.x for point in corners), max(point.y for point in corners), max(point.z for point in corners)))
-    return minimum, maximum
+    return (
+        Vector((min(point.x for point in corners), min(point.y for point in corners), min(point.z for point in corners))),
+        Vector((max(point.x for point in corners), max(point.y for point in corners), max(point.z for point in corners))),
+    )
 
 
 def principled(name: str, color: tuple[float, float, float, float], roughness: float) -> bpy.types.Material:
@@ -66,75 +62,104 @@ def principled(name: str, color: tuple[float, float, float, float], roughness: f
     if bsdf.inputs.get("Roughness"):
         bsdf.inputs["Roughness"].default_value = roughness
     if bsdf.inputs.get("Specular IOR Level"):
-        bsdf.inputs["Specular IOR Level"].default_value = 0.18
+        bsdf.inputs["Specular IOR Level"].default_value = 0.20
     if bsdf.inputs.get("Subsurface Weight"):
         bsdf.inputs["Subsurface Weight"].default_value = 0.025 if "SKIN" in name else 0.0
     return material
 
 
-def unlit(name: str, color: tuple[float, float, float, float]) -> bpy.types.Material:
-    material = bpy.data.materials.get(name) or bpy.data.materials.new(name)
-    material.use_nodes = True
-    nodes = material.node_tree.nodes
-    links = material.node_tree.links
-    nodes.clear()
-    output = nodes.new("ShaderNodeOutputMaterial")
-    emission = nodes.new("ShaderNodeEmission")
-    emission.inputs["Color"].default_value = color
-    emission.inputs["Strength"].default_value = 1.0
-    links.new(emission.outputs["Emission"], output.inputs["Surface"])
-    return material
-
-
-def sphere(name: str, location: Vector, scale: tuple[float, float, float], material: bpy.types.Material) -> bpy.types.Object:
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=64, ring_count=32, location=location)
+def create_neck(
+    name: str,
+    location: Vector,
+    radius: float,
+    depth: float,
+    material: bpy.types.Material,
+) -> bpy.types.Object:
+    bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=radius, depth=depth, location=location)
     obj = bpy.context.object
     obj.name = name
-    obj.scale = scale
+    obj.scale.y = 0.76
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     obj.data.materials.append(material)
+    bevel = obj.modifiers.new("NeckSoftEdge", "BEVEL")
+    bevel.width = radius * 0.16
+    bevel.segments = 4
     for polygon in obj.data.polygons:
         polygon.use_smooth = True
     return obj
 
 
-def silhouette_mesh(
+def create_robe_bust(
     name: str,
-    center: Vector,
+    center_x: float,
+    front_y: float,
+    top_z: float,
     width: float,
     height: float,
-    y: float,
     material: bpy.types.Material,
 ) -> bpy.types.Object:
-    outline = [
-        (-0.54, -0.20), (-0.50, 0.24), (-0.38, 0.58), (-0.18, 0.76),
-        (0.05, 0.82), (0.28, 0.70), (0.46, 0.43), (0.54, 0.08),
-        (0.48, -0.30), (0.29, -0.48), (0.00, -0.54), (-0.30, -0.44),
+    top_half = width * 0.31
+    shoulder_half = width * 0.64
+    bottom_half = width * 0.82
+    bottom_z = top_z - height
+    shoulder_z = top_z - height * 0.20
+    back_y = front_y + height * 0.30
+    vertices = [
+        (center_x - top_half, front_y, top_z),
+        (center_x + top_half, front_y, top_z),
+        (center_x + shoulder_half, front_y, shoulder_z),
+        (center_x + bottom_half, front_y, bottom_z),
+        (center_x - bottom_half, front_y, bottom_z),
+        (center_x - shoulder_half, front_y, shoulder_z),
+        (center_x - top_half, back_y, top_z),
+        (center_x + top_half, back_y, top_z),
+        (center_x + shoulder_half, back_y, shoulder_z),
+        (center_x + bottom_half, back_y, bottom_z),
+        (center_x - bottom_half, back_y, bottom_z),
+        (center_x - shoulder_half, back_y, shoulder_z),
     ]
-    vertices = [(center.x, y, center.z)]
-    vertices.extend((center.x + width * x, y, center.z + height * z) for x, z in outline)
-    faces = []
-    for index in range(len(outline)):
-        faces.append((0, index + 1, (index + 1) % len(outline) + 1))
+    faces = [
+        (0, 1, 2, 3, 4, 5),
+        (11, 10, 9, 8, 7, 6),
+        (0, 6, 7, 1),
+        (1, 7, 8, 2),
+        (2, 8, 9, 3),
+        (3, 9, 10, 4),
+        (4, 10, 11, 5),
+        (5, 11, 6, 0),
+    ]
     mesh = bpy.data.meshes.new(f"MESH_{name}")
     mesh.from_pydata(vertices, [], faces)
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     mesh.materials.append(material)
+    bevel = obj.modifiers.new("RobeSoftForm", "BEVEL")
+    bevel.width = width * 0.055
+    bevel.segments = 6
     return obj
 
 
-def area_light(name: str, location: Vector, energy: float, color: tuple[float, float, float], size: float, target: Vector) -> bpy.types.Object:
-    data = bpy.data.lights.new(name, "AREA")
-    data.energy = energy
-    data.color = color
-    data.shape = "DISK"
-    data.size = size
+def create_curve(
+    name: str,
+    points: list[Vector],
+    bevel_depth: float,
+    material: bpy.types.Material,
+) -> bpy.types.Object:
+    data = bpy.data.curves.new(name, "CURVE")
+    data.dimensions = "3D"
+    data.resolution_u = 4
+    data.bevel_depth = bevel_depth
+    data.bevel_resolution = 3
+    spline = data.splines.new("BEZIER")
+    spline.bezier_points.add(len(points) - 1)
+    for point, coordinate in zip(spline.bezier_points, points):
+        point.co = coordinate
+        point.handle_left_type = "AUTO"
+        point.handle_right_type = "AUTO"
     obj = bpy.data.objects.new(name, data)
-    obj.location = location
     bpy.context.collection.objects.link(obj)
-    look_at(obj, target)
+    data.materials.append(material)
     return obj
 
 
@@ -145,17 +170,19 @@ def render(scene: bpy.types.Scene, output: Path) -> None:
     bpy.ops.render.render(write_still=True)
 
 
-def hide_original_character_shell() -> None:
-    for name in [
-        "CHAR_Antinous_HairCap", "CHAR_Antinous_Neck", "CHAR_Antinous_Torso",
-        "CHAR_Antinous_Shoulder_L", "CHAR_Antinous_Shoulder_R", "COSTUME_GoldNeckTrim",
-    ]:
-        obj = bpy.data.objects.get(name)
-        if obj is not None:
-            obj.hide_render = True
-            obj.hide_viewport = True
+def hide_original_character() -> None:
+    exact = {
+        "CHAR_Antinous_HairCap",
+        "CHAR_Antinous_Neck",
+        "CHAR_Antinous_Torso",
+        "CHAR_Antinous_Shoulder_L",
+        "CHAR_Antinous_Shoulder_R",
+        "COSTUME_GoldNeckTrim",
+        "COSTUME_HighCollar_L",
+        "COSTUME_HighCollar_R",
+    }
     for obj in bpy.data.objects:
-        if obj.name.startswith(("HAIR_Strand_", "HAIR_Wave", "FACIALHAIR_")):
+        if obj.name in exact or obj.name.startswith(("HAIR_Strand_", "HAIR_Wave", "FACIALHAIR_")):
             obj.hide_render = True
             obj.hide_viewport = True
 
@@ -201,70 +228,64 @@ def main() -> int:
         image_report.append({"name": image.name, "size": list(image.size), "saved": destination.name})
 
     render(scene, output_dir / "variant_00_current.png")
-    hide_original_character_shell()
+    hide_original_character()
     render(scene, output_dir / "variant_01_plate_only.png")
 
     minimum, maximum = bounds_world(face_plate)
     center = (minimum + maximum) * 0.5
     height = max(maximum.z - minimum.z, 0.1)
     width = max(maximum.x - minimum.x, 0.1)
-    front_y = center.y
+    front_y = center.y + height * 0.12
 
-    robe = principled("MAT_FACEPLATE_V7_ROBE", (0.003, 0.0035, 0.005, 1.0), 0.88)
-    skin = principled("MAT_FACEPLATE_V7_SKIN", (0.135, 0.064, 0.055, 1.0), 0.60)
-    hair = unlit("MAT_FACEPLATE_V7_HAIR_UNLIT", (0.002, 0.001, 0.0007, 1.0))
+    robe = principled("MAT_FACEPLATE_V8_ROBE", (0.006, 0.005, 0.009, 1.0), 0.86)
+    skin = principled("MAT_FACEPLATE_V8_SKIN", (0.15, 0.074, 0.060, 1.0), 0.58)
+    trim = principled("MAT_FACEPLATE_V8_TRIM", (0.22, 0.070, 0.018, 1.0), 0.42)
 
-    face_plate.location.y -= height * 0.035
-    neck = sphere(
-        "DIAG_V7_Neck",
-        Vector((center.x, front_y + height * 0.34, minimum.z - height * 0.22)),
-        (width * 0.18, height * 0.11, height * 0.29), skin,
+    face_plate.location.z -= height * 0.065
+    neck = create_neck(
+        "DIAG_V8_Neck",
+        Vector((center.x, front_y + height * 0.10, minimum.z - height * 0.12)),
+        width * 0.145,
+        height * 0.46,
+        skin,
     )
-    torso = sphere(
-        "DIAG_V7_Torso",
-        Vector((center.x, front_y + height * 0.52, minimum.z - height * 0.82)),
-        (width * 1.00, height * 0.31, height * 0.59), robe,
-    )
-    shoulder_left = sphere(
-        "DIAG_V7_Shoulder_L",
-        Vector((center.x - width * 0.77, front_y + height * 0.48, minimum.z - height * 0.69)),
-        (width * 0.47, height * 0.23, height * 0.33), robe,
-    )
-    shoulder_right = sphere(
-        "DIAG_V7_Shoulder_R",
-        Vector((center.x + width * 0.77, front_y + height * 0.48, minimum.z - height * 0.69)),
-        (width * 0.47, height * 0.23, height * 0.33), robe,
+    robe_obj = create_robe_bust(
+        "DIAG_V8_RobeBust",
+        center.x,
+        front_y + height * 0.16,
+        minimum.z - height * 0.08,
+        width * 1.62,
+        height * 1.10,
+        robe,
     )
     render(scene, output_dir / "variant_02_natural_bust.png")
 
-    backplate = silhouette_mesh(
-        "DIAG_V7_HairHeadSilhouette",
-        center=Vector((center.x, front_y, center.z + height * 0.025)),
-        width=width * 0.62,
-        height=height * 0.70,
-        y=front_y + height * 0.050,
-        material=hair,
+    collar_y = center.y - height * 0.010
+    collar_z = minimum.z - height * 0.04
+    collar_left = create_curve(
+        "DIAG_V8_VCollar_L",
+        [
+            Vector((center.x - width * 0.40, collar_y, collar_z + height * 0.03)),
+            Vector((center.x - width * 0.16, collar_y, collar_z - height * 0.08)),
+            Vector((center.x, collar_y, collar_z - height * 0.17)),
+        ],
+        width * 0.026,
+        trim,
     )
-    ear_left = sphere(
-        "DIAG_V7_Ear_L",
-        Vector((center.x - width * 0.31, front_y + height * 0.09, center.z - height * 0.015)),
-        (width * 0.052, height * 0.038, height * 0.105), skin,
-    )
-    ear_right = sphere(
-        "DIAG_V7_Ear_R",
-        Vector((center.x + width * 0.31, front_y + height * 0.09, center.z - height * 0.015)),
-        (width * 0.052, height * 0.038, height * 0.105), skin,
-    )
-    area_light(
-        "DIAG_V7_FrontFill",
-        Vector((center.x + width * 1.2, front_y - height * 2.4, center.z + height * 1.1)),
-        220.0, (0.72, 0.78, 1.0), height * 2.0,
-        Vector((center.x, center.y, center.z - height * 0.18)),
+    collar_right = create_curve(
+        "DIAG_V8_VCollar_R",
+        [
+            Vector((center.x, collar_y, collar_z - height * 0.17)),
+            Vector((center.x + width * 0.16, collar_y, collar_z - height * 0.08)),
+            Vector((center.x + width * 0.40, collar_y, collar_z + height * 0.03)),
+        ],
+        width * 0.026,
+        trim,
     )
     camera.data.dof.use_dof = False
     render(scene, output_dir / "variant_03_larger_face.png")
 
-    diagnostic_objects = [neck, torso, shoulder_left, shoulder_right, backplate, ear_left, ear_right]
+    diagnostic_objects = [neck, robe_obj, collar_left, collar_right]
     report = {
         "classification": "VISUAL_DIAGNOSTIC",
         "source_blend": str(blend_path),
@@ -274,9 +295,9 @@ def main() -> int:
         "images": image_report,
         "diagnostic_objects": [object_snapshot(obj) for obj in diagnostic_objects],
         "variant_policy": {
-            "variant_01": "derived face plate only",
-            "variant_02": "face plate with true 3D neck and robe only",
-            "variant_03": "variant 02 plus visible-alpha-sized unlit hair/head silhouette and small ears",
+            "variant_01": "derived animated face plate only",
+            "variant_02": "face plate lowered onto a single beveled robe bust and compact neck",
+            "variant_03": "variant 02 plus a narrow V-neck trim; no capsule collar or head backing",
         },
     }
     (output_dir / "diagnostic.json").write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
