@@ -1,5 +1,5 @@
-name: Export jungle visual overhaul bundle
-run-name: Jungle visual bundle diagnostic ${{ github.run_id }}
+name: Diagnose jungle visual overhaul bundle
+run-name: Jungle visual bundle repair diagnostic ${{ github.run_id }}
 
 on:
   push:
@@ -9,10 +9,10 @@ on:
       - worker-triggers/procedural-jungle-bundle-diagnostic.txt
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  export-bundle:
+  diagnose-bundle:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -21,23 +21,74 @@ jobs:
         with:
           ref: feature/procedural-jungle-playable-20260804
           clean: true
-          fetch-depth: 1
+          fetch-depth: 0
 
-      - name: Verify bundle inputs
+      - name: Reconstruct and partially extract audited bundle
+        shell: bash
+        run: |
+          set -u -o pipefail
+          branch="$(git branch --show-current)"
+          test "$branch" = "feature/procedural-jungle-playable-20260804"
+
+          bundle_root="worker-bundles/procedural-jungle-visual-overhaul"
+          diagnostic_root="diagnostics/procedural-jungle-visual-overhaul"
+          rm -rf "$diagnostic_root"
+          mkdir -p "$diagnostic_root/extracted"
+
+          mapfile -t chunks < <(find "$bundle_root" -maxdepth 1 -type f -name 'chunk-*.b64' | sort)
+          test "${#chunks[@]}" -eq 4
+          cat "${chunks[@]}" | tr -d '[:space:]' | base64 --decode > "$diagnostic_root/visual-overhaul.tar.xz"
+
+          archive_sha="$(sha256sum "$diagnostic_root/visual-overhaul.tar.xz" | awk '{print $1}')"
+          archive_bytes="$(wc -c < "$diagnostic_root/visual-overhaul.tar.xz" | tr -d ' ')"
+          expected_sha="d78dfd8b68e1a47573446c038bfaaf03d996751b931160266279ee5814613129"
+
+          xz_status=0
+          xz -t "$diagnostic_root/visual-overhaul.tar.xz" > "$diagnostic_root/xz-test.log" 2>&1 || xz_status=$?
+
+          decode_status=0
+          xz -dc "$diagnostic_root/visual-overhaul.tar.xz" > "$diagnostic_root/partial.tar" 2> "$diagnostic_root/xz-decode.log" || decode_status=$?
+
+          tar_list_status=0
+          tar -tvf "$diagnostic_root/partial.tar" > "$diagnostic_root/tar-list.log" 2> "$diagnostic_root/tar-list-error.log" || tar_list_status=$?
+
+          tar_extract_status=0
+          tar --ignore-zeros -xf "$diagnostic_root/partial.tar" -C "$diagnostic_root/extracted" > "$diagnostic_root/tar-extract.log" 2> "$diagnostic_root/tar-extract-error.log" || tar_extract_status=$?
+
+          find "$diagnostic_root/extracted" -type f -print0 | sort -z | xargs -0 -r sha256sum > "$diagnostic_root/extracted-sha256.log"
+          find "$diagnostic_root/extracted" -type f -printf '%s %p\n' | sort -k2 > "$diagnostic_root/extracted-sizes.log"
+
+          {
+            echo "BRANCH=$branch"
+            echo "HEAD=$(git rev-parse HEAD)"
+            echo "CHUNK_COUNT=${#chunks[@]}"
+            echo "ARCHIVE_SHA256=$archive_sha"
+            echo "EXPECTED_ARCHIVE_SHA256=$expected_sha"
+            echo "ARCHIVE_SHA_MATCH=$([ "$archive_sha" = "$expected_sha" ] && echo TRUE || echo FALSE)"
+            echo "ARCHIVE_BYTES=$archive_bytes"
+            echo "XZ_TEST_EXIT=$xz_status"
+            echo "XZ_DECODE_EXIT=$decode_status"
+            echo "TAR_LIST_EXIT=$tar_list_status"
+            echo "TAR_EXTRACT_EXIT=$tar_extract_status"
+            echo "EXTRACTED_FILE_COUNT=$(find "$diagnostic_root/extracted" -type f | wc -l | tr -d ' ')"
+            echo "BLENDER_INVOKED=FALSE"
+            echo "UNREAL_INVOKED=FALSE"
+            echo "GPU_INVOKED=FALSE"
+            echo "CODEX_INVOKED=FALSE"
+            echo "CLAUDE_INVOKED=FALSE"
+            echo "MAGICMUSIC_INVOKED=FALSE"
+          } > "$diagnostic_root/report.txt"
+
+          cat "$diagnostic_root/report.txt"
+          cat "$diagnostic_root/tar-list-error.log" || true
+          cat "$diagnostic_root/tar-extract-error.log" || true
+
+      - name: Commit diagnostic extraction
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git branch --show-current)" = "feature/procedural-jungle-playable-20260804"
-          test "$(find worker-bundles/procedural-jungle-visual-overhaul -maxdepth 1 -type f -name 'chunk-*.b64' | wc -l)" -eq 4
-          sha256sum worker-bundles/procedural-jungle-visual-overhaul/chunk-*.b64
-          wc -c worker-bundles/procedural-jungle-visual-overhaul/chunk-*.b64
-
-      - name: Upload exact committed bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: jungle-visual-overhaul-bundle-${{ github.run_id }}
-          path: |
-            worker-bundles/procedural-jungle-visual-overhaul/chunk-*.b64
-            scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
-          if-no-files-found: error
-          retention-days: 2
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- diagnostics/procedural-jungle-visual-overhaul
+          git commit -m "diagnostic(jungle): inspect truncated visual overhaul bundle ${{ github.run_id }}"
+          git push origin HEAD:feature/procedural-jungle-playable-20260804
