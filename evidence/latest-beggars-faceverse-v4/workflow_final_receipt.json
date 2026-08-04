@@ -1,15 +1,15 @@
 ﻿{
     "classification":  "REJECTED",
-    "failure":  "No suitable Python runtime found",
+    "failure":  null,
     "route":  "FACEVERSE_V4_RESNET50_SINGLE_FRAME_FULL_HEAD",
     "repository":  "organicoverlords/lowvram3d-studio",
     "branch":  "agent/blender-beggars-scene-20260804",
-    "head_sha":  "ba28bff38f439245bce47767fda0202b5c52fa68",
-    "workflow_run_id":  "30867220436",
-    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30867220436",
-    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\faceverse-v4-preflight-30867220436",
+    "head_sha":  "20b6603099b327418219a6a1d85a0f7f05cf7831",
+    "workflow_run_id":  "30867456311",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30867456311",
+    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\faceverse-v4-preflight-30867456311",
     "source_commit":  "19c67cc4d7234b1ea7d55a185a2cb55fd49bb877",
     "reference_media_upload_scope":  "EXCLUDED",
     "reference_media_deleted":  true,
-    "recorded_at":  "2026-08-04T00:59:01.5419733Z"
+    "recorded_at":  "2026-08-04T01:03:04.3380679Z"
 }
