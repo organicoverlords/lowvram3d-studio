@@ -1,5 +1,5 @@
 {
-  "purpose": "Locate the Beggars scene v2 retry after fixing 5-column tracker box stabilization.",
-  "target_head_sha": "de80d4729983fae3ca73533b0582a3f7565235c1",
-  "requested_at": "2026-08-04T18:22:00+03:00"
+  "purpose": "Locate the bounded faceplate v3 post-build diagnostic run.",
+  "target_head_sha": "7cced4c1d727b63a53a03535f5226958ba57c819",
+  "requested_at": "2026-08-04T18:37:00+03:00"
 }
