@@ -1,9 +1,9 @@
-run=48
-requested=2026-08-04T18:40:00+03:00
+run=49
+requested=2026-08-04T18:48:00+03:00
 mode=github-self-hosted-v3-visual-overhaul
-repair_commit=498e600c5873377fd0f55b8179b86ec62780b32c
-repair_scope=known-responsive-unrealaitest58-coexistence-with-gpu-headroom-gate
-safe_preflight_source=5ee2f112714d451f22fee8e7ab337ef766804f9c
+repair_commit=78a9eeb84420cfca3d3641a182e897977afc1453
+repair_scope=delegate-redundant-decoded-build-unreal-guard-after-proven-coexistence-gate
+coexistence_wrapper_source=498e600c5873377fd0f55b8179b86ec62780b32c
 installer_sha256=8caff1745534e6c73ae21b86a6cb5ee035bad5512741a1c5561bc3b649a348d5
 protected_unreal_project=C:\Users\Lauri\Desktop\UnrealAITest58\UnrealAITest58.uproject
 max_prebuild_gpu_used_mib=4400
