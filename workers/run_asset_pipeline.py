@@ -171,6 +171,21 @@ class Pipeline:
     def run(self, command: list, cwd: Path | None = None, env_extra: dict | None = None,
             timeout: float | None = None) -> tuple[int, str]:
         env = dict(os.environ)
+        # Keep numerical results and all quality gates unchanged while allowing native numerical
+        # backends used by a child stage to use the available CPU.  The exact UV overlap census is
+        # Python control flow and will not become magically parallel from these variables, but
+        # Blender, image preparation, and any BLAS/OpenMP kernels can benefit on future attempts.
+        # PIPELINE_CPU_THREADS is an opt-in override for machines where the scheduler should use a
+        # different count; it never changes projection, packing, or acceptance semantics.
+        cpu_threads = os.environ.get("PIPELINE_CPU_THREADS") or str(os.cpu_count() or 1)
+        env.setdefault("OMP_NUM_THREADS", cpu_threads)
+        env.setdefault("OPENBLAS_NUM_THREADS", cpu_threads)
+        env.setdefault("MKL_NUM_THREADS", cpu_threads)
+        env.setdefault("NUMEXPR_NUM_THREADS", cpu_threads)
+        env.setdefault("BLIS_NUM_THREADS", cpu_threads)
+        env.setdefault("OMP_DYNAMIC", "FALSE")
+        env.setdefault("OMP_PROC_BIND", "spread")
+        env.setdefault("OMP_PLACES", "cores")
         repo_paths = [
             str(REPO_ROOT / "blender"),
             str(REPO_ROOT / "src"),

@@ -151,20 +151,25 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
         receipt = original_lod()
         if receipt.get("status") != "passed":
             return receipt
+        # A declared preserve-source LOD has one immutable delivery mesh, not a generated
+        # profile ladder. Do not run the post-LOD micro-clean loop against missing lod1+ outputs.
+        if str((manifest.get("lod") or {}).get("mode", "generate")).lower() == "preserve_source":
+            return receipt
         gates = receipt.get("gates") or {}
+        target_count = len(manifest.get("lod_policy") or profile.lod_triangle_targets)
         if gates.get("post_lod_cleanup_schema") == REPAIR_SCHEMA:
             valid = all(
                 (receipt.get("outputs") or {})
                 .get(f"lod{index}_geometry_report", {})
                 .get("path")
-                for index in range(len(profile.lod_triangle_targets))
+                for index in range(target_count)
             )
             if valid:
                 return receipt
 
         outputs = dict(receipt.get("outputs") or {})
         post_reports = []
-        for index in range(len(profile.lod_triangle_targets)):
+        for index in range(target_count):
             key = f"lod{index}"
             raw_entry = dict(_entry(receipt, key))
             raw = Path(raw_entry["path"])

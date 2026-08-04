@@ -68,7 +68,12 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     lod_mode = str((manifest.get("lod") or {}).get("mode", "generate")).lower()
     lod_regression_allowed = bool((manifest.get("lod") or {}).get(
         "allow_topology_regression_below_lod0", False))
+    delivery_visual_gate = (manifest.get("lod") or {}).get("delivery_visual_gate") or {}
+    allow_delivery_topology_regression = bool(
+        (manifest.get("lod") or {}).get("allow_topology_regression_for_delivery", False)
+    )
     suffix = "4k" if resolution >= 4096 else "2k"
+    orientation = manifest.get("orientation") or {}
 
     def w(name: str) -> Path:
         return REPO_ROOT / "workers" / name
@@ -113,6 +118,10 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "--input", clean, "--output-dir", outdir, "--report", report,
                 "--targets", targets,
                 "--prefix", asset_id,
+                "--up-axis", str(orientation.get("up_axis", "z")),
+                "--right-axis", str(orientation.get("right_axis",
+                                                     orientation.get("lateral_axis", "x"))),
+                "--front-axis", str(orientation.get("front_axis", "y")),
             )
             data = _json(report)
             if code != 0 or not data.get("lods"):
@@ -152,8 +161,30 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     # means "unmeasured".
                     if index > 0 and lod_regression_allowed:
                         gates.setdefault("topology_regressions_advisory", []).append(message)
+                    elif index == 0 and allow_delivery_topology_regression:
+                        gates.setdefault("topology_regressions_visual_gate", []).append(message)
                     else:
                         topology_failures.append(message)
+            if allow_delivery_topology_regression and not failures:
+                candidate = outputs.get("lod0")
+                visual_report = stage / "candidate" / "lod0_geometry_compare.json"
+                visual_args = [
+                    pipeline.python, w("geometry_compare.py"),
+                    "--master", clean, "--candidate", candidate, "--report", visual_report,
+                    "--asset-family", str(delivery_visual_gate.get("asset_family", "mixed")),
+                    "--quality", str(delivery_visual_gate.get("quality", "gameplay")),
+                    "--samples", str(int(delivery_visual_gate.get("samples", 50000))),
+                    "--silhouette-size", str(int(delivery_visual_gate.get("silhouette_size", 256))),
+                    "--name", f"{asset_id}_lod0_delivery",
+                ]
+                visual_code, visual_output = pipeline.run(visual_args)
+                visual = _json(visual_report)
+                gates["delivery_visual_gate"] = visual
+                outputs["lod0_geometry_compare"] = visual_report
+                if visual_code != 0 or not visual.get("success"):
+                    failures.append(
+                        f"LOD0 delivery visual gate failed: {visual_output[-1000:]}"
+                    )
             failures.extend(topology_failures)
             if failures:
                 # Torn topology is the one LOD failure with a real recipe behind it - decimating
@@ -252,12 +283,25 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             route = str(overrides.get("route") or manifest_route).lower()
             if route == "injective":
                 code, out = pipeline.run([
-                    pipeline.python, w("uv_rewrap_injective.py"),
-                    "--mesh", lod0, "--output", output, "--report", report,
+                    # Fresh assets use the bounded repair-aware xatlas route.  Canonical UV
+                    # masters still take the adoption path above and are never unwrapped here.
+                    pipeline.python, w("uv_xatlas_repair.py"),
+                    "--input", lod0, "--output", output, "--report", report,
                     "--resolution", str(uv_resolution), "--padding", str(uv_padding),
+                    "--overlap-timeout", str(uv_timeout),
                 ])
                 data = _json(report)
-                gate = data.get("injectivity_after") or {}
+                gate = data.get("gate") or data.get("injectivity_after") or {}
+                raster_gate_report = stage / "atlas_raster_injectivity.json"
+                raster_code = 1
+                raster_data = {}
+                if output.exists():
+                    raster_code, _raster_out = pipeline.run([
+                        pipeline.python, w("uv_master_verify.py"),
+                        "--master", output, "--report", raster_gate_report,
+                        "--resolution", str(uv_resolution),
+                    ])
+                    raster_data = _json(raster_gate_report)
                 gates = {
                     "route": "injective", "packer": data.get("packer"),
                     "chart_count": data.get("chart_count"),
@@ -266,10 +310,13 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     "geometry_preserved": data.get("geometry_preserved"),
                     "topology_preserved": data.get("topology_preserved"),
                     "geometry_fingerprint": data.get("geometry_fingerprint"),
-                    "injective": gate.get("injective"),
-                    "interior_texels_claimed_twice": gate.get("interior_texels_claimed_twice"),
-                    "atlas_utilization": gate.get("analytic_uv_area_fraction"),
-                    "degenerate_uv_triangles": gate.get("degenerate_uv_triangles"),
+                    "injective": bool(raster_data.get("success")) and bool(data.get("gate_passed")),
+                    "interior_texels_claimed_twice": (data.get("exact_overlap") or {}).get(
+                        "positive_overlap_pair_count", gate.get("interior_texels_claimed_twice")),
+                    "atlas_utilization": data.get("atlas_utilization", gate.get("analytic_uv_area_fraction")),
+                    "degenerate_uv_triangles": (data.get("exact_overlap") or {}).get(
+                        "degenerate_uv_triangle_count", gate.get("degenerate_uv_triangles")),
+                    "atlas_raster_injectivity": raster_data.get("injectivity"),
                     "max_degenerate_uv_triangles": uv_max_degenerate,
                 }
                 codes = []
@@ -280,12 +327,14 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     # sends the repair policy down the overlap branch for what may be an OOM.
                     codes.append("UV_INJECTIVE_WORKER_FAILED")
                 else:
-                    if not gate.get("injective"):
+                    if not data.get("gate_passed"):
                         codes.append("UV_OVERLAP")
-                    if int(gate.get("degenerate_uv_triangles") or 0) > uv_max_degenerate:
+                    if int((data.get("exact_overlap") or {}).get("degenerate_uv_triangle_count") or 0) > uv_max_degenerate:
                         codes.append("UV_DEGENERATE")
-                    if not (data.get("geometry_preserved") and data.get("topology_preserved")):
-                        codes.append("UV_GEOMETRY_CHANGED")
+                    if raster_code != 0 or not raster_data.get("success"):
+                        codes.append("UV_ATLAS_RASTER_GATE_FAILED")
+                    if code != 0 or not output.exists():
+                        codes.append("UV_INJECTIVE_WORKER_FAILED")
                 if code != 0 or not output.exists() or codes:
                     return StageResult("failed", gates=gates, failure_codes=sorted(set(codes)),
                                        detail=f"injective rewrap exit {code}: {out[-1000:]}")

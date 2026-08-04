@@ -40,7 +40,7 @@ from lowvram3d.uv_quality import (  # noqa: E402
 from uv_exact_validate import _accessor, atlas_utilisation  # noqa: E402
 
 
-def load_indexed(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def load_indexed(path: Path, *, include_uv: bool = False):
     data = path.read_bytes()
     json_length = struct.unpack("<I", data[12:16])[0]
     gltf = json.loads(data[20 : 20 + json_length])
@@ -55,6 +55,9 @@ def load_indexed(path: Path) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         else None
     )
     indices = _accessor(gltf, blob, primitive["indices"]).astype(np.int64).reshape(-1, 3)
+    if include_uv:
+        uv = _accessor(gltf, blob, primitive["attributes"]["TEXCOORD_0"]).astype(np.float64)
+        return positions, normals, indices, uv
     return positions, normals, indices
 
 

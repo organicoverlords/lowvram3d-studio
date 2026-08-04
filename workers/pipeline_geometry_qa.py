@@ -14,12 +14,22 @@ from pathlib import Path
 import numpy as np
 
 from mesh_io import read_glb, triangle_components
-from source_support import component_position, component_support, load_support_context
+from source_support import (component_position, component_support,
+                            component_surface_separation, load_support_context)
 
 WELD = 4e-4
 SOURCE_SUPPORT_MIN = 0.18
 OUTBOARD_MIN = 0.14
 VERY_HIGH_MIN = 0.78
+MIN_SEPARATION_FRACTION = 0.005
+MAX_RELATIVE_COMPONENT_FACES = 0.002
+MAX_RELATIVE_COMPONENT_DIAGONAL = 0.075
+
+
+def _bbox_gap(low_a: np.ndarray, high_a: np.ndarray,
+              low_b: np.ndarray, high_b: np.ndarray) -> float:
+    gap = np.maximum(np.maximum(low_a - high_b, low_b - high_a), 0.0)
+    return float(np.linalg.norm(gap))
 
 
 def main() -> None:
@@ -40,6 +50,12 @@ def main() -> None:
         default="",
         help="score source support in this mesh's frame instead of the graded mesh's own",
     )
+    parser.add_argument("--source-image", default="")
+    parser.add_argument("--up-axis", default="")
+    parser.add_argument("--front-axis", default="")
+    parser.add_argument("--right-axis", default="")
+    parser.add_argument("--allow-source-mirror", action="store_true")
+    parser.add_argument("--protected-components", default="")
     args = parser.parse_args()
 
     mesh_path = Path(args.mesh)
@@ -55,6 +71,8 @@ def main() -> None:
     labels, _ = triangle_components(positions, tris, WELD)
     sizes = np.bincount(labels)
     body = int(np.argmax(sizes))
+    body_vertices = positions[np.unique(tris[labels == body])]
+    body_low, body_high = body_vertices.min(axis=0), body_vertices.max(axis=0)
     max_diagonal = scene_diagonal * args.max_shard_diagonal_fraction
     # Support is scored by projecting a component into a frame derived from percentiles of the
     # mesh's own positions. That makes the score depend on which *other* components exist: strip
@@ -67,7 +85,18 @@ def main() -> None:
         reference = Path(args.support_reference_mesh)
         if reference.is_file():
             support_positions = read_glb(reference)[0].astype(np.float64)
-    context = load_support_context(mesh_path, support_positions)
+    context = load_support_context(
+        mesh_path, support_positions,
+        source_image=Path(args.source_image) if args.source_image else None,
+        support_reference_mesh=(Path(args.support_reference_mesh)
+                                if args.support_reference_mesh else None),
+        up_axis=args.up_axis or None, front_axis=args.front_axis or None,
+        right_axis=args.right_axis or None,
+        allow_source_mirror=True if args.allow_source_mirror else None,
+    )
+    protected_components = {
+        int(value) for value in str(args.protected_components).split(",") if value.strip()
+    }
     shards: list[dict] = []
     preserved_small: list[dict] = []
 
@@ -78,6 +107,12 @@ def main() -> None:
         vertices = positions[np.unique(tris[members])]
         diagonal = float(np.linalg.norm(vertices.max(axis=0) - vertices.min(axis=0)))
         count = int(size_value)
+        bbox_low, bbox_high = vertices.min(axis=0), vertices.max(axis=0)
+        separation = _bbox_gap(bbox_low, bbox_high, body_low, body_high)
+        surface_separation = component_surface_separation(body_vertices, vertices)
+        separated = surface_separation > scene_diagonal * MIN_SEPARATION_FRACTION
+        small_relative = (count / max(len(tris), 1) <= MAX_RELATIVE_COMPONENT_FACES
+                          or diagonal <= scene_diagonal * MAX_RELATIVE_COMPONENT_DIAGONAL)
         tiny = count <= args.max_shard_triangles and diagonal <= max_diagonal
         record: dict = {
             "component": index,
@@ -98,9 +133,15 @@ def main() -> None:
                 "height_mean": round(height, 5),
                 "lateral_mean": round(lateral, 5),
                 "source_support": support,
+                "bbox_separation": round(separation, 6),
+                "surface_separation": round(surface_separation, 6),
+                "relative_face_fraction": round(count / max(len(tris), 1), 8),
+                "relative_diagonal_fraction": round(diagonal / max(scene_diagonal, 1e-9), 8),
             })
-            is_shard = tiny and high_or_outboard and unsupported
-            if not is_shard and tiny:
+            protected = index in protected_components
+            is_shard = (not protected and separated and small_relative and high_or_outboard
+                        and unsupported)
+            if not is_shard and small_relative:
                 record["preservation_reason"] = (
                     "small LOD feature retained: source-supported or not high/outboard"
                 )
@@ -134,7 +175,7 @@ def main() -> None:
         "axis_ratio": round(axis_ratio, 4),
         "longest_axis": "xyz"[int(np.argmax(extent))],
         "debris": {
-            "policy": "source_supported_post_lod" if context is not None else "legacy_pre_lod",
+            "policy": "explicit_source_supported" if context is not None else "legacy_pre_lod",
             "source_aware": context is not None,
             "source_path": None if context is None else str(context.source_path),
             "unsupported_components_remaining": len(shards),
@@ -145,6 +186,10 @@ def main() -> None:
             "source_support_min": SOURCE_SUPPORT_MIN,
             "outboard_min": OUTBOARD_MIN,
             "very_high_min": VERY_HIGH_MIN,
+            "min_separation_fraction": MIN_SEPARATION_FRACTION,
+            "max_relative_component_faces": MAX_RELATIVE_COMPONENT_FACES,
+            "max_relative_component_diagonal": MAX_RELATIVE_COMPONENT_DIAGONAL,
+            "protected_components": sorted(protected_components),
         },
         "failure_codes": failure_codes,
         "advisory_codes": advisory_codes,

@@ -1,0 +1,29 @@
+{
+  "manifest_version": 2,
+  "asset_id": "turbo_bird",
+  "profile": "flying_creature",
+  "source": {
+    "path": "C:\\AI\\LowVRAM3D-benchmarks\\images\\turbo_bird.png",
+    "sha256": "0a2832de5423e8d92fbb40e8eb4131e5d5a5f9fa352a3eded5667c7a40ef246a",
+    "bytes": 3136801
+  },
+  "geometry": {"preserve_thin_features": true},
+  "conditioning": {"tolerance": 42.0, "enclosed_tolerance": 32.0, "shadow_tolerance": 180.0, "shadow_from": 0.78},
+  "lod": {"mode": "generate"},
+  "lod_policy": [400000, 120000, 40000, 12000],
+  "uv": {
+    "route": "injective",
+    "resolution": 2048,
+    "padding": 4,
+    "max_degenerate_uv_triangles": 0,
+    "candidate_timeout_seconds": 900
+  },
+  "texture": {
+    "route": "mvadapter_sixview",
+    "resolution": 2048,
+    "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\turbo_bird\\controls",
+    "views_receipt": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\turbo_bird\\views\\inference_receipt.json"
+  },
+  "rig": {"required": false, "separate_props": false},
+  "output_root": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\turbo_bird"
+}

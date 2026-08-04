@@ -14,6 +14,7 @@ decided by the unmodified `lowvram3d.uv_overlap.positive_area_uv_overlaps`.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -42,6 +43,14 @@ from lowvram3d.uv_quality import (  # noqa: E402
 from uv_xatlas_route import load_indexed, weld, write_glb  # noqa: E402
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def chart_labels(indices: np.ndarray, vertex_count: int) -> np.ndarray:
     """Chart id per vertex. xatlas splits vertices on seams, so connected components of the output
     index buffer are exactly the charts."""
@@ -62,7 +71,12 @@ def chart_labels(indices: np.ndarray, vertex_count: int) -> np.ndarray:
     return np.array([find(i) for i in range(vertex_count)])
 
 
-def offending_triangles(uv_triangles: np.ndarray) -> set[int]:
+def offending_triangles(
+    uv_triangles: np.ndarray,
+    resolution: int,
+    timeout_seconds: float,
+    max_candidate_pairs: int,
+):
     """Indices of triangles taking part in any positive-area UV intersection.
 
     Mirrors `lowvram3d.uv_overlap` exactly - same grid, same Sutherland-Hodgman clip, same area
@@ -71,41 +85,17 @@ def offending_triangles(uv_triangles: np.ndarray) -> set[int]:
     where a chart doubles back over itself, and a cross-chart filter misses every one of them.
     Acceptance still comes from the unmodified repository detector.
     """
-    low = uv_triangles.min(axis=1)
-    high = uv_triangles.max(axis=1)
-    cell_low = np.clip((low * GRID_SIZE).astype(np.int64), 0, GRID_SIZE - 1)
-    cell_high = np.clip((high * GRID_SIZE).astype(np.int64), 0, GRID_SIZE - 1)
-
-    buckets: dict[int, list[int]] = {}
-    for index in range(len(uv_triangles)):
-        for cx in range(cell_low[index, 0], cell_high[index, 0] + 1):
-            for cy in range(cell_low[index, 1], cell_high[index, 1] + 1):
-                buckets.setdefault(cx * GRID_SIZE + cy, []).append(index)
-
-    seen: set[tuple[int, int]] = set()
-    guilty: set[int] = set()
-    for members in buckets.values():
-        if len(members) < 2:
-            continue
-        for i in range(len(members) - 1):
-            for j in range(i + 1, len(members)):
-                a, b = members[i], members[j]
-                key = (a, b) if a < b else (b, a)
-                if key in seen:
-                    continue
-                seen.add(key)
-                ta, tb = uv_triangles[a], uv_triangles[b]
-                if (
-                    ta[:, 0].max() < tb[:, 0].min()
-                    or tb[:, 0].max() < ta[:, 0].min()
-                    or ta[:, 1].max() < tb[:, 1].min()
-                    or tb[:, 1].max() < ta[:, 1].min()
-                ):
-                    continue
-                if _polygon_area(_clip_convex(ta.copy(), tb.copy())) > AREA_EPSILON_UV:
-                    guilty.add(a)
-                    guilty.add(b)
-    return guilty
+    # Keep pruning and acceptance on one authoritative detector.  The prior local reimplementation
+    # performed the same O(candidate-pairs) scan a second time before the gate, which was harmless
+    # semantically but very expensive on fresh ~1M-face assets.
+    return positive_area_uv_overlaps(
+        uv_triangles,
+        resolution,
+        timeout_seconds=timeout_seconds,
+        max_candidate_pairs=max_candidate_pairs,
+        collect_pairs=True,
+        engine="auto",
+    )
 
 
 def cross_chart_collisions(
@@ -188,28 +178,64 @@ def main() -> int:
     shrink_factors = [float(v) for v in args.shrink_factors.split(",")]
     dropped_faces_total = 0
     journal: list[dict] = []
+    raw_checkpoint = Path(args.output).with_name("raw_xatlas_candidate.glb")
+    raw_checkpoint_meta = raw_checkpoint.with_suffix(".json")
+    checkpoint_arrays = None
+    if raw_checkpoint.exists() and raw_checkpoint_meta.exists():
+        try:
+            checkpoint_meta = json.loads(raw_checkpoint_meta.read_text(encoding="utf-8"))
+            expected_meta = {
+                "input_sha256": sha256_file(Path(args.input)),
+                "resolution": args.resolution,
+                "padding": args.padding,
+                "max_cost": args.max_cost,
+                "max_iterations": args.max_iterations,
+            }
+            if all(checkpoint_meta.get(key) == value for key, value in expected_meta.items()):
+                checkpoint_arrays = load_indexed(raw_checkpoint, include_uv=True)
+                print(f"RAW_XATLAS_CHECKPOINT_REUSED {raw_checkpoint}", flush=True)
+        except (OSError, KeyError, ValueError, json.JSONDecodeError):
+            checkpoint_arrays = None
 
     for attempt in range(args.max_unwrap_attempts):
-        atlas = xatlas.Atlas()
-        atlas.add_mesh(positions, indices.astype(np.uint32))
-        chart_options = xatlas.ChartOptions()
-        chart_options.max_cost = args.max_cost
-        chart_options.max_iterations = args.max_iterations
-        pack_options = xatlas.PackOptions()
-        pack_options.resolution = args.resolution
-        pack_options.padding = args.padding
-        pack_options.bruteForce = False
-        started = time.monotonic()
-        atlas.generate(chart_options=chart_options, pack_options=pack_options)
-        unwrap_seconds = time.monotonic() - started
+        if checkpoint_arrays is not None:
+            out_positions, out_normals, out_indices, out_uv = checkpoint_arrays
+            unwrap_seconds = 0.0
+            atlas_count = 1
+        else:
+            atlas = xatlas.Atlas()
+            atlas.add_mesh(positions, indices.astype(np.uint32))
+            chart_options = xatlas.ChartOptions()
+            chart_options.max_cost = args.max_cost
+            chart_options.max_iterations = args.max_iterations
+            pack_options = xatlas.PackOptions()
+            pack_options.resolution = args.resolution
+            pack_options.padding = args.padding
+            pack_options.bruteForce = False
+            started = time.monotonic()
+            atlas.generate(chart_options=chart_options, pack_options=pack_options)
+            unwrap_seconds = time.monotonic() - started
+            atlas_count = int(atlas.atlas_count)
 
-        vmapping, out_indices, out_uv = atlas[0]
-        out_uv = np.asarray(out_uv, np.float64)
-        if out_uv.max() > 1.5:
-            out_uv = out_uv / np.array([atlas.width, atlas.height], np.float64)
-        out_indices = np.asarray(out_indices, np.int64).reshape(-1, 3)
-        out_positions = positions[vmapping]
-        out_normals = normals[vmapping] if normals is not None else None
+            vmapping, out_indices, out_uv = atlas[0]
+            out_uv = np.asarray(out_uv, np.float64)
+            if out_uv.max() > 1.5:
+                out_uv = out_uv / np.array([atlas.width, atlas.height], np.float64)
+            out_indices = np.asarray(out_indices, np.int64).reshape(-1, 3)
+            out_positions = positions[vmapping]
+            out_normals = normals[vmapping] if normals is not None else None
+
+            # Checkpoint the raw xatlas candidate before any exact validation or repair.  A failed
+            # overlap gate must never force the expensive unwrap to run again with the same input.
+            write_glb(raw_checkpoint, out_positions, out_normals, out_uv, out_indices)
+            raw_checkpoint_meta.write_text(json.dumps({
+                "input_sha256": sha256_file(Path(args.input)),
+                "resolution": args.resolution,
+                "padding": args.padding,
+                "max_cost": args.max_cost,
+                "max_iterations": args.max_iterations,
+                "triangles": int(len(out_indices)),
+            }, indent=2), encoding="utf-8")
 
         # Drop UV-degenerate faces at source: they originate in near-zero-area 3D triangles and no
         # packing change can rescue them.
@@ -222,6 +248,7 @@ def main() -> int:
         # simply pushes a different set of small triangles below the degeneracy epsilon - observed
         # cycling 62 -> 15 -> 50. Deleting the offending faces leaves every surviving triangle's UV
         # byte-identical, so the pruned set is guaranteed no worse than the set it came from.
+        last_exact = None
         for prune_round in range(args.repair_rounds):
             tri_uv = out_uv[out_indices]
             area = 0.5 * np.abs(
@@ -229,7 +256,17 @@ def main() -> int:
                 - (tri_uv[:, 2, 0] - tri_uv[:, 0, 0]) * (tri_uv[:, 1, 1] - tri_uv[:, 0, 1])
             )
             degenerate_idx = set(np.flatnonzero(area <= AREA_EPSILON_UV).tolist())
-            overlap_idx = offending_triangles(tri_uv)
+            overlap_report = offending_triangles(
+                tri_uv,
+                args.resolution,
+                args.overlap_timeout,
+                args.max_candidate_pairs,
+            )
+            overlap_idx = {
+                triangle
+                for pair in overlap_report.positive_overlap_pairs
+                for triangle in pair
+            }
             guilty = degenerate_idx | overlap_idx
             print(
                 f"prune {prune_round}: degenerate={len(degenerate_idx)} "
@@ -245,6 +282,7 @@ def main() -> int:
                 }
             )
             if not guilty:
+                last_exact = overlap_report
                 break
             keep = np.ones(len(out_indices), bool)
             keep[list(guilty)] = False
@@ -264,14 +302,19 @@ def main() -> int:
         # Authoritative acceptance: unmodified repository detector.
         tri_uv = out_uv[out_indices]
         tri_pos = out_positions[out_indices]
-        exact_started = time.monotonic()
-        exact = positive_area_uv_overlaps(
-            tri_uv,
-            args.resolution,
-            timeout_seconds=args.overlap_timeout,
-            max_candidate_pairs=args.max_candidate_pairs,
-        )
-        exact_seconds = time.monotonic() - exact_started
+        if last_exact is None:
+            exact_started = time.monotonic()
+            exact = positive_area_uv_overlaps(
+                tri_uv,
+                args.resolution,
+                timeout_seconds=args.overlap_timeout,
+                max_candidate_pairs=args.max_candidate_pairs,
+                engine="auto",
+            )
+            exact_seconds = time.monotonic() - exact_started
+        else:
+            exact = last_exact
+            exact_seconds = 0.0
 
         stretch, area3d = conformal_stretch(tri_pos, tri_uv)
         stretch_p95 = area_weighted_percentile(stretch, area3d, 95.0)
@@ -308,7 +351,7 @@ def main() -> int:
             "triangles": int(len(out_indices)),
             "dropped_degenerate_faces_total": dropped_faces_total,
             "atlas_utilization": utilisation,
-            "atlas_count": int(atlas.atlas_count),
+            "atlas_count": atlas_count,
             "stretch_p95": float(stretch_p95),
             "exact_overlap": exact.as_dict(),
             "exact_overlap_seconds": exact_seconds,

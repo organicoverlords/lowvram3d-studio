@@ -1,6 +1,8 @@
 import numpy as np
+import pytest
 
 from lowvram3d.uv_overlap import AREA_EPSILON_UV, positive_area_uv_overlaps
+from lowvram3d.uv_overlap_native import native_executable
 
 
 def run(triangles, resolution=2048, **kwargs):
@@ -117,3 +119,19 @@ def test_noise_intersections_are_recorded_not_counted():
         [[0.30 - tiny, 0.10], [0.50, 0.10], [0.50, 0.30]],
     ])
     assert report.positive_overlap_pair_count == 0
+
+
+@pytest.mark.skipif(native_executable() is None, reason="native UV overlap helper is not built")
+def test_native_detector_matches_python_detector():
+    triangles = np.asarray([
+        [[0.10, 0.10], [0.40, 0.10], [0.10, 0.40]],
+        [[0.20, 0.20], [0.50, 0.20], [0.20, 0.50]],
+        [[0.60, 0.60], [0.70, 0.60], [0.60, 0.70]],
+    ], np.float64)
+    python_report = positive_area_uv_overlaps(triangles, 2048, collect_pairs=True, engine="python")
+    native_report = positive_area_uv_overlaps(triangles, 2048, collect_pairs=True, engine="native")
+    assert native_report.success
+    assert native_report.candidate_pair_count == python_report.candidate_pair_count
+    assert native_report.tested_pair_count == python_report.tested_pair_count
+    assert native_report.positive_overlap_pairs == python_report.positive_overlap_pairs
+    assert abs(native_report.positive_overlap_total_area_uv - python_report.positive_overlap_total_area_uv) < 1e-15

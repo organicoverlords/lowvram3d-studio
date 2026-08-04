@@ -17,6 +17,8 @@ jobs/
 *.npz
 *.blend
 *.blend1
+tools/native/*.exe
+*.obj
 
 # ...except the curated evidence set for the documented run.
 !evidence/deliverable/*.glb

@@ -26,6 +26,7 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
     root = Path(manifest["output_root"])
     profile = pipeline.profile
     source_image = Path(manifest["source"]["path"])
+    orientation = manifest.get("orientation") or {}
     texture_resolution = int(manifest["texture"]["resolution"])
     # The generator does not run in the pipeline's own interpreter. Mini Turbo needs the
     # standalone Python it was installed against and `hy3dgen` on PYTHONPATH; running it with the
@@ -50,20 +51,39 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
     def b(name: str) -> Path:
         return REPO_ROOT / "blender" / name
 
+    def support_flags(reference_mesh: Path, source_path: Path) -> list:
+        flags = ["--source-image", source_path, "--support-reference-mesh", reference_mesh]
+        for flag, key in (("--up-axis", "up_axis"), ("--front-axis", "front_axis"),
+                          ("--right-axis", "right_axis")):
+            if orientation.get(key) is not None:
+                flags += [flag, str(orientation[key])]
+        if orientation.get("allow_source_mirror", False):
+            flags.append("--allow-source-mirror")
+        protected = orientation.get("protected_components") or []
+        if protected:
+            flags += ["--protected-components", ",".join(str(v) for v in protected)]
+        return flags
+
     # ---------------------------------------------------------------- INGEST
     def ingest():
         def runner(overrides):
             stage = pipeline.stage_dir("INGEST") / "candidate"
             matte = stage / "matte.png"
             conditioning_audit = stage / "conditioning_audit.json"
-            code, out = pipeline.run([
+            conditioning = manifest.get("conditioning") or {}
+            conditioning_command = [
                 pipeline.python, w("normalize_conditioning.py"),
                 "--image", source_image, "--output", matte,
                 "--audit-json", conditioning_audit,
                 "--overlay", stage / "conditioning_overlay.png",
                 "--original-vs-matte", stage / "original_vs_matte.png",
                 "--size", "512",
-            ])
+                "--tolerance", str(float(conditioning.get("tolerance", 42.0))),
+                "--enclosed-tolerance", str(float(conditioning.get("enclosed_tolerance", 32.0))),
+                "--shadow-tolerance", str(float(conditioning.get("shadow_tolerance", 180.0))),
+                "--shadow-from", str(float(conditioning.get("shadow_from", 0.78))),
+            ]
+            code, out = pipeline.run(conditioning_command)
             if code != 0 or not matte.exists():
                 return StageResult("failed", detail=f"conditioning worker exit {code}: {out[-800:]}")
             stats = read_json(conditioning_audit)
@@ -75,7 +95,13 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
                      "transparent_margin_percent": stats.get("selected_foreground", {}).get("transparent_margin_percent"),
                      "disconnected_components": stats.get("selected_foreground", {}).get("disconnected_foreground_components"),
                      "border_contact": stats.get("selected_foreground", {}).get("border_contact"),
-                     "alpha_valid": stats.get("selected_foreground", {}).get("alpha_valid")}
+                     "alpha_valid": stats.get("selected_foreground", {}).get("alpha_valid"),
+                     "conditioning_shadow_settings": {
+                         "tolerance": float(conditioning.get("tolerance", 42.0)),
+                         "enclosed_tolerance": float(conditioning.get("enclosed_tolerance", 32.0)),
+                         "shadow_tolerance": float(conditioning.get("shadow_tolerance", 180.0)),
+                         "shadow_from": float(conditioning.get("shadow_from", 0.78)),
+                     }}
             return StageResult("passed", outputs={"matte": matte}, gates=gates)
         return pipeline.execute("INGEST", [source_image], runner)
 
@@ -136,6 +162,7 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
                 "--mesh", master, "--report", report,
                 "--max-axis-ratio", str(profile.max_axis_ratio),
                 "--debris-height-min", str(profile.debris_height_min),
+                *support_flags(master, pipeline.stage_dir("INGEST") / "proven" / "matte.png"),
             ])
             data = read_json(report)
             if code not in (0, 2) or not data:
@@ -161,6 +188,7 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
                 pipeline.python, w("pipeline_debris_strip.py"),
                 "--input", master, "--output", cleaned, "--report", report,
                 "--height-min", str(height_min),
+                *support_flags(master, pipeline.stage_dir("INGEST") / "proven" / "matte.png"),
             ])
             data = read_json(report)
             if code != 0 or not cleaned.exists():
@@ -170,11 +198,12 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
             # cleaned mesh with debris blocking. This is where a remaining shard is a real failure,
             # and it is what makes the stage self-correcting instead of merely hopeful.
             verify = stage / "verify_geometry.json"
-            pipeline.run([
+            verify_code, verify_out = pipeline.run([
                 pipeline.python, w("pipeline_geometry_qa.py"),
                 "--mesh", cleaned, "--report", verify,
                 "--max-axis-ratio", str(profile.max_axis_ratio),
                 "--debris-height-min", str(height_min), "--debris-blocking",
+                *support_flags(master, pipeline.stage_dir("INGEST") / "proven" / "matte.png"),
             ])
             verified = read_json(verify)
             gates = {"triangles_before": data.get("triangles_before"),
@@ -190,9 +219,11 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
                 return StageResult("failed", gates=gates,
                                    detail=f"debris strip removed {removed}% of triangles")
             codes = verified.get("failure_codes", [])
+            if verify_code != 0 and not codes:
+                codes = ["CLEAN_VERIFY_FAILED"]
             if codes:
                 return StageResult("failed", gates=gates, failure_codes=codes,
-                                   detail="; ".join(verified.get("messages", [])))
+                                   detail="; ".join(verified.get("messages", [])) or verify_out[-800:])
             return StageResult("passed",
                                outputs={"clean": cleaned, "clean_report": report,
                                         "verify_geometry": verify},

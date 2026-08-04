@@ -112,9 +112,12 @@ def measure_orientation(objects, tri_areas=None):
     return up, sign, lateral, scores, scale
 
 
-def orient(objects) -> dict:
+def orient(objects, forced_up: int = -1, forced_sign: float = 0.0, forced_lateral: int = -1) -> dict:
     """Stand the subject up using axes measured in Blender space."""
-    up, sign, lateral, scores, _ = measure_orientation(objects)
+    measured_up, measured_sign, measured_lateral, scores, _ = measure_orientation(objects)
+    up = measured_up if forced_up < 0 else forced_up
+    sign = measured_sign if forced_sign == 0.0 else forced_sign
+    lateral = measured_lateral if forced_lateral < 0 else forced_lateral
 
     up_vector = Vector((0.0, 0.0, 0.0))
     up_vector[up] = sign
@@ -129,8 +132,10 @@ def orient(objects) -> dict:
 
     for obj in objects:
         obj.matrix_world = rotation @ obj.matrix_world
-    return {"measured_up_axis": "xyz"[up], "measured_up_sign": sign,
-            "measured_lateral_axis": "xyz"[lateral],
+    return {"measured_up_axis": "xyz"[measured_up], "measured_up_sign": measured_sign,
+            "measured_lateral_axis": "xyz"[measured_lateral],
+            "render_up_axis": "xyz"[up], "render_up_sign": sign,
+            "render_lateral_axis": "xyz"[lateral],
             "symmetry_scores": [round(s, 4) for s in scores]}
 
 
@@ -182,6 +187,9 @@ def main() -> None:
     parser.add_argument("--up-axis", type=int, default=-1, help="ignored; measured after import")
     parser.add_argument("--up-sign", type=float, default=1.0, help="ignored; measured after import")
     parser.add_argument("--lateral-axis", type=int, default=-1, help="ignored; measured after import")
+    parser.add_argument("--force-up-axis", type=int, default=-1, choices=(-1, 0, 1, 2))
+    parser.add_argument("--force-up-sign", type=float, default=0.0)
+    parser.add_argument("--force-lateral-axis", type=int, default=-1, choices=(-1, 0, 1, 2))
     parser.add_argument("--resolution", type=int, default=768)
     parser.add_argument("--samples", type=int, default=16)
     parser.add_argument("--label", default="")
@@ -191,7 +199,7 @@ def main() -> None:
     objects = import_mesh(args.glb)
     if not objects:
         raise SystemExit(f"no mesh imported from {args.glb}")
-    orientation = orient(objects)
+    orientation = orient(objects, args.force_up_axis, args.force_up_sign, args.force_lateral_axis)
 
     material = clay_material()
     for obj in objects:

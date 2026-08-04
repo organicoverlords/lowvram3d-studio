@@ -20,12 +20,22 @@ from pathlib import Path
 import numpy as np
 
 from mesh_io import read_glb, triangle_components, write_glb
-from source_support import component_position, component_support, load_support_context
+from source_support import (component_position, component_support,
+                            component_surface_separation, load_support_context)
 
 WELD = 4e-4
 SOURCE_SUPPORT_MIN = 0.18
 OUTBOARD_MIN = 0.14
 VERY_HIGH_MIN = 0.78
+MIN_SEPARATION_FRACTION = 0.005
+MAX_RELATIVE_COMPONENT_FACES = 0.002
+MAX_RELATIVE_COMPONENT_DIAGONAL = 0.075
+
+
+def _bbox_gap(low_a: np.ndarray, high_a: np.ndarray,
+              low_b: np.ndarray, high_b: np.ndarray) -> float:
+    gap = np.maximum(np.maximum(low_a - high_b, low_b - high_a), 0.0)
+    return float(np.linalg.norm(gap))
 
 
 def main() -> None:
@@ -36,21 +46,41 @@ def main() -> None:
     parser.add_argument("--height-min", type=float, default=0.70)
     parser.add_argument("--max-triangles", type=int, default=20)
     parser.add_argument("--max-diagonal-fraction", type=float, default=0.062)
+    parser.add_argument("--source-image", default="")
+    parser.add_argument("--support-reference-mesh", default="")
+    parser.add_argument("--up-axis", default="")
+    parser.add_argument("--front-axis", default="")
+    parser.add_argument("--right-axis", default="")
+    parser.add_argument("--allow-source-mirror", action="store_true")
+    parser.add_argument("--protected-components", default="")
     args = parser.parse_args()
 
     input_path = Path(args.input)
     positions, normals, uv, tris = read_glb(input_path)
     positions = positions.astype(np.float64)
     component, _ = triangle_components(positions, tris, WELD)
-    context = load_support_context(input_path, positions)
+    context = load_support_context(
+        input_path, positions,
+        source_image=Path(args.source_image) if args.source_image else None,
+        support_reference_mesh=(Path(args.support_reference_mesh)
+                                if args.support_reference_mesh else None),
+        up_axis=args.up_axis or None, front_axis=args.front_axis or None,
+        right_axis=args.right_axis or None,
+        allow_source_mirror=True if args.allow_source_mirror else None,
+    )
 
     low, high = positions.min(axis=0), positions.max(axis=0)
     scene_diagonal = float(np.linalg.norm(high - low))
     max_diagonal = scene_diagonal * args.max_diagonal_fraction
     legacy_span = max(float(high[1] - low[1]), 1e-9)
+    protected_components = {
+        int(value) for value in str(args.protected_components).split(",") if value.strip()
+    }
 
     sizes = np.bincount(component)
     body = int(np.argmax(sizes))
+    body_vertices = positions[np.unique(tris[component == body])]
+    body_low, body_high = body_vertices.min(axis=0), body_vertices.max(axis=0)
     removed: list[dict] = []
     kept: list[dict] = []
     drop = np.zeros(len(tris), bool)
@@ -70,6 +100,10 @@ def main() -> None:
             kept.append(record)
             continue
 
+        surface_separation = component_surface_separation(body_vertices, vertices)
+        separated = surface_separation > scene_diagonal * MIN_SEPARATION_FRACTION
+        small_relative = (count / max(len(tris), 1) <= MAX_RELATIVE_COMPONENT_FACES
+                          or diagonal <= scene_diagonal * MAX_RELATIVE_COMPONENT_DIAGONAL)
         tiny = count <= args.max_triangles and diagonal <= max_diagonal
         if context is not None:
             position = component_position(context, vertices)
@@ -85,16 +119,27 @@ def main() -> None:
                 "height_mean": round(height, 5),
                 "lateral_mean": round(lateral, 5),
                 "source_support": support,
+                "bbox_separation": round(_bbox_gap(vertices.min(axis=0), vertices.max(axis=0),
+                                                     body_low, body_high), 6),
+                "surface_separation": round(surface_separation, 6),
+                "relative_face_fraction": round(count / max(len(tris), 1), 8),
+                "relative_diagonal_fraction": round(diagonal / max(scene_diagonal, 1e-9), 8),
             })
-            remove = tiny and high_or_outboard and unsupported
+            protected = index in protected_components
+            remove = (not protected and separated and small_relative and high_or_outboard
+                      and unsupported)
             if remove:
                 record["verdict"] = (
-                    "removed: detached tiny high/outboard component lacks source-silhouette support"
+                    "removed: detached small component lacks direct/mirrored source-silhouette support"
                 )
             else:
                 reasons = []
-                if not tiny:
-                    reasons.append("not microscopically small")
+                if protected:
+                    reasons.append("manifest protected")
+                if not separated:
+                    reasons.append("close to dominant body")
+                if not small_relative:
+                    reasons.append("not small relative to mesh")
                 if not high_or_outboard:
                     reasons.append("not high/outboard")
                 if not unsupported:
@@ -139,7 +184,7 @@ def main() -> None:
     report = {
         "input": str(input_path),
         "output": str(output_path),
-        "policy": "source_supported_post_lod" if context is not None else "legacy_pre_lod",
+        "policy": "explicit_source_supported" if context is not None else "legacy_pre_lod",
         "source_aware": context is not None,
         "source_path": None if context is None else str(context.source_path),
         "height_min": args.height_min,
@@ -148,6 +193,10 @@ def main() -> None:
         "source_support_min": SOURCE_SUPPORT_MIN,
         "max_triangles": args.max_triangles,
         "max_diagonal": round(max_diagonal, 6),
+        "min_separation_fraction": MIN_SEPARATION_FRACTION,
+        "max_relative_component_faces": MAX_RELATIVE_COMPONENT_FACES,
+                "max_relative_component_diagonal": MAX_RELATIVE_COMPONENT_DIAGONAL,
+        "protected_components": sorted(protected_components),
         "components_total": int(len(sizes)),
         "components_removed": len(removed),
         "triangles_before": int(len(tris)),

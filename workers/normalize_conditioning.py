@@ -81,6 +81,9 @@ def normalize_conditioning(
     original_vs_matte_path: Path,
     size: int = 512,
     tolerance: float = 42.0,
+    enclosed_tolerance: float = 32.0,
+    shadow_tolerance: float = 180.0,
+    shadow_from: float = 0.78,
 ) -> dict:
     with Image.open(image_path) as original_image:
         original_bands = original_image.getbands()
@@ -98,7 +101,10 @@ def normalize_conditioning(
         matte_stats = None
     else:
         rgb = np.asarray(source.convert("RGB"))
-        alpha, matte_stats = key_alpha(rgb, tolerance, "hybrid", 5000, 32, 155, 0.78, 2)
+        alpha, matte_stats = key_alpha(
+            rgb, tolerance, "hybrid", 5000, enclosed_tolerance,
+            shadow_tolerance, shadow_from, 2
+        )
         selected = Image.fromarray(np.dstack((np.where(alpha[..., None] > 0, rgb, 255), alpha)).astype(np.uint8), "RGBA")
         route = "existing_pipeline_matte"
 
@@ -170,9 +176,18 @@ def main() -> int:
     parser.add_argument("--overlay", required=True)
     parser.add_argument("--original-vs-matte", required=True)
     parser.add_argument("--size", type=int, default=512)
+    parser.add_argument("--tolerance", type=float, default=42.0)
+    parser.add_argument("--enclosed-tolerance", type=float, default=32.0)
+    parser.add_argument("--shadow-tolerance", type=float, default=180.0)
+    parser.add_argument("--shadow-from", type=float, default=0.78)
     args = parser.parse_args()
     try:
-        audit = normalize_conditioning(Path(args.image), Path(args.output), Path(args.audit_json), Path(args.overlay), Path(args.original_vs_matte), args.size)
+        audit = normalize_conditioning(
+            Path(args.image), Path(args.output), Path(args.audit_json),
+            Path(args.overlay), Path(args.original_vs_matte), args.size,
+            args.tolerance, args.enclosed_tolerance, args.shadow_tolerance,
+            args.shadow_from,
+        )
         print(f"CONDITIONING_NORMALIZED status={audit['status']} route={audit['route']} output={args.output}", flush=True)
         return 0
     except Exception as exc:

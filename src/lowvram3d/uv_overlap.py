@@ -39,6 +39,7 @@ class UvOverlapReport:
     degenerate_uv_triangle_count: int = 0
     out_of_bounds_triangle_count: int = 0
     ignored_noise_intersection_count: int = 0
+    positive_overlap_pairs: list[tuple[int, int]] = field(default_factory=list)
     timed_out: bool = False
     success: bool = False
     errors: list[str] = field(default_factory=list)
@@ -54,6 +55,7 @@ class UvOverlapReport:
             "degenerate_uv_triangle_count": self.degenerate_uv_triangle_count,
             "out_of_bounds_triangle_count": self.out_of_bounds_triangle_count,
             "ignored_noise_intersection_count": self.ignored_noise_intersection_count,
+            "positive_overlap_pairs": [list(pair) for pair in self.positive_overlap_pairs],
             "timed_out": self.timed_out,
             "success": self.success,
             "errors": list(self.errors),
@@ -109,9 +111,23 @@ def positive_area_uv_overlaps(
     *,
     timeout_seconds: float = TIMEOUT_SECONDS,
     max_candidate_pairs: int = MAX_CANDIDATE_PAIRS,
+    collect_pairs: bool = False,
+    engine: str = "python",
 ) -> UvOverlapReport:
-    report = UvOverlapReport()
     triangles = np.asarray(uv_triangles, np.float64)
+    if engine in {"auto", "native"}:
+        if triangles.ndim == 3 and triangles.shape[1:] == (3, 2) and np.isfinite(triangles).all():
+            from .uv_overlap_native import detect_native
+            native = detect_native(
+                triangles, atlas_resolution, timeout_seconds, max_candidate_pairs, collect_pairs,
+            )
+            if native is not None:
+                return native
+            if engine == "native":
+                failed = UvOverlapReport()
+                failed.errors.append("native overlap detector unavailable")
+                return failed
+    report = UvOverlapReport()
     if triangles.ndim != 3 or triangles.shape[1:] != (3, 2):
         report.errors.append("uv_triangles must have shape (F, 3, 2)")
         return report
@@ -197,6 +213,8 @@ def positive_area_uv_overlaps(
         area = _polygon_area(intersection)
         if area > AREA_EPSILON_UV:
             overlap_pairs += 1
+            if collect_pairs:
+                report.positive_overlap_pairs.append((first, second))
             total_area += area
             max_area = max(max_area, area)
         elif area > 0.0:

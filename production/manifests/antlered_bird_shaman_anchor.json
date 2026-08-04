@@ -1,0 +1,47 @@
+{
+  "manifest_version": 2,
+  "asset_id": "antlered_bird_shaman_anchor",
+  "profile": "humanoid_complex_accessories",
+  "source": {
+    "path": "C:\\AI\\LowVRAM3D-benchmarks\\images\\antlered_bird_shaman_anchor.png",
+    "sha256": "4d23adc758c5b700dd29939e37c043ce61919792b566bdcf13f58b1409d6cf6f",
+    "bytes": 2147495
+  },
+  "generator_runtime": {
+    "python": "C:\\AI\\HY3D2\\python_standalone\\python.exe",
+    "pythonpath": ["C:\\AI\\HY3D2\\Hunyuan3D-2"]
+  },
+  "generation_prompt": "antlered bird shaman anchor character, complete static non-animated 3D character with antlers, feathers, clothing, ornaments and thin accessories; preserve the full visible silhouette; no rig, no animation",
+  "generator_settings": {
+    "steps": 5,
+    "octree_ladder": "384:3000,320:2000,256:1500"
+  },
+  "orientation": {
+    "up_axis": "z",
+    "right_axis": "x",
+    "front_axis": "y",
+    "up_sign": 1,
+    "front_sign": 1,
+    "allow_source_mirror": true,
+    "provenance": "explicit production contract; verify against source-facing clay render"
+  },
+  "geometry": {"preserve_thin_features": true},
+  "conditioning": {"tolerance": 42.0, "enclosed_tolerance": 32.0, "shadow_tolerance": 180.0, "shadow_from": 0.78},
+  "lod": {"mode": "generate", "delivery_visual_gate": {"asset_family": "humanoid", "quality": "gameplay", "samples": 50000, "silhouette_size": 256}},
+  "lod_policy": [400000, 800000],
+  "uv": {
+    "route": "injective",
+    "resolution": 2048,
+    "padding": 4,
+    "max_degenerate_uv_triangles": 0,
+    "candidate_timeout_seconds": 900
+  },
+  "texture": {
+    "route": "mvadapter_sixview",
+    "resolution": 2048,
+    "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\antlered_bird_shaman_anchor\\controls",
+    "views_receipt": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\antlered_bird_shaman_anchor\\views\\inference_receipt.json"
+  },
+  "rig": {"required": false, "separate_props": false},
+  "output_root": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\antlered_bird_shaman_anchor_shadowfix"
+}
