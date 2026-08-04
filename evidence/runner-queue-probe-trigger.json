@@ -1,4 +1,5 @@
 {
-  "purpose": "Refresh the current Actions queue census for diagnostics.",
-  "requested_at": "2026-08-04T07:20:00+03:00"
+  "purpose": "Identify the current self-hosted runner owner before guarded Blender v7 run 30878169523 is assigned.",
+  "guarded_blender_v7_run_id": 30878169523,
+  "requested_at": "2026-08-04T07:41:00+03:00"
 }
