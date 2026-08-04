@@ -1,0 +1,33 @@
+{
+  "camera": {
+    "aspect_ratio": 1.3333333333333333,
+    "fov_x_deg": 92.88018051773108,
+    "fov_y_deg": 76.52440773819151,
+    "projection": "perspective"
+  },
+  "classification": "PROVEN",
+  "depth_range": [
+    1.4125463962554932,
+    547.451171875
+  ],
+  "device": "cuda",
+  "disc_thickness_ratio": 0.25,
+  "grid_stride": 1,
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "image_dimensions": [
+    1448,
+    1086
+  ],
+  "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+  "masked_pixel_fraction": 0.6956734633659941,
+  "model": "Ruicheng/moge-2-vitb-normal",
+  "notes": "depth-initialised, not multi-view optimised",
+  "opacity": 0.99,
+  "output_bytes": 74389969,
+  "output_ply": "C:\\AI\\ScenePipelineSmoke\\20260804\\treesandbarn\\treesandbarn.ply",
+  "output_sha256": "1b807fc09bb9fc87cdc7450b97613a35f42fdd991e454dc5727e6b547a663039",
+  "representation": "3d_gaussian_splats",
+  "schema_version": "splat_export_receipt_v1",
+  "sh_degree": 0,
+  "splat_count": 1093964
+}
