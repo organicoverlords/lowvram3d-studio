@@ -26,7 +26,7 @@ if (-not (Test-Path -LiteralPath $path)) {
     throw "Blender scene builder is missing: $path"
 }
 if (@(& git status --short).Count -gt 0) {
-    throw 'Checkout is visibly dirty before face-plate visual v2 repair.'
+    throw 'Checkout is visibly dirty before face-plate visual v3 repair.'
 }
 
 $content = [System.IO.File]::ReadAllText((Resolve-Path -LiteralPath $path))
@@ -51,7 +51,7 @@ def face_sprite_material(
 ) -> bpy.types.Material:
     if not sprite_path.is_file():
         raise RuntimeError(f"Derived face sprite sheet is missing: {sprite_path}")
-    material = bpy.data.materials.new("MAT_Antinous_DerivedFaceSprite_V2")
+    material = bpy.data.materials.new("MAT_Antinous_DerivedFaceSprite_V3")
     material.use_nodes = True
     try:
         material.surface_render_method = "DITHERED"
@@ -82,7 +82,7 @@ def face_sprite_material(
     texture.extension = "CLIP"
 
     mapping.inputs["Scale"].default_value = (1.0 / columns, 1.0 / rows, 1.0)
-    emission.inputs["Strength"].default_value = 0.78
+    emission.inputs["Strength"].default_value = 0.82
     links.new(texture_coordinates.outputs["UV"], mapping.inputs["Vector"])
     links.new(mapping.outputs["Vector"], texture.inputs["Vector"])
     links.new(texture.outputs["Color"], emission.inputs["Color"])
@@ -120,7 +120,7 @@ def _face_plate_grid(
     width = 1.18
     height = 1.52
     center_z = 0.08
-    y_front = -0.30
+    y_front = -0.34
     vertices = []
     for row in range(grid_size):
         v = float(row) / float(grid_size - 1)
@@ -129,7 +129,7 @@ def _face_plate_grid(
             x = (u - 0.5) * width
             z = center_z + (v - 0.5) * height
             radial = (u - 0.5) ** 2 + (v - 0.5) ** 2
-            y = y_front + radial * 0.055
+            y = y_front + radial * 0.045
             vertices.append((x, y, z))
     return np.asarray(vertices, dtype=np.float32)
 
@@ -138,13 +138,13 @@ def _face_plate_grid(
 if (-not $content.Contains($overrideMarker)) {
     $anchor = 'def create_face_mesh('
     if (-not $content.Contains($anchor)) {
-        throw 'Could not locate create_face_mesh for face-plate v2 overrides.'
+        throw 'Could not locate create_face_mesh for face-plate visual v3 overrides.'
     }
     $content = $content.Replace($anchor, ($overrides + "`n" + $anchor))
-    Write-Host 'FACEPLATE_V2_OVERRIDES=APPLIED'
+    Write-Host 'FACEPLATE_V3_OVERRIDES=APPLIED'
 }
 else {
-    Write-Host 'FACEPLATE_V2_OVERRIDES=ALREADY_APPLIED'
+    Write-Host 'FACEPLATE_V3_OVERRIDES=ALREADY_APPLIED'
 }
 
 $callOld = @'
@@ -172,25 +172,70 @@ $callNew = @'
 
     character_info = build_character(follow, colors_rgb)
     hair_cap = character_info["hair_cap"]
-    hair_cap.location = (0.0, 0.62, 0.14)
-    hair_cap.scale = (0.72, 0.42, 0.78)
+    hair_cap.hide_render = True
+    hair_cap.hide_viewport = True
+
     neck = character_info["neck"]
-    neck.location = (0.02, 0.66, -0.91)
-    neck.scale = (0.70, 0.64, 0.72)
+    neck.location = (0.0, 0.48, -0.92)
+    neck.scale = (0.38, 0.42, 0.50)
+    if neck.data.materials:
+        neck_bsdf = neck.data.materials[0].node_tree.nodes.get("Principled BSDF")
+        if neck_bsdf is not None and neck_bsdf.inputs.get("Base Color") is not None:
+            neck_bsdf.inputs["Base Color"].default_value = (0.13, 0.065, 0.055, 1.0)
+        if neck_bsdf is not None and neck_bsdf.inputs.get("Roughness") is not None:
+            neck_bsdf.inputs["Roughness"].default_value = 0.60
+
+    torso = character_info["torso"]
+    torso.location = (0.02, 0.66, -1.76)
+    torso.scale = (0.78, 0.84, 0.82)
+    for shoulder_name in ("CHAR_Antinous_Shoulder_L", "CHAR_Antinous_Shoulder_R"):
+        shoulder = bpy.data.objects.get(shoulder_name)
+        if shoulder is not None:
+            shoulder.scale = (0.80, 0.84, 0.80)
+
     character_info["trim"].hide_render = True
+    character_info["trim"].hide_viewport = True
     for scene_object in bpy.data.objects:
-        if scene_object.name.startswith("HAIR_Strand_"):
+        if scene_object.name.startswith(("HAIR_Strand_", "HAIR_Wave", "FACIALHAIR_")):
             scene_object.hide_render = True
+            scene_object.hide_viewport = True
+
+    collar_material = principled_material(
+        "MAT_Antinous_HighDarkCollar_V3",
+        (0.004, 0.0035, 0.005, 1.0),
+        0.90,
+    )
+    collar_left = create_uv_sphere(
+        "COSTUME_HighCollar_L",
+        (-0.28, -0.41, -0.69),
+        (0.42, 0.10, 0.17),
+        collar_material,
+        segments=48,
+        ring_count=24,
+    )
+    collar_left.rotation_euler[1] = -0.28
+    collar_left.parent = follow
+    collar_right = create_uv_sphere(
+        "COSTUME_HighCollar_R",
+        (0.28, -0.41, -0.69),
+        (0.42, 0.10, 0.17),
+        collar_material,
+        segments=48,
+        ring_count=24,
+    )
+    collar_right.rotation_euler[1] = 0.28
+    collar_right.parent = follow
+    character_info["faceplate_collar_count"] = 2
 '@
 if ($content.Contains($callOld)) {
     $content = $content.Replace($callOld, $callNew)
-    Write-Host 'FACEPLATE_V2_PARENT_AND_CLEANUP=APPLIED'
+    Write-Host 'FACEPLATE_V3_CLEAN_PLATE_AND_COLLAR=APPLIED'
 }
-elseif ($content.Contains('face_plate_name = str(face_plate.name)')) {
-    Write-Host 'FACEPLATE_V2_PARENT_AND_CLEANUP=ALREADY_APPLIED'
+elseif ($content.Contains('COSTUME_HighCollar_L')) {
+    Write-Host 'FACEPLATE_V3_CLEAN_PLATE_AND_COLLAR=ALREADY_APPLIED'
 }
 else {
-    throw 'Could not locate face-plate construction block for v2 cleanup.'
+    throw 'Could not locate face-plate construction block for visual v3 cleanup.'
 }
 
 if ($content.Contains('"face_plate_object": face_plate.name,')) {
@@ -210,8 +255,11 @@ else {
 if (-not $content.Contains('face.hide_render = True')) {
     throw 'The rejected dense under-face remains visible.'
 }
-if (-not $content.Contains('MAT_Antinous_DerivedFaceSprite_V2')) {
-    throw 'The neutral unlit face-sprite material is missing.'
+if (-not $content.Contains('MAT_Antinous_DerivedFaceSprite_V3')) {
+    throw 'The clean neutral face-sprite material is missing.'
+}
+if (-not $content.Contains('COSTUME_HighCollar_L')) {
+    throw 'The high collar repair is missing.'
 }
 
 [System.IO.File]::WriteAllText(
@@ -226,18 +274,19 @@ if (-not (Test-Path -LiteralPath $controlPython)) {
 }
 & $controlPython -m py_compile $path
 if ($LASTEXITCODE -ne 0) {
-    throw 'Face-plate visual v2 Blender builder failed compile validation.'
+    throw 'Face-plate visual v3 Blender builder failed compile validation.'
 }
 & git update-index --assume-unchanged -- $path
 if ($LASTEXITCODE -ne 0) {
-    throw 'Could not preserve the bounded face-plate visual v2 repair.'
+    throw 'Could not preserve the bounded face-plate visual v3 repair.'
 }
 if (@(& git status --short).Count -gt 0) {
-    throw 'Face-plate visual v2 repair left visible checkout dirt.'
+    throw 'Face-plate visual v3 repair left visible checkout dirt.'
 }
 
-Write-Host 'FACEPLATE_FIXED_LOCAL_GEOMETRY=PROVEN'
-Write-Host 'FACEPLATE_UNLIT_NEUTRAL_COLOR=PROVEN'
+Write-Host 'FACEPLATE_CLEAN_CUTOUT=PROVEN'
+Write-Host 'FACEPLATE_HIGH_COLLAR=PROVEN'
+Write-Host 'FACEPLATE_HAIR_CAP=ABSENT'
 Write-Host 'DENSE_UNDERFACE_RENDER=ABSENT'
 Write-Host 'PROCEDURAL_FACE_OCCLUDERS=ABSENT'
 Write-Host 'DANGLING_FACEPLATE_STRUCTRNA=REPAIRED'
