@@ -213,14 +213,17 @@ def main() -> int:
     height = max(maximum.z - minimum.z, 0.1)
     width = max(maximum.x - minimum.x, 0.1)
 
-    robe = principled("MAT_FACEPLATE_V9_ROBE", (0.005, 0.0045, 0.008, 1.0), 0.88)
-    dark_trim = principled("MAT_FACEPLATE_V9_DARK_TRIM", (0.018, 0.010, 0.015, 1.0), 0.72)
+    robe = principled("MAT_FACEPLATE_V10_ROBE", (0.005, 0.0045, 0.008, 1.0), 0.88)
+    dark_trim = principled("MAT_FACEPLATE_V10_DARK_TRIM", (0.016, 0.009, 0.014, 1.0), 0.74)
 
-    face_plate.location.z -= height * 0.105
-    robe_top = minimum.z - height * 0.075
+    # The packed alpha footprint shows the visible chin approximately 18% above
+    # the plate bottom. A five-percent plate drop and an 11.5-percent raised
+    # robe top meet at that visible boundary without covering the face.
+    face_plate.location.z -= height * 0.050
+    robe_top = minimum.z + height * 0.115
     robe_front_y = center.y + height * 0.16
     robe_obj = create_robe_bust(
-        "DIAG_V9_RobeBust",
+        "DIAG_V10_RobeBust",
         center.x,
         robe_front_y,
         robe_top,
@@ -231,29 +234,29 @@ def main() -> int:
     render(scene, output_dir / "variant_02_natural_bust.png")
 
     collar_y = center.y - height * 0.005
-    collar_center_z = robe_top - height * 0.055
+    collar_center_z = robe_top - height * 0.045
     collar_left = create_curve(
-        "DIAG_V9_VCollar_L",
+        "DIAG_V10_VCollar_L",
         [
-            Vector((center.x - width * 0.28, collar_y, collar_center_z + height * 0.035)),
-            Vector((center.x - width * 0.10, collar_y, collar_center_z - height * 0.035)),
-            Vector((center.x, collar_y, collar_center_z - height * 0.105)),
+            Vector((center.x - width * 0.25, collar_y, collar_center_z + height * 0.025)),
+            Vector((center.x - width * 0.09, collar_y, collar_center_z - height * 0.030)),
+            Vector((center.x, collar_y, collar_center_z - height * 0.085)),
         ],
-        width * 0.018,
+        width * 0.014,
         dark_trim,
     )
     collar_right = create_curve(
-        "DIAG_V9_VCollar_R",
+        "DIAG_V10_VCollar_R",
         [
-            Vector((center.x, collar_y, collar_center_z - height * 0.105)),
-            Vector((center.x + width * 0.10, collar_y, collar_center_z - height * 0.035)),
-            Vector((center.x + width * 0.28, collar_y, collar_center_z + height * 0.035)),
+            Vector((center.x, collar_y, collar_center_z - height * 0.085)),
+            Vector((center.x + width * 0.09, collar_y, collar_center_z - height * 0.030)),
+            Vector((center.x + width * 0.25, collar_y, collar_center_z + height * 0.025)),
         ],
-        width * 0.018,
+        width * 0.014,
         dark_trim,
     )
-    face_plate.scale.x *= 1.06
-    face_plate.scale.z *= 1.06
+    face_plate.scale.x *= 1.04
+    face_plate.scale.z *= 1.04
     camera.data.dof.use_dof = False
     render(scene, output_dir / "variant_03_larger_face.png")
 
@@ -265,11 +268,16 @@ def main() -> int:
         "engine": engine,
         "face_plate_bounds": [list(minimum), list(maximum)],
         "images": image_report,
+        "alpha_alignment": {
+            "median_visible_bottom_from_plate_bottom_fraction": 0.18,
+            "plate_drop_fraction": 0.05,
+            "robe_top_above_plate_bottom_fraction": 0.115,
+        },
         "diagnostic_objects": [object_snapshot(obj) for obj in diagnostic_objects],
         "variant_policy": {
             "variant_01": "derived animated face plate only",
-            "variant_02": "face lowered directly onto a raised single-piece beveled robe; exposed neck absent",
-            "variant_03": "variant 02 with subtle dark V neckline and six-percent larger face",
+            "variant_02": "robe top aligned to measured visible chin boundary; exposed neck absent",
+            "variant_03": "variant 02 with a subtle dark V neckline and four-percent larger face",
         },
     }
     (output_dir / "diagnostic.json").write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
