@@ -1,13 +1,13 @@
 ﻿{
-    "classification":  "REJECTED",
-    "failure":  "Canonical diagnostic output is missing: canonical_01_face_only.png",
+    "classification":  "USER_VISUAL_REVIEW_REQUIRED",
+    "failure":  null,
     "repository":  "organicoverlords/lowvram3d-studio",
     "branch":  "agent/blender-beggars-scene-20260804",
-    "head_sha":  "50c099c97edcbedae6786500cdd1b4b0c53fc6f1",
-    "workflow_run_id":  "30865454750",
-    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30865454750",
-    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\canonical-diagnostic-30865454750",
+    "head_sha":  "72496126346b316e57a15642c2ccaf084f93c216",
+    "workflow_run_id":  "30865976590",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30865976590",
+    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\canonical-diagnostic-30865976590",
     "reference_media_upload_scope":  "EXCLUDED",
     "reference_media_deleted":  true,
-    "recorded_at":  "2026-08-04T00:26:19.1479438Z"
+    "recorded_at":  "2026-08-04T00:36:32.9055293Z"
 }
