@@ -1,5 +1,4 @@
 {
-  "purpose": "Identify the current active and queued self-hosted jobs before the refined Blender v6 run 30877403228 is assigned.",
-  "refined_blender_v6_run_id": 30877403228,
-  "requested_at": "2026-08-04T07:18:00+03:00"
+  "purpose": "Refresh the current Actions queue census for diagnostics.",
+  "requested_at": "2026-08-04T07:20:00+03:00"
 }
