@@ -1,9 +1,8 @@
 {
-  "purpose": "Dispatch exactly one branch-write-free FaceVerse v4 preflight with explicit CUDA context initialization, directly instrumented Python, isolated user-site, and immutable CUDA Torch.",
-  "workflow_commit": "2ef08df0127b8183dfc90c1b06affbb7bd912d29",
-  "cuda_init_script_commit": "a2513ddb3591f49ac051405c8e7b8c30e44eb71f",
+  "purpose": "Dispatch exactly one branch-write-free FaceVerse v4 preflight with optional CUDA memory hooks disabled in the isolated bootstrap, directly instrumented Python, and immutable CUDA Torch.",
+  "workflow_commit": "09330ba2d4fc92d12be82fc0ab92132f6b3b1ba1",
+  "isolation_patch_commit": "8f70ec1fa7a4af7c4dee2d897589c015cc20b7b7",
   "direct_trace_commit": "c55d421efb2353e6220e3facabc7d8d99f2cb186",
-  "isolation_patch_commit": "bb7c4c08c8501736024fd6ab06352cd64dcc77ac",
-  "failed_cuda_counter_run": 30871853362,
-  "requested_at": "2026-08-04T05:33:00+03:00"
+  "failed_source_match_run": 30872053609,
+  "requested_at": "2026-08-04T05:38:00+03:00"
 }
