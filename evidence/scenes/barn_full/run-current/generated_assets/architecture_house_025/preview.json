@@ -12,9 +12,9 @@
   "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\preview.png",
   "schema_version": "generated_mesh_preview_v1",
   "triangles": 149744,
-  "unwelded": true,
-  "vertex_split_ratio": 1.702,
-  "vertices": 126895,
+  "unwelded": false,
+  "vertex_split_ratio": 1.708,
+  "vertices": 127327,
   "view_coverage": {
     "front": 0.263,
     "side": 0.2992,

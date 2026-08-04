@@ -1,0 +1,17 @@
+{
+  "classification": "PROVEN",
+  "glb": "evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\vegetation_tree_004_textured.glb",
+  "out": "evidence\\scenes\\barn_full\\run-current\\generated_assets\\vegetation_tree_004\\textured_views.png",
+  "schema_version": "textured_views_v1",
+  "texture_size": [
+    1649,
+    1641
+  ],
+  "triangles": 144011,
+  "views": [
+    "front",
+    "three_quarter",
+    "side",
+    "rear"
+  ]
+}

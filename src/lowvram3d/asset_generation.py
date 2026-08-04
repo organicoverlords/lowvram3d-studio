@@ -49,6 +49,7 @@ WORKER = REPO / "workers" / "mini_turbo_generate.py"
 DECIMATOR = REPO / "workers" / "decimate_mesh.py"
 PREVIEWER = REPO / "workers" / "preview_generated_mesh.py"
 PROJECTOR = REPO / "workers" / "project_crop_texture.py"
+TEXTURED_VIEWER = REPO / "workers" / "render_textured_views.py"
 
 # Mini Turbo samples a 384^3 volume whatever the subject, so a single building
 # comes back at ~1.7 M triangles. That is grid resolution, not detail, and it
@@ -527,7 +528,30 @@ def _preview(glb: Path, destination: Path) -> dict[str, Any]:
             "mesh_bodies": receipt.get("body_count"),
             "mesh_watertight": receipt.get("watertight"),
             "mesh_extent": receipt.get("extent"),
+            "vertex_split_ratio": receipt.get("vertex_split_ratio"),
+            "unwelded": receipt.get("unwelded"),
             "view_coverage": receipt.get("view_coverage")}
+
+
+def _textured_views(glb: Path, destination: Path) -> dict[str, Any]:
+    """Render the asset's actual appearance, not just its shape.
+
+    The shaded preview answers "is this the right object" and says nothing about
+    the texture. That gap let a facing test ship inverted -- the barn's
+    appearance was landing on its rear and its front was flat fill -- because
+    the only view of a texture was inside a full Unreal scene, where lighting
+    and placement are confounded with it.
+
+    Never fatal, for the same reason as the shaded preview.
+    """
+    receipt_path = destination.with_suffix(".json")
+    completed = subprocess.run(
+        [sys.executable, str(TEXTURED_VIEWER), "--glb", str(glb),
+         "--out", str(destination), "--receipt", str(receipt_path)],
+        capture_output=True, text=True)
+    if completed.returncode != 0 or not receipt_path.is_file():
+        return {"textured_views_error": (completed.stderr or "")[-300:]}
+    return {"textured_views_png": str(destination)}
 
 
 def _sha256(path: Path) -> str:
@@ -707,6 +731,7 @@ def generate(placement: dict[str, Any], image: Path, output_dir: Path,
                     for a in worker_result.get("attempts", [{}])) or None,
                 "generation_seconds": worker_result.get("generation_seconds"),
                 **_preview(usable, asset_dir / "preview.png"),
+                **_textured_views(usable, asset_dir / "textured_views.png"),
             })
         else:
             entry["status"] = "failed"

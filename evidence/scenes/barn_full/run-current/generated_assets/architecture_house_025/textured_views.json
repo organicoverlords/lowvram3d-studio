@@ -1,0 +1,17 @@
+{
+  "classification": "PROVEN",
+  "glb": "evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_textured.glb",
+  "out": "evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\textured_views.png",
+  "schema_version": "textured_views_v1",
+  "texture_size": [
+    958,
+    950
+  ],
+  "triangles": 149744,
+  "views": [
+    "front",
+    "three_quarter",
+    "side",
+    "rear"
+  ]
+}
