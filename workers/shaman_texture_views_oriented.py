@@ -35,6 +35,74 @@ from shaman_texture_views import (
 AUTO_AMBIGUITY_MARGIN = 0.08
 
 
+def rasterise_face_ids(
+    screen: np.ndarray, depth: np.ndarray, tris: np.ndarray, size: int
+) -> np.ndarray:
+    """Return the exact frontmost triangle ID at every projected pixel.
+
+    The projection uses the same texel-centre convention and depth sign as ``rasterise``.
+    Background is -1.  Ties are resolved deterministically in favour of the lowest triangle
+    index so repeated runs cannot change provenance at shared silhouette pixels.
+    """
+    px = np.empty_like(screen)
+    px[:, 0] = screen[:, 0] * (size - 1)
+    px[:, 1] = screen[:, 1] * (size - 1)
+    zbuffer = np.full((size, size), np.inf, np.float64)
+    entries: list[tuple[np.ndarray, np.ndarray, np.ndarray] | None] = []
+    for tri in tris:
+        a = px[tri]
+        x_lo, y_lo = np.maximum(np.floor(a.min(0)).astype(int), 0)
+        x_hi, y_hi = np.minimum(np.ceil(a.max(0)).astype(int), size - 1)
+        if x_hi < x_lo or y_hi < y_lo:
+            entries.append(None)
+            continue
+        xs, ys = np.meshgrid(np.arange(x_lo, x_hi + 1), np.arange(y_lo, y_hi + 1))
+        xs, ys = xs.ravel(), ys.ravel()
+        (x0, y0), (x1, y1), (x2, y2) = a
+        den = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2)
+        if abs(den) < 1e-12:
+            entries.append(None)
+            continue
+        fx, fy = xs + 0.5, ys + 0.5
+        w0 = ((y1 - y2) * (fx - x2) + (x2 - x1) * (fy - y2)) / den
+        w1 = ((y2 - y0) * (fx - x2) + (x0 - x2) * (fy - y2)) / den
+        w2 = 1.0 - w0 - w1
+        inside = (w0 >= -1e-4) & (w1 >= -1e-4) & (w2 >= -1e-4)
+        if not inside.any():
+            entries.append(None)
+            continue
+        xs, ys = xs[inside], ys[inside]
+        d = w0[inside] * depth[tri[0]] + w1[inside] * depth[tri[1]] + w2[inside] * depth[tri[2]]
+        np.minimum.at(zbuffer, (ys, xs), d)
+        entries.append((xs, ys, d))
+
+    face_ids = np.full((size, size), -1, np.int32)
+    tolerance = max(float(np.ptp(depth)) * 1e-7, 1e-8)
+    for triangle_id, entry in enumerate(entries):
+        if entry is None:
+            continue
+        xs, ys, d = entry
+        visible = d <= zbuffer[ys, xs] + tolerance
+        if not visible.any():
+            continue
+        current = face_ids[ys[visible], xs[visible]]
+        replace = (current < 0) | (triangle_id < current)
+        if replace.any():
+            yi, xi = ys[visible][replace], xs[visible][replace]
+            face_ids[yi, xi] = triangle_id
+    return face_ids
+
+
+def encode_face_id_png(face_ids: np.ndarray) -> np.ndarray:
+    """Encode signed triangle IDs as a lossless 24-bit BGR diagnostic image."""
+    encoded = np.maximum(face_ids.astype(np.int64) + 1, 0)
+    return np.dstack([
+        (encoded & 255).astype(np.uint8),
+        ((encoded >> 8) & 255).astype(np.uint8),
+        ((encoded >> 16) & 255).astype(np.uint8),
+    ])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mesh", required=True)
@@ -113,6 +181,7 @@ def main() -> None:
     direction = candidates[front]
     screen, depth = project(verts, direction, ortho)
     visible, silhouette = rasterise(screen, depth, tris, args.raster_size)
+    face_ids = rasterise_face_ids(screen, depth, tris, args.view_size)
     mesh_box, refined_affine_iou = refine_box(
         source_mask,
         silhouette,
@@ -133,6 +202,8 @@ def main() -> None:
     views_dir = Path(args.views_dir)
     views_dir.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(str(views_dir / "front.png"), np.dstack([view, view_alpha]))
+    np.save(views_dir / "face_id_front.npy", face_ids)
+    cv2.imwrite(str(views_dir / "face_id_front.png"), encode_face_id_png(face_ids))
     (views_dir / "view_metadata.json").write_text(
         json.dumps(
             {
@@ -157,6 +228,7 @@ def main() -> None:
         view_locs=np.array([cam], np.float32),
         ortho_scale=np.float32(ortho),
         vis_front=visible,
+        face_id_front=face_ids,
     )
 
     facing = face_normals @ direction
@@ -198,6 +270,13 @@ def main() -> None:
         "source_bbox_pixels": list(source_box),
         "raster_size": args.raster_size,
         "view_size": args.view_size,
+        "face_id_buffer": {
+            "path_npy": str(views_dir / "face_id_front.npy"),
+            "path_png": str(views_dir / "face_id_front.png"),
+            "background_id": -1,
+            "frontmost_pixels": int(np.count_nonzero(face_ids >= 0)),
+            "triangles_represented": int(np.unique(face_ids[face_ids >= 0]).size),
+        },
     }
     destination = Path(args.report)
     destination.parent.mkdir(parents=True, exist_ok=True)

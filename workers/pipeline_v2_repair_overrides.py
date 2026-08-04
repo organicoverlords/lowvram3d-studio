@@ -60,6 +60,11 @@ def _write_failed(
 def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
     profile = pipeline.profile
     root = Path(manifest["output_root"])
+    # Face-detail repair is texture-only.  Re-running stance, post-LOD cleanup, or the legacy
+    # texture-QA wrapper would either mutate accepted geometry or bypass the blocking face gates.
+    # The production stage owns the face-specific contract for this manifest.
+    if bool((manifest.get("texture") or {}).get("face_detail", {}).get("required", False)):
+        return stages
     # The stance repair exists to make a humanoid riggable, and its own failure code says so.
     # Running it on an asset nobody asked to rig is not a safety net, it is damage: on a seated
     # quadruped it pulled the feet apart, dropped 3% of the faces and left three debris

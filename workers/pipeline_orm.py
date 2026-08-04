@@ -72,8 +72,15 @@ def main() -> None:
     cavity = cv2.imread(args.cavity, cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255.0
     size = basecolor.shape[0]
     for name, array in (("ao", ao), ("cavity", cavity)):
-        if array.shape[0] != size:
-            raise RuntimeError(f"{name} is {array.shape[0]}px but base colour is {size}px")
+        if array.shape[0] != size or array.shape[1] != size:
+            if array.shape[0] < size and array.shape[1] < size:
+                array = cv2.resize(array, (size, size), interpolation=cv2.INTER_LINEAR)
+                if name == "ao":
+                    ao = array
+                else:
+                    cavity = array
+            else:
+                raise RuntimeError(f"{name} is {array.shape[0]}px but base colour is {size}px")
 
     # Everything outside the UV island is gutter, and gutter is black. Left in, it classifies as
     # dark wood and swamps the statistics - it read as 73% wood on the first pass - while telling

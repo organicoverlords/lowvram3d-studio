@@ -16,6 +16,7 @@ exactly as projected.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -46,6 +47,7 @@ def main() -> None:
     parser.add_argument("--strength", type=float, default=0.34)
     parser.add_argument("--sigma", type=float, default=6.0)
     parser.add_argument("--clip", type=float, default=1.0)
+    parser.add_argument("--protected-mask", default="")
     args = parser.parse_args()
 
     basecolor = cv2.imread(args.basecolor, cv2.IMREAD_COLOR).astype(np.float32) / 255.0
@@ -53,13 +55,29 @@ def main() -> None:
     cavity = cv2.imread(args.cavity, cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255.0
     ao = cv2.imread(args.ao, cv2.IMREAD_GRAYSCALE).astype(np.float32) / 255.0
     size = basecolor.shape[0]
+    resized_maps = []
     for name, array in (("coverage", coverage), ("cavity", cavity), ("ao", ao)):
-        if array.shape[0] != size:
-            raise RuntimeError(f"{name} is {array.shape[0]}px but base colour is {size}px")
+        if array.shape[0] != size or array.shape[1] != size:
+            if name in {"cavity", "ao"} and array.shape[0] < size and array.shape[1] < size:
+                array = cv2.resize(array, (size, size), interpolation=cv2.INTER_LINEAR)
+                if name == "cavity":
+                    cavity = array
+                else:
+                    ao = array
+                resized_maps.append(name)
+            else:
+                raise RuntimeError(f"{name} is {array.shape[0]}px but base colour is {size}px")
 
     island = coverage >= 40
     observed = coverage >= 255
     synthesized = island & ~observed
+    protected = np.zeros_like(synthesized)
+    if args.protected_mask:
+        protected_image = cv2.imread(args.protected_mask, cv2.IMREAD_GRAYSCALE)
+        if protected_image is None or protected_image.shape != synthesized.shape:
+            raise RuntimeError("PROTECTED_FACE_MASK_DIMENSION_MISMATCH")
+        protected = protected_image > 0
+    synthesized &= ~protected
 
     detail = 0.72 * high_pass(cavity, args.sigma, args.clip) + 0.28 * high_pass(ao, args.sigma, args.clip)
     # Fade the modulation out towards the observed boundary so the join is not a visible step.
@@ -84,12 +102,17 @@ def main() -> None:
         "basecolor": args.basecolor,
         "output": args.output,
         "strength": args.strength,
+        "resized_maps": resized_maps,
         "sigma": args.sigma,
         "island_pixels": int(island.sum()),
         "observed_pixels": int(observed.sum()),
         "synthesized_pixels": int(synthesized.sum()),
         "synthesized_percent_of_island": round(float(synthesized.sum() / max(island.sum(), 1) * 100), 2),
         "observed_unchanged": bool(np.array_equal(basecolor[observed], result[observed])),
+        "protected_face_texels": int(protected.sum()),
+        "protected_face_texels_unchanged": bool(np.array_equal(basecolor[protected], result[protected])),
+        "protected_face_texel_sha256_before": hashlib.sha256(basecolor[protected].tobytes()).hexdigest(),
+        "protected_face_texel_sha256_after": hashlib.sha256(result[protected].tobytes()).hexdigest(),
         "synthesized_mean_before": [round(float(v), 4) for v in before.mean(axis=0)],
         "synthesized_mean_after": [round(float(v), 4) for v in after.mean(axis=0)],
         "local_contrast_before": round(local_contrast(basecolor), 5),

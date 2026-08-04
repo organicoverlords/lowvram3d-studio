@@ -24,7 +24,10 @@ from common import argv_after_double_dash, import_mesh, reset_scene, save_json, 
 
 VIEWS = [
     ("front", 0.0, 0.0, 1.0),
-    ("three_quarter_front", 35.0, 8.0, 1.0),
+    ("three_quarter_right", 35.0, 8.0, 1.0),
+    ("three_quarter_left", -35.0, 8.0, 1.0),
+    ("right", 90.0, 0.0, 1.0),
+    ("left", -90.0, 0.0, 1.0),
     ("side", 90.0, 0.0, 1.0),
     ("back", 180.0, 0.0, 1.0),
     ("close_head_antlers", 12.0, 6.0, 0.34),
@@ -105,6 +108,34 @@ def analyse(path: Path) -> dict:
     }
 
 
+def configure_unlit(objects) -> None:
+    """Render the imported GLB's active Base Color texture without lighting or shading."""
+    for obj in objects:
+        for slot in obj.material_slots:
+            material = slot.material
+            if not material or not material.use_nodes:
+                continue
+            nodes = material.node_tree.nodes
+            links = material.node_tree.links
+            output = next((node for node in nodes if node.type == "OUTPUT_MATERIAL"), None)
+            bsdf = next((node for node in nodes if node.type == "BSDF_PRINCIPLED"), None)
+            if output is None or bsdf is None:
+                continue
+            color_socket = bsdf.inputs.get("Base Color")
+            emission = nodes.new("ShaderNodeEmission")
+            emission.name = "QA_Unlit_BaseColor"
+            emission.inputs["Strength"].default_value = 1.0
+            if color_socket and color_socket.is_linked:
+                links.new(color_socket.links[0].from_socket, emission.inputs["Color"])
+            elif color_socket:
+                emission.inputs["Color"].default_value = color_socket.default_value
+            surface = output.inputs.get("Surface")
+            if surface:
+                for link in list(surface.links):
+                    links.remove(link)
+                links.new(emission.outputs["Emission"], surface)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--glb", required=True)
@@ -112,6 +143,7 @@ def main() -> None:
     parser.add_argument("--report", required=True)
     parser.add_argument("--resolution", type=int, default=1024)
     parser.add_argument("--samples", type=int, default=24)
+    parser.add_argument("--unlit", action="store_true")
     parser.add_argument(
         "--front-direction",
         choices=("+z", "-z"),
@@ -131,6 +163,8 @@ def main() -> None:
     objects = import_mesh(args.glb)
     if not objects:
         raise RuntimeError(f"no mesh imported from {args.glb}")
+    if args.unlit:
+        configure_unlit(objects)
 
     materials = sorted({slot.material.name for obj in objects for slot in obj.material_slots if slot.material})
     images = sorted({node.image.name for obj in objects for slot in obj.material_slots
@@ -188,6 +222,7 @@ def main() -> None:
         "glb": args.glb,
         "front_direction_gltf": args.front_direction,
         "front_camera_axis_blender": "-Y" if front_sign < 0 else "+Y",
+        "shading": "unlit_basecolor" if args.unlit else "lit_cycles",
         "material_slots": materials,
         "material_slot_count": len(materials),
         "texture_images": images,

@@ -17,6 +17,7 @@ Observed texels are never rewritten. The front stays exactly as projected.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -69,6 +70,7 @@ def main() -> None:
     parser.add_argument("--output", required=True)
     parser.add_argument("--report", required=True)
     parser.add_argument("--neighbours", type=int, default=DONOR_NEIGHBOURS)
+    parser.add_argument("--protected-mask", default="")
     args = parser.parse_args()
 
     positions, _, uv, tris = read_glb(Path(args.mesh))
@@ -84,6 +86,12 @@ def main() -> None:
     tri_id = rasterise_triangle_ids(uv, tris, size)
     island = tri_id >= 0
     observed_texel = island & (coverage >= 255)
+    protected = np.zeros_like(observed_texel)
+    if args.protected_mask:
+        protected_image = cv2.imread(args.protected_mask, cv2.IMREAD_GRAYSCALE)
+        if protected_image is None or protected_image.shape != observed_texel.shape:
+            raise RuntimeError("PROTECTED_FACE_MASK_DIMENSION_MISMATCH")
+        protected = protected_image > 0
 
     total = len(tris)
     colour_sum = np.zeros((total, 3), np.float64)
@@ -146,7 +154,7 @@ def main() -> None:
         assigned = np.where(strict, "donor_normal_compatible", "donor_distance_only")
         tier[targets] = assigned
 
-    repaint = island & ~observed_texel
+    repaint = island & ~observed_texel & ~protected
     result = basecolor.copy()
     result[repaint] = tri_colour[tri_id[repaint]]
 
@@ -167,6 +175,10 @@ def main() -> None:
         "colour_spread_before": round(before_flat, 5),
         "colour_spread_after": round(after_flat, 5),
         "observed_unchanged": bool(np.array_equal(basecolor[observed_texel], result[observed_texel])),
+        "protected_face_texels": int(protected.sum()),
+        "protected_face_texels_unchanged": bool(np.array_equal(basecolor[protected], result[protected])),
+        "protected_face_texel_sha256_before": hashlib.sha256(basecolor[protected].tobytes()).hexdigest(),
+        "protected_face_texel_sha256_after": hashlib.sha256(result[protected].tobytes()).hexdigest(),
     }
     Path(args.report).parent.mkdir(parents=True, exist_ok=True)
     Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")

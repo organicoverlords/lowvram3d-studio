@@ -133,6 +133,8 @@ def main() -> None:
     triangle_winning_view = np.full(total_tris, -1, np.int16)
     triangle_winning_conf = np.zeros(total_tris, np.float32)
     triangle_winning_facial = np.zeros(total_tris, dtype=bool)
+    face_id_sample_count = 0
+    face_id_match_count = 0
     gate_counts = {}
 
     facial_mask_by_view: dict[str, np.ndarray] = {}
@@ -242,6 +244,8 @@ def main() -> None:
                 face_id_match = face_id_matches_within_radius(
                     face_id, sx, sy, int(t), args.face_id_radius
                 )
+                face_id_sample_count += int(np.count_nonzero(source_mask_valid))
+                face_id_match_count += int(np.count_nonzero(face_id_match & source_mask_valid))
             else:
                 face_id_match = np.ones_like(source_mask_valid, dtype=bool)
             gated = gated_sample_mask(
@@ -526,6 +530,11 @@ def main() -> None:
         "visible": triangle_visible.tolist(),
         "front_facing": triangle_front_facing.tolist(),
         "face_id_matched": triangle_face_id_matched.tolist(),
+        "face_id_sample_count": int(face_id_sample_count),
+        "face_id_match_count": int(face_id_match_count),
+        "face_id_match_percent": round(
+            100.0 * face_id_match_count / max(face_id_sample_count, 1), 4
+        ) if face_id_arrays else None,
         "masked_valid": triangle_mask_valid.tolist(),
         "rear_dominant": rear_dominant.tolist(),
         "winning_source_is_facial": triangle_winning_facial.tolist(),
@@ -586,6 +595,11 @@ def main() -> None:
             "synthesized_surface_coverage_percent": round(100.0 - real_pct, 2),
             "final_filled_uv_percent": 100.0,
             "high_confidence_percent": round(float((best_conf > HIGH_CONF).sum() / island_px * 100), 2),
+            "face_id_sample_count": int(face_id_sample_count),
+            "face_id_match_count": int(face_id_match_count),
+            "face_id_match_percent": round(
+                100.0 * face_id_match_count / max(face_id_sample_count, 1), 4
+            ) if face_id_arrays else None,
             "unseen_triangles": unseen_triangles,
             "observed_triangles": int(triangle_observed.sum()),
             "observed_triangle_percent": round(float(triangle_observed.mean() * 100.0), 2),

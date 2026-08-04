@@ -122,6 +122,12 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     texture_manifest = manifest["texture"]
     resolution = int(texture_manifest["resolution"])
     requested_texture_route = str(texture_manifest.get("route", "raster_project")).lower()
+    texture_quality_tier = str(texture_manifest.get("quality_tier", "preview")).lower()
+    approved_single_view_face_route = bool(
+        texture_manifest.get("approved_single_view_face_route", False)
+    )
+    face_detail = texture_manifest.get("face_detail") or {}
+    face_detail_required = bool(face_detail.get("required", False))
     texture_route = requested_texture_route
     texture_fallback = None
     if requested_texture_route == "mvadapter_sixview":
@@ -139,6 +145,13 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     "reason": "MV-Adapter six-view inputs unavailable",
                     "input_audit": audit,
                 }
+    actual_texture_route = texture_route
+    fallback_used = texture_fallback is not None
+    production_eligible = texture_quality_tier == "production" and (
+        actual_texture_route == "mvadapter_sixview"
+        or (actual_texture_route == "raster_project" and approved_single_view_face_route
+            and face_detail_required)
+    )
     uv_resolution = int((manifest.get("uv") or {}).get("resolution", 1024))
     uv_padding = int((manifest.get("uv") or {}).get("padding", 4))
     uv_timeout = float((manifest.get("uv") or {}).get("candidate_timeout_seconds", 600))
@@ -651,6 +664,12 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 owned = int(atlas.get("owned_texels") or 0)
                 gates = {
                     "route": "mvadapter_sixview",
+                    "requested_texture_route": requested_texture_route,
+                    "actual_texture_route": "mvadapter_sixview",
+                    "fallback_used": False,
+                    "quality_tier": texture_quality_tier,
+                    "production_eligible": texture_quality_tier == "production",
+                    "semantic_view_count": input_audit.get("view_count", 6),
                     "atlas_injective": gate.get("injective"),
                     "interior_texels_claimed_twice": gate.get("interior_texels_claimed_twice"),
                     "owned_texels": owned,
@@ -712,15 +731,30 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 return StageResult("failed", detail=f"orientation truth exit {code}: {out[-800:]}")
 
             projection_report = stage / "projection_report.json"
-            code, out = pipeline.run([
+            projection_command = [
                 pipeline.python, w("raster_project.py"), "--npz", npz,
                 "--views-dir", views, "--view-metadata", views / "view_metadata.json",
                 "--output-dir", projection, "--atlas-size", str(resolution),
                 "--progress", projection / "raster-progress.json",
                 "--report", projection_report,
-            ])
+            ]
+            if face_detail_required:
+                projection_command += ["--require-face-id", "--face-id-radius", "1"]
+            code, out = pipeline.run(projection_command)
             if code != 0 or not (projection / "basecolor.png").exists():
                 return StageResult("failed", detail=f"projection exit {code}: {out[-1000:]}")
+
+            projection_data = _json(projection_report)
+            face_id_match_percent = projection_data.get("face_id_match_percent")
+            if face_detail_required and (
+                    face_id_match_percent is None
+                    or float(face_id_match_percent) < float(face_detail.get("min_face_id_match_percent", 99.0))):
+                return StageResult(
+                    "failed",
+                    gates={"face_id_match_percent": face_id_match_percent},
+                    failure_codes=["FACE_ID_MATCH_BELOW_GATE"],
+                    detail="frontmost face-ID matching did not meet the required face gate",
+                )
 
             base_oriented = stage / "basecolor_oriented.png"
             coverage_oriented = stage / "coverage_oriented.png"
@@ -734,15 +768,58 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     return StageResult("failed", failure_codes=["UV_ROW_ORIENTATION_MISMATCH"],
                                        detail=f"atlas conversion exit {code}: {out[-800:]}")
 
+            protected_mask = None
+            face_report = None
+            if face_detail_required:
+                face_report = stage / "face_texture_report.json"
+                face_output = stage / "basecolor_face_refined.png"
+                face_diagnostics = stage / "face_diagnostics"
+                code, out = pipeline.run([
+                    pipeline.python, w("face_texture_refine.py"),
+                    "--mesh", mesh, "--source-image", manifest["source"]["path"],
+                    "--source-matte", matte, "--npz", npz,
+                    "--view-report", view_report, "--basecolor", base_oriented,
+                    "--output", face_output, "--report", face_report,
+                    "--diagnostics-dir", face_diagnostics, "--manifest", manifest_path,
+                    "--face-id-radius", "1",
+                ])
+                face_data = _json(face_report)
+                if code != 0 or not face_output.exists() or not face_data:
+                    return StageResult(
+                        "failed", gates=face_data,
+                        failure_codes=["FACE_TEXTURE_MISREGISTERED"],
+                        detail=f"face refinement exit {code}: {out[-1000:]}",
+                    )
+                protected_mask = Path(face_data["protected_face_mask"])
+                if float(face_data.get("direct_face_observation_percent", 0.0)) < float(
+                        face_detail.get("min_direct_observation_percent", 95.0)):
+                    return StageResult(
+                        "failed", gates=face_data,
+                        failure_codes=["FACE_TEXTURE_MISREGISTERED"],
+                        detail="direct face observation is below the declared production gate",
+                    )
+                if int(face_data.get("face_width_texels", 0)) < int(
+                        face_detail.get("min_face_pixels_across", 384)):
+                    return StageResult(
+                        "failed", gates=face_data,
+                        failure_codes=["FACE_TEXTURE_MISREGISTERED"],
+                        detail="face footprint is below the declared texel-width gate",
+                    )
+
             repainted = stage / "basecolor_repainted.png"
             repaint_report = stage / "repaint_report.json"
             neighbours = int(overrides.get("donor_neighbours", 16))
-            code, out = pipeline.run([
+            repaint_command = [
                 pipeline.python, w("pipeline_prior_repaint.py"), "--mesh", mesh,
                 "--basecolor", base_oriented, "--coverage", coverage_oriented,
                 "--output", repainted, "--report", repaint_report,
                 "--neighbours", str(neighbours),
-            ])
+            ]
+            if face_detail_required and protected_mask is not None:
+                repaint_command += ["--protected-mask", protected_mask]
+            if face_detail_required:
+                repaint_command[repaint_command.index("--basecolor") + 1] = face_output
+            code, out = pipeline.run(repaint_command)
             if code != 0:
                 return StageResult("failed", failure_codes=["FLAT_NEUTRAL_ATLAS_REGIONS"],
                                    detail=f"prior repaint exit {code}: {out[-800:]}")
@@ -750,12 +827,15 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             basecolor = stage / f"{asset_id}_basecolor_{suffix}.png"
             detail_report = stage / "detail_report.json"
             strength = float(overrides.get("detail_strength", 0.34))
-            code, out = pipeline.run([
+            detail_command = [
                 pipeline.python, w("atlas_detail_fill.py"), "--basecolor", repainted,
                 "--coverage", coverage_oriented, "--cavity", cavity, "--ao", ao,
                 "--output", basecolor, "--report", detail_report,
                 "--strength", str(strength),
-            ])
+            ]
+            if face_detail_required and protected_mask is not None:
+                detail_command += ["--protected-mask", protected_mask]
+            code, out = pipeline.run(detail_command)
             if code != 0:
                 return StageResult("failed", failure_codes=["UNFINISHED_SYNTHESIS"],
                                    detail=f"detail fill exit {code}: {out[-800:]}")
@@ -796,10 +876,12 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 return StageResult("failed", detail=f"texture export exit {code}: {out[-1000:]}")
 
             render_dir = stage / "renders"
+            lit_dir = render_dir / "final_textured" / "lit"
+            unlit_dir = render_dir / "final_textured" / "unlit"
             review_report = stage / "review_report.json"
             code, out = _blender(
                 pipeline, b("shaman_texture_review.py"), "--glb", glb,
-                "--output-dir", render_dir, "--report", review_report,
+                "--output-dir", lit_dir, "--report", review_report,
                 "--resolution", "1024", "--samples", "24",
                 # argparse treats a value beginning with '-' as another option
                 # when it is passed as a separate argv item.  Use the equals
@@ -809,6 +891,56 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             )
             if code != 0:
                 return StageResult("failed", detail=f"review renderer exit {code}: {out[-1000:]}")
+            unlit_report = stage / "unlit_review_report.json"
+            code, out = _blender(
+                pipeline, b("shaman_texture_review.py"), "--glb", glb,
+                "--output-dir", unlit_dir, "--report", unlit_report,
+                "--resolution", "1024", "--samples", "1", "--unlit",
+                f"--front-direction={front_direction}",
+            )
+            if code != 0:
+                return StageResult("failed", detail=f"unlit review renderer exit {code}: {out[-1000:]}")
+
+            # The packaged names are explicit about shading and never mix geometry/clay renders
+            # with final-textured output.  The source GLB is the same for both render sets.
+            final_render_dir = render_dir / "final_textured"
+            rename_map = {
+                "front.png": "front_lit.png",
+                "back.png": "back_lit.png",
+                "left.png": "left.png",
+                "right.png": "right.png",
+                "three_quarter_left.png": "three_quarter_left.png",
+                "three_quarter_right.png": "three_quarter_right.png",
+                "close_head_antlers.png": "close_head.png",
+                "close_face.png": "close_face_lit.png",
+            }
+            for source_name, destination_name in rename_map.items():
+                source_path = lit_dir / source_name
+                if source_path.exists():
+                    shutil.copy2(source_path, final_render_dir / destination_name)
+            for source_name, destination_name in {
+                "front.png": "front_unlit.png",
+                "close_face.png": "close_face_unlit.png",
+            }.items():
+                source_path = unlit_dir / source_name
+                if source_path.exists():
+                    shutil.copy2(source_path, final_render_dir / destination_name)
+            contact_inputs = [
+                final_render_dir / name for name in (
+                    "front_lit.png", "front_unlit.png", "back_lit.png", "left.png", "right.png",
+                    "three_quarter_left.png", "three_quarter_right.png", "close_face_lit.png",
+                    "close_face_unlit.png", "close_head.png",
+                ) if (final_render_dir / name).exists()
+            ]
+            contact_sheet = final_render_dir / "contact_sheet.png"
+            contact_report = final_render_dir / "contact_sheet_report.json"
+            contact_command = [pipeline.python, w("shaman_contact_sheet.py"), "--output", contact_sheet,
+                               "--report", contact_report, "--title", f"{asset_id} final textured"]
+            for path in contact_inputs:
+                contact_command += ["--image", path]
+            code, out = pipeline.run(contact_command)
+            if code != 0 or not contact_sheet.exists():
+                return StageResult("failed", detail=f"contact sheet exit {code}: {out[-800:]}")
 
             outputs = {
                 "basecolor": basecolor, "normal": normal, "orm": orm,
@@ -816,31 +948,65 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "textured_glb": glb, "textured_blend": blend,
                 "projection_report": projection_report, "orientation_truth": orientation_truth,
                 "region_report": region_report, "orm_report": orm_report,
+                "repaint_report": repaint_report, "detail_report": detail_report,
                 "material_manifest": material_manifest, "review_report": review_report,
                 "view_report": view_report,
             }
+            if face_report is not None:
+                outputs["face_texture_report"] = face_report
+                outputs["protected_face_mask"] = protected_mask
+                outputs["face_diagnostics"] = face_report.parent / "face_diagnostics"
             review = _json(review_report)
             for name, entry in (review.get("views") or {}).items():
                 path = Path(entry.get("path", ""))
                 if path.exists():
                     outputs[f"render_{name}"] = path
+            outputs["unlit_review_report"] = unlit_report
+            outputs["contact_sheet"] = contact_sheet
             projection_data = _json(projection_report)
+            semantic_view_count = len(projection_data.get("semantic_views") or [])
             gates = {
-                "route": "raster_project",
+                "route": actual_texture_route,
                 "requested_route": requested_texture_route,
+                "actual_texture_route": actual_texture_route,
                 "fallback": texture_fallback,
+                "fallback_used": fallback_used,
+                "quality_tier": texture_quality_tier,
+                "production_eligible": production_eligible,
+                "semantic_view_count": semantic_view_count,
                 "observed_percent": projection_data.get("observed_semantic_coverage_percent"),
                 "synthesized_percent": projection_data.get("synthesized_surface_coverage_percent"),
                 "final_filled_uv_percent": projection_data.get("final_filled_uv_percent"),
+                "face_id_match_percent": projection_data.get("face_id_match_percent"),
                 "material_slot_count": _json(material_manifest).get("material_slot_count"),
                 "review_views": sorted((review.get("views") or {}).keys()),
+                "final_render_dir": str(final_render_dir),
+                "contact_sheet": str(contact_sheet),
             }
+            if face_report is not None:
+                face_data = _json(face_report)
+                gates["face_detail"] = {
+                    "direct_observation_percent": face_data.get("direct_face_observation_percent"),
+                    "face_id_match_percent": face_data.get("face_id_match_percent"),
+                    "landmark_reprojection_p95_pixels": face_data.get("landmark_reprojection_p95_pixels"),
+                    "face_width_texels": face_data.get("face_width_texels"),
+                    "protected_face_texels": face_data.get("face_chart_texel_count"),
+                    "protected_face_mask": face_data.get("protected_face_mask"),
+                    "protected_face_texel_sha256": face_data.get("protected_face_texel_sha256"),
+                }
+            if texture_quality_tier == "production" and not production_eligible:
+                return StageResult(
+                    "failed", outputs=outputs, gates=gates,
+                    failure_codes=["PRODUCTION_TEXTURE_ROUTE_UNAVAILABLE"],
+                    detail="production texture cannot be promoted from an unapproved fallback route",
+                )
             return StageResult("passed", outputs=outputs, gates=gates)
 
         return pipeline.execute("TEXTURE", [
             matte, mesh, normal, ao, cavity, material_id, manifest_path,
             w("shaman_texture_views_oriented.py"), w("raster_project.py"),
             w("pipeline_prior_repaint.py"), w("atlas_detail_fill.py"),
+            w("face_texture_refine.py"), Path(manifest["source"]["path"]),
             w("pipeline_orm.py"), b("shaman_texture_export.py"),
             b("shaman_texture_review.py"),
         ], runner)
@@ -862,6 +1028,11 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             stage = pipeline.stage_dir("TEXTURE_QA") / "candidate"
             report = stage / "visual_evaluation.json"
             texture_receipt = pipeline.read_receipt("TEXTURE") or {}
+            texture_outputs = texture_receipt.get("outputs") or {}
+            face_report_path = Path(texture_outputs["face_texture_report"]["path"]) if (
+                face_detail_required and texture_outputs.get("face_texture_report")
+            ) else None
+            face_data = _json(face_report_path) if face_report_path else {}
             render_paths = [Path(v["path"]) for k, v in (texture_receipt.get("outputs") or {}).items()
                             if k.startswith("render_") and v.get("path")]
             render_dir = render_paths[0].parent if render_paths else glb.parent
@@ -877,14 +1048,65 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "--review-report", _output(pipeline, "TEXTURE", "review_report"),
                 "--material-id-components", str(bake_report.get("high_component_count", 0)),
             ]
+            if face_detail_required:
+                command += ["--source-face-contrast", str(face_data.get("source_face_edge_energy", 0.0))]
             code, out = pipeline.run(command)
             data = _json(report)
             if not data:
                 return StageResult("failed", detail=f"visual evaluator exit {code}: {out[-1200:]}")
             gates = data.get("measured", {})
-            if code != 0 or not data.get("passed"):
+            texture_gates = texture_receipt.get("gates") or {}
+            gates["requested_texture_route"] = texture_gates.get("requested_texture_route", requested_texture_route)
+            gates["actual_texture_route"] = texture_gates.get("actual_texture_route", actual_texture_route)
+            gates["fallback_used"] = texture_gates.get("fallback_used", fallback_used)
+            gates["production_eligible"] = texture_gates.get("production_eligible", production_eligible)
+            gates["semantic_view_count"] = texture_gates.get("semantic_view_count", 1)
+            blocking = list(data.get("blocking_codes", []))
+            if texture_quality_tier == "production" and not gates["production_eligible"]:
+                blocking.append("PRODUCTION_TEXTURE_ROUTE_UNAVAILABLE")
+            if face_detail_required:
+                final_render_dir = Path(texture_gates.get("final_render_dir", ""))
+                required_renders = [final_render_dir / name for name in (
+                    "close_face_lit.png", "close_face_unlit.png")]
+                face_qa = {
+                    "required": True,
+                    "close_face_lit_exists": required_renders[0].is_file(),
+                    "close_face_unlit_exists": required_renders[1].is_file(),
+                    "direct_observation_percent": face_data.get("direct_face_observation_percent"),
+                    "face_id_match_percent": face_data.get("face_id_match_percent"),
+                    "face_width_texels": face_data.get("face_width_texels"),
+                    "landmark_reprojection_p95_pixels": face_data.get("landmark_reprojection_p95_pixels"),
+                    "protected_face_texels_unchanged": True,
+                    "rear_facial_provenance_count": 0,
+                }
+                for report_key in ("repaint_report", "detail_report"):
+                    report_entry = texture_outputs.get(report_key)
+                    report_data = _json(Path(report_entry["path"])) if report_entry else {}
+                    face_qa[f"{report_key}_protected_unchanged"] = report_data.get(
+                        "protected_face_texels_unchanged", False
+                    )
+                    face_qa["protected_face_texels_unchanged"] &= bool(
+                        report_data.get("protected_face_texels_unchanged", False)
+                    )
+                projection_report_path = Path(texture_outputs["projection_report"]["path"])
+                projection_data = _json(projection_report_path)
+                provenance_path = Path(projection_data.get("triangle_texture_provenance", ""))
+                provenance = _json(provenance_path)
+                face_qa["rear_facial_provenance_count"] = len(
+                    provenance.get("illegal_rear_facial_triangle_ids", [])
+                )
+                gates["face_qa"] = face_qa
+                if not all((face_qa["close_face_lit_exists"], face_qa["close_face_unlit_exists"],
+                            float(face_qa.get("direct_observation_percent") or 0) >= float(face_detail.get("min_direct_observation_percent", 95.0)),
+                            float(face_qa.get("face_id_match_percent") or 0) >= float(face_detail.get("min_face_id_match_percent", 99.0)),
+                            int(face_qa.get("face_width_texels") or 0) >= int(face_detail.get("min_face_pixels_across", 384)),
+                            float(face_qa.get("landmark_reprojection_p95_pixels") or 999) <= 4.0,
+                            face_qa["protected_face_texels_unchanged"],
+                            face_qa["rear_facial_provenance_count"] == 0)):
+                    blocking.append("FACE_TEXTURE_MISREGISTERED")
+            if code != 0 or not data.get("passed") or blocking:
                 return StageResult("failed", gates=gates,
-                                   failure_codes=data.get("blocking_codes", []),
+                                   failure_codes=sorted(set(blocking)),
                                    detail=f"advisory={data.get('advisory_codes', [])}")
             return StageResult("passed", outputs={"visual_evaluation": report}, gates=gates)
 
@@ -979,6 +1201,19 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
 
         def runner(overrides):
             stage = pipeline.stage_dir("EXPORT") / "candidate"
+            texture_receipt = pipeline.read_receipt("TEXTURE") or {}
+            texture_gates = texture_receipt.get("gates") or {}
+            qa_receipt = pipeline.read_receipt("TEXTURE_QA") or {}
+            if texture_quality_tier == "production" and (
+                    not texture_gates.get("production_eligible")
+                    or qa_receipt.get("status") != "passed"):
+                return StageResult(
+                    "failed",
+                    gates={"production_eligible": texture_gates.get("production_eligible"),
+                           "texture_qa_status": qa_receipt.get("status")},
+                    failure_codes=["PRODUCTION_TEXTURE_QA_REQUIRED"],
+                    detail="production export requires an eligible texture and passing face QA",
+                )
             final_glb = stage / f"{asset_id}_final.glb"
             report = stage / "export_report.json"
             code, out = _blender(
