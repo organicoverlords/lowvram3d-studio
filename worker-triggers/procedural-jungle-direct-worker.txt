@@ -1,10 +1,10 @@
-run=19
-requested=2026-08-04T04:24:00+03:00
+run=20
+requested=2026-08-04T04:31:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=cace94cb06ed7d232e7fbe6607c9fa5c6989419e
-repair_scope=runtime-camera-and-panda-source-diagnostic
+repair_commit=6e137b30f37604c8a7e216dbfa072a94f5bf49e1
+repair_scope=controller-free-panda-delayed-camera-visible-daylight-and-visual-audit
 codex=false
 claude=false
 magicmusic=false
 panda_walk=true
-classification_required=DIAGNOSTIC_ONLY
+classification_required=JUNGLE_PANDA_PLAYABLE_PROVEN
