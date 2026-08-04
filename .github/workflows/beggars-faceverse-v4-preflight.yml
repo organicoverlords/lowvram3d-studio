@@ -1,0 +1,107 @@
+name: Beggars FaceVerse v4 visual preflight
+run-name: Beggars FaceVerse v4 visual preflight ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - evidence/faceverse-v4-trigger.json
+      - tools/beggars_scene/run_faceverse_v4_preflight.py
+      - scripts/run-beggars-faceverse-v4-preflight.ps1
+      - .github/workflows/beggars-faceverse-v4-preflight.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-faceverse-v4-preflight
+  cancel-in-progress: true
+
+jobs:
+  reconstruct-and-render-one-head:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 75
+
+    steps:
+      - name: Checkout exact FaceVerse preflight source
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0
+
+      - name: Register exact FaceVerse preflight run
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = 'evidence\latest-beggars-faceverse-v4'
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          [ordered]@{
+            classification = 'RUN_REGISTERED'
+            workflow_run_id = [long]'${{ github.run_id }}'
+            status = 'in_progress'
+            conclusion = $null
+            head_sha = '${{ github.sha }}'
+            head_branch = '${{ github.ref_name }}'
+            url = 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'run-registration.json') -Encoding utf8
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- (Join-Path $evidence 'run-registration.json')
+          git commit -m "evidence(scene): register FaceVerse v4 preflight ${{ github.run_id }}"
+          for ($attempt = 1; $attempt -le 4; $attempt++) {
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if ($LASTEXITCODE -ne 0) { throw "FaceVerse registration rebase failed on attempt $attempt" }
+            git push origin HEAD:agent/blender-beggars-scene-20260804
+            if ($LASTEXITCODE -eq 0) { break }
+            if ($attempt -eq 4) { throw 'Could not publish FaceVerse preflight registration' }
+            Start-Sleep -Seconds 2
+          }
+
+      - name: Run bounded FaceVerse v4 proof
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\run-beggars-faceverse-v4-preflight.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "FaceVerse v4 preflight failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Commit compact FaceVerse receipts
+        if: always()
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = 'evidence\latest-beggars-faceverse-v4'
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          if ($env:FACEVERSE_V4_OUTPUT -and (Test-Path -LiteralPath $env:FACEVERSE_V4_OUTPUT)) {
+            Get-ChildItem -LiteralPath $env:FACEVERSE_V4_OUTPUT -Filter '*.json' -File | ForEach-Object {
+              Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $evidence $_.Name) -Force
+            }
+          }
+          git add -- $evidence
+          if (@(git diff --cached --name-only).Count -gt 0) {
+            git commit -m "evidence(scene): record FaceVerse v4 preflight ${{ github.run_id }}"
+            for ($attempt = 1; $attempt -le 4; $attempt++) {
+              git pull --rebase origin agent/blender-beggars-scene-20260804
+              if ($LASTEXITCODE -ne 0) { throw "FaceVerse receipt rebase failed on attempt $attempt" }
+              git push origin HEAD:agent/blender-beggars-scene-20260804
+              if ($LASTEXITCODE -eq 0) { break }
+              if ($attempt -eq 4) { throw 'Could not publish FaceVerse preflight receipts' }
+              Start-Sleep -Seconds 2
+            }
+          }
+
+      - name: Upload FaceVerse visual proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-faceverse-v4-preflight-${{ github.run_id }}
+          path: |
+            ${{ env.FACEVERSE_V4_OUTPUT }}/faceverse_v4_render.png
+            ${{ env.FACEVERSE_V4_OUTPUT }}/faceverse_v4_depth.png
+            ${{ env.FACEVERSE_V4_OUTPUT }}/faceverse_v4_colored_head.ply
+            ${{ env.FACEVERSE_V4_OUTPUT }}/faceverse_v4_coefficients.npz
+            ${{ env.FACEVERSE_V4_OUTPUT }}/*.json
+          if-no-files-found: warn
+          retention-days: 14
