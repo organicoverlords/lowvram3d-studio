@@ -82,7 +82,7 @@ $InstallerBuilder = New-Object Text.StringBuilder
 foreach ($Fragment in $InstallerFragments) {
     [void]$InstallerBuilder.Append((Get-Content -LiteralPath $Fragment.FullName -Raw))
 }
-$InstallerText = $InstallerBuilder.ToString()
+$InstallerText = $InstallerBuilder.ToString().Replace("`r`n", "`n")
 if ($InstallerText.Length -ne 46901) { throw "V3 installer byte-safe text length mismatch: expected=46901 actual=$($InstallerText.Length)" }
 $Installer = Join-Path $TempRoot 'apply-procedural-jungle-v3-overlay.py'
 [IO.File]::WriteAllText($Installer, $InstallerText, (New-Object Text.UTF8Encoding($false)))
