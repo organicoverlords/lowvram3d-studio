@@ -1,0 +1,54 @@
+hyDmLVbRJU/SNueeEbXU2+XUZ8PHvhI12481/BBh4SHIvLX2y6B8P+HejTaS26fcO8eiPHptCP4lar4r+vA1UMGmpFf1XNcpX1qOIDfjGNvJbHkqgQjaUuRpJlCXK8ENVf8Wl0ayPqgiXHDx4eBWVFl6Zp1PekCpVwZoYns9WpfKojvClEj4sYy3NIefQVFShH/Q2/vMclWPv2VovgXf5O96vJ2aFLEOqdG8KU/Rp2GpQywYO0Uy+8Zj6/DLMIVPJn2mr4GUzxYy2csi25PlUP1oJST12SbWqLjm9Gj07OYK6pS8cqOUzovbDELawWtg7RrwjNmMfmeYvY7R3QKdtOWx62rZ6C6FSBVJPB1cp0kCapXDOG62JpRdGIXlyaiy7bCOvddtu9RhGOYBmOa0rgt3tA/Pb6dFz9gPh1drt9/rhNH91eO1ftUUOgw0O6yTKKWEgUuoLCXpcotAWFzgE97pOcup2NCXTphMMXL3ok7KBezuge4dkX2A+oO/uc8uH+psh7Lg2F4yTmfgtRcb4PPhN+rk+nQ+g7nPTBxuj3dKA6XID+vCmOJOeQS4II9Pc5gf0e/tzlZPsbU9jXFHCbH7F39wjzbudzl+tBUOiLx+0Ofe5trIGDXPTs9LgwdrvchEjaSLYn8Evyext34tA9ppqj4xjzKZSFd7iaD6kLex2uhUNho/T/Z43+lg8QnzaRMev061E0svdV4BOOUqJ/jyPJs/bO2FUiWekzapheteH3jyU08OV+n6rKwgK1nL9pCCd072HZbIzZwV8WMt68jDceCVaf4yT0a4VrZCKosaMqFmSmmx5TO/rmyleFlqsu06QqXFf1EW8ryfdXSKFG/1hYNl0mWLImFs4bnWGUegI2qm+kxuv8ovDFDWa4swrNs5cjcaqocE2dmU8x6hv1UlbV6aGWjRWuWd5nLFMrgIy3JpBpMbn2eVMyIfSqrrKK0Fj4oFJx5ZIVWjqNuhLJQgbIrIyWjZrW69umdZKV6D6mYLIS9UaVk1ySOlYbGLHa6rpbAaHDtIEO09ZC5cI0rmMeqpktjTAHeTKjntX49eAbFAdfNdSbOtQbRE7hZnO1IBclooUb+j9ZtijwlQ2NElHRUSZuAl4BT61s9c1NgnsBY6BSV+UZ3LRgFOM1v05DrshKBHWT+pWNyiVYdIkc0xXhqeUlrLAoU9XiR/RnEshxp06eN3BVPr+BvnCl/G4aqPLvYKZwcWMVFdR0UWRFEbUi8dSz62tY//QDVswL8IfQJQ6sueZEsJy1kvbbn1YwRxYUzAJxToEz+XV0MR654s8k/HY6/jE8c4fj8Wgy1n+joZ5X+yuL4JngUtyzjSvhPL3KhTFXdV4PZSPYSBfvKZvmfwKjNQXf1c3rv1mqpebV3G7laBECl9e9ilMKRxV/JID+QIVeLos3PLcC7+3bRgGXXD2X7uO+4pe0alnd2OB+FkvwRrc3tonLPPtYPPefa+Aax4SwHHb9gVIx0yq/TVfG5r04ICqdNZJfhBamjCrFq3Y7jH2OEmYO/WfrJMFMTBDtyh28hBHhOzaLYexnDwyiHrAFPBc5jeeA2g9ZZnlLCERaO+/cv+DxguvNgDtXEDzaehNDBCpiEBihSmGsDixb/AmT3Hjlf8/k6vryt9GFeRjjKUiXoE7cnX2AeA7B8yMcAK6/D3+cub/lDnHgNB5hggRUtQAo2WWjScHIxZ3Gg6LxV0FwYy0B0GOjfZU14pmYiscGVNHGbNp1dUzTbFQ0pxMmuUCtYGQ38mTLbRV4KYwpQRdPvxjntuwKGxJMVLwxydOIwR7ip/E8wvoMfqOU68nrq1F45AGNMyb68Ifx93OawhK5VeLO+GqrORJGp9saf6iFoyn9dRYsMIdJyaXYxXUpbeu6GLS4ri2jFYxgdv4Tn1Et5OhoAAA='}}
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--target", required=True)
+    parser.add_argument("--report", required=True)
+    args = parser.parse_args()
+    target = Path(args.target).resolve()
+    if not target.is_dir():
+        raise SystemExit(f"target is not a directory: {target}")
+    written = []
+    for relative, spec in sorted(FILES.items()):
+        raw = gzip.decompress(base64.b64decode(spec["gzip_b64"], validate=True))
+        actual = hashlib.sha256(raw).hexdigest()
+        if actual != spec["sha256"] or len(raw) != spec["bytes"]:
+            raise SystemExit(f"embedded overlay identity mismatch: {relative}")
+        destination = (target / relative).resolve()
+        if target not in destination.parents:
+            raise SystemExit(f"unsafe overlay path: {relative}")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(raw)
+        written.append({"path": relative, "sha256": actual, "bytes": len(raw)})
+    # Validate decisive markers after writing, not just embedded bytes.
+    checks = {
+        "blender/procedural_jungle/generate_jungle_assets.py": ["procedural_jungle_manifest_v3", "DENSE_JUNGLE_VISUAL_ASSETS_GENERATED"],
+        "unreal/procedural_jungle/build_unreal_scene.py": ["JUNGLE_VISUAL_OVERHAUL_V3", "SkyAtmosphere"],
+        "scripts/procedural_jungle/build-procedural-jungle.ps1": ["PANDA_GENERATED_RIG_REUSE=PROVEN", "AUDIT_VISUAL_CAPTURE_QUALITY"],
+        "scripts/procedural_jungle/audit_visual_captures.py": ["DENSE_JUNGLE_VISUAL_QUALITY_PROVEN"],
+        "project_template/Source/ProceduralJungle58/JungleProofDirector.cpp": ["PrepareNextCapture", "panda_framed_capture_count"],
+        "project_template/Source/ProceduralJungle58/PandaWalkerCharacter.cpp": ["bRunPhysicsWithNoController"],
+        "project_template/Source/ProceduralJungle58/JunglePopulationActor.cpp": ["SceneRoot->SetMobility(EComponentMobility::Static)"],
+    }
+    for relative, markers in checks.items():
+        text = (target / relative).read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                raise SystemExit(f"overlay marker missing: {relative}: {marker}")
+    build_text = (target / "scripts/procedural_jungle/build-procedural-jungle.ps1").read_text(encoding="utf-8")
+    if "RenderOffScreen" in build_text or "utf8NoBOM" in build_text:
+        raise SystemExit("rejected runtime flag or unsupported encoding remains")
+    report = {
+        "classification": "PROVEN",
+        "marker": MARKER,
+        "file_count": len(written),
+        "files": written,
+    }
+    report_path = Path(args.report)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+    print("JUNGLE_VISUAL_OVERHAUL_V3_INSTALLER=PROVEN", flush=True)
+    print(json.dumps(report, sort_keys=True), flush=True)
+
+if __name__ == "__main__":
+    main()
