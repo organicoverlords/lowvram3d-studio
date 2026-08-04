@@ -17,18 +17,16 @@ if ($Branch -ne $ExpectedBranch) { throw "Branch mismatch: $Branch" }
 
 $BundleRoot = Join-Path $RepoRoot 'worker-bundles\procedural-jungle-direct-worker'
 $Chunks = @(Get-ChildItem -LiteralPath $BundleRoot -Filter 'chunk-*.b64' -File | Sort-Object Name)
-if ($Chunks.Count -lt 1) { throw "No worker bundle chunks found: $BundleRoot" }
+if ($Chunks.Count -ne 9) { throw "Unexpected worker bundle chunk count: $($Chunks.Count)" }
 
 $EncodedBuilder = New-Object Text.StringBuilder
 foreach ($Chunk in $Chunks) {
     $ChunkText = Get-Content -LiteralPath $Chunk.FullName -Raw
     [void]$EncodedBuilder.Append(($ChunkText -replace '\s', ''))
 }
-$Encoded = $EncodedBuilder.ToString()
-if ([string]::IsNullOrWhiteSpace($Encoded)) { throw 'Worker bundle is empty' }
+$BundleBytes = [Convert]::FromBase64String($EncodedBuilder.ToString())
 
-$BundleBytes = [Convert]::FromBase64String($Encoded)
-$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-bundle-inspect-$Head"
+$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-source-export-$Head"
 if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
 New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
 $ZipPath = Join-Path $TempRoot 'worker.zip'
@@ -36,56 +34,61 @@ $ExtractRoot = Join-Path $TempRoot 'extracted'
 [IO.File]::WriteAllBytes($ZipPath, $BundleBytes)
 Expand-Archive -LiteralPath $ZipPath -DestinationPath $ExtractRoot -Force
 
-$Files = @(Get-ChildItem -LiteralPath $ExtractRoot -Recurse -File | Sort-Object FullName)
-if ($Files.Count -lt 1) { throw 'Decoded worker bundle contains no files' }
+$LogRoot = 'C:\AI\ProceduralJungle\20260804\logs'
+New-Item -ItemType Directory -Path $LogRoot -Force | Out-Null
+Get-ChildItem -LiteralPath $LogRoot -Filter 'source_snapshot_*.log' -File -ErrorAction SilentlyContinue | Remove-Item -Force
 
-Write-Host "JUNGLE_BUNDLE_INSPECTION=PROVEN"
-Write-Host "BUNDLE_HEAD=$Head"
-Write-Host "BUNDLE_CHUNK_COUNT=$($Chunks.Count)"
-Write-Host "BUNDLE_ZIP_BYTES=$($BundleBytes.Length)"
-Write-Host "BUNDLE_FILE_COUNT=$($Files.Count)"
+$Selected = @(
+    'blender\procedural_jungle\generate_jungle_assets.py',
+    'project_template\Source\ProceduralJungle58\JunglePopulationActor.cpp',
+    'project_template\Source\ProceduralJungle58\JunglePopulationActor.h',
+    'project_template\Source\ProceduralJungle58\JungleProofDirector.cpp',
+    'project_template\Source\ProceduralJungle58\JungleProofDirector.h',
+    'project_template\Source\ProceduralJungle58\PandaWalkerCharacter.cpp',
+    'project_template\Source\ProceduralJungle58\PandaWalkerCharacter.h',
+    'scripts\procedural_jungle\build-procedural-jungle.ps1',
+    'scripts\procedural_jungle\make_contact_sheet.py',
+    'scripts\procedural_jungle\validate_generated.py',
+    'unreal\procedural_jungle\build_unreal_scene.py',
+    'unreal\procedural_jungle\audit_unreal_scene.py'
+)
 
-foreach ($File in $Files) {
-    $Relative = $File.FullName.Substring($ExtractRoot.Length).TrimStart('\')
-    Write-Host "BUNDLE_FILE=$Relative|BYTES=$($File.Length)"
+$Manifest = New-Object System.Collections.Generic.List[object]
+foreach ($RelativePath in $Selected) {
+    $SourcePath = Join-Path $ExtractRoot $RelativePath
+    if (-not (Test-Path -LiteralPath $SourcePath -PathType Leaf)) { throw "Selected bundle source missing: $RelativePath" }
+    $SafeName = ($RelativePath -replace '[\\/:*?"<>|]', '__')
+    $Destination = Join-Path $LogRoot ("source_snapshot_{0}.log" -f $SafeName)
+    [IO.File]::WriteAllBytes($Destination, [IO.File]::ReadAllBytes($SourcePath))
+    $Hash = (Get-FileHash -LiteralPath $SourcePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $Manifest.Add([ordered]@{
+        relative_path = $RelativePath
+        snapshot_path = $Destination
+        bytes = (Get-Item -LiteralPath $SourcePath).Length
+        sha256 = $Hash
+    })
+    Write-Host "SOURCE_SNAPSHOT=$RelativePath|BYTES=$((Get-Item -LiteralPath $SourcePath).Length)|SHA256=$Hash"
 }
 
-$SourceExtensions = @('.py', '.ps1', '.cpp', '.h', '.hpp', '.cs', '.ini', '.json', '.md')
-$KeywordPattern = '(?i)(^\s*(def|class|function)\s+|tree|canopy|understory|grass|fern|vine|root|rock|terrain|river|waterfall|pool|water|foam|mist|spray|material|roughness|color|sun|light|sky|fog|exposure|camera|capture|screenshot|instance|population|acceptance|visual)'
-$TotalPrinted = 0
-$MaxPrinted = 2600
+$ManifestPath = Join-Path $LogRoot 'source_snapshot_manifest.log'
+$ManifestText = [ordered]@{
+    classification = 'PROVEN'
+    branch = $Branch
+    head = $Head
+    bundle_chunk_count = $Chunks.Count
+    bundle_zip_bytes = $BundleBytes.Length
+    files = $Manifest
+    blender_invoked = $false
+    unreal_invoked = $false
+    codex_invoked = $false
+    claude_invoked = $false
+    magicmusic_invoked = $false
+} | ConvertTo-Json -Depth 10
+[IO.File]::WriteAllText($ManifestPath, $ManifestText, (New-Object Text.UTF8Encoding($false)))
 
-foreach ($File in $Files) {
-    if ($SourceExtensions -notcontains $File.Extension.ToLowerInvariant()) { continue }
-    $Relative = $File.FullName.Substring($ExtractRoot.Length).TrimStart('\')
-    $Lines = @(Get-Content -LiteralPath $File.FullName)
-    $Indexes = New-Object 'System.Collections.Generic.SortedSet[int]'
-    for ($Index = 0; $Index -lt $Lines.Count; $Index++) {
-        if ($Lines[$Index] -match $KeywordPattern) {
-            foreach ($ContextIndex in @(($Index - 2), ($Index - 1), $Index, ($Index + 1), ($Index + 2))) {
-                if ($ContextIndex -ge 0 -and $ContextIndex -lt $Lines.Count) {
-                    [void]$Indexes.Add($ContextIndex)
-                }
-            }
-        }
-    }
-    if ($Indexes.Count -eq 0) { continue }
-    Write-Host "SOURCE_EXCERPT_BEGIN=$Relative"
-    foreach ($Index in $Indexes) {
-        if ($TotalPrinted -ge $MaxPrinted) { break }
-        $Number = $Index + 1
-        Write-Host ('{0:D5}: {1}' -f $Number, $Lines[$Index])
-        $TotalPrinted++
-    }
-    Write-Host "SOURCE_EXCERPT_END=$Relative"
-    if ($TotalPrinted -ge $MaxPrinted) { break }
-}
-
-Write-Host "SOURCE_EXCERPT_LINES=$TotalPrinted"
+Write-Host "JUNGLE_FULL_SOURCE_EXPORT=PROVEN"
+Write-Host "SOURCE_SNAPSHOT_COUNT=$($Manifest.Count)"
 Write-Host 'DIAGNOSTIC_ONLY=TRUE'
 Write-Host 'BLENDER_INVOKED=FALSE'
 Write-Host 'UNREAL_INVOKED=FALSE'
-Write-Host 'CODEX_INVOKED=FALSE'
-Write-Host 'CLAUDE_INVOKED=FALSE'
-Write-Host 'MAGICMUSIC_INVOKED=FALSE'
 throw 'DIAGNOSTIC_COMPLETE_NO_BUILD'
