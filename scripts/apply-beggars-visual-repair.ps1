@@ -48,11 +48,26 @@ function Replace-Required {
     Write-Host "$Label=APPLIED"
 }
 
+$subsurfaceReplacement = @'
+    set_input(bsdf, "Subsurface Weight", 0.035)
+    set_input(bsdf, "Subsurface Radius", (1.0, 0.42, 0.18))
+'@
+$colorReplacement = @'
+    gamma = nodes.new("ShaderNodeGamma")
+    gamma.inputs["Gamma"].default_value = 2.2
+    tone = nodes.new("ShaderNodeHueSaturation")
+    tone.inputs["Saturation"].default_value = 0.84
+    tone.inputs["Value"].default_value = 0.94
+    links.new(attribute.outputs["Color"], gamma.inputs["Color"])
+    links.new(gamma.outputs["Color"], tone.inputs["Color"])
+    links.new(tone.outputs["Color"], bsdf.inputs["Base Color"])
+'@
+
 Replace-Required '    set_input(bsdf, "Roughness", 0.46)' '    set_input(bsdf, "Roughness", 0.52)' 'FACE_ROUGHNESS_REPAIR'
 Replace-Required '    set_input(bsdf, "Specular IOR Level", 0.28)' '    set_input(bsdf, "Specular IOR Level", 0.34)' 'FACE_SPECULAR_REPAIR'
-Replace-Required '    set_input(bsdf, "Subsurface Weight", 0.055)' "    set_input(bsdf, \"Subsurface Weight\", 0.035)`n    set_input(bsdf, \"Subsurface Radius\", (1.0, 0.42, 0.18))" 'FACE_SUBSURFACE_REPAIR'
+Replace-Required '    set_input(bsdf, "Subsurface Weight", 0.055)' $subsurfaceReplacement 'FACE_SUBSURFACE_REPAIR'
 Replace-Required '    set_input(bsdf, "Emission Strength", 0.09)' '    set_input(bsdf, "Emission Strength", 0.0)' 'FACE_EMISSION_REMOVAL'
-Replace-Required '    links.new(attribute.outputs["Color"], bsdf.inputs["Base Color"])' "    gamma = nodes.new(\"ShaderNodeGamma\")`n    gamma.inputs[\"Gamma\"].default_value = 2.2`n    tone = nodes.new(\"ShaderNodeHueSaturation\")`n    tone.inputs[\"Saturation\"].default_value = 0.84`n    tone.inputs[\"Value\"].default_value = 0.94`n    links.new(attribute.outputs[\"Color\"], gamma.inputs[\"Color\"])`n    links.new(gamma.outputs[\"Color\"], tone.inputs[\"Color\"])`n    links.new(tone.outputs[\"Color\"], bsdf.inputs[\"Base Color\"])" 'FACE_COLORSPACE_REPAIR'
+Replace-Required '    links.new(attribute.outputs["Color"], bsdf.inputs["Base Color"])' $colorReplacement 'FACE_COLORSPACE_REPAIR'
 Replace-Required '    skin_average = np.clip(np.median(colors_rgb, axis=0), 0.05, 0.95)' '    skin_average = np.clip(np.median(colors_rgb, axis=0) ** 2.2, 0.03, 0.72)' 'NECK_COLORSPACE_REPAIR'
 
 Replace-Required '        (0.0, 0.34, 0.42),' '        (0.0, 0.88, 0.58),' 'HAIR_CAP_DEPTH_REPAIR'
