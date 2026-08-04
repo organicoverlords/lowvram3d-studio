@@ -15,7 +15,7 @@ if ($Remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Rep
 if ($Branch -ne $ExpectedBranch) { throw "Branch mismatch: $Branch" }
 
 # Preserve the previously proven bootstrap byte-for-byte as the source of truth,
-# then inject only the two fixes evidenced by workflow run 30861450720.
+# then inject only the fixes evidenced by workflow run 30861450720 and its reruns.
 $BaselineCommit = 'bdf71585456e0c97aa77234f1bc01a7cf67c7bf4'
 $BaselineBlob = '39fed93175360450c99891fbdf61ba0ba1d7ed71'
 $BootstrapPath = 'scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1'
@@ -109,6 +109,49 @@ foreach ($PopulationCpp in $PopulationCppFiles) {
 }
 if ($RootMatchTotal -ne 1) { throw "Could not prove one JunglePopulationActor SceneRoot patch; matches=$RootMatchTotal" }
 Write-Host 'JUNGLE_POPULATION_STATIC_ROOT_PATCH=PROVEN'
+
+# A separate image-to-3D lane may move the benchmark candidate while this workflow
+# is queued. Restore the canonical source only from another byte-identical copy.
+$CanonicalPandaPath = 'C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\bar_local_closure_v1\tactical_red_panda_scout_bar_repaired.glb'
+$ExpectedPandaSha = '78c55133165e931bc8d6765610a679d1d18badcdc178820a69e31b7b32bcbfb8'
+$ExpectedPandaBytes = 50244400
+function Test-ProvenPandaSource {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
+    $Item = Get-Item -LiteralPath $Path
+    if ([int64]$Item.Length -ne [int64]$ExpectedPandaBytes) { return $false }
+    $Hash = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    return $Hash -eq $ExpectedPandaSha
+}
+if (-not (Test-ProvenPandaSource -Path $CanonicalPandaPath)) {
+    $SizedCandidates = @(
+        Get-ChildItem -LiteralPath 'C:\AI' -Recurse -File -Filter '*.glb' -ErrorAction SilentlyContinue |
+            Where-Object {
+                [int64]$_.Length -eq [int64]$ExpectedPandaBytes -and
+                $_.FullName -ne $CanonicalPandaPath
+            }
+    )
+    $VerifiedCandidates = @()
+    foreach ($Candidate in $SizedCandidates) {
+        $CandidateHash = (Get-FileHash -LiteralPath $Candidate.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($CandidateHash -eq $ExpectedPandaSha) {
+            $VerifiedCandidates += $Candidate.FullName
+        }
+    }
+    if ($VerifiedCandidates.Count -lt 1) {
+        $SizedPaths = ($SizedCandidates | ForEach-Object { $_.FullName }) -join ' | '
+        throw "The canonical panda source is missing and no byte-identical GLB exists under C:\AI. size-matched=$($SizedCandidates.Count) paths=$SizedPaths"
+    }
+    $ChosenPandaCopy = $VerifiedCandidates | Sort-Object | Select-Object -First 1
+    New-Item -ItemType Directory -Path (Split-Path -Parent $CanonicalPandaPath) -Force | Out-Null
+    Copy-Item -LiteralPath $ChosenPandaCopy -Destination $CanonicalPandaPath -Force
+    if (-not (Test-ProvenPandaSource -Path $CanonicalPandaPath)) {
+        throw "Restored panda source failed exact hash validation: $CanonicalPandaPath"
+    }
+    Write-Host 'PANDA_SOURCE_EXACT_COPY_RESTORED=PROVEN'
+    Write-Host "PANDA_SOURCE_RESTORED_FROM=$ChosenPandaCopy"
+}
+Write-Host 'PANDA_SOURCE_EXACT_HASH=PROVEN'
 '@
 
 $PatchedText = $BaselineText.Replace($InsertionMarker, $EvidenceFixes + "`n`n" + $InsertionMarker)
