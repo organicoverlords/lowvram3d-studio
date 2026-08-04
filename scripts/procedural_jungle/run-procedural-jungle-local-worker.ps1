@@ -62,7 +62,7 @@ foreach ($File in $Files) {
     $Indexes = New-Object 'System.Collections.Generic.SortedSet[int]'
     for ($Index = 0; $Index -lt $Lines.Count; $Index++) {
         if ($Lines[$Index] -match $KeywordPattern) {
-            foreach ($ContextIndex in @($Index - 2, $Index - 1, $Index, $Index + 1, $Index + 2)) {
+            foreach ($ContextIndex in @(($Index - 2), ($Index - 1), $Index, ($Index + 1), ($Index + 2))) {
                 if ($ContextIndex -ge 0 -and $ContextIndex -lt $Lines.Count) {
                     [void]$Indexes.Add($ContextIndex)
                 }
