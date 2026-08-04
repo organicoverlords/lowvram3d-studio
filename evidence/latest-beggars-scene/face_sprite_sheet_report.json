@@ -1,15 +1,18 @@
 {
-  "alpha_coverage_fraction": 0.28723945617675783,
+  "alpha_coverage_fraction": 0.28585205078125,
+  "caption_removed_fraction_max": 0.048495840397429324,
+  "caption_removed_fraction_mean": 0.005847622762818467,
   "cell_size": 512,
   "classification": "PROVEN",
   "color_route": "MASKED_GRAY_WORLD_BALANCE_AND_SATURATION_REDUCTION",
   "columns": 8,
-  "crop_route": "SMOOTHED_DETECTOR_BOX_WITH_DENSE_FACE_ALPHA",
+  "crop_route": "SMOOTHED_DETECTOR_BOX_WITH_DENSE_FACE_ALPHA_AND_LOWER_CAPTION_REJECTION",
   "crop_side_max": 332,
   "crop_side_min": 270,
   "frame_count": 40,
   "frames": [
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -34,6 +37,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -58,6 +62,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -82,6 +87,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -106,6 +112,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -130,6 +137,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -154,6 +162,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -178,6 +187,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -202,6 +212,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0007589870972193473,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -215,7 +226,7 @@
         270
       ],
       "frame_index": 8,
-      "mask_coverage_fraction": 0.34705044240370686,
+      "mask_coverage_fraction": 0.3467870355958382,
       "row": 1,
       "stabilized_box": [
         145.46853637695312,
@@ -226,6 +237,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0007489361702127659,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -239,7 +251,7 @@
         270
       ],
       "frame_index": 9,
-      "mask_coverage_fraction": 0.35170795368829394,
+      "mask_coverage_fraction": 0.35144454688042526,
       "row": 1,
       "stabilized_box": [
         145.46853637695312,
@@ -250,6 +262,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.001207838874294169,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -263,7 +276,7 @@
         270
       ],
       "frame_index": 10,
-      "mask_coverage_fraction": 0.39651105709941215,
+      "mask_coverage_fraction": 0.39603213563056,
       "row": 1,
       "stabilized_box": [
         145.46853637695312,
@@ -274,6 +287,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -298,6 +312,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.00015438293142310187,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -311,7 +326,7 @@
         281
       ],
       "frame_index": 12,
-      "mask_coverage_fraction": 0.3647020404486284,
+      "mask_coverage_fraction": 0.364645736678528,
       "row": 1,
       "stabilized_box": [
         127.13328552246094,
@@ -322,6 +337,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -346,6 +362,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -370,6 +387,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -394,6 +412,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.048495840397429324,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -407,7 +426,7 @@
         328
       ],
       "frame_index": 16,
-      "mask_coverage_fraction": 0.28369928748000584,
+      "mask_coverage_fraction": 0.27098130893390454,
       "row": 2,
       "stabilized_box": [
         79.34251403808594,
@@ -418,6 +437,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.009088454962656348,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -431,7 +451,7 @@
         328
       ],
       "frame_index": 17,
-      "mask_coverage_fraction": 0.12430509725841993,
+      "mask_coverage_fraction": 0.12342143823894587,
       "row": 2,
       "stabilized_box": [
         79.34251403808594,
@@ -442,6 +462,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0007886435331230284,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -455,7 +476,7 @@
         327
       ],
       "frame_index": 18,
-      "mask_coverage_fraction": 0.20124930562641,
+      "mask_coverage_fraction": 0.20113593850967587,
       "row": 2,
       "stabilized_box": [
         79.68898010253906,
@@ -466,6 +487,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.020140851388328176,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -479,7 +501,7 @@
         321
       ],
       "frame_index": 19,
-      "mask_coverage_fraction": 0.2587936198370133,
+      "mask_coverage_fraction": 0.2540340368229203,
       "row": 2,
       "stabilized_box": [
         81.85722351074219,
@@ -490,6 +512,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.01251898559396143,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -503,7 +526,7 @@
         320
       ],
       "frame_index": 20,
-      "mask_coverage_fraction": 0.2530839031322438,
+      "mask_coverage_fraction": 0.2502533518153968,
       "row": 2,
       "stabilized_box": [
         84.7418212890625,
@@ -514,6 +537,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.004654661714231981,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -527,7 +551,7 @@
         315
       ],
       "frame_index": 21,
-      "mask_coverage_fraction": 0.24944877087633702,
+      "mask_coverage_fraction": 0.24852223681741414,
       "row": 2,
       "stabilized_box": [
         91.42133331298828,
@@ -538,6 +562,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0033903375380166527,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -551,7 +576,7 @@
         315
       ],
       "frame_index": 22,
-      "mask_coverage_fraction": 0.23523409645336837,
+      "mask_coverage_fraction": 0.23457731281666355,
       "row": 2,
       "stabilized_box": [
         92.32157135009766,
@@ -562,6 +587,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.002051983584131327,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -575,7 +601,7 @@
         315
       ],
       "frame_index": 23,
-      "mask_coverage_fraction": 0.24005441921561269,
+      "mask_coverage_fraction": 0.2397142991180334,
       "row": 2,
       "stabilized_box": [
         95.8266372680664,
@@ -586,6 +612,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.01177204334606689,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -599,7 +626,7 @@
         316
       ],
       "frame_index": 24,
-      "mask_coverage_fraction": 0.3114521239786813,
+      "mask_coverage_fraction": 0.30814991076740034,
       "row": 3,
       "stabilized_box": [
         102.25357055664062,
@@ -610,6 +637,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.008812321371864084,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -623,7 +651,7 @@
         308
       ],
       "frame_index": 25,
-      "mask_coverage_fraction": 0.3455692729766804,
+      "mask_coverage_fraction": 0.3429218106995885,
       "row": 3,
       "stabilized_box": [
         114.2069320678711,
@@ -634,6 +662,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.008728321505825205,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -647,7 +676,7 @@
         308
       ],
       "frame_index": 26,
-      "mask_coverage_fraction": 0.36146776406035663,
+      "mask_coverage_fraction": 0.35876543209876544,
       "row": 3,
       "stabilized_box": [
         117.88098907470703,
@@ -658,6 +687,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.011209140873589818,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -671,7 +701,7 @@
         309
       ],
       "frame_index": 27,
-      "mask_coverage_fraction": 0.3793689986282579,
+      "mask_coverage_fraction": 0.3756104252400549,
       "row": 3,
       "stabilized_box": [
         123.01383209228516,
@@ -682,6 +712,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.01188843164151806,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -695,7 +726,7 @@
         311
       ],
       "frame_index": 28,
-      "mask_coverage_fraction": 0.37458498023715414,
+      "mask_coverage_fraction": 0.3706324110671937,
       "row": 3,
       "stabilized_box": [
         128.18728637695312,
@@ -706,6 +737,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.011692221522089197,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -719,7 +751,7 @@
         311
       ],
       "frame_index": 29,
-      "mask_coverage_fraction": 0.37636363636363634,
+      "mask_coverage_fraction": 0.3724901185770751,
       "row": 3,
       "stabilized_box": [
         131.97735595703125,
@@ -730,6 +762,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.018588409579909,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -743,7 +776,7 @@
         311
       ],
       "frame_index": 30,
-      "mask_coverage_fraction": 0.37217758874186097,
+      "mask_coverage_fraction": 0.3657844990548204,
       "row": 3,
       "stabilized_box": [
         134.90640258789062,
@@ -754,6 +787,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.015889526542324246,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -767,7 +801,7 @@
         308
       ],
       "frame_index": 31,
-      "mask_coverage_fraction": 0.3740825718847697,
+      "mask_coverage_fraction": 0.3687021159548632,
       "row": 3,
       "stabilized_box": [
         136.29824829101562,
@@ -778,6 +812,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.018383015535450384,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -791,7 +826,7 @@
         308
       ],
       "frame_index": 32,
-      "mask_coverage_fraction": 0.37224436125535026,
+      "mask_coverage_fraction": 0.3659515088086517,
       "row": 4,
       "stabilized_box": [
         136.29824829101562,
@@ -802,6 +837,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.01294157480907415,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -815,7 +851,7 @@
         308
       ],
       "frame_index": 33,
-      "mask_coverage_fraction": 0.3566531148948731,
+      "mask_coverage_fraction": 0.35252049537763824,
       "row": 4,
       "stabilized_box": [
         135.59039306640625,
@@ -826,6 +862,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -850,6 +887,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -874,6 +912,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -898,6 +937,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -922,6 +962,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,
@@ -946,6 +987,7 @@
       ]
     },
     {
+      "caption_removed_foreground_fraction": 0.0,
       "color_balance_gains_bgr": [
         1.2999999523162842,
         1.2999999523162842,

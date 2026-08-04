@@ -5,70 +5,70 @@
   "derived_face_sprite_policy": "DERIVED_FACE_ONLY_RGBA_SPRITE_SHEET_RAW_REFERENCE_EXCLUDED",
   "files": [
     {
-      "bytes": 30038326,
+      "bytes": 30071050,
       "name": "beggars_photoreal_recreation.blend",
-      "sha256": "51a91d92a111d0fdbe08962b49e12debf4544fdef60cb9d27d68e97095e82e00"
+      "sha256": "4d8deb1901da650a0ec22447c530d6d391e1ac4d05db6f8963251dfe3d680eaa"
     },
     {
-      "bytes": 955200,
+      "bytes": 931950,
       "name": "hero_clean_render.png",
-      "sha256": "3047160f49a97fd252f597e11fd5b517e8ab92ae899762fbe5c13c33803cd2f0"
+      "sha256": "197261aff5db00290cb2eeb0d586c97f4e41a19c7ec4dc50d1c2765d06ddf6a0"
     },
     {
-      "bytes": 933477,
+      "bytes": 921028,
       "name": "wide_scene_proof.png",
-      "sha256": "40ab3f75701739295cb8e1ec6c7ad05a4f84599fbd3754064f710139793aa801"
+      "sha256": "de6c225d79b3bd2b5606bb82f46ae1afc45d7e6118c1226f9ca5e8c1ea7cf956"
     },
     {
       "bytes": 3244,
       "name": "scene_receipt.json",
-      "sha256": "54ec86b6e9857474e5a815c849aaee1871edc2a8e34ce15a7dcca9090401bdd9"
+      "sha256": "e2fd7c2b7a9796a076ef2d911d3dbe3d37f729189b6fa1022691d32ab24e6923"
     },
     {
-      "bytes": 21656,
+      "bytes": 24204,
       "name": "face_sprite_sheet_report.json",
-      "sha256": "a2c8b6397ae53c763de545df68abf720f31ad9ccb3c4402362ebb2b4e6f5c5df"
+      "sha256": "d7274542e5b59536c5c6e6fc3f7ac5c073183ba52c41b0f2cf81cc5692d1ca09"
     },
     {
-      "bytes": 447935,
+      "bytes": 385587,
       "name": "beggars_photoreal_recreation.mp4",
-      "sha256": "8a48d7ce621aceaa4d81edda42dc6872fc359b1554ab045f1c10909a93793712"
+      "sha256": "7d22d16732278d3f5dd18fce50aa808c79d5f8ef2f01fa122258eaae2350bd7a"
     },
     {
-      "bytes": 2167057,
+      "bytes": 2100073,
       "name": "contact_sheet.png",
-      "sha256": "59420c8d2b3afa07812265de7e38fcf2483bd99e745a9bc9b04fc5124c41f09a"
+      "sha256": "0b5b05d61d2bc0df82cf84de9171c46dadb20414db8ebd87efc75fbf46c6cf21"
     },
     {
-      "bytes": 960902,
+      "bytes": 943497,
       "name": "proof_frame_01.png",
-      "sha256": "3d5c7fb0b17c536b8dd1258f5971dee1104b93e0df8c23f4b2e5a70b4bc5bec1"
+      "sha256": "e5f70216a4c40540d1e7a694aac05c9fca677fdf3c0e300d14df21284ae9ab60"
     },
     {
-      "bytes": 955214,
+      "bytes": 931800,
       "name": "proof_frame_02.png",
-      "sha256": "030a49b8a9246de48d965527076fe35d4a983d1d8bcee8dbe31cf3f60addff39"
+      "sha256": "7920fee3f0dd60a236baedee0c12331fc3b8c422e316bf90099ca91903afde49"
     },
     {
-      "bytes": 968423,
+      "bytes": 946297,
       "name": "proof_frame_03.png",
-      "sha256": "1637c38f269f074018b05b261f70d1e5c7ea6010cca52b9e7c66eba4e3abff5e"
+      "sha256": "10385765fcc429e0b330ed3d9111c2525b5db68fceca63f359df8eaae2d2bcf9"
     },
     {
       "bytes": 1546,
       "name": "reference_reconstruction_report.json",
-      "sha256": "0bc88abf9acd1f50dba9a4a136fbc0fa0f3858399a55b03b550b83962620a005"
+      "sha256": "8b3f1df0bf9682850a483486640bff25a50ab641f55f86a0c394c8918b02287e"
     },
     {
       "bytes": 1000,
       "name": "worker_receipt.json",
-      "sha256": "ece443ecfd84dcfc7666ac92e3ac3ac826a7d6b02953b7820b0f8c4a4fe8b326"
+      "sha256": "79cfeabde301edd4626214acdecea52b8422bd83db42f6b4334f53e4857d8ed3"
     }
   ],
-  "head_sha": "de80d4729983fae3ca73533b0582a3f7565235c1",
+  "head_sha": "88bcf1b37a311ca636ff0c2a7c015ee3ea8f60bf",
   "meme_clip_match": "NOT_PROVEN_PENDING_USER_REVIEW",
   "raw_reference_media_in_artifact": false,
   "reference_media_field_scope": "RAW_SOURCE_CLIP_AND_EXTRACTED_FRAMES_ONLY",
   "reference_media_in_artifact": false,
-  "workflow_run_id": "30924008509"
+  "workflow_run_id": "30927552483"
 }
