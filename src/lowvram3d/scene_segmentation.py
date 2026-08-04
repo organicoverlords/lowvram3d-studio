@@ -71,7 +71,8 @@ def _labels(model) -> dict[int, str]:
 
 
 def segment(image_path: Path, model_name: str = SEG_MODEL,
-            with_geometry: bool = True) -> dict[str, Any]:
+            with_geometry: bool = True,
+            mask_dir: Path | None = None) -> dict[str, Any]:
     import numpy as np
     import torch
     from PIL import Image
@@ -139,6 +140,17 @@ def segment(image_path: Path, model_name: str = SEG_MODEL,
                                round(float(ys.max() + 1) / height, 4)],
             "confidence": round(min(0.95, 0.5 + fraction), 3),
         }
+
+        # Keep the mask, not just its bounding box. A downstream generator needs
+        # the subject cut out of its background, and re-deriving that with a
+        # generic saliency matte is both slower and worse than the segmentation
+        # already computed here: on a dark, low-contrast source rembg erased
+        # half a barn that these labels had cleanly separated.
+        if mask_dir is not None:
+            mask_dir.mkdir(parents=True, exist_ok=True)
+            mask_path = mask_dir / f"{region['id']}.png"
+            Image.fromarray((selection * 255).astype(np.uint8), mode="L").save(mask_path)
+            region["mask_png"] = str(mask_path)
 
         if points is not None:
             observed = selection & mask & np.isfinite(points).all(axis=-1)
@@ -224,10 +236,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--overlay", default=None)
     parser.add_argument("--model", default=SEG_MODEL)
     parser.add_argument("--no-geometry", action="store_true")
+    parser.add_argument("--mask-dir", default=None,
+                        help="write a per-region mask PNG here")
     args = parser.parse_args(argv)
 
     image = Path(args.image)
-    result = segment(image, args.model, not args.no_geometry)
+    result = segment(image, args.model, not args.no_geometry,
+                     Path(args.mask_dir) if args.mask_dir else None)
 
     receipt = Path(args.receipt)
     receipt.parent.mkdir(parents=True, exist_ok=True)

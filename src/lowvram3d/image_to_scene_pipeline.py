@@ -17,6 +17,7 @@ from typing import Any, Callable
 from .scene_completeness import audit_scene_completeness
 from .depth_stage import reconstruct_depth
 from .region_placement import place as place_regions
+from .asset_generation import generate as generate_region_assets
 from .unreal_stage import build_scene, capture_scene
 from .scene_analysis import analyze_image
 from .scene_paths import derive_scene_paths
@@ -110,6 +111,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise FileNotFoundError(image)
     image_hash = _sha256(image)
     scene_spec_path = Path(args.scene_spec) if args.scene_spec else None
+    # Defined before the branch: a supplied SceneSpec skips reconstruction, and
+    # the placement step below reads this either way.
+    depth_receipt: dict[str, Any] | None = None
     if scene_spec_path and scene_spec_path.is_file() and args.input_kind == "scene":
         spec = _read(scene_spec_path)
     else:
@@ -122,7 +126,6 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         # placeholder camera and zero-confidence depth, and asset strategy falls
         # through to source_projection -- the input image on a shell, which
         # reproduces the source view exactly and carries no geometry.
-        depth_receipt: dict[str, Any] | None = None
         if not args.disable_neural:
             depth_receipt = reconstruct_depth(
                 image, evidence / "depth", args.scene_id,
@@ -134,11 +137,23 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     # and leave the editor half to be run by hand, which is how "the scene was
     # built" came to mean "a manifest said it would be".
     placement = None
+    generated_assets = None
     if depth_receipt and depth_receipt.get("segmentation"):
         placement = place_regions(
             depth_receipt["segmentation"],
             (depth_receipt.get("camera") or {}).get("fov_x_deg"))
         _write_json(evidence / "region_placement.json", placement)
+
+        # Generate a real mesh per object-like region. Without this the
+        # structural scene is engine primitives standing in measured places --
+        # correct as a layout, and not a scene.
+        if args.generate_assets:
+            generated_assets = generate_region_assets(
+                placement, image, evidence / "generated_assets",
+                max_assets=args.max_generated_assets,
+                steps=args.generation_steps,
+                mask_dir=evidence / "depth" / "region_masks")
+            _write_json(evidence / "generated_asset_manifest.json", generated_assets)
 
     output_map = args.output_map or paths["map"]
     if spec.get("source", {}).get("sha256") != image_hash:
@@ -316,7 +331,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     # when no editor is reachable so a headless run still produces its plans.
     unreal_receipt = {"available": False, "reason": "no placement to build"}
     if placement and placement.get("actors"):
-        unreal_receipt = build_scene(placement, args.scene_id, args.output_root)
+        unreal_receipt = build_scene(placement, args.scene_id, args.output_root,
+                                     generated_assets=generated_assets)
         _write_json(evidence / "unreal_build_receipt.json", unreal_receipt)
         if unreal_receipt.get("available"):
             shot = capture_scene(evidence / "screenshots" / "structural_scene.png",
@@ -327,10 +343,27 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     state["unreal_build"] = {k: v for k, v in unreal_receipt.items() if k != "capture"}
 
     built = bool(unreal_receipt.get("available") and unreal_receipt.get("spawned_count"))
-    state["classification"] = "SCENE_BUILT" if built else "PARTIAL"
-    state["next_action"] = ("REPLACE_PRIMITIVES_WITH_GENERATED_ASSETS" if built
-                            else "RUN_GAMEPLAY_AND_VISUAL_VALIDATION" if all_layers_proven
-                            else "RUN_BOUNDED_UNREAL_LAYER_BUILDERS")
+    generated_actors = int(unreal_receipt.get("generated_actor_count") or 0)
+    state["generated_assets"] = {
+        "requested": bool(args.generate_assets),
+        "classification": (generated_assets or {}).get("classification"),
+        "generated_count": (generated_assets or {}).get("generated_count", 0),
+        "failed_count": (generated_assets or {}).get("failed_count", 0),
+        "actors_using_generated_meshes": generated_actors,
+        "geometry_source": unreal_receipt.get("geometry_source"),
+    }
+    # SCENE_BUILT said only that actors were spawned, which was true of a field
+    # of cubes. Distinguish the two: a scene standing entirely on engine
+    # primitives is a layout, however many actors it has.
+    state["classification"] = (
+        "SCENE_BUILT_WITH_GENERATED_ASSETS" if built and generated_actors
+        else "SCENE_BUILT_FROM_PRIMITIVES" if built
+        else "PARTIAL")
+    state["next_action"] = (
+        "TEXTURE_GENERATED_ASSETS" if built and generated_actors
+        else "REPLACE_PRIMITIVES_WITH_GENERATED_ASSETS" if built
+        else "RUN_GAMEPLAY_AND_VISUAL_VALIDATION" if all_layers_proven
+        else "RUN_BOUNDED_UNREAL_LAYER_BUILDERS")
     _write_json(state_path, state)
     report = [
         f"# {args.scene_id} Image-to-Scene Pipeline",
@@ -369,6 +402,12 @@ def main() -> int:
     parser.add_argument("--max-triangles", type=int, default=1500000)
     parser.add_argument("--disable-neural", action="store_true")
     parser.add_argument("--enable-pcg", action="store_true")
+    parser.add_argument("--generate-assets", action="store_true",
+                        help="generate a mesh per object region with Mini Turbo "
+                             "instead of placing engine primitives")
+    parser.add_argument("--max-generated-assets", type=int, default=None,
+                        help="cap generations; each costs several GPU-minutes")
+    parser.add_argument("--generation-steps", type=int, default=5)
     args = parser.parse_args()
     state = run(args)
     print("ONE_IMAGE_PIPELINE_ENTRYPOINT=PROVEN")

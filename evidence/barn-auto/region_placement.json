@@ -12,12 +12,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.07683333333333334,
+        0.7228
       ]
     },
     {
@@ -31,12 +43,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.07683333333333334,
+        0.0497,
+        0.15366666666666667,
+        0.7228
       ]
     },
     {
@@ -50,12 +74,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.15366666666666667,
+        0.0497,
+        0.2305,
+        0.7228
       ]
     },
     {
@@ -69,12 +105,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.2305,
+        0.0497,
+        0.30733333333333335,
+        0.7228
       ]
     },
     {
@@ -88,12 +136,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.30733333333333335,
+        0.0497,
+        0.38416666666666666,
+        0.7228
       ]
     },
     {
@@ -107,12 +167,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.38416666666666666,
+        0.0497,
+        0.461,
+        0.7228
       ]
     },
     {
@@ -126,12 +198,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.461,
+        0.0497,
+        0.5378333333333334,
+        0.7228
       ]
     },
     {
@@ -145,12 +229,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.5378333333333334,
+        0.0497,
+        0.6146666666666667,
+        0.7228
       ]
     },
     {
@@ -164,12 +260,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.6146666666666667,
+        0.0497,
+        0.6915,
+        0.7228
       ]
     },
     {
@@ -183,12 +291,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.6915,
+        0.0497,
+        0.7683333333333333,
+        0.7228
       ]
     },
     {
@@ -202,12 +322,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.7683333333333333,
+        0.0497,
+        0.8451666666666667,
+        0.7228
       ]
     },
     {
@@ -221,12 +353,24 @@
         -505.97117099570903
       ],
       "observed_fraction": 0.9618,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.0497,
+        0.922,
+        0.7228
+      ],
       "region_id": "vegetation_tree_004",
       "semantic_label": "tree",
       "size_m": [
         2.3264782548276672,
         2.3264782548276672,
         15.285870520521176
+      ],
+      "source_bbox_norm_xyxy": [
+        0.8451666666666667,
+        0.0497,
+        0.922,
+        0.7228
       ]
     },
     {
@@ -239,12 +383,24 @@
         -183.26704711347713
       ],
       "observed_fraction": 1.0,
+      "region_bbox_norm_xyxy": [
+        0.0,
+        0.6667,
+        1.0,
+        1.0
+      ],
       "region_id": "terrain_grass_009",
       "semantic_label": "grass",
       "size_m": [
         8.765,
         4.887121256359389,
         0.2
+      ],
+      "source_bbox_norm_xyxy": [
+        0.0,
+        0.6667,
+        1.0,
+        1.0
       ]
     },
     {
@@ -258,12 +414,24 @@
         -255.447877637476
       ],
       "observed_fraction": 1.0,
+      "region_bbox_norm_xyxy": [
+        0.2942,
+        0.5101,
+        0.799,
+        0.7293
+      ],
       "region_id": "architecture_house_025",
       "semantic_label": "house",
       "size_m": [
         8.618218120728352,
         14.363696867880588,
         4.6778759213145165
+      ],
+      "source_bbox_norm_xyxy": [
+        0.2942,
+        0.5101,
+        0.799,
+        0.7293
       ]
     },
     {
@@ -277,12 +445,24 @@
         -224.68148838180414
       ],
       "observed_fraction": 1.0,
+      "region_bbox_norm_xyxy": [
+        0.1637,
+        0.4641,
+        0.3729,
+        0.7155
+      ],
       "region_id": "architecture_hovel_079",
       "semantic_label": "hovel",
       "size_m": [
         4.18738239371701,
         6.978970656195016,
         6.290080866279017
+      ],
+      "source_bbox_norm_xyxy": [
+        0.1637,
+        0.4641,
+        0.3729,
+        0.7155
       ]
     },
     {
@@ -295,12 +475,24 @@
         -2050.204481592387
       ],
       "observed_fraction": 0.9949,
+      "region_bbox_norm_xyxy": [
+        0.8729,
+        0.581,
+        1.0,
+        0.6869
+      ],
       "region_id": "terrain_field_029",
       "semantic_label": "field",
       "size_m": [
         199.129,
         18.589690715918834,
         0.2
+      ],
+      "source_bbox_norm_xyxy": [
+        0.8729,
+        0.581,
+        1.0,
+        0.6869
       ]
     }
   ],

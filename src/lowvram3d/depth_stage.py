@@ -89,7 +89,10 @@ def reconstruct_depth(image: Path, work_dir: Path, scene_id: str,
     seg = subprocess.run(
         [str(python), "-m", "lowvram3d.scene_segmentation",
          "--image", str(image), "--receipt", str(segmentation_path),
-         "--overlay", str(work_dir / f"{scene_id}_segmentation.png")],
+         "--overlay", str(work_dir / f"{scene_id}_segmentation.png"),
+         # Per-region masks: the asset generator mattes its crops with these
+         # rather than re-deriving a subject with a generic saliency model.
+         "--mask-dir", str(work_dir / "region_masks")],
         capture_output=True, text=True, timeout=timeout, env=env)
     if seg.returncode == 0 and segmentation_path.is_file():
         receipt["segmentation"] = json.loads(

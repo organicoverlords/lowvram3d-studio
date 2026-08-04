@@ -88,12 +88,21 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None
         thickness = max(0.5, float(depth_band.get("far", 0.0))
                         - float(depth_band.get("near", 0.0)))
 
+        bbox = [float(v) for v in region["bbox_norm_xyxy"]]
         common = {
             "region_id": region["id"],
             "semantic_label": region["semantic_label"],
             "layer_type": layer,
             "confidence": region.get("confidence"),
             "observed_fraction": region.get("observed_fraction"),
+            # Carried through so a generator can crop the source image back to
+            # the pixels this actor was measured from. Without it the actor
+            # knows its size and position but not what it looks like.
+            # `source_bbox` is this actor's own window and `region_bbox` the
+            # whole region's; they differ only for scattered instances, and a
+            # generator needs the second to know how far it may widen a crop.
+            "source_bbox_norm_xyxy": bbox,
+            "region_bbox_norm_xyxy": bbox,
         }
 
         if layer == "terrain":
@@ -126,10 +135,18 @@ def place(segmentation: dict[str, Any], fov_x_deg: float | None = None
                 t = (index + 0.5) / count
                 offset = (t - 0.5) * width
                 jitter = ((index * 37) % 11 - 5) / 10.0
+                # A scatter region's bbox covers the whole tree line, so the
+                # region crop is a hedge rather than a tree. Give each instance
+                # the slice of the image it actually stands in, which is a crop
+                # of one subject and the right input for a generator.
+                slice_width = (bbox[2] - bbox[0]) / count
+                instance_bbox = [bbox[0] + index * slice_width, bbox[1],
+                                 bbox[0] + (index + 1) * slice_width, bbox[3]]
                 actors.append({
                     **common,
                     "kind": "scatter_instance",
                     "instance_index": index,
+                    "source_bbox_norm_xyxy": instance_bbox,
                     "location_cm": [(centre[0] + jitter * thickness * 0.3) * CM_PER_M,
                                     (centre[1] + offset) * CM_PER_M,
                                     (centre[2] - height * 0.5) * CM_PER_M],

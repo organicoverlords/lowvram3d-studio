@@ -55,6 +55,7 @@ def _bridge():
 
 def build_scene(placement: dict[str, Any], scene_id: str,
                 output_root: str | None = None,
+                generated_assets: dict[str, Any] | None = None,
                 timeout: float = 900.0) -> dict[str, Any]:
     """Spawn the structural scene in the live editor."""
     if not placement.get("actors"):
@@ -71,6 +72,15 @@ def build_scene(placement: dict[str, Any], scene_id: str,
                 "reason": f"no editor bridge: {type(exc).__name__}: {exc}"}
 
     request: dict[str, Any] = {"placement": placement, "scene_id": scene_id}
+    if generated_assets and generated_assets.get("assets"):
+        # Only the fields the builder reads: the manifest also carries crops and
+        # per-attempt VRAM telemetry, and the request crosses the bridge as one
+        # JSON literal.
+        request["generated_assets"] = {"assets": [
+            {"asset_id": asset["asset_id"], "glb": asset["glb"],
+             "status": asset["status"], "triangles": asset.get("triangles")}
+            for asset in generated_assets["assets"]
+            if asset.get("status") == "generated" and asset.get("glb")]}
     root = normalise_package_root(output_root)
     if root:
         request["package_root"] = root
