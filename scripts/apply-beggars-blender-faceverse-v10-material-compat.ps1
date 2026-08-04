@@ -10,43 +10,64 @@ if (-not (Test-Path -LiteralPath $target)) {
 }
 
 $text = Get-Content -LiteralPath $target -Raw
-$old = @'
-def render_projection_variants(output_dir: Path) -> list[dict[str, Any]]:
-    material = bpy.data.materials.get(PROJECTION_MATERIAL_NAME)
-    if material is None or not material.use_nodes:
-        raise RuntimeError("V10 projected material is missing after scene build")
-    strength_node = material.node_tree.nodes.get(PROJECTION_STRENGTH_NODE)
-'@
-$new = @'
-def render_projection_variants(output_dir: Path) -> list[dict[str, Any]]:
-    material = bpy.data.materials.get(PROJECTION_MATERIAL_NAME)
-    if material is None or not material.use_nodes or material.node_tree.nodes.get(PROJECTION_STRENGTH_NODE) is None:
-        face = bpy.data.objects.get("CHAR_Antinous")
-        if face is None or not hasattr(face.data, "materials"):
-            raise RuntimeError("V10 face object is missing after save/reload")
-        candidates = [
-            slot
-            for slot in face.data.materials
-            if slot is not None
-            and slot.use_nodes
-            and slot.node_tree is not None
-            and slot.node_tree.nodes.get(PROJECTION_STRENGTH_NODE) is not None
-        ]
-        if len(candidates) != 1:
-            names = [slot.name for slot in face.data.materials if slot is not None]
-            raise RuntimeError(
-                f"V10 projected material could not be resolved from face slots: candidates={len(candidates)} slots={names}"
-            )
-        material = candidates[0]
-        print(f"BLENDER_FACEVERSE_V10_RELOADED_MATERIAL=PROVEN NAME={material.name}")
-    strength_node = material.node_tree.nodes.get(PROJECTION_STRENGTH_NODE)
-'@
 
-if ($text.Contains($old)) {
-    $text = $text.Replace($old, $new)
+$oldFace = @'
+def create_face_v10(*args, **kwargs):
+    face, follow, targets = _original_create_corrected_face(*args, **kwargs)
+    apply_projection_attributes(face)
+    return face, follow, targets
+'@
+$newFace = @'
+def create_face_v10(*args, **kwargs):
+    face, follow, targets = _original_create_corrected_face(*args, **kwargs)
+    apply_projection_attributes(face)
+    projected_material = projected_skin_material_v10()
+    if len(face.data.materials) == 0:
+        face.data.materials.append(projected_material)
+    else:
+        face.data.materials[0] = projected_material
+    for polygon in face.data.polygons:
+        polygon.material_index = 0
+    face["v10_projected_material_slot"] = 0
+    print(
+        f"BLENDER_FACEVERSE_V10_PROJECTED_MATERIAL_ASSIGNED=PROVEN "
+        f"SLOT=0 NAME={projected_material.name}"
+    )
+    return face, follow, targets
+'@
+if ($text.Contains($oldFace)) {
+    $text = $text.Replace($oldFace, $newFace)
 }
-elseif (-not $text.Contains('BLENDER_FACEVERSE_V10_RELOADED_MATERIAL=PROVEN')) {
-    throw 'Could not locate the FaceVerse v10 material-resolution anchor.'
+elseif (-not $text.Contains('BLENDER_FACEVERSE_V10_PROJECTED_MATERIAL_ASSIGNED=PROVEN')) {
+    throw 'Could not locate the FaceVerse v10 face-material assignment anchor.'
+}
+
+if (-not $text.Contains('BLENDER_FACEVERSE_V10_RELOADED_SLOT_ZERO=PROVEN')) {
+    $renderPattern = '(?s)def render_projection_variants\(output_dir: Path\) -> list\[dict\[str, Any\]\]:\r?\n.*?    strength_node = material\.node_tree\.nodes\.get\(PROJECTION_STRENGTH_NODE\)\r?\n'
+    if (-not [regex]::IsMatch($text, $renderPattern)) {
+        throw 'Could not locate the FaceVerse v10 projection-variant material block.'
+    }
+    $newRender = @'
+def render_projection_variants(output_dir: Path) -> list[dict[str, Any]]:
+    face = bpy.data.objects.get("CHAR_Antinous")
+    if face is None or not hasattr(face.data, "materials"):
+        raise RuntimeError("V10 face object is missing after save/reload")
+    if len(face.data.materials) < 1 or face.data.materials[0] is None:
+        raise RuntimeError("V10 projected material slot zero is empty after save/reload")
+    material = face.data.materials[0]
+    if (
+        not material.use_nodes
+        or material.node_tree is None
+        or material.node_tree.nodes.get(PROJECTION_STRENGTH_NODE) is None
+    ):
+        names = [slot.name for slot in face.data.materials if slot is not None]
+        raise RuntimeError(
+            f"V10 face slot zero is not the projected material: slot0={material.name} slots={names}"
+        )
+    print(f"BLENDER_FACEVERSE_V10_RELOADED_SLOT_ZERO=PROVEN NAME={material.name}")
+    strength_node = material.node_tree.nodes.get(PROJECTION_STRENGTH_NODE)
+'@
+    $text = [regex]::Replace($text, $renderPattern, $newRender.TrimEnd() + "`n", 1)
 }
 
 [System.IO.File]::WriteAllText(
@@ -65,7 +86,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $patched = Get-Content -LiteralPath $target -Raw
-if (-not $patched.Contains('BLENDER_FACEVERSE_V10_RELOADED_MATERIAL=PROVEN')) {
-    throw 'FaceVerse v10 reloaded-material gate is absent after patch.'
+foreach ($marker in @(
+    'BLENDER_FACEVERSE_V10_PROJECTED_MATERIAL_ASSIGNED=PROVEN',
+    'face.data.materials[0] = projected_material',
+    'BLENDER_FACEVERSE_V10_RELOADED_SLOT_ZERO=PROVEN',
+    'material = face.data.materials[0]'
+)) {
+    if (-not $patched.Contains($marker)) {
+        throw "FaceVerse v10 direct material-slot gate is absent: $marker"
+    }
 }
+Write-Host 'BLENDER_FACEVERSE_V10_DIRECT_MATERIAL_SLOT=PROVEN'
 Write-Host 'BLENDER_FACEVERSE_V10_MATERIAL_COMPAT=PROVEN'
