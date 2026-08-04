@@ -1,0 +1,66 @@
+name: Beggars hair occlusion diagnostic
+run-name: Beggars hair diagnostic ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - blender/diagnose_beggars_hair_occlusion.py
+      - .github/workflows/beggars-hair-occlusion-diagnostic.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-hair-occlusion-diagnostic
+  cancel-in-progress: true
+
+jobs:
+  render-hair-variants:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout diagnostic source
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0
+
+      - name: Render bounded hair variants from proven blend
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $blend = 'C:\AI\LowVRAM3D-benchmarks\beggars-scene\run-30863735416\artifact\beggars_photoreal_recreation.blend'
+          $output = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\hair-diagnostic-${{ github.run_id }}"
+          $blender = 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe'
+          if (-not (Test-Path -LiteralPath $blend)) { throw "Proven blend is missing: $blend" }
+          & $blender --background --factory-startup --python blender\diagnose_beggars_hair_occlusion.py -- --blend $blend --output-dir $output
+          if ($LASTEXITCODE -ne 0) { throw "Hair diagnostic failed with exit code $LASTEXITCODE" }
+          "HAIR_DIAGNOSTIC_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Commit compact diagnostic receipt
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = 'evidence\latest-beggars-hair-diagnostic'
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          Copy-Item -LiteralPath (Join-Path $env:HAIR_DIAGNOSTIC_OUTPUT 'diagnostic.json') -Destination (Join-Path $evidence 'diagnostic.json') -Force
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- $evidence
+          git commit -m "evidence(scene): record beggars hair diagnostic ${{ github.run_id }}"
+          git pull --rebase origin agent/blender-beggars-scene-20260804
+          git push origin HEAD:agent/blender-beggars-scene-20260804
+
+      - name: Upload hair diagnostic renders
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-hair-diagnostic-${{ github.run_id }}
+          path: |
+            ${{ env.HAIR_DIAGNOSTIC_OUTPUT }}/*.png
+            ${{ env.HAIR_DIAGNOSTIC_OUTPUT }}/diagnostic.json
+          if-no-files-found: error
+          retention-days: 14
