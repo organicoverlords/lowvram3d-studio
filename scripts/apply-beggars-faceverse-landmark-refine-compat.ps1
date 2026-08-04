@@ -51,6 +51,15 @@ elseif (-not $text.Contains('triangles, baseline_normals[0], baseline_source_col
     throw 'Could not locate the baseline-render compatibility anchor.'
 }
 
+$oldScheduler = '    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(iterations, 1), eta_min=0.08)'
+$newScheduler = '    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max(iterations, 1), eta_min=0.0002)'
+if ($text.Contains($oldScheduler)) {
+    $text = $text.Replace($oldScheduler, $newScheduler)
+}
+elseif (-not $text.Contains('eta_min=0.0002')) {
+    throw 'Could not locate the landmark-refinement learning-rate anchor.'
+}
+
 [System.IO.File]::WriteAllText(
     (Resolve-Path -LiteralPath $target),
     $text,
@@ -64,6 +73,20 @@ if (-not (Test-Path -LiteralPath $python)) {
 & $python -m py_compile $target
 if ($LASTEXITCODE -ne 0) {
     throw 'FaceVerse landmark-refinement source failed compilation after compatibility patch.'
+}
+
+$gate = @'
+from pathlib import Path
+text = Path(r"tools\beggars_scene\run_faceverse_v4_landmark_refine.py").read_text(encoding="utf-8")
+assert "eta_min=0.0002" in text
+assert "eta_min=0.08" not in text
+assert "baseline_normals[0]" in text
+assert "_SCRIPT_DIR = Path(__file__).resolve().parent" in text
+print("FACEVERSE_LANDMARK_REFINE_SOURCE_GATE=PROVEN")
+'@
+& $python -c $gate
+if ($LASTEXITCODE -ne 0) {
+    throw 'FaceVerse landmark-refinement source gate failed.'
 }
 
 Write-Host 'FACEVERSE_LANDMARK_REFINE_COMPAT=PROVEN'
