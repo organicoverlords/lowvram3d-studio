@@ -1,0 +1,51 @@
+{
+  "aspect_is_4_3": true,
+  "aspect_ratio": 1.3333333333333333,
+  "best_orientation": "hflip",
+  "comparison_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\upfixed\\score_yaw_+180\\source_camera_comparison.png",
+  "comparison_sha256": "928969c45d264264d3ce5de198530536e0cf61d174ba24c2a796bc0f0aeef7b7",
+  "difference_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\upfixed\\score_yaw_+180\\source_camera_difference.png",
+  "dimensions": [
+    1024,
+    768
+  ],
+  "mean_abs_difference": 49.473421308729385,
+  "non_dark_fraction": 0.015981038411458332,
+  "orientation_scores": {
+    "hflip": {
+      "combined": 0.33915358669102824,
+      "correlation": 0.17211864337264376,
+      "edge_iou": 0.0505471388984405,
+      "silhouette_iou": 0.11648780441994398
+    },
+    "identity": {
+      "combined": 0.17342010311355222,
+      "correlation": 0.009660991304670186,
+      "edge_iou": 0.050207259124456574,
+      "silhouette_iou": 0.11355185268442546
+    },
+    "rot180": {
+      "combined": 0.11324637503011328,
+      "correlation": -0.0328441364429161,
+      "edge_iou": 0.051639073182913414,
+      "silhouette_iou": 0.09445143829011597
+    },
+    "vflip": {
+      "combined": 0.08826617930257533,
+      "correlation": -0.05712774553824584,
+      "edge_iou": 0.050851801394715186,
+      "silhouette_iou": 0.09454212344610598
+    }
+  },
+  "p50_abs_difference": 40.0,
+  "p95_abs_difference": 123.0,
+  "render": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\upfixed\\yaw_+180.png",
+  "render_luma_std": 11.272209349977617,
+  "render_mean_luma": 2.3810577392578125,
+  "render_sha256": "91a8eb0d6b7dab72e8ff0780f1fbbef085d3eb4b14afa73ea50a7a3b524d0e40",
+  "rgb_range": [
+    0,
+    185
+  ],
+  "source": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png"
+}

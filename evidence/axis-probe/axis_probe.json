@@ -1,0 +1,31 @@
+{
+  "classification": "PROVEN",
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\axis_probe.glb",
+  "glb_bytes": 1752,
+  "half_extent_m": 0.05,
+  "markers": {
+    "gltf_x_plus": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "gltf_y_plus": [
+      0.0,
+      2.0,
+      0.0
+    ],
+    "gltf_z_plus": [
+      0.0,
+      0.0,
+      3.0
+    ],
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "schema_version": "axis_probe_v1",
+  "units": "metres",
+  "vertices": 32
+}

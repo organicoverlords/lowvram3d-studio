@@ -1,0 +1,117 @@
+{
+  "candidates": [
+    {
+      "best_transform": "vflip",
+      "capture": {
+        "actorLabel": "__ClaudeSceneCapture",
+        "height": 768,
+        "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_+000.png",
+        "sizeBytes": 157982,
+        "success": true,
+        "width": 1024
+      },
+      "correlation": 0.13364454724642308,
+      "identity_scores": {
+        "combined": 0.13364454724642308,
+        "correlation": -0.00451489914449293,
+        "edge_iou": 0.05145286349058094,
+        "silhouette_iou": 0.08670658290033507
+      },
+      "render": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_+000.png",
+      "render_bytes": 157982,
+      "yaw": 0.0
+    },
+    {
+      "best_transform": "identity",
+      "capture": {
+        "actorLabel": "__ClaudeSceneCapture",
+        "height": 768,
+        "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_-050.png",
+        "sizeBytes": 439995,
+        "success": true,
+        "width": 1024
+      },
+      "correlation": 0.30110619560113633,
+      "identity_scores": {
+        "combined": 0.30110619560113633,
+        "correlation": 0.07780343089665052,
+        "edge_iou": 0.04824120603015075,
+        "silhouette_iou": 0.17506155867433504
+      },
+      "render": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_-050.png",
+      "render_bytes": 439995,
+      "yaw": -50.0
+    },
+    {
+      "best_transform": "vflip",
+      "capture": {
+        "actorLabel": "__ClaudeSceneCapture",
+        "height": 768,
+        "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_-090.png",
+        "sizeBytes": 846093,
+        "success": true,
+        "width": 1024
+      },
+      "correlation": -0.025789512528545083,
+      "identity_scores": {
+        "combined": -0.025789512528545083,
+        "correlation": -0.2294460197268049,
+        "edge_iou": 0.05363313609467456,
+        "silhouette_iou": 0.15002337110358524
+      },
+      "render": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_-090.png",
+      "render_bytes": 846093,
+      "yaw": -90.0
+    },
+    {
+      "best_transform": "vflip",
+      "capture": {
+        "actorLabel": "__ClaudeSceneCapture",
+        "height": 768,
+        "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_+090.png",
+        "sizeBytes": 157982,
+        "success": true,
+        "width": 1024
+      },
+      "correlation": 0.1361147746618544,
+      "identity_scores": {
+        "combined": 0.1361147746618544,
+        "correlation": -0.0007731192545379433,
+        "edge_iou": 0.050848280886791795,
+        "silhouette_iou": 0.08603961302960056
+      },
+      "render": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_+090.png",
+      "render_bytes": 157982,
+      "yaw": 90.0
+    },
+    {
+      "best_transform": "rot180",
+      "capture": {
+        "actorLabel": "__ClaudeSceneCapture",
+        "height": 768,
+        "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_+180.png",
+        "sizeBytes": 225665,
+        "success": true,
+        "width": 1024
+      },
+      "correlation": 0.08806053325096794,
+      "identity_scores": {
+        "combined": 0.08806053325096794,
+        "correlation": -0.05730528333317057,
+        "edge_iou": 0.05065945625202287,
+        "silhouette_iou": 0.09470636033211564
+      },
+      "render": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\yaw_+180.png",
+      "render_bytes": 225665,
+      "yaw": 180.0
+    }
+  ],
+  "classification": "REFUTED",
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\depth\\barn_auto_moge.glb",
+  "prediction": "yaw -90 reproduces the source view",
+  "schema_version": "axis_mapping_prediction_v1",
+  "source": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "winning_correlation": 0.30110619560113633,
+  "winning_transform": "identity",
+  "winning_yaw": -50.0
+}

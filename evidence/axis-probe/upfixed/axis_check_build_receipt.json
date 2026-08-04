@@ -1,0 +1,9 @@
+{
+  "actors_after": {
+    "actors": [
+      "axis_fixed_ReconstructedMesh",
+      "axis_fixed_Camera_Source"
+    ]
+  },
+  "handler_error": "BridgeError: python failed in editor:\n{'error': 'Handler execution timed out'}"
+}

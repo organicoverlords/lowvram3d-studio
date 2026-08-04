@@ -14,10 +14,17 @@ that make an oblique view look shredded. Triangles whose vertices disagree in
 depth by more than `edge_rtol` (relative to their own depth) are dropped, which
 leaves a hole where the occluded background genuinely was not observed.
 
-*Axis convention.* MoGe returns points in OpenCV camera space (X right, Y down,
-Z forward). glTF is Y up, Z toward the viewer, so Y and Z are negated on
-export. Skipping this is what leaves a reconstruction rotated 180 degrees about
-the view axis once it reaches Unreal.
+*Axis convention.* MoGe returns points with X right, Y **up** and Z forward, so
+only Z is negated on export to reach glTF's Z-toward-the-viewer. That is a
+reflection, so face winding is reversed with it.
+
+This was measured, not assumed, after three sessions of guessing: negating Y as
+well -- correct if MoGe used OpenCV's Y-down convention, which it does not --
+inverts the reconstruction, and an inverted scene cannot be framed by any camera
+pose because the required correction is a mirror. That is the real cause of the
+"180 degree roll" that was previously patched at the Unreal end. Unreal's own
+glTF mapping is clean and was measured separately: glTF (x, y, z) arrives as
+Unreal (x, z, y) at 100 cm per glTF metre. Receipts in `evidence/axis-probe/`.
 
 Run with the MoGe environment:
 
@@ -131,8 +138,20 @@ def reconstruct(image_path: Path, output: Path, receipt_path: Path,
     vertices, colors, uvs, faces, dropped, total = build_mesh(
         points, array.astype(np.float64) / 255.0, mask, edge_rtol)
 
-    # OpenCV camera space -> glTF: negate Y (down->up) and Z (forward->back).
-    vertices = vertices * np.array([1.0, -1.0, -1.0])
+    # MoGe camera space -> glTF: negate Z only (forward -> toward the viewer).
+    #
+    # Negating Y as well, on the assumption that MoGe returns OpenCV points with
+    # Y down, is what put every reconstruction in this project upside down.
+    # Measured: with the extra Y negation, the source image's top row lands
+    # *below* its bottom row in world space, and no camera pose reproduces the
+    # source view -- scoring always preferred a vertical mirror, which a rigid
+    # camera cannot produce. Without it, yaw -90 matches the source with no flip
+    # at all. See evidence/axis-probe/.
+    #
+    # Negating one axis is a reflection, so the winding is reversed with it or
+    # every face ends up pointing inward.
+    vertices = vertices * np.array([1.0, 1.0, -1.0])
+    faces = faces[:, ::-1]
 
     # Carry appearance as a UV-mapped texture, not vertex colours. Vertex
     # colours quantise the image to one sample per vertex -- at stride 2 that is

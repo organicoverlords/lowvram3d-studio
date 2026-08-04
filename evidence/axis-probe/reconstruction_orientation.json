@@ -1,0 +1,105 @@
+{
+  "actor_rotation": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "actor_scale": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "band_counts": {
+    "bottom": 11067,
+    "left": 36385,
+    "right": 41944,
+    "top": 33955
+  },
+  "camera_forward_direction": [
+    -0.0028,
+    -0.9943,
+    -0.107
+  ],
+  "centroid_cm": [
+    1.63,
+    -1206.13,
+    -23.54
+  ],
+  "centroid_distance_cm": 1206.36,
+  "classification": "PROVEN",
+  "expected_right_from_up_cross_forward": [
+    -0.9764,
+    -0.0203,
+    0.2133
+  ],
+  "handedness_dot": -0.9838,
+  "image_bottom_direction": [
+    0.2896,
+    -0.7963,
+    0.5228
+  ],
+  "image_bottom_mean_cm": [
+    454.17,
+    -1248.02,
+    819.49
+  ],
+  "image_left_direction": [
+    -0.6765,
+    -0.6817,
+    -0.2478
+  ],
+  "image_left_mean_cm": [
+    -1292.88,
+    -1303.48,
+    -315.7
+  ],
+  "image_right_direction": [
+    0.9993,
+    0.0077,
+    -0.0373
+  ],
+  "image_right_direction_separation": 1.3466,
+  "image_right_mean_cm": [
+    2251.91,
+    -2243.53,
+    -516.51
+  ],
+  "image_top_direction": [
+    0.0576,
+    -0.712,
+    -0.531
+  ],
+  "image_top_mean_cm": [
+    19.6,
+    -168.74,
+    -125.75
+  ],
+  "image_up_direction": [
+    -0.2144,
+    0.0779,
+    -0.9736
+  ],
+  "image_up_direction_separation": 1.0823,
+  "mirrored": true,
+  "nanite_enabled": false,
+  "schema_version": "reconstruction_orientation_v1",
+  "source_camera_rotation": {
+    "pitch": -6.144,
+    "roll": 0.0,
+    "yaw": -90.159
+  },
+  "static_mesh": "/Game/AgentProof/axis_check/Meshes/barn_auto_moge/StaticMeshes/barn_auto_moge.barn_auto_moge",
+  "up_tilt_degrees": 166.815,
+  "uv_count": 1309036,
+  "uv_range": {
+    "u": [
+      0.0,
+      1.0
+    ],
+    "v": [
+      0.0,
+      0.9482
+    ]
+  },
+  "vertex_count": 1309036
+}

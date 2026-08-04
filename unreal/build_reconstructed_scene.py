@@ -12,9 +12,14 @@ that made every earlier capture in this project look like a broken renderer.
 So the material is built explicitly: VertexColor -> Emissive on an unlit
 shading model, which needs no lighting rig to be inspectable.
 
-Axis convention: `moge_reconstruct` exports glTF (Y up, Z toward the viewer),
-and Unreal's importer maps glTF -Z onto +X. A camera looking down -Z in the
-reconstruction therefore looks down +X here, which is yaw 0.
+Axis convention, measured rather than assumed (see `evidence/axis-probe/` and
+`unreal/measure_axis_mapping.py`): Unreal's glTF importer maps glTF (x, y, z)
+onto Unreal (x, z, y) at 100 cm per glTF metre. `moge_reconstruct` exports with
+the camera looking down glTF -Z, which therefore arrives as Unreal -Y -- so the
+source camera is at **yaw -90**, not the yaw 0 the standard convention predicts.
+
+Rendering the reconstruction across a yaw sweep and scoring each frame against
+the source confirms it: yaw -90 scores 1.44 with no flip, against 0.15 at yaw 0.
 
 Configure with a `SCENE_REQUEST` global.
 
@@ -38,6 +43,9 @@ ASPECT = float(REQUEST.get("aspect_ratio", 4.0 / 3.0))
 # applies that 100x conversion. Scaling the actor again put a 544 m scene at
 # 25 km across, which pushes almost all of it outside the source frustum.
 UNIFORM_SCALE = float(REQUEST.get("actor_scale", 1.0))
+# The reconstruction's camera looks down glTF -Z, which the importer places on
+# Unreal -Y. Measured, not assumed -- see the module docstring.
+SOURCE_CAMERA_YAW = float(REQUEST.get("source_camera_yaw_deg", -90.0))
 
 MESH_DIR = f"{PACKAGE_ROOT}/Meshes"
 MATERIAL_PATH = f"{PACKAGE_ROOT}/Materials/M_{SCENE_ID}_VertexColor"
@@ -213,7 +221,8 @@ else:
     component.set_material(0, material)
 
 camera = actor_subsystem.spawn_actor_from_class(
-    unreal.CameraActor, unreal.Vector(0, 0, 0), unreal.Rotator(0, 0, 0))
+    unreal.CameraActor, unreal.Vector(0, 0, 0),
+    unreal.Rotator(0.0, SOURCE_CAMERA_YAW, 0.0))
 camera.set_actor_label(f"{SCENE_ID}_Camera_Source")
 camera_component = camera.get_component_by_class(unreal.CameraComponent)
 camera_component.set_editor_property("field_of_view", FOV)
@@ -230,6 +239,7 @@ report.update({
     "camera_label": str(camera.get_actor_label()),
     "camera_fov_deg": FOV,
     "camera_aspect_ratio": ASPECT,
+    "source_camera_yaw_deg": SOURCE_CAMERA_YAW,
     "import_uniform_scale": UNIFORM_SCALE,
     "bounds_origin": [float(origin.x), float(origin.y), float(origin.z)],
     "bounds_extent": [float(extent.x), float(extent.y), float(extent.z)],

@@ -1,0 +1,80 @@
+{
+  "all_axes_clean": true,
+  "classification": "PROVEN",
+  "cluster_centroids_cm": [
+    [
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      100.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      200.0
+    ],
+    [
+      0.0,
+      300.0,
+      0.0
+    ]
+  ],
+  "cluster_count": 4,
+  "convention": "gltf_X->+X gltf_Y->+Z gltf_Z->+Y",
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\axis_probe.glb",
+  "imported_object_paths": [
+    "/Game/AgentProof/AxisProbe/Meshes/axis_probe/StaticMeshes/axis_probe.axis_probe"
+  ],
+  "is_signed_permutation": true,
+  "mapping": {
+    "gltf_X": {
+      "clean": true,
+      "measured_distance_cm": 100.0,
+      "measured_offset_cm": [
+        100.0,
+        0.0,
+        0.0
+      ],
+      "off_axis_leakage_cm": 0.0,
+      "source_distance_m": 1.0,
+      "unreal_axis": "+X"
+    },
+    "gltf_Y": {
+      "clean": true,
+      "measured_distance_cm": 200.0,
+      "measured_offset_cm": [
+        0.0,
+        0.0,
+        200.0
+      ],
+      "off_axis_leakage_cm": 0.0,
+      "source_distance_m": 2.0,
+      "unreal_axis": "+Z"
+    },
+    "gltf_Z": {
+      "clean": true,
+      "measured_distance_cm": 300.0,
+      "measured_offset_cm": [
+        0.0,
+        300.0,
+        0.0
+      ],
+      "off_axis_leakage_cm": 0.0,
+      "source_distance_m": 3.0,
+      "unreal_axis": "+Y"
+    }
+  },
+  "origin_centroid_cm": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "schema_version": "axis_mapping_measurement_v1",
+  "static_mesh": "/Game/AgentProof/AxisProbe/Meshes/axis_probe/StaticMeshes/axis_probe.axis_probe",
+  "unreal_cm_per_gltf_metre": 100.0,
+  "vertex_count": 96
+}

@@ -1,0 +1,17 @@
+{
+  "classification": "PROVEN",
+  "faces": 502832,
+  "flip": [
+    1.0,
+    -1.0,
+    1.0
+  ],
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\barn-auto\\depth\\barn_auto_moge.glb",
+  "mean_y_after": 0.516,
+  "mean_y_before": -0.516,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\axis-probe\\barn_auto_moge_upfixed.glb",
+  "output_bytes": 13973848,
+  "schema_version": "reconstruction_reorient_v1",
+  "vertices": 273303,
+  "winding_reversed": true
+}
