@@ -1,10 +1,10 @@
-run=23
-requested=2026-08-04T05:43:00+03:00
+run=24
+requested=2026-08-04T05:49:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=a7d9cc2e3a4dd7daeeb9a616db79e923596c741e
-repair_scope=fail-fast-generated-powershell-encoding-diagnostic
+repair_commit=36cc1f675726b4eb229593053b7062413c2ff7b9
+repair_scope=powershell5-generated-write-compat-runtime-movement-camera-daylight-visual-audit
 codex=false
 claude=false
 magicmusic=false
-gpu_work=false
-classification_required=RUNTIME_ENCODING_DIAGNOSTIC_COMPLETE
+panda_walk=true
+classification_required=JUNGLE_PANDA_PLAYABLE_PROVEN
