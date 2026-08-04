@@ -1,0 +1,6 @@
+requested=2026-08-04T08:17:00+03:00
+mode=cloud-bundle-integrity-diagnostic
+scope=procedural-jungle-visual-overhaul
+blender=false
+unreal=false
+gpu=false
