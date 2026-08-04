@@ -1,0 +1,15 @@
+﻿{
+    "classification":  "REJECTED",
+    "failure":  "The \u0027Out-String\u0027 command was found in the module \u0027Microsoft.PowerShell.Utility\u0027, but the module could not be loaded. For more information, run \u0027Import-Module Microsoft.PowerShell.Utility\u0027.",
+    "route":  "FACEVERSE_V4_RESNET50_SINGLE_FRAME_FULL_HEAD",
+    "repository":  "organicoverlords/lowvram3d-studio",
+    "branch":  "agent/blender-beggars-scene-20260804",
+    "head_sha":  "179dd185bbe77944dfe0d0be09232c5e7812d541",
+    "workflow_run_id":  "30867186484",
+    "workflow_run_url":  "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30867186484",
+    "output_root":  "C:\\AI\\LowVRAM3D-benchmarks\\beggars-scene\\faceverse-v4-preflight-30867186484",
+    "source_commit":  "19c67cc4d7234b1ea7d55a185a2cb55fd49bb877",
+    "reference_media_upload_scope":  "EXCLUDED",
+    "reference_media_deleted":  true,
+    "recorded_at":  "2026-08-04T00:57:39.1675480Z"
+}
