@@ -1,0 +1,85 @@
+name: Beggars Blender FaceVerse v4 preflight
+run-name: Beggars Blender FaceVerse v4 preflight ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - blender/build_beggars_meme_scene_faceverse_v4.py
+      - scripts/run-beggars-blender-faceverse-v4-preflight.ps1
+      - .github/workflows/beggars-blender-faceverse-v4-preflight.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-blender-faceverse-v4-preflight
+  cancel-in-progress: true
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish exact run identity
+        run: |
+          set -euo pipefail
+          evidence='evidence/latest-beggars-blender-faceverse-v4-preflight'
+          mkdir -p "$evidence"
+          jq -n \
+            --argjson run_id '${{ github.run_id }}' \
+            --arg head_sha '${{ github.sha }}' \
+            --arg branch '${{ github.ref_name }}' \
+            --arg url 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+            '{classification:"RUN_REGISTERED",workflow_run_id:$run_id,status:"in_progress",conclusion:null,head_sha:$head_sha,head_branch:$branch,url:$url}' \
+            > "$evidence/run-registration.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$evidence/run-registration.json"
+          git commit -m 'evidence(scene): register groomed Blender v4 preflight ${{ github.run_id }}'
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if git push origin HEAD:agent/blender-beggars-scene-20260804; then exit 0; fi
+            test "$attempt" -lt 4
+            sleep 2
+          done
+
+  build-and-render:
+    needs: register
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact groomed Blender v4 source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
+          fetch-depth: 1
+
+      - name: Run layered-action compatible Blender preflight
+        shell: powershell
+        run: |
+          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\run-beggars-blender-faceverse-v4-preflight.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Blender FaceVerse v4 preflight failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Upload groomed Blender v4 preflight
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-blender-faceverse-v4-preflight-${{ github.run_id }}
+          path: |
+            ${{ env.B4_OUTPUT }}/beggars_photoreal_recreation.blend
+            ${{ env.B4_OUTPUT }}/hero_clean_render.png
+            ${{ env.B4_OUTPUT }}/wide_scene_proof.png
+            ${{ env.B4_OUTPUT }}/proof_frame_*.png
+            ${{ env.B4_OUTPUT }}/contact_sheet.png
+            ${{ env.B4_OUTPUT }}/scene_receipt.json
+            ${{ env.B4_OUTPUT }}/faceverse_v2_sequence_report.json
+          if-no-files-found: error
+          retention-days: 7
