@@ -40,6 +40,19 @@ except ImportError:  # direct worker execution
         rear_face_provenance_violations,
     )
 
+try:
+    from lowvram3d.texture_provenance import (
+        Lineage, SourceClass, create_empty_atlas_provenance,
+        create_empty_triangle_provenance, rasterize_triangle_lineage_to_atlas,
+        save_npz, summarize_provenance,
+    )
+except ImportError:  # direct worker execution
+    from texture_provenance import (
+        Lineage, SourceClass, create_empty_atlas_provenance,
+        create_empty_triangle_provenance, rasterize_triangle_lineage_to_atlas,
+        save_npz, summarize_provenance,
+    )
+
 FACING_POWER = 3.0
 FACING_MIN = 0.15
 ALPHA_MIN = 0.35
@@ -86,6 +99,9 @@ def main() -> None:
     parser.add_argument("--require-face-id", action="store_true")
     parser.add_argument("--face-id-radius", type=int, default=0)
     parser.add_argument("--neutral-fill-only", action="store_true")
+    parser.add_argument("--semantic-mask-manifest", default="")
+    parser.add_argument("--surface-view-assignment", default="")
+    parser.add_argument("--output-provenance-npz", default="")
     args = parser.parse_args()
 
     npz, viewdir, meta_path, outdir = Path(args.npz), Path(args.views_dir), Path(args.view_metadata), Path(args.output_dir)
@@ -554,6 +570,37 @@ def main() -> None:
         },
     }
     provenance_path.write_text(json.dumps(provenance, indent=2), encoding="utf-8")
+
+    # V3 compact lineage is emitted alongside the compatibility JSON.  It deliberately
+    # preserves the old raster route's gates while making donor/prior ancestry explicit.
+    triangle_v3 = create_empty_triangle_provenance(total_tris)
+    observed_ids = np.flatnonzero(triangle_observed)
+    face_ids = np.flatnonzero(triangle_winning_facial)
+    nonface_ids = np.setdiff1d(observed_ids, face_ids, assume_unique=False)
+    triangle_v3["lineage"][face_ids] |= np.uint16(Lineage.ORIGINAL_FACE)
+    triangle_v3["source_class"][face_ids] = np.uint8(SourceClass.ORIGINAL_FACE)
+    triangle_v3["lineage"][nonface_ids] |= np.uint16(Lineage.ORIGINAL_NONFACE)
+    triangle_v3["source_class"][nonface_ids] = np.uint8(SourceClass.ORIGINAL_NONFACE)
+    component_ids = np.flatnonzero(fill_tier == 2)
+    global_ids = np.flatnonzero(fill_tier == 3)
+    triangle_v3["lineage"][component_ids] |= np.uint16(Lineage.COMPONENT_PRIOR)
+    triangle_v3["source_class"][component_ids] = np.uint8(SourceClass.COMPONENT_PRIOR)
+    triangle_v3["lineage"][global_ids] |= np.uint16(Lineage.GLOBAL_PRIOR)
+    triangle_v3["source_class"][global_ids] = np.uint8(SourceClass.GLOBAL_PRIOR)
+    triangle_v3["primary_view"] = triangle_winning_view
+    triangle_v3["confidence"] = triangle_winning_conf
+    if args.surface_view_assignment:
+        assignment = np.load(args.surface_view_assignment)
+        if assignment.shape == (total_tris,):
+            triangle_v3["primary_view"] = assignment.astype(np.int16)
+    atlas_v3 = rasterize_triangle_lineage_to_atlas(triangle_v3, tri_id)
+    provenance_npz = Path(args.output_provenance_npz) if args.output_provenance_npz else outdir / "atlas_provenance.npz"
+    triangle_npz = provenance_npz.with_name("triangle_provenance.npz")
+    save_npz(triangle_npz, triangle_v3)
+    save_npz(provenance_npz, atlas_v3)
+    (provenance_npz.with_name("texture_provenance_summary.json")).write_text(
+        json.dumps({"schema": "texture_provenance_v3", "triangle": summarize_provenance(triangle_v3), "atlas": summarize_provenance(atlas_v3), "semantic_mask_manifest": args.semantic_mask_manifest or None}, indent=2), encoding="utf-8"
+    )
     if illegal_rear.any():
         raise RuntimeError(
             "REJECTED_REAR_FACE_PROJECTION: "
