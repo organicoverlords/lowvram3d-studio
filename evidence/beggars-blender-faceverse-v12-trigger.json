@@ -1,0 +1,6 @@
+{
+  "request": "run source-aligned 2.5D face and hair shell preflight over the proven FaceVerse v11 scene",
+  "visual_gate": "manual review required; v11 is rejected",
+  "branch": "agent/blender-beggars-scene-20260804",
+  "requested_at": "2026-08-04T06:03:00Z"
+}
