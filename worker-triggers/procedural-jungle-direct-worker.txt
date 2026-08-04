@@ -1,8 +1,8 @@
-run=21
-requested=2026-08-04T04:36:00+03:00
+run=22
+requested=2026-08-04T04:50:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=84c2259677c3211c5dbe55da814677c40d635d10
-repair_scope=base64-safe-runtime-movement-camera-daylight-and-visual-audit
+repair_commit=976a1799dcd23446f8a2322467fe724c32f28040
+repair_scope=powershell5-utf8-compat-runtime-movement-camera-daylight-visual-audit
 codex=false
 claude=false
 magicmusic=false
