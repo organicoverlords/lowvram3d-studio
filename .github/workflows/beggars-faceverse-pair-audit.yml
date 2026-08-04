@@ -1,0 +1,82 @@
+name: Beggars FaceVerse pair audit
+run-name: Beggars FaceVerse pair audit ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - tools/beggars_scene/audit_faceverse_v4_pair.py
+      - .github/workflows/beggars-faceverse-pair-audit.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-faceverse-pair-audit
+  cancel-in-progress: true
+
+jobs:
+  audit-model-pair:
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact audit source
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0
+
+      - name: Audit cached FaceVerse pair
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $python = 'C:\AI\LowVRAM3D-cache\faceverse-v4\venv-py39-cu118\Scripts\python.exe'
+          $source = 'C:\AI\LowVRAM3D-cache\faceverse-v4\source-19c67cc4d7234b1ea7d55a185a2cb55fd49bb877'
+          $model = 'C:\AI\LowVRAM3D-cache\faceverse-v4\models\faceverse_v4_2.npy'
+          $checkpoint = 'C:\AI\LowVRAM3D-cache\faceverse-v4\models\faceverse_resnet50.pth'
+          $outputRoot = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\faceverse-pair-audit-${{ github.run_id }}"
+          $report = Join-Path $outputRoot 'pair-audit.json'
+          New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+          foreach ($path in @($python, $source, $model, $checkpoint)) {
+            if (-not (Test-Path -LiteralPath $path)) { throw "Pair audit input missing: $path" }
+          }
+          & $python -m py_compile tools\beggars_scene\audit_faceverse_v4_pair.py
+          if ($LASTEXITCODE -ne 0) { throw 'Pair audit source did not compile' }
+          & $python tools\beggars_scene\audit_faceverse_v4_pair.py `
+            --source-root $source `
+            --model $model `
+            --checkpoint $checkpoint `
+            --output $report
+          if ($LASTEXITCODE -ne 0) { throw "Pair audit failed with exit code $LASTEXITCODE" }
+          "FACEVERSE_PAIR_AUDIT_REPORT=$report" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Publish compact audit receipt
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = 'evidence\latest-beggars-faceverse-pair-audit'
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          Copy-Item -LiteralPath $env:FACEVERSE_PAIR_AUDIT_REPORT -Destination (Join-Path $evidence 'pair-audit.json') -Force
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- $evidence
+          git commit -m "evidence(scene): record FaceVerse pair audit ${{ github.run_id }}"
+          for ($attempt = 1; $attempt -le 4; $attempt++) {
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if ($LASTEXITCODE -ne 0) { throw "Audit rebase failed on attempt $attempt" }
+            git push origin HEAD:agent/blender-beggars-scene-20260804
+            if ($LASTEXITCODE -eq 0) { break }
+            if ($attempt -eq 4) { throw 'Could not publish FaceVerse pair audit' }
+            Start-Sleep -Seconds 2
+          }
+
+      - name: Upload pair audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-faceverse-pair-audit-${{ github.run_id }}
+          path: ${{ env.FACEVERSE_PAIR_AUDIT_REPORT }}
+          if-no-files-found: error
+          retention-days: 7
