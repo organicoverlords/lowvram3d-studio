@@ -1,11 +1,10 @@
-requested=2026-08-04T08:24:30+03:00
-mode=cloud-safe-unreal-process-preflight-patch
+requested=2026-08-04T18:44:00+03:00
+mode=cloud-inner-unreal-guard-dedup-patch
 scope=scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
-workflow_commit=6a069a85166c1df888884fbbed9db70fe6301da9
-policy=graceful-close-only-when-command-line-owned
-owned_project=C:\Users\Lauri\Desktop\ProceduralJungle58
+workflow_commit=778138db0c309e636e62feefe34f4eb425482303
+policy=remove-exact-audited-four-line-duplicate-after-outer-coexistence-proof
 force_termination=false
 blender=false
 unreal=false
 gpu=false
-expected_result=JUNGLE_OWNED_UNREAL_PROCESS_PREFLIGHT_PATCH_PROVEN
+expected_result=JUNGLE_INNER_UNREAL_GUARD_DEDUP_WORKER_PATCH_PROVEN
