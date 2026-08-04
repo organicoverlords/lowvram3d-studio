@@ -1,8 +1,8 @@
-run=31
-requested=2026-08-04T06:49:00+03:00
+run=32
+requested=2026-08-04T06:52:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=fc12c42bd093fb024c3ecc2d3b4adbf139642a47
-repair_scope=diagnostic-direct-bundle-visual-source-excerpts
+repair_commit=a6f3a9dc23ca6de76455ffada181ce2a23776e6a
+repair_scope=diagnostic-export-full-visual-pipeline-sources
 codex=false
 claude=false
 magicmusic=false
