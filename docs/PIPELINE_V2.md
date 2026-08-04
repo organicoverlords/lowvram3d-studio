@@ -62,6 +62,26 @@ pipeline learns to emit technically valid rubbish, so the budget is hard.
 | `BAD_ORIENTATION` | re-run upright reorientation |
 | `REAR_MIRRORS_FRONT` | bar non-real views from semantic projection |
 
+Codes with **no** recipe, on purpose. They mean an input is not what it claims to be, or that a
+decision belongs to a human. A retry cannot make any of them true:
+
+| Failure code | Meaning |
+| --- | --- |
+| `UV_MASTER_HASH_MISMATCH` | the canonical UV master on disk is not the one that was proven |
+| `UV_MASTER_GEOMETRY_MISMATCH` | its surface or triangle count changed |
+| `UV_GEOMETRY_CHANGED` | a rewrap altered positions or topology, which it must never do |
+| `UV_INJECTIVE_WORKER_FAILED` | the rewrap worker died; distinct from it *reporting* an overlap |
+| `LOD_TOPOLOGY_REGRESSED` | decimation tore the mesh. The recipe is to decimate less, which changes a delivery target, so it is a human's call |
+
+A note on `UV_OVERLAP`'s recipe, because it was wrong for a long time in two compounding ways.
+The stage read `route` from the manifest and never from `overrides`, so the switch to the xatlas
+route could not fire and the stage re-ran the identical route until its budget was gone. And
+`uv_xatlas_isolated.run_one` returned `timed_out` unconditionally - its timeout `return` sat in the
+outer `try` body rather than the handler - which made the statements reading the child's real status
+unreachable and left `child_report` unbound on the success path, so the route reported `failed` even
+when it worked. Either bug alone hides the other. Both are fixed; if this recipe stops working
+again, check that pair first.
+
 ## Stage routes
 
 `UV` and `TEXTURE` each dispatch on a manifest-declared route. The default route is unchanged.
@@ -131,6 +151,23 @@ Verified by `benchmarks/run_benchmarks.py`, which replays the real artifacts:
 - `PLASTIC_ROUGHNESS` - roughness percentile and spread.
 - `CAMERA_LABEL_MISMATCH` - mirror-invariant colour correlation against the source.
 - `FLOATING_DEBRIS` / `BAD_ORIENTATION` - component and axis-ratio analysis.
+
+## Per-asset declarations
+
+Some properties are facts about an asset, not defects. They are declared in the manifest with their
+measured values and never inferred from the fact that a gate happened to fail:
+
+| Key | Meaning |
+| --- | --- |
+| `uv.max_degenerate_uv_triangles` | zero-area UV triangles that are known 3D slivers owning no texels (default `0`) |
+| `lod.allow_topology_regression_below_lod0` | thin features may be lost at distance LODs; LOD0 stays strict (default `false`) |
+| `clean.stance_repair` | a pose whose legs are connected in the source art, where the repair could only open a rigging gap by deleting garment (default `true`) |
+| `generator_settings.octree_ladder` / `.steps` | generator quality ladder (defaults to the proven `384:3000,320:2000,256:1500` at 5 steps) |
+| `generator_runtime.python` / `.pythonpath` | the generator does not run in the pipeline's interpreter |
+
+When a repair is skipped by declaration the receipt records that it was skipped and why. A silent
+skip is indistinguishable from a repair that ran and passed, which is the failure mode V2 exists to
+prevent.
 
 ## Still requiring a human
 
