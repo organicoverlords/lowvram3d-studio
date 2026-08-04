@@ -20,6 +20,3 @@ jobs/
 
 # ...except the curated evidence set for the documented run.
 !evidence/deliverable/*.glb
-
-# Live-editor proof captures remain local evidence; receipts are versioned.
-evidence/latest-image-to-scene/screenshots/*.png
