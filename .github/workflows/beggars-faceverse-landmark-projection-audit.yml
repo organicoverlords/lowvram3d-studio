@@ -1,0 +1,136 @@
+name: Beggars FaceVerse landmark projection audit
+run-name: Beggars FaceVerse landmark projection audit ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/blender-beggars-scene-20260804
+    paths:
+      - tools/beggars_scene/audit_faceverse_v4_landmark_projection.py
+      - .github/workflows/beggars-faceverse-landmark-projection-audit.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beggars-faceverse-landmark-projection-audit
+  cancel-in-progress: true
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish exact run identity
+        run: |
+          set -euo pipefail
+          evidence='evidence/latest-beggars-faceverse-landmark-projection-audit'
+          mkdir -p "$evidence"
+          jq -n \
+            --argjson run_id '${{ github.run_id }}' \
+            --arg head_sha '${{ github.sha }}' \
+            --arg branch '${{ github.ref_name }}' \
+            --arg url 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+            '{classification:"RUN_REGISTERED",workflow_run_id:$run_id,status:"in_progress",conclusion:null,head_sha:$head_sha,head_branch:$branch,url:$url}' \
+            > "$evidence/run-registration.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$evidence/run-registration.json"
+          git commit -m 'evidence(scene): register FaceVerse landmark projection audit ${{ github.run_id }}'
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin agent/blender-beggars-scene-20260804
+            if git push origin HEAD:agent/blender-beggars-scene-20260804; then exit 0; fi
+            test "$attempt" -lt 4
+            sleep 2
+          done
+
+  audit:
+    needs: register
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact projection-audit source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify cached FaceVerse audit runtime
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $python = 'C:\AI\LowVRAM3D-cache\faceverse-v4\venv-py39-cu118\Scripts\python.exe'
+          $source = 'C:\AI\LowVRAM3D-cache\faceverse-v4\source-19c67cc4d7234b1ea7d55a185a2cb55fd49bb877'
+          $model = 'C:\AI\LowVRAM3D-cache\faceverse-v4\models\faceverse_v4_2.npy'
+          $checkpoint = 'C:\AI\LowVRAM3D-cache\faceverse-v4\models\faceverse_resnet50.pth'
+          $landmarker = 'C:\AI\LowVRAM3D-cache\faceverse-v4\models\face_landmarker.task'
+          foreach ($required in @($python, $source, $model, $checkpoint, $landmarker)) {
+            if (-not (Test-Path -LiteralPath $required)) { throw "Projection-audit input missing: $required" }
+          }
+          & $python -I -u -X faulthandler -c "import torch; assert torch.__version__.startswith('2.5.1'), torch.__version__; assert torch.version.cuda == '11.8', torch.version.cuda; assert torch.cuda.is_available(); print('FACEVERSE_PROJECTION_AUDIT_CUDA=PROVEN',torch.__version__,torch.cuda.get_device_name(0))"
+          if ($LASTEXITCODE -ne 0) { throw 'Projection-audit CUDA runtime validation failed' }
+          & $python -m py_compile tools\beggars_scene\audit_faceverse_v4_landmark_projection.py
+          if ($LASTEXITCODE -ne 0) { throw 'Projection-audit source failed compilation' }
+          "AUDIT_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "AUDIT_SOURCE=$source" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "AUDIT_MODEL=$model" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "AUDIT_CHECKPOINT=$checkpoint" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "AUDIT_LANDMARKER=$landmarker" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Compare lightweight and full projections
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = "C:\AI\LowVRAM3D-benchmarks\beggars-scene\faceverse-landmark-projection-audit-${{ github.run_id }}"
+          $clip = Join-Path $output 'public_reference.mp4'
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          curl.exe -L --fail --retry 3 --retry-delay 2 --output $clip 'https://media.tenor.com/e8wT4qAP6zwAAAPo/somebody-get-these-beggars-out-of-here-the-odyssey.mp4'
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $clip)) { throw 'Could not download public reference clip' }
+          $previousNoUser = $env:PYTHONNOUSERSITE
+          $previousPath = $env:PYTHONPATH
+          $previousUnbuffered = $env:PYTHONUNBUFFERED
+          try {
+            $env:PYTHONNOUSERSITE = '1'
+            $env:PYTHONPATH = ''
+            $env:PYTHONUNBUFFERED = '1'
+            & $env:AUDIT_PYTHON -I -u -X faulthandler tools\beggars_scene\audit_faceverse_v4_landmark_projection.py `
+              --faceverse-root $env:AUDIT_SOURCE `
+              --model-npy $env:AUDIT_MODEL `
+              --checkpoint $env:AUDIT_CHECKPOINT `
+              --landmarker $env:AUDIT_LANDMARKER `
+              --clip $clip `
+              --output-dir $output `
+              --frames '19,21,23,25,27,29,31,33,35' `
+              --overlay-frames '21,31,35' `
+              --device auto
+            if ($LASTEXITCODE -ne 0) { throw "Projection audit failed with exit code $LASTEXITCODE" }
+          }
+          finally {
+            $env:PYTHONNOUSERSITE = $previousNoUser
+            $env:PYTHONPATH = $previousPath
+            $env:PYTHONUNBUFFERED = $previousUnbuffered
+            Remove-Item -LiteralPath $clip -Force -ErrorAction SilentlyContinue
+          }
+          foreach ($name in @('faceverse_landmark_projection_audit.json','faceverse_landmark_projection_audit.png')) {
+            $path = Join-Path $output $name
+            if (-not (Test-Path -LiteralPath $path) -or (Get-Item -LiteralPath $path).Length -le 0) {
+              throw "Projection-audit output missing or empty: $name"
+            }
+          }
+          "FACEVERSE_PROJECTION_AUDIT_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Upload landmark projection audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: beggars-faceverse-landmark-projection-audit-${{ github.run_id }}
+          path: |
+            ${{ env.FACEVERSE_PROJECTION_AUDIT_OUTPUT }}/faceverse_landmark_projection_audit.json
+            ${{ env.FACEVERSE_PROJECTION_AUDIT_OUTPUT }}/faceverse_landmark_projection_audit.png
+            ${{ env.FACEVERSE_PROJECTION_AUDIT_OUTPUT }}/projection_overlay_*.png
+          if-no-files-found: error
+          retention-days: 7
