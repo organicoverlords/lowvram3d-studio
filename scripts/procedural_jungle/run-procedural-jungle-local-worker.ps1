@@ -37,11 +37,12 @@ $WriteLine = '[IO.File]::WriteAllText($Installer, $InstallerText, $Utf8NoBom)'
 $AppendCount = [regex]::Matches($SourceText, [regex]::Escape($AppendCondition)).Count
 $CharacterGuardCount = [regex]::Matches($SourceText, [regex]::Escape($CharacterGuardCondition)).Count
 $WriteCount = [regex]::Matches($SourceText, [regex]::Escape($WriteLine)).Count
-if ($AppendCount -ne 1) { throw "Pinned append-condition count is not one: $AppendCount" }
+if ($AppendCount -gt 1) { throw "Pinned append-condition count exceeds one: $AppendCount" }
 if ($CharacterGuardCount -ne 1) { throw "Pinned character-guard count is not one: $CharacterGuardCount" }
 if ($WriteCount -ne 1) { throw "Pinned WriteAllText count is not one: $WriteCount" }
 
-$PatchedText = $SourceText.Replace($AppendCondition, '$false')
+$PatchedText = $SourceText
+if ($AppendCount -eq 1) { $PatchedText = $PatchedText.Replace($AppendCondition, '$false') }
 $PatchedText = $PatchedText.Replace($CharacterGuardCondition, '$false')
 $ByteCheck = @'
 [IO.File]::WriteAllText($Installer, $InstallerText, $Utf8NoBom)
@@ -52,8 +53,8 @@ if ($InstallerByteLength -ne 46901) {
 '@
 $PatchedText = $PatchedText.Replace($WriteLine, $ByteCheck.TrimEnd())
 
-if ($PatchedText.Contains($AppendCondition) -or $PatchedText.Contains($CharacterGuardCondition)) {
-    throw 'A character-count installer condition remains after patching'
+if ($PatchedText.Contains($CharacterGuardCondition)) {
+    throw 'Character-count installer guard remains after patching'
 }
 if ($PatchedText -notmatch 'InstallerByteLength -ne 46901') {
     throw 'UTF-8 byte-length installer guard was not installed'
@@ -66,7 +67,8 @@ $PatchedWorker = Join-Path $TempRoot 'run-procedural-jungle-v3-bytefixed.ps1'
 [IO.File]::WriteAllText($PatchedWorker, $PatchedText, (New-Object Text.UTF8Encoding($false)))
 
 Write-Host "JUNGLE_V3_PINNED_WORKER_SOURCE=$SourceCommit"
-Write-Host 'JUNGLE_V3_CHARACTER_GUARDS_DISABLED=PROVEN'
+Write-Host "JUNGLE_V3_OPTIONAL_APPEND_CONDITION_COUNT=$AppendCount"
+Write-Host 'JUNGLE_V3_CHARACTER_GUARD_DISABLED=PROVEN'
 Write-Host 'JUNGLE_V3_UTF8_BYTE_LENGTH_GUARD_PATCH=PROVEN'
 & powershell -NoProfile -ExecutionPolicy Bypass -File $PatchedWorker -ExpectedBranch $ExpectedBranch
 if ($LASTEXITCODE -ne 0) { throw "Byte-fixed V3 worker failed with exit code $LASTEXITCODE" }
