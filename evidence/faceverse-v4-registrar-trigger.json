@@ -1,7 +1,7 @@
 {
-  "purpose": "Dispatch exactly one conflict-safe FaceVerse v4 preflight using cached validated weights and corrected official-loader output-head checks, then record its run ID.",
-  "workflow_commit": "7947198e4d3e0adb0f2d8fd38abe8692bbad311b",
+  "purpose": "Dispatch exactly one branch-write-free FaceVerse v4 preflight using the cached environment and weights, then record its run ID externally.",
+  "workflow_commit": "7be0147a571bcac7a556d250aa70ceb528840aa8",
   "release_fallback_commit": "823140c119eb89cbd5a46d7ce5a47316d0fa4ff6",
   "cached_weights_run": 30869754509,
-  "requested_at": "2026-08-04T05:00:00+03:00"
+  "requested_at": "2026-08-04T05:07:00+03:00"
 }
