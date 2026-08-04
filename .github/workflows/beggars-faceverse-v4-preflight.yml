@@ -15,7 +15,6 @@ on:
       - scripts/apply-beggars-faceverse-v4-venv-compat.ps1
       - scripts/apply-beggars-faceverse-v4-probe-compat.ps1
       - scripts/apply-beggars-faceverse-v4-release-fallback.ps1
-      - scripts/apply-beggars-faceverse-v4-stage-trace.ps1
       - scripts/apply-beggars-faceverse-v4-isolated-proof.ps1
       - .github/workflows/beggars-faceverse-v4-preflight.yml
 
@@ -92,13 +91,15 @@ jobs:
             throw "FaceVerse release fallback patch failed with exit code $LASTEXITCODE"
           }
 
-      - name: Trace FaceVerse proof stages
+      - name: Compile directly instrumented FaceVerse proof
         shell: powershell
         run: |
-          & powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts\apply-beggars-faceverse-v4-stage-trace.ps1
+          $python = 'C:\AI\LowVRAM3D-cache\faceverse-v4\venv-py39-cu118\Scripts\python.exe'
+          & $python -m py_compile tools\beggars_scene\run_faceverse_v4_preflight.py
           if ($LASTEXITCODE -ne 0) {
-            throw "FaceVerse stage-trace patch failed with exit code $LASTEXITCODE"
+            throw "Directly instrumented FaceVerse proof failed compilation"
           }
+          Write-Host 'FACEVERSE_DIRECT_TRACE_COMPILE=PROVEN'
 
       - name: Isolate FaceVerse proof environment
         shell: powershell
