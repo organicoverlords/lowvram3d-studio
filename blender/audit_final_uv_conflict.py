@@ -111,6 +111,10 @@ def main():
             for y in range(int(low[tid, 1]), int(high[tid, 1]) + 1):
                 candidates.update(buckets.get(x * grid + y, ()))
         for fid in candidates:
+            # A surface triangle can be visible from both cameras.  Its UV
+            # footprint is then the same consumer, not a front/rear conflict.
+            if int(fid) == int(tid):
+                continue
             pair = (int(fid), int(tid))
             if pair not in seen:
                 seen.add(pair)
