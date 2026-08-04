@@ -41,6 +41,7 @@ UNIFORM_SCALE = float(REQUEST.get("actor_scale", 1.0))
 
 MESH_DIR = f"{PACKAGE_ROOT}/Meshes"
 MATERIAL_PATH = f"{PACKAGE_ROOT}/Materials/M_{SCENE_ID}_VertexColor"
+TEXTURED_MATERIAL_PATH = f"{PACKAGE_ROOT}/Materials/M_{SCENE_ID}_SourceTexture"
 
 report = {"schema_version": "reconstructed_scene_receipt_v1", "scene_id": SCENE_ID}
 
@@ -58,6 +59,24 @@ if material is None:
 
 material.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
 material.set_editor_property("two_sided", True)
+
+def wire_emissive(target, expression) -> bool:
+    """Connect an expression to Emissive Color and confirm it took.
+
+    connect_material_property returns success for an output pin the expression
+    does not have, leaving emissive unconnected and the mesh black. Pin names
+    differ per expression -- VertexColor accepts only the default output,
+    TextureSample accepts "RGB" -- so try and verify rather than trust.
+    """
+    for pin in ("", "RGB", "RGBA"):
+        unreal.MaterialEditingLibrary.connect_material_property(
+            expression, pin, unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+        unreal.MaterialEditingLibrary.recompile_material(target)
+        if unreal.MaterialEditingLibrary.get_material_property_input_node(
+                target, unreal.MaterialProperty.MP_EMISSIVE_COLOR):
+            return True
+    return False
+
 
 if not unreal.MaterialEditingLibrary.get_material_property_input_node(
         material, unreal.MaterialProperty.MP_EMISSIVE_COLOR):
@@ -147,7 +166,51 @@ shell.set_actor_label(f"{SCENE_ID}_ReconstructedMesh")
 shell.set_actor_scale3d(unreal.Vector(UNIFORM_SCALE, UNIFORM_SCALE, UNIFORM_SCALE))
 
 component = shell.get_component_by_class(unreal.StaticMeshComponent)
-component.set_material(0, material)
+
+# Prefer the imported source texture over vertex colours: appearance then runs
+# at full image resolution instead of one sample per vertex, so the surface
+# stays sharp however coarse the tessellation is.
+# Query the registry rather than the import task: a cached re-import reports no
+# imported_object_paths, so trusting that list silently drops the texture and
+# falls back to vertex colours on every run after the first.
+registry = unreal.AssetRegistryHelpers.get_asset_registry()
+textures = sorted(
+    str(a.package_name) for a in registry.get_assets_by_path(MESH_DIR, recursive=True)
+    if str(a.asset_class_path.asset_name) == "Texture2D")
+if textures:
+    texture = unreal.load_asset(textures[0])
+    # The glTF importer can bring colour maps in with sRGB disabled. The sampler
+    # then reads gamma-encoded values as linear, which darkens the whole surface
+    # by roughly a factor of two and looks like a lighting or exposure fault.
+    if not bool(texture.get_editor_property("srgb")):
+        texture.set_editor_property("srgb", True)
+        unreal.EditorAssetLibrary.save_loaded_asset(texture)
+        report["texture_srgb_corrected"] = True
+    textured = unreal.load_asset(TEXTURED_MATERIAL_PATH)
+    if textured is None:
+        tools = unreal.AssetToolsHelpers.get_asset_tools()
+        package, name = TEXTURED_MATERIAL_PATH.rsplit("/", 1)
+        textured = tools.create_asset(name, package, unreal.Material,
+                                      unreal.MaterialFactoryNew())
+    textured.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    textured.set_editor_property("two_sided", True)
+    if not unreal.MaterialEditingLibrary.get_material_property_input_node(
+            textured, unreal.MaterialProperty.MP_EMISSIVE_COLOR):
+        sample = unreal.MaterialEditingLibrary.create_material_expression(
+            textured, unreal.MaterialExpressionTextureSample, -400, 0)
+        sample.set_editor_property("texture", texture)
+        wire_emissive(textured, sample)
+    unreal.MaterialEditingLibrary.recompile_material(textured)
+    unreal.EditorAssetLibrary.save_loaded_asset(textured)
+    report["texture"] = textures[0]
+    report["material_used"] = TEXTURED_MATERIAL_PATH
+    report["emissive_connected"] = bool(
+        unreal.MaterialEditingLibrary.get_material_property_input_node(
+            textured, unreal.MaterialProperty.MP_EMISSIVE_COLOR))
+    component.set_material(0, textured)
+else:
+    report["material_used"] = MATERIAL_PATH
+    component.set_material(0, material)
 
 camera = actor_subsystem.spawn_actor_from_class(
     unreal.CameraActor, unreal.Vector(0, 0, 0), unreal.Rotator(0, 0, 0))

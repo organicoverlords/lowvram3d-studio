@@ -134,9 +134,23 @@ def reconstruct(image_path: Path, output: Path, receipt_path: Path,
     # OpenCV camera space -> glTF: negate Y (down->up) and Z (forward->back).
     vertices = vertices * np.array([1.0, -1.0, -1.0])
 
+    # Carry appearance as a UV-mapped texture, not vertex colours. Vertex
+    # colours quantise the image to one sample per vertex -- at stride 2 that is
+    # a 724x543 texture smeared over the mesh, and it gets worse as the triangle
+    # budget tightens. UVs decouple appearance from tessellation, so the mesh can
+    # be coarse while the surface stays at full source resolution.
+    material = trimesh.visual.material.PBRMaterial(
+        baseColorTexture=image,
+        emissiveTexture=image,
+        emissiveFactor=[1.0, 1.0, 1.0],
+        metallicFactor=0.0,
+        roughnessFactor=1.0,
+    )
+    # process=False keeps vertex order aligned with the UV array.
     mesh = trimesh.Trimesh(
         vertices=vertices, faces=faces,
-        vertex_colors=(colors * 255).astype(np.uint8), process=False)
+        visual=trimesh.visual.TextureVisuals(uv=uvs, material=material),
+        process=False)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     mesh.export(output)

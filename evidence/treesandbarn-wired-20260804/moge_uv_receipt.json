@@ -1,0 +1,33 @@
+{
+  "camera": {
+    "aspect_ratio": 1.3333333333333333,
+    "convention": "gltf_y_up_z_back",
+    "fov_x_deg": 92.87949187633598,
+    "fov_y_deg": 76.52373720971944,
+    "projection": "perspective"
+  },
+  "classification": "PROVEN",
+  "depth_edge_rtol": 0.05,
+  "depth_range": [
+    1.416419267654419,
+    543.935791015625
+  ],
+  "device": "cuda",
+  "grid_stride": 2,
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\treesandbarn.png",
+  "image_dimensions": [
+    1448,
+    1086
+  ],
+  "image_sha256": "e37079d2252cdca9763226b6f5d6c55db81e952b94e797832d35389ff249be6b",
+  "masked_pixel_fraction": 0.6951939806477214,
+  "model": "Ruicheng/moge-2-vitb-normal",
+  "output_bytes": 13973920,
+  "output_glb": "C:\\AI\\ScenePipelineSmoke\\20260804\\treesandbarn\\treesandbarn_moge_uv.glb",
+  "output_sha256": "4be98c7f30d63a9668b97e62ee5f8b19f3b2e72103f25680461bcc1a7655d286",
+  "quads_considered": 270106,
+  "quads_dropped_at_depth_edges": 18683,
+  "schema_version": "moge_reconstruction_receipt_v1",
+  "triangles": 502846,
+  "vertices": 273303
+}
