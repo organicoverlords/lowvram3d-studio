@@ -1,8 +1,8 @@
-run=12
-requested=2026-08-04T03:09:00+03:00
+run=13
+requested=2026-08-04T03:31:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=083a98ec06ad9239b886b5149e2968fab4a5dbf5
-repair_scope=unreal-material-probes-and-population-root-mobility
+repair_commit=b195c0fd077dc9800716437cf99872078c69349e
+repair_scope=dotted-unreal-load-guard-and-population-root-mobility
 codex=false
 claude=false
 magicmusic=false
