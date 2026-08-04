@@ -1,5 +1,5 @@
 {
-  "purpose": "Locate the alpha-footprint-sized unlit head silhouette diagnostic.",
-  "target_head_sha": "c00f736b8b988071754d6139915bfe306185b808",
-  "requested_at": "2026-08-04T19:04:00+03:00"
+  "purpose": "Locate the full Beggars scene build using caption-cleaned face sprites, no head shell, and the high dark collar composition.",
+  "target_head_sha": "88bcf1b37a311ca636ff0c2a7c015ee3ea8f60bf",
+  "requested_at": "2026-08-04T19:08:00+03:00"
 }
