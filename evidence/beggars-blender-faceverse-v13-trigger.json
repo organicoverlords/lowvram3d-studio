@@ -1,0 +1,6 @@
+{
+  "request": "replace the rejected synthetic v11/v12 head with an aspect-correct feathered public-reference head card over the Blender body and scene",
+  "visual_gate": "manual inspection required; v12 rejected",
+  "branch": "agent/blender-beggars-scene-20260804",
+  "requested_at": "2026-08-04T06:18:00Z"
+}
