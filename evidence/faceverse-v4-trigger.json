@@ -1,0 +1,8 @@
+{
+  "purpose": "Run one bounded FaceVerse v4 full-head reconstruction on the private meme keyframe, export derived mesh/render evidence, and require visual review before integration.",
+  "faceverse_source_commit": "19c67cc4d7234b1ea7d55a185a2cb55fd49bb877",
+  "preflight_python_commit": "b8746ec461ca398075a30b9eaf9a5d5c7b422b05",
+  "preflight_worker_commit": "18cc11c6431084fc58dfa0a700e087ac70a9f4c6",
+  "workflow_commit": "179dd185bbe77944dfe0d0be09232c5e7812d541",
+  "requested_at": "2026-08-04T03:55:00+03:00"
+}
