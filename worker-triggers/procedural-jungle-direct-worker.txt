@@ -1,8 +1,8 @@
-run=13
-requested=2026-08-04T03:31:00+03:00
+run=14
+requested=2026-08-04T03:40:00+03:00
 mode=github-self-hosted-direct-pr
-repair_commit=b195c0fd077dc9800716437cf99872078c69349e
-repair_scope=dotted-unreal-load-guard-and-population-root-mobility
+repair_commit=69660f1dd6f29182333e2cedb11ba5928ef63729
+repair_scope=unguarded-loader-verification-and-population-root-mobility
 codex=false
 claude=false
 magicmusic=false
