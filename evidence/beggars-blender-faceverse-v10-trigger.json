@@ -1,0 +1,9 @@
+{
+  "purpose": "Render one bounded v10 still proof that camera-projects the sharp public keyframe onto the true animated FaceVerse mesh at three blend strengths, without a source-frame plane.",
+  "projection_exporter_commit": "1e525ae2c97065b218b62279e4f5c024ae2533ae",
+  "builder_commit": "1584482632d20ff3a6f313dde75d2c31e84f5d21",
+  "runner_commit": "035a8e5e2f6e3bb5f20b74b6f80d7e09a1337a6d",
+  "workflow_commit": "ffd244877dd19c61467a2d1db898c07a96e7834a",
+  "visual_baseline_run": 30879400706,
+  "requested_at": "2026-08-04T08:16:00+03:00"
+}
