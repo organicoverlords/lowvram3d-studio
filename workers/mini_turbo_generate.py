@@ -246,6 +246,10 @@ def verify_real_glb(path: Path, started_at: float) -> None:
         )
 
 
+#: View names MVImageProcessorV2 accepts, from its own view2idx table.
+MULTIVIEW_NAMES = {"front", "left", "back", "right"}
+
+
 def load_conditioning_image(image_path: Path):
     from PIL import Image
 
@@ -264,6 +268,11 @@ def main() -> int:
     # Pre-matted RGBA input. rembg destroys this source (drops every hanging ornament and its cord,
     # blackens the staff ring), so the caller mattes it with workers/shaman_matte.py instead.
     parser.add_argument("--conditioning-image", default="")
+    parser.add_argument(
+        "--view", action="append", default=[],
+        help="Extra conditioning view as NAME=PATH, repeatable. NAME is one of "
+             "front/left/back/right. Requires an mv checkpoint; the ordinary "
+             "checkpoints take a single image and will fail on a dict.")
     parser.add_argument("--expected-image-sha256", default="")
     parser.add_argument("--output", required=True)
     parser.add_argument("--result-json", required=True)
@@ -354,6 +363,40 @@ def main() -> int:
         conditioning.save(matted)
         payload["conditioning_image"] = str(matted)
         payload["image_dimensions"] = list(conditioning.size)
+
+        # Multiview conditioning. The mv checkpoints declare MVImageProcessorV2
+        # in their own config.yaml, so loading one selects the multiview path
+        # automatically and the pipeline then expects a {view: image} dict
+        # rather than a single image. Views are named for the *asset*, not the
+        # rig -- 'front' is the face the conditioning camera saw.
+        #
+        # A single-view checkpoint given a dict, or an mv checkpoint given one
+        # image, both fail deep inside the preprocessor, so the mismatch is
+        # checked here where the message can say which it was.
+        if args.view:
+            views = {}
+            for spec in args.view:
+                name, _, path = spec.partition("=")
+                name = name.strip().lower()
+                if name not in MULTIVIEW_NAMES:
+                    raise RuntimeError(
+                        f"MULTIVIEW_NAME_INVALID:{name}; expected one of "
+                        f"{sorted(MULTIVIEW_NAMES)}")
+                view_path = Path(path).resolve()
+                if not view_path.is_file():
+                    raise RuntimeError(f"MULTIVIEW_IMAGE_MISSING:{view_path}")
+                views[name] = Image.open(view_path).convert("RGBA")
+            if "front" not in views:
+                views["front"] = conditioning
+            conditioning = views
+            payload["multiview"] = True
+            payload["multiview_views"] = sorted(views)
+            _trace(trace_path, "multiview_conditioning", torch,
+                   diagnostic=args.diagnostic_telemetry,
+                   boundary_name="multiview_conditioning",
+                   views=sorted(views))
+        else:
+            payload["multiview"] = False
         _trace(trace_path, "conditioning_loaded", torch, diagnostic=args.diagnostic_telemetry, boundary_name="conditioning_loaded", image_dimensions=list(conditioning.size))
 
         pipeline = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained(
