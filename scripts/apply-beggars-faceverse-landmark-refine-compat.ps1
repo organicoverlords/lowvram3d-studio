@@ -60,6 +60,30 @@ elseif (-not $text.Contains('eta_min=0.0002')) {
     throw 'Could not locate the landmark-refinement learning-rate anchor.'
 }
 
+$oldLandmarkPath = 'model.run(coefficients, only_lms=True)["lms_proj"]'
+$newLandmarkPath = 'model.run(coefficients, only_lms=False)["lms_proj"]'
+$text = $text.Replace($oldLandmarkPath, $newLandmarkPath)
+$oldBaselinePath = 'model.run(baseline_coefficients, only_lms=True)["lms_proj"]'
+$newBaselinePath = 'model.run(baseline_coefficients, only_lms=False)["lms_proj"]'
+$text = $text.Replace($oldBaselinePath, $newBaselinePath)
+
+$oldSanityAnchor = '    print(f"FACEVERSE_REFINE_INITIAL_RMSE_PX={initial_rmse:.6f}", flush=True)'
+$newSanityAnchor = @'
+    print(f"FACEVERSE_REFINE_INITIAL_RMSE_PX={initial_rmse:.6f}", flush=True)
+    if not np.isfinite(initial_rmse) or initial_rmse > float(model.imgsize) * 0.35:
+        raise RuntimeError(
+            f"Baseline landmark projection is outside the bounded crop coordinate system: "
+            f"rmse={initial_rmse:.3f}px imgsize={model.imgsize}"
+        )
+    print("FACEVERSE_REFINE_BASELINE_COORDINATES=PROVEN", flush=True)
+'@
+if ($text.Contains($oldSanityAnchor)) {
+    $text = $text.Replace($oldSanityAnchor, $newSanityAnchor.TrimEnd())
+}
+elseif (-not $text.Contains('FACEVERSE_REFINE_BASELINE_COORDINATES=PROVEN')) {
+    throw 'Could not locate the baseline-coordinate sanity anchor.'
+}
+
 [System.IO.File]::WriteAllText(
     (Resolve-Path -LiteralPath $target),
     $text,
@@ -88,5 +112,12 @@ if (-not $patched.Contains('baseline_normals[0]')) {
 if (-not $patched.Contains('_SCRIPT_DIR = Path(__file__).resolve().parent')) {
     throw 'Refinement source gate: sibling import path is absent.'
 }
+if ($patched.Contains('only_lms=True')) {
+    throw 'Refinement source gate: unscaled only_lms path remains.'
+}
+if (-not $patched.Contains('FACEVERSE_REFINE_BASELINE_COORDINATES=PROVEN')) {
+    throw 'Refinement source gate: baseline coordinate sanity gate is absent.'
+}
+Write-Host 'FACEVERSE_FULL_GEOMETRY_LANDMARK_PATH=PROVEN'
 Write-Host 'FACEVERSE_LANDMARK_REFINE_SOURCE_GATE=PROVEN'
 Write-Host 'FACEVERSE_LANDMARK_REFINE_COMPAT=PROVEN'
