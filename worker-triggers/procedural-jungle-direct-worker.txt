@@ -1,8 +1,8 @@
-run=38
-requested=2026-08-04T08:18:30+03:00
+run=39
+requested=2026-08-04T08:19:30+03:00
 mode=github-self-hosted-v3-visual-overhaul
-repair_commit=0b30584a12ffc5b961a0890a851aca82d6b381fb
-repair_scope=normalize-installer-crlf-before-sha
+repair_commit=96b18b0d5598cea8b5f6a5013638979822caf801
+repair_scope=restore-installer-terminal-lf-before-sha
 codex=false
 claude=false
 magicmusic=false
