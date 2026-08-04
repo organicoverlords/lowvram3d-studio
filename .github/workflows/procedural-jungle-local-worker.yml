@@ -1,5 +1,5 @@
 name: Build playable procedural jungle on local worker
-run-name: Procedural jungle and walking panda ${{ github.run_id }}
+run-name: Dense procedural jungle and walking panda ${{ github.run_id }}
 
 on:
   workflow_dispatch:
@@ -45,13 +45,13 @@ jobs:
           if ($head -ne $remoteHead) { throw "Checkout head differs from remote: $head vs $remoteHead" }
           "WORKER_START_HEAD=$head" | Add-Content -LiteralPath $env:GITHUB_ENV
 
-      - name: Run deterministic local-worker pipeline
+      - name: Run deterministic dense-jungle pipeline
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
           powershell -NoProfile -ExecutionPolicy Bypass -File scripts\procedural_jungle\run-procedural-jungle-local-worker.ps1
 
-      - name: Independently gate compact acceptance evidence
+      - name: Independently gate playable and visual acceptance evidence
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
@@ -63,6 +63,10 @@ jobs:
           }
           $a = Get-Content -LiteralPath $acceptancePath -Raw | ConvertFrom-Json
           if ($a.classification -ne 'JUNGLE_PANDA_PLAYABLE_PROVEN') { throw "Acceptance rejected: $($a.classification)" }
+          if ($a.visual_quality -ne 'PROVEN') { throw "Visual quality rejected: $($a.visual_quality)" }
+          if ($a.visual_quality_classification -ne 'DENSE_JUNGLE_VISUAL_QUALITY_PROVEN') {
+            throw "Visual classification rejected: $($a.visual_quality_classification)"
+          }
           foreach ($key in @('project_exists','tests_passed')) {
             if (-not $a.$key) { throw "Acceptance field is false: $key" }
           }
@@ -70,15 +74,22 @@ jobs:
             if ($a.$key -ne 'PROVEN') { throw "Acceptance field is not PROVEN: $key=$($a.$key)" }
           }
           if ([double]$a.average_fps -lt 30) { throw "Average FPS below 30: $($a.average_fps)" }
-          if ([double]$a.minimum_fps -lt 20) { throw "5th-percentile FPS below 20: $($a.minimum_fps)" }
+          if ([double]$a.minimum_fps -lt 20) { throw "Minimum FPS below 20: $($a.minimum_fps)" }
           if ([double]$a.panda_travel_distance_cm -lt 300) { throw 'Panda travel proof too short' }
           if ([int]$a.capture_count -lt 8) { throw 'Too few proof captures' }
-          if ([int]$a.generated_variant_count -lt 20) { throw 'Too few generated mesh variants' }
-          if ([int]$a.generated_instance_count -lt 800) { throw 'Too few generated jungle instances' }
+          if ([int]$a.generated_variant_count -lt 40) { throw 'Too few generated mesh variants for the dense jungle' }
+          if ([int]$a.generated_instance_count -lt 3300) { throw 'Too few generated jungle instances' }
+          if ([int]$a.canopy_instance_count -lt 380) { throw 'Canopy remains too sparse' }
+          if ([int]$a.understory_instance_count -lt 2500) { throw 'Understory remains too sparse' }
+          if ([int]$a.panda_framed_capture_count -lt 4) { throw 'Too few captures frame the moving panda' }
+          if ([int]$a.vegetation_rich_frame_count -lt 6) { throw 'Too few captures contain dense vegetation' }
+          if ([double]$a.average_saturation -lt 0.19) { throw 'Capture set remains visually washed out' }
+          if ([double]$a.average_near_white_fraction -gt 0.16) { throw 'Capture set remains overexposed' }
+          if ([double]$a.average_green_fraction -lt 0.25) { throw 'Capture set does not read as vegetation-rich jungle' }
           if ([int]$a.panda_bone_count -lt 21) { throw 'Panda skeleton is incomplete' }
           if ([int]$a.forbidden_asset_reference_count -ne 0) { throw 'Forbidden external art references found' }
           if ($a.codex_invoked -or $a.claude_invoked -or $a.magicmusic_invoked) { throw 'An unauthorized helper was invoked' }
-          Write-Host ($a | ConvertTo-Json -Depth 20)
+          Write-Host ($a | ConvertTo-Json -Depth 30)
 
       - name: Commit compact proof only
         shell: powershell
@@ -89,7 +100,7 @@ jobs:
           git add -- evidence/latest-procedural-jungle/acceptance.json evidence/latest-procedural-jungle/workflow_receipt.json proof/scene/20260804-procedural-jungle/FINAL_REPORT.md
           $changed = @(git status --porcelain -- evidence/latest-procedural-jungle proof/scene/20260804-procedural-jungle)
           if ($changed.Count -eq 0) { throw 'No compact proof changes were produced' }
-          git commit -m "proof(jungle): playable scene with walking panda ${{ github.run_id }}"
+          git commit -m "proof(jungle): dense playable scene with walking panda ${{ github.run_id }}"
           git push origin HEAD:feature/procedural-jungle-playable-20260804
 
       - name: Upload selected proof logs and images
