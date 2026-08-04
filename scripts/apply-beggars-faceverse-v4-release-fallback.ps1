@@ -51,13 +51,15 @@ import sys, torch, numpy as np
 sys.path.insert(0, r'$SourceRoot')
 from faceversev4 import FaceVerseRecon
 model = FaceVerseRecon(r'$ModelPath', r'$CheckpointPath', torch.device('cpu'))
-assert model.recon_net.fc_out.out_features == 621
+head_channels = [int(layer.out_channels) for layer in model.reconnet.final_layers]
+assert head_channels == [156, 177, 251, 27, 3, 2, 1, 4], head_channels
+assert sum(head_channels) == 621
 assert model.id_dims == 156
 assert model.exp_dims == 177
 assert model.tex_dims == 251
 assert int(np.asarray(model.fvd['meanshape']).reshape(-1, 3).shape[0]) > 10000
 assert int(np.asarray(model.fvd['tri']).reshape(-1, 3).shape[0]) > 10000
-print('FACEVERSE_MODEL_CHECKPOINT_PAIR=PROVEN', model.recon_net.fc_out.out_features, model.id_dims, model.exp_dims, model.tex_dims)
+print('FACEVERSE_MODEL_CHECKPOINT_PAIR=PROVEN', head_channels, sum(head_channels), model.id_dims, model.exp_dims, model.tex_dims)
 "@
     Invoke-Native -FilePath $VenvPython -ArgumentList @('-c',$compatibilityCode) -FailureMessage 'FaceVerse model/checkpoint pair failed exact official-loader compatibility validation'
     Write-Host 'FACEVERSE_RELEASE_FALLBACK_VALIDATION=PROVEN'
