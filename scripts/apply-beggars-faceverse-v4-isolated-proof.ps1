@@ -69,7 +69,10 @@ print('FACEVERSE_CUDA_TORCH_GUARD=' + json.dumps({'version': torch.__version__, 
     }
 
     $proofBootstrap = @"
-import runpy, sys
+import runpy, sys, torch
+torch.cuda.empty_cache = lambda: None
+torch.cuda.reset_peak_memory_stats = lambda *args, **kwargs: None
+print('FACEVERSE_OPTIONAL_CUDA_MEMORY_HOOKS=DISABLED', flush=True)
 sys.argv = [
     r'$proofScript',
     '--faceverse-root', r'$SourceRoot',
