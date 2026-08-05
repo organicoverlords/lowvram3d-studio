@@ -339,3 +339,30 @@ atlas itself contains 18,910,290 neutral/unsupported texels.
 - Receipt SHA256: `5605c6f313d0eabe3dea071db9578bb572a227069dbf462481089816fbadd393`
 
 Status: `ALT_MESH_ALL_ATLAS_DIAGNOSTIC_ONLY`; no production promotion.
+
+### Surface-space completion diagnostic
+
+The latest bounded CPU experiment filled the alternate mesh's rasterized
+surface footprint rather than leaving unsupported surface texels neutral. For
+each of the 644,348 triangles it used only that triangle's canonical cleanup-v3
+UV corners and centroid, with one-pixel same-triangle edge completion. No
+cross-triangle or cross-component donor transfer was used, and the canonical
+mesh/proof/source inputs were not changed.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\surface_space_completion_diagnostic_only\surface_space_completion_diagnostic_only.glb`
+- GLB SHA256: `aac71274bb5d4198cba85c1ab3d5d7771849fe3326fc45b177e58979281d3bbe`
+- Atlas: `C:\AI\panda_diag_neutral_v1\surface_space_completion_diagnostic_only\surface_space_completion_diagnostic_only_native_atlas.png`
+- Atlas SHA256: `3400e54e259cf30dadfddf96d32090f5731779f80742ce0756a87d5ea5b2dda5`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\surface_space_completion_diagnostic_only\renders\contact_sheet_surface_space_completion_9view_diagnostic_only.png`
+- Contact sheet SHA256: `26347cf7458c8ae7c33370fb8161cb9ab0388726b9ab98882bd82d8affedf9a7`
+- Receipt: `C:\AI\panda_diag_neutral_v1\surface_space_completion_diagnostic_only\surface_space_completion_receipt.json` (SHA256 `cf3cc36e0ffe6e9fbe297f08d74733f0beb4e3b0e6b9f4b90d0264467379e2a4`)
+
+State counts were 2,704,813 direct-evidence pixels, 1,465,332 surface-
+completion pixels, and 574,111 same-triangle edge-completion pixels. The
+surface footprint therefore has no neutral unsupported holes; 17,601,407
+neutral pixels remain outside the rasterized surface. The contact sheet is a
+real visual improvement over the neutral-fallback candidate: front identity
+is readable, left/right/rear are coherent, and the former vertical fallback
+strips are absent. It is still visibly mottled and the underside has bright
+material patches, so the honest status remains
+`SURFACE_SPACE_COMPLETION_DIAGNOSTIC_ONLY`, not production-ready.
