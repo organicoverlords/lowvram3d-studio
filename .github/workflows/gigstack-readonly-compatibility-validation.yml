@@ -1,4 +1,4 @@
-name: GigStack Capture And Compatibility Validation
+name: GigStack Capture Compatibility And Filesystem Validation
 
 on:
   workflow_dispatch:
@@ -18,9 +18,9 @@ concurrency:
 jobs:
   validate-private-gigstack-commit:
     runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 50
+    timeout-minutes: 55
     env:
-      GIGSTACK_COMMIT: b31a8e59993c70a08eabf3b49b1935df81af509e
+      GIGSTACK_COMMIT: 5307bdcb60b4e247e298405af7dc3a64d8ee00ba
       TRAYCER_COMMIT: 8f21d506f9945e409f4cd72f32c71e8810a4d236
       CUDA_VISIBLE_DEVICES: "-1"
       VITE_DESKTOP_LOCAL_STORAGE_KEY: gigstack-traycer-readonly-compatibility-v1
@@ -70,7 +70,7 @@ jobs:
           "GIGSTACK_VALIDATION_OUTPUT=$(Join-Path $env:RUNNER_TEMP "gigstack-validation-evidence-$env:GITHUB_RUN_ID")" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
           "GIGSTACK_VALIDATION_USER_DATA=$(Join-Path $env:RUNNER_TEMP "gigstack-validation-profile-$env:GITHUB_RUN_ID")" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
 
-      - name: Format and test capture integration crates
+      - name: Format and test capture and filesystem crates
         shell: pwsh
         run: |
           Push-Location $env:GIGSTACK_VALIDATION_ROOT
@@ -78,20 +78,24 @@ jobs:
             $owned = @(
               Get-ChildItem `
                 crates\traycer-capture-cli, `
-                crates\orchestrator-captured-runtime `
+                crates\orchestrator-captured-runtime, `
+                crates\local-filesystem-provider `
                 -Filter *.rs -File -Recurse |
                 Sort-Object FullName |
-                ForEach-Object FullName
+                ForEach-Object { $_.FullName }
             )
-            if ($owned.Count -eq 0) { throw "No capture integration Rust files found" }
+            if ($owned.Count -eq 0) { throw "No capture/filesystem Rust files found" }
             & rustfmt --edition 2024 --check @owned
-            if ($LASTEXITCODE -ne 0) { throw "Capture integration rustfmt failed" }
-            cargo test -p traycer-capture-cli -p orchestrator-captured-runtime
-            if ($LASTEXITCODE -ne 0) { throw "Capture integration tests failed" }
+            if ($LASTEXITCODE -ne 0) { throw "Capture/filesystem rustfmt failed" }
+            cargo test `
+              -p traycer-capture-cli `
+              -p orchestrator-captured-runtime `
+              -p local-filesystem-provider
+            if ($LASTEXITCODE -ne 0) { throw "Capture/filesystem tests failed" }
           } finally {
             Pop-Location
           }
-          "GIGSTACK_CAPTURE_INTEGRATION_TESTS=PROVEN"
+          "GIGSTACK_CAPTURE_AND_FILESYSTEM_TESTS=PROVEN"
 
       - name: Apply exact fail-closed Traycer overlay
         shell: pwsh
@@ -160,26 +164,28 @@ jobs:
           if ([int]$receipt.machineToolExecutions -ne 0 -or [int]$receipt.agentMessagesSent -ne 0) { throw "Side-effect boundary violated" }
           if ($receipt.verdict -ne "TRAYCER_CHATGPT_READONLY_COMPATIBILITY_SYNTHETIC_PROVEN") { throw "Verdict mismatch" }
           [ordered]@{
-            schema = "GIGSTACK_CROSS_REPO_VALIDATION_RECEIPT_V2"
+            schema = "GIGSTACK_CROSS_REPO_VALIDATION_RECEIPT_V3"
             runner = $env:RUNNER_NAME
             gigstackCommit = $env:GIGSTACK_COMMIT
             traycerCommit = $env:TRAYCER_COMMIT
             compatibilityReceiptSha256 = (Get-FileHash $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
             captureIntegrationTestsPassed = $true
+            filesystemProviderTestsPassed = $true
             cpuOnly = $true
             realChatGptNetworkUsed = $false
             promptSubmissions = 0
-            machineToolExecutions = 0
+            stateChangingFilesystemOperations = 0
+            machineToolExecutionsDuringCompatibilityProbe = 0
             agentMessagesSent = 0
-            verdict = "CAPTURE_AND_READONLY_COMPATIBILITY_PROVEN"
+            verdict = "CAPTURE_COMPATIBILITY_AND_FILESYSTEM_PROVIDER_PROVEN"
           } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "cross-repo-validation-receipt.json") -Encoding utf8NoBOM
-          "GIGSTACK_CAPTURE_AND_COMPATIBILITY_PROVEN=YES"
+          "GIGSTACK_CAPTURE_COMPATIBILITY_AND_FILESYSTEM_PROVEN=YES"
 
       - name: Upload bounded proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gigstack-capture-compatibility-${{ github.run_id }}
+          name: gigstack-capture-compatibility-filesystem-${{ github.run_id }}
           path: ${{ env.GIGSTACK_VALIDATION_OUTPUT }}
           if-no-files-found: warn
           retention-days: 14
