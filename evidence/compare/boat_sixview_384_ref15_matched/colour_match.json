@@ -1,0 +1,44 @@
+{
+  "achieved_reference_mean_srgb": [
+    63.7,
+    59.3,
+    53.0
+  ],
+  "classification": "PROVEN",
+  "clipped_highlights_are_unrecoverable": true,
+  "darkest_view_mean_linear_after": 0.009626,
+  "gain_per_channel": [
+    0.290756,
+    0.260098,
+    0.225382
+  ],
+  "gain_sRGB_equivalent_ratio": 3.849,
+  "genuine_variation_preserved": true,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat_sixview_384_ref15_matched",
+  "photograph_clipped_fraction": 0.003884,
+  "photograph_mean_linear": [
+    0.046011,
+    0.040052,
+    0.032379
+  ],
+  "reference_view": 0,
+  "reference_view_clipped_fraction": 0.018665,
+  "reference_view_mean_linear": [
+    0.158246,
+    0.153987,
+    0.143662
+  ],
+  "schema_version": "view_colour_match_v1",
+  "shadow_crush_note": "no",
+  "shadow_crush_warning": false,
+  "space": "linear light, sRGB EOTF applied and inverted",
+  "target_photograph_mean_srgb": [
+    60.6,
+    56.4,
+    50.4
+  ],
+  "top_bottom_ratio_after": 6.961585,
+  "top_bottom_ratio_before": 6.95873,
+  "top_bottom_ratio_drift": 0.00041,
+  "views": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat_sixview_384_ref15"
+}

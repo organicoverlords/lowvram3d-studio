@@ -1,0 +1,101 @@
+{
+  "albedo_gamma": 0.5414,
+  "albedo_target": 0.45,
+  "atlas_size": 512,
+  "classification": "PROVEN",
+  "controls": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_controls_384_yup",
+  "facing_floor": 0.15,
+  "facing_power": 3.0,
+  "inpainted_texels": 177425,
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_uv.glb",
+  "observed_fraction_of_atlas": 0.3232,
+  "observed_from": "generated views conditioned on this mesh's geometry, except the photograph view, which is the only evidence here. Everything else is plausible synthesis. Inpainted texels are neither.",
+  "observed_texels": 84719,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_composite_512.glb",
+  "output_bytes": 4268676,
+  "per_view": [
+    {
+      "face_on_fraction_of_silhouette": 0.608,
+      "index": 0,
+      "label": "front",
+      "samples": 14021,
+      "silhouette_fraction": 0.1564,
+      "source": "generated"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.7263,
+      "index": 1,
+      "label": "right",
+      "samples": 24602,
+      "silhouette_fraction": 0.2297,
+      "source": "photograph"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.6179,
+      "index": 2,
+      "label": "rear",
+      "samples": 14250,
+      "silhouette_fraction": 0.1564,
+      "source": "generated"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.716,
+      "index": 3,
+      "label": "left",
+      "samples": 28825,
+      "silhouette_fraction": 0.273,
+      "source": "generated"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.9984,
+      "index": 4,
+      "label": "top",
+      "samples": 61878,
+      "silhouette_fraction": 0.4203,
+      "source": "generated"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.9862,
+      "index": 5,
+      "label": "bottom",
+      "samples": 61125,
+      "silhouette_fraction": 0.4203,
+      "source": "generated"
+    }
+  ],
+  "photograph": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\crop.png",
+  "photograph_priority": 8.0,
+  "photograph_registration": {
+    "exposure_gain": 0.703,
+    "generated_mean": 26.9,
+    "method": "matte_bbox_to_silhouette_bbox_anisotropic_scale",
+    "photograph_mean": 38.3,
+    "registered": true,
+    "silhouette_iou": 0.8379,
+    "source_bbox": [
+      356,
+      594,
+      111,
+      840
+    ],
+    "target_bbox": [
+      129,
+      262,
+      17,
+      362
+    ]
+  },
+  "photograph_view_index": 1,
+  "schema_version": "multiview_atlas_bake_v1",
+  "source_mean_luminance": 58.3,
+  "texels_won_by_photograph": 17081,
+  "texels_won_per_view": {
+    "0": 5499,
+    "1": 17081,
+    "2": 4662,
+    "3": 9474,
+    "4": 16541,
+    "5": 31462
+  },
+  "views": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_sixview_384_nocudnn"
+}

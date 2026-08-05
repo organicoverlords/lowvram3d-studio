@@ -203,3 +203,77 @@ hence per-shell budgets proportional to area.
 | hybrid atlas composite | ~3 min (CPU) |
 | decal | seconds |
 | textured 7-view preview | ~8 min (CPU, pure NumPy) |
+
+---
+
+## 7. Complexity preflight — check before spending four minutes
+
+`workers/trellis_run.py` wraps `trellis-cli`, watches for the structured-latent
+size it prints at stage 4 of 7, and aborts before the decode if the subject is
+too complex for this machine.
+
+```bash
+py workers/trellis_run.py --image matte.png --out asset.glb --receipt run.json
+```
+
+Measured, four subjects on 16 GB RAM:
+
+| subject | latent | result |
+|---|---:|---|
+| castle | 82,304 | decoded |
+| boat | 86,784 | decoded |
+| red panda (ghillie suit) | 140,480 | **died in FlexiDualGrid decode** |
+| blue tree (foliage) | 191,744 | **died in FlexiDualGrid decode** |
+
+The latent tracks how much of the volume the subject actually occupies. Rigid
+architecture activates few voxels; fur, webbing and foliage activate many. The
+failures are host RAM during decode, not VRAM.
+
+Why the wrapper is worth having: five attempts at the panda produced **three
+different errors** — `CUDA error: out of memory`, a ggml host-allocation assert,
+and `misaligned address` — for one underlying cause. The preflight turns that
+into one diagnosis at ~140 s instead of a crash at ~260 s.
+
+The band is a warning, not a law: four samples establish a correlation and the
+gap between 87k and 140k is unsampled. `--max-latent 0` disables the abort and
+records the number, which is how the boundary gets refined.
+
+## 8. Grading a subject with no reference artwork
+
+`hybrid_atlas_composite.py` works with **no `--view` arguments**: it then grades
+the generated atlas without compositing anything. This is the normal case for a
+single-image subject.
+
+```bash
+py workers/hybrid_atlas_composite.py --mesh asset.glb --out graded.glb \
+  --contrast 0.18 --shadows 0.03 --highlights 0.05 \
+  --saturation 1.12 --warmth 0.04
+```
+
+Those values are calibrated on the castle against its source image. Native
+texturing on this stack returns **cool and grey-blue** on stone and timber
+subjects. The instinct to fix that with saturation is wrong — it amplifies the
+existing hue instead of moving it. `--warmth` is a luminance-preserving white
+balance shift and is the correct control; a three-way comparison
+(`evidence/compare/castle/castle_grade_3way.png`) shows it beating a
+higher-saturation, higher-highlight grade clearly.
+
+Subjects **with** reference elevations use the same tool with `--view` and a
+lower contrast, because the projected artwork brings its own contrast:
+`--contrast 0.10 --shadows 0.00 --highlights 0.18 --saturation 1.20`.
+
+## 9. Subject classes — what to expect
+
+Two subjects have been through the full pipeline and rated **mid-ground**: the
+boat (with four reference elevations) and the castle (single image, no artwork).
+Both are rigid architecture.
+
+Predicted, not yet measured:
+
+- **Vehicles / hard-surface**: best candidates, potentially better than
+  mid-ground if not mechanically intricate.
+- **Humanoids**: likely decode successfully if clothed or armoured; faces,
+  hands and thin appendages weak.
+- **Rock formations**: succeed at mid-ground range, generic erosion detail.
+- **Furry creatures**: high failure risk on both capacity and quality.
+- **Trees with real foliage**: likely to exceed the latent budget outright.

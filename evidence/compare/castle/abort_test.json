@@ -1,0 +1,38 @@
+{
+  "schema_version": "trellis_run_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle\\castle_matte.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle\\castle_abort_test.glb",
+  "command": [
+    "C:\\AI\\trellis-cpp\\build-mmq\\Release\\trellis-cli.exe",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle\\castle_matte.png",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle\\castle_abort_test.glb",
+    "--models",
+    "C:\\AI\\trellis-cpp\\models",
+    "--res",
+    "512",
+    "--atlas",
+    "1024",
+    "--seed",
+    "12345",
+    "--no-fa",
+    "--require-gpu"
+  ],
+  "res": "512",
+  "atlas": 1024,
+  "seed": 12345,
+  "seconds": 142.9,
+  "latent_size": 82528,
+  "latent_band": "safe",
+  "latent_warn": 100000,
+  "latent_abort": 50000,
+  "aborted_on_latent": true,
+  "exit_code": 1,
+  "success": false,
+  "output_bytes": 0,
+  "reference_latents": {
+    "castle": 82304,
+    "boat": 86784,
+    "red_panda": 140480,
+    "blue_tree": 191744
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "classification": "PROVEN",
+  "glb": "evidence\\compare\\barn_multiview_textured.glb",
+  "out": "evidence\\compare\\barn_multiview_views.png",
+  "schema_version": "textured_views_v1",
+  "texture_size": [
+    1024,
+    1024
+  ],
+  "triangles": 149744,
+  "views": [
+    "front",
+    "three_quarter",
+    "side",
+    "rear"
+  ]
+}

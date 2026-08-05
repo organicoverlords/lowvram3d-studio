@@ -1,0 +1,17 @@
+{
+  "camera_contract": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_controls_384_yup\\camera_contract.json",
+  "camera_contract_sha256": "cfb6b97cc4d4097cd53a06996fcde494fa9dcf335d4ac3b38e5d82b76a2420b2",
+  "classification": "PROVEN",
+  "controls": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_controls_384_yup",
+  "geometry_or_control_values_changed": false,
+  "labels": [
+    "front",
+    "right",
+    "rear",
+    "left",
+    "top",
+    "bottom"
+  ],
+  "renamed_artefacts": 36,
+  "schema_version": "camera_contract_finalize_v1"
+}

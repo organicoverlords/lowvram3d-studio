@@ -1,0 +1,38 @@
+{
+  "schema_version": "trellis_run_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\bluetree\\bluetree_matte.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\bluetree\\bluetree_test.glb",
+  "command": [
+    "C:\\AI\\trellis-cpp\\build-mmq\\Release\\trellis-cli.exe",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\bluetree\\bluetree_matte.png",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\bluetree\\bluetree_test.glb",
+    "--models",
+    "C:\\AI\\trellis-cpp\\models",
+    "--res",
+    "512",
+    "--atlas",
+    "1024",
+    "--seed",
+    "4242",
+    "--no-fa",
+    "--require-gpu"
+  ],
+  "res": "512",
+  "atlas": 1024,
+  "seed": 4242,
+  "seconds": 43.8,
+  "latent_size": null,
+  "latent_band": "unknown",
+  "latent_warn": 100000,
+  "latent_abort": 130000,
+  "aborted_on_latent": false,
+  "exit_code": 3221226505,
+  "success": false,
+  "output_bytes": 0,
+  "reference_latents": {
+    "castle": 82304,
+    "boat": 86784,
+    "red_panda": 140480,
+    "blue_tree": 191744
+  }
+}

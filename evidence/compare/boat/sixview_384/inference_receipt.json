@@ -1,0 +1,8 @@
+{
+  "schema": "lowvram3d_mvadapter_sd21_six_view_inference_v1",
+  "status": "PREFLIGHT_REJECTED",
+  "error": "RuntimeError: MVADAPTER_RAM_PAGEFILE_INSUFFICIENT:{'ram_total_mb': 15709.707, 'ram_available_mb': 1743.633, 'pagefile_total_mb': 32768.0, 'pagefile_free_mb': 28257.691, 'pid': 18708}",
+  "output_count": 0,
+  "gpu_sequence_consumed": false,
+  "fallback_eligible": false
+}

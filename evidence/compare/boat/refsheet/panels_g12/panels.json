@@ -1,0 +1,254 @@
+{
+  "schema_version": "reference_sheet_split_v1",
+  "sheet": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refsheet\\sheet.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refsheet\\panels_g12",
+  "plate_rgb": [
+    249.0,
+    249.0,
+    249.0
+  ],
+  "panels_found": 16,
+  "panels": [
+    {
+      "index": 0,
+      "file": "panel_00.png",
+      "bbox_xyxy": [
+        5,
+        6,
+        610,
+        471
+      ],
+      "size": [
+        606,
+        466
+      ],
+      "ink_fraction": 0.6047
+    },
+    {
+      "index": 1,
+      "file": "panel_01.png",
+      "bbox_xyxy": [
+        655,
+        7,
+        943,
+        478
+      ],
+      "size": [
+        289,
+        472
+      ],
+      "ink_fraction": 0.5892
+    },
+    {
+      "index": 2,
+      "file": "panel_02.png",
+      "bbox_xyxy": [
+        961,
+        7,
+        1523,
+        478
+      ],
+      "size": [
+        563,
+        472
+      ],
+      "ink_fraction": 0.509
+    },
+    {
+      "index": 3,
+      "file": "panel_03.png",
+      "bbox_xyxy": [
+        41,
+        474,
+        342,
+        891
+      ],
+      "size": [
+        302,
+        418
+      ],
+      "ink_fraction": 0.6066
+    },
+    {
+      "index": 4,
+      "file": "panel_04.png",
+      "bbox_xyxy": [
+        373,
+        483,
+        923,
+        869
+      ],
+      "size": [
+        551,
+        387
+      ],
+      "ink_fraction": 0.5277
+    },
+    {
+      "index": 5,
+      "file": "panel_05.png",
+      "bbox_xyxy": [
+        926,
+        594,
+        1481,
+        822
+      ],
+      "size": [
+        556,
+        229
+      ],
+      "ink_fraction": 0.7201
+    },
+    {
+      "index": 6,
+      "file": "panel_06.png",
+      "bbox_xyxy": [
+        1162,
+        883,
+        1314,
+        995
+      ],
+      "size": [
+        153,
+        113
+      ],
+      "ink_fraction": 0.3824
+    },
+    {
+      "index": 7,
+      "file": "panel_07.png",
+      "bbox_xyxy": [
+        1320,
+        869,
+        1505,
+        996
+      ],
+      "size": [
+        186,
+        128
+      ],
+      "ink_fraction": 0.5752
+    },
+    {
+      "index": 8,
+      "file": "panel_08.png",
+      "bbox_xyxy": [
+        364,
+        906,
+        436,
+        995
+      ],
+      "size": [
+        73,
+        90
+      ],
+      "ink_fraction": 0.6149
+    },
+    {
+      "index": 9,
+      "file": "panel_09.png",
+      "bbox_xyxy": [
+        453,
+        915,
+        517,
+        995
+      ],
+      "size": [
+        65,
+        81
+      ],
+      "ink_fraction": 0.5719
+    },
+    {
+      "index": 10,
+      "file": "panel_10.png",
+      "bbox_xyxy": [
+        535,
+        927,
+        604,
+        994
+      ],
+      "size": [
+        70,
+        68
+      ],
+      "ink_fraction": 0.4
+    },
+    {
+      "index": 11,
+      "file": "panel_11.png",
+      "bbox_xyxy": [
+        616,
+        928,
+        673,
+        993
+      ],
+      "size": [
+        58,
+        66
+      ],
+      "ink_fraction": 0.4543
+    },
+    {
+      "index": 12,
+      "file": "panel_12.png",
+      "bbox_xyxy": [
+        687,
+        924,
+        741,
+        994
+      ],
+      "size": [
+        55,
+        71
+      ],
+      "ink_fraction": 0.517
+    },
+    {
+      "index": 13,
+      "file": "panel_13.png",
+      "bbox_xyxy": [
+        751,
+        917,
+        804,
+        995
+      ],
+      "size": [
+        54,
+        79
+      ],
+      "ink_fraction": 0.4998
+    },
+    {
+      "index": 14,
+      "file": "panel_14.png",
+      "bbox_xyxy": [
+        824,
+        907,
+        956,
+        995
+      ],
+      "size": [
+        133,
+        89
+      ],
+      "ink_fraction": 0.3345
+    },
+    {
+      "index": 15,
+      "file": "panel_15.png",
+      "bbox_xyxy": [
+        1026,
+        900,
+        1153,
+        995
+      ],
+      "size": [
+        128,
+        96
+      ],
+      "ink_fraction": 0.382
+    }
+  ],
+  "naming": "positional only; identifying which panel is which view is a judgement about content and is not made here"
+}

@@ -1,0 +1,57 @@
+{
+  "appearance_margin": 0.032269,
+  "appearance_winner": 5,
+  "axes_agree": false,
+  "classification": "INCONCLUSIVE",
+  "decisive": false,
+  "per_view": [
+    {
+      "appearance_correlation": -0.005164,
+      "index": 0,
+      "name": "front",
+      "silhouette_iou": 0.591587,
+      "view_coverage": 0.377387
+    },
+    {
+      "appearance_correlation": 0.027293,
+      "index": 1,
+      "name": "right",
+      "silhouette_iou": 0.475426,
+      "view_coverage": 0.292379
+    },
+    {
+      "appearance_correlation": 0.030908,
+      "index": 2,
+      "name": "rear",
+      "silhouette_iou": 0.538299,
+      "view_coverage": 0.355109
+    },
+    {
+      "appearance_correlation": 0.049809,
+      "index": 3,
+      "name": "left",
+      "silhouette_iou": 0.422671,
+      "view_coverage": 0.258565
+    },
+    {
+      "appearance_correlation": -0.02914,
+      "index": 4,
+      "name": "top",
+      "silhouette_iou": 0.505822,
+      "view_coverage": 0.384603
+    },
+    {
+      "appearance_correlation": 0.082078,
+      "index": 5,
+      "name": "bottom",
+      "silhouette_iou": 0.530782,
+      "view_coverage": 0.405416
+    }
+  ],
+  "photograph": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\crop512.png",
+  "photographed_view": null,
+  "schema_version": "photographed_view_identification_v1",
+  "silhouette_margin": 0.053288,
+  "silhouette_winner": 0,
+  "views": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat_sixview_384"
+}

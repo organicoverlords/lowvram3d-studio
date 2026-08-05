@@ -1,0 +1,25 @@
+{
+  "body_count": 4,
+  "classification": "PROVEN",
+  "euler_number": -83,
+  "extent": [
+    1.9378,
+    0.6652,
+    1.9754
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\barn_mv_lod.glb",
+  "merged_vertices": 73782,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\preview.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 147728,
+  "unwelded": false,
+  "vertex_split_ratio": 1.0,
+  "vertices": 73782,
+  "view_coverage": {
+    "front": 0.2055,
+    "side": 0.2249,
+    "three_quarter": 0.2327,
+    "top": 0.5677
+  },
+  "watertight": false
+}

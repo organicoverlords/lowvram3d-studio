@@ -1,0 +1,125 @@
+{
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
+  "resolution": 2048,
+  "padding": 4,
+  "candidates": [
+    {
+      "preset": "A",
+      "max_cost": 2.0,
+      "chart_count": 3103,
+      "atlas_utilization": 0.8495161533355713,
+      "atlas_count": 1,
+      "atlas_width": 2457,
+      "atlas_height": 2454,
+      "overlap_pair_count": 2,
+      "overlap_texel_area": 0.6102820066735148,
+      "degenerate_triangle_count": 44,
+      "out_of_bounds_triangle_count": 0,
+      "stretch_p95": 1.101710308369706,
+      "tiny_chart_surface_percent": 1.79790319402192,
+      "runtime_seconds": 104.81199999997625,
+      "valid": false,
+      "errors": [
+        "2 positive-area overlapping pairs",
+        "44 degenerate UV triangles",
+        "chart_count 3103 > 1250",
+        "tiny_chart_surface_percent 1.7979 > 1.0"
+      ]
+    },
+    {
+      "preset": "B",
+      "max_cost": 4.0,
+      "chart_count": 2352,
+      "atlas_utilization": 0.8582069873809814,
+      "atlas_count": 1,
+      "atlas_width": 2349,
+      "atlas_height": 2352,
+      "overlap_pair_count": 2,
+      "overlap_texel_area": 0.6670937482267618,
+      "degenerate_triangle_count": 37,
+      "out_of_bounds_triangle_count": 0,
+      "stretch_p95": 1.0784006583422103,
+      "tiny_chart_surface_percent": 1.1510170477068402,
+      "runtime_seconds": 140.26600000000326,
+      "valid": false,
+      "errors": [
+        "2 positive-area overlapping pairs",
+        "37 degenerate UV triangles",
+        "chart_count 2352 > 1250",
+        "tiny_chart_surface_percent 1.1510 > 1.0"
+      ]
+    },
+    {
+      "preset": "C",
+      "max_cost": 8.0,
+      "chart_count": 2352,
+      "atlas_utilization": 0.8582069873809814,
+      "atlas_count": 1,
+      "atlas_width": 2349,
+      "atlas_height": 2352,
+      "overlap_pair_count": 2,
+      "overlap_texel_area": 0.6670937482267618,
+      "degenerate_triangle_count": 37,
+      "out_of_bounds_triangle_count": 0,
+      "stretch_p95": 1.0784006583422103,
+      "tiny_chart_surface_percent": 1.1510170477068402,
+      "runtime_seconds": 119.28100000001723,
+      "valid": false,
+      "errors": [
+        "2 positive-area overlapping pairs",
+        "37 degenerate UV triangles",
+        "chart_count 2352 > 1250",
+        "tiny_chart_surface_percent 1.1510 > 1.0"
+      ]
+    }
+  ],
+  "exact_overlap_by_preset": {
+    "A": {
+      "candidate_pair_count": 1581622,
+      "tested_pair_count": 818857,
+      "positive_overlap_pair_count": 2,
+      "positive_overlap_total_area_uv": 1.455025688823497e-07,
+      "positive_overlap_max_area_uv": 7.690285608319414e-08,
+      "positive_overlap_total_texels_equivalent": 0.6102820066735148,
+      "degenerate_uv_triangle_count": 44,
+      "out_of_bounds_triangle_count": 0,
+      "ignored_noise_intersection_count": 13,
+      "positive_overlap_pairs": [],
+      "timed_out": false,
+      "success": true,
+      "errors": []
+    },
+    "B": {
+      "candidate_pair_count": 1594417,
+      "tested_pair_count": 846460,
+      "positive_overlap_pair_count": 2,
+      "positive_overlap_total_area_uv": 1.5904754357976003e-07,
+      "positive_overlap_max_area_uv": 8.394215400553406e-08,
+      "positive_overlap_total_texels_equivalent": 0.6670937482267618,
+      "degenerate_uv_triangle_count": 37,
+      "out_of_bounds_triangle_count": 0,
+      "ignored_noise_intersection_count": 16,
+      "positive_overlap_pairs": [],
+      "timed_out": false,
+      "success": true,
+      "errors": []
+    },
+    "C": {
+      "candidate_pair_count": 1594417,
+      "tested_pair_count": 846460,
+      "positive_overlap_pair_count": 2,
+      "positive_overlap_total_area_uv": 1.5904754357976003e-07,
+      "positive_overlap_max_area_uv": 8.394215400553406e-08,
+      "positive_overlap_total_texels_equivalent": 0.6670937482267618,
+      "degenerate_uv_triangle_count": 37,
+      "out_of_bounds_triangle_count": 0,
+      "ignored_noise_intersection_count": 16,
+      "positive_overlap_pairs": [],
+      "timed_out": false,
+      "success": true,
+      "errors": []
+    }
+  },
+  "selection_rule": "lexicographic: chart_count, -utilization, stretch_p95, tiny_chart_surface_percent, max_cost",
+  "selected": null
+}

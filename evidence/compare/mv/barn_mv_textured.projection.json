@@ -1,0 +1,37 @@
+{
+  "albedo_gamma": 0.4207,
+  "albedo_target_luminance": 114.8,
+  "classification": "PROVEN",
+  "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\crop.png",
+  "facing_min": 0.2,
+  "fill_rgb": [
+    121.9,
+    114.7,
+    107.0
+  ],
+  "flat_filled_face_fraction": 0.4202,
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\barn_mv_lod.glb",
+  "mask_coverage": 0.1427,
+  "mirrored_face_fraction": 0.2627,
+  "observed_face_fraction": 0.3172,
+  "observed_from": "single view. observed_face_fraction was genuinely seen; mirrored_face_fraction carries a mirrored copy of it and is plausible invention, not evidence; flat_filled_face_fraction is the grazing band, where a projection could only smear",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\barn_mv_textured.glb",
+  "output_bytes": 4366228,
+  "projection": "object_space_front_minus_z",
+  "schema_version": "crop_projection_v1",
+  "source_mean_luminance": 38.2,
+  "subject_box_norm_xyxy": [
+    0.1168,
+    0.3747,
+    0.8842,
+    0.6253
+  ],
+  "subject_fraction_of_crop": 0.1922,
+  "texture_size": [
+    958,
+    950
+  ],
+  "textured_face_fraction": 0.5798,
+  "triangles": 147728,
+  "vertices": 116635
+}

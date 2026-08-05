@@ -1,0 +1,24 @@
+{
+  "schema_version": "hybrid_atlas_composite_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle\\castle_pbr.glb",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle\\castle_luna.glb",
+  "atlas": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle\\castle_luna_base.png",
+  "atlas_size": 1024,
+  "views": {},
+  "texels_in_atlas": 571123,
+  "texels_painted": 0,
+  "painted_fraction_of_surface": 0.0,
+  "luma_transfer": 1.0,
+  "delight": true,
+  "grade": {
+    "contrast": 0.18,
+    "shadows": 0.03,
+    "highlights": 0.05,
+    "saturation": 1.12,
+    "warmth": 0.04
+  },
+  "min_facing": 0.3,
+  "feather_texels": 12,
+  "dilated_texels": 477440,
+  "material_channels": "native, unmodified"
+}

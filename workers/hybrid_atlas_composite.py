@@ -135,6 +135,29 @@ def delight(linear_rgb, alpha):
     return np.clip(linear_rgb * gain[..., None], 0.0, 1.0)
 
 
+def warm_shift(linear_rgb, amount):
+    """Push white balance toward warm, preserving luminance.
+
+    Native texturing on this stack tends to come back cool and grey-blue --
+    measured on the castle, where the source stone is warm brown and the
+    generated atlas is not. A temperature shift is the correct control for
+    that: saturation alone amplifies the wrong hue rather than moving it.
+
+    Red and blue are scaled in opposite directions and the result is rescaled
+    to its original luminance, so this changes colour without changing
+    exposure.
+    """
+    import numpy as np
+
+    if abs(amount) < 1e-6:
+        return linear_rgb
+    weights = np.array([0.2126, 0.7152, 0.0722])
+    before = linear_rgb @ weights
+    shifted = linear_rgb * np.array([1.0 + amount, 1.0, 1.0 - amount])
+    after = np.clip(shifted @ weights, 1e-6, None)
+    return np.clip(shifted * (before / after)[..., None], 0.0, 1.0)
+
+
 def tone_curve(linear_rgb, contrast, shadows, highlights, saturation):
     """S-curve contrast, shadow/highlight trim and saturation, in linear light.
 
@@ -270,6 +293,11 @@ def main(argv: list[str] | None = None) -> int:
                              "grey-brown blacks in the generated atlas.")
     parser.add_argument("--highlights", type=float, default=0.15,
                         help="Lift highlights, so gold and lit windows read.")
+    parser.add_argument("--warmth", type=float, default=0.0,
+                        help="White-balance shift toward warm, luminance "
+                             "preserved. Native texturing returns cool grey-blue "
+                             "on stone and timber subjects; saturation alone "
+                             "amplifies the wrong hue instead of moving it.")
     parser.add_argument("--receipt", default="")
     args = parser.parse_args(argv)
 
@@ -382,6 +410,7 @@ def main(argv: list[str] | None = None) -> int:
     # the painted half would make the seam worse rather than better.
     blended = tone_curve(blended, args.contrast, args.shadows,
                          args.highlights, args.saturation)
+    blended = warm_shift(blended, args.warmth)
 
     out_pixels = (linear_to_srgb(blended) * 255.0).round().astype(np.uint8)
     # Bleed colour past island edges so filtering cannot sample the background.
@@ -411,7 +440,8 @@ def main(argv: list[str] | None = None) -> int:
         "luma_transfer": args.luma,
         "delight": bool(args.delight),
         "grade": {"contrast": args.contrast, "shadows": args.shadows,
-                  "highlights": args.highlights, "saturation": args.saturation},
+                  "highlights": args.highlights, "saturation": args.saturation,
+                  "warmth": args.warmth},
         "min_facing": MIN_FACING,
         "feather_texels": FEATHER_TEXELS,
         "dilated_texels": int(grown.sum()),

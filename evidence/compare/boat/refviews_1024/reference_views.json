@@ -1,0 +1,109 @@
+{
+  "schema_version": "reference_view_build_v1",
+  "classification": "PROVEN",
+  "controls": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\controls_1024",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refviews_1024",
+  "resolution": 1024,
+  "views_from_reference": 4,
+  "views_from_generation": 2,
+  "min_registration_iou": 0.55,
+  "poorly_registered": [],
+  "views": [
+    {
+      "index": 0,
+      "name": "front",
+      "source": "generated",
+      "file": "view_0_front.png"
+    },
+    {
+      "index": 1,
+      "name": "right",
+      "source": "reference_drawing",
+      "file": "evidence\\compare\\boat\\refsheet\\panels_g8\\panel_01.png",
+      "mirrored": false,
+      "registration_iou": 0.8462,
+      "drawing_bbox": [
+        6,
+        7,
+        282,
+        464
+      ],
+      "silhouette_bbox": [
+        191,
+        147,
+        816,
+        877
+      ],
+      "acceptable": true
+    },
+    {
+      "index": 2,
+      "name": "rear",
+      "source": "reference_drawing",
+      "file": "evidence\\compare\\boat\\refsheet\\panels_g8\\panel_02.png",
+      "mirrored": false,
+      "registration_iou": 0.7545,
+      "drawing_bbox": [
+        6,
+        7,
+        556,
+        469
+      ],
+      "silhouette_bbox": [
+        59,
+        147,
+        975,
+        877
+      ],
+      "acceptable": true
+    },
+    {
+      "index": 3,
+      "name": "left",
+      "source": "reference_drawing",
+      "file": "evidence\\compare\\boat\\refsheet\\panels_g8\\panel_03.png",
+      "mirrored": false,
+      "registration_iou": 0.868,
+      "drawing_bbox": [
+        7,
+        6,
+        294,
+        411
+      ],
+      "silhouette_bbox": [
+        206,
+        147,
+        831,
+        877
+      ],
+      "acceptable": true
+    },
+    {
+      "index": 4,
+      "name": "top",
+      "source": "reference_drawing",
+      "file": "evidence\\compare\\boat\\refsheet\\panels_g8\\panel_05.png",
+      "mirrored": false,
+      "registration_iou": 0.8041,
+      "drawing_bbox": [
+        6,
+        6,
+        555,
+        228
+      ],
+      "silhouette_bbox": [
+        59,
+        190,
+        975,
+        816
+      ],
+      "acceptable": true
+    },
+    {
+      "index": 5,
+      "name": "bottom",
+      "source": "generated",
+      "file": "view_5_bottom.png"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "reference_sheet_split_v1",
+  "sheet": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refsheet\\sheet.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refsheet\\panels_g16",
+  "plate_rgb": [
+    249.0,
+    249.0,
+    249.0
+  ],
+  "panels_found": 1,
+  "panels": [
+    {
+      "index": 0,
+      "file": "panel_00.png",
+      "bbox_xyxy": [
+        5,
+        6,
+        1523,
+        996
+      ],
+      "size": [
+        1519,
+        991
+      ],
+      "ink_fraction": 0.4756
+    }
+  ],
+  "naming": "positional only; identifying which panel is which view is a judgement about content and is not made here"
+}

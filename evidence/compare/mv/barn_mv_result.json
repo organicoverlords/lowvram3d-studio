@@ -1,0 +1,56 @@
+{
+  "success": true,
+  "selected_generator": "mini_turbo",
+  "generator_locked": true,
+  "fallback_generators_allowed": [],
+  "transport": "direct-local-weights",
+  "comfyui_url": null,
+  "comfyui_workflow": null,
+  "model_root": "C:/AI/HY3D2/HuggingFaceHub/hunyuan3d-2mv-direct",
+  "model_subfolder": "hunyuan3d-dit-v2-mv-turbo",
+  "source_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\crop.png",
+  "prompt": "",
+  "target_fbx_used": false,
+  "texture_pipeline_run": false,
+  "rig_pipeline_run": false,
+  "diagnostics_trace": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\generation_trace.jsonl",
+  "seed": 12345,
+  "steps": 5,
+  "octree_ladder": "384:3000,320:2000,256:1500",
+  "diagnostic_telemetry": false,
+  "source_image_sha256": "aece03b143db713ec1f83b69d5a45c03568674d5aea42e744f9186208a916d44",
+  "weights": "C:\\AI\\HY3D2\\HuggingFaceHub\\hunyuan3d-2mv-direct\\hunyuan3d-dit-v2-mv-turbo\\model.fp16.safetensors",
+  "weights_bytes": 4930777530,
+  "torch": "2.8.0+cu126",
+  "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "conditioning_source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\conditioning.png",
+  "matte": "shaman_matte.py",
+  "conditioning_image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\mini_turbo_conditioning.png",
+  "image_dimensions": [
+    950,
+    950
+  ],
+  "multiview_checkpoint": true,
+  "multiview": true,
+  "multiview_views": [
+    "front"
+  ],
+  "flashvdm": true,
+  "octree_resolution": 384,
+  "num_chunks": 3000,
+  "attempts": [
+    {
+      "octree_resolution": 384,
+      "num_chunks": 3000,
+      "status": "ok",
+      "peak_vram_mb": 6262
+    }
+  ],
+  "raw_glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\mv\\barn_mv.glb",
+  "raw_glb_sha256": "df67acd1ae1a8e09e66b733e9f4d7cbce9589eb350760e74279873c08e0df252",
+  "raw_glb_bytes": 17538956,
+  "raw_vertices": 487173,
+  "raw_triangles": 974338,
+  "generation_seconds": 371.7,
+  "guidance_scale": 5.0
+}

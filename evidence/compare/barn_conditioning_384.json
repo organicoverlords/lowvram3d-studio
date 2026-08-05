@@ -1,0 +1,56 @@
+{
+  "schema": "lowvram3d_mvadapter_conditioning_reference_v1",
+  "source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\crop.png",
+  "source_path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\crop.png",
+  "source_sha256": "aece03b143db713ec1f83b69d5a45c03568674d5aea42e744f9186208a916d44",
+  "source_dimensions": [
+    950,
+    950
+  ],
+  "alpha_source": "source_alpha",
+  "source_alpha_bounds": [
+    109,
+    355,
+    841,
+    595
+  ],
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_conditioning_384.png",
+  "output_path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_conditioning_384.png",
+  "output_sha256": "3b1c96ba59fab2ad22f420aa35da236b3f334050c95c0ea72245f6adf63b72db",
+  "output_dimensions": [
+    384,
+    384
+  ],
+  "resized_subject_dimensions": [
+    346,
+    113
+  ],
+  "occupancy_fraction": 0.901042,
+  "longer_dimension_fraction": 0.901042,
+  "placement_offsets": [
+    19,
+    135
+  ],
+  "placement_offset": [
+    19,
+    135
+  ],
+  "subject_centre_fraction": [
+    0.5,
+    0.498698
+  ],
+  "background_rgb": [
+    127,
+    127,
+    127
+  ],
+  "mirror_used": false,
+  "non_rigid_warp_used": false,
+  "mesh_silhouette_comparison_used": false,
+  "mesh_silhouette_iou_required": false,
+  "aspect_ratio_preserved": true,
+  "source_aspect": 3.05,
+  "resized_aspect": 3.061947,
+  "deterministic": true,
+  "passed": true
+}
