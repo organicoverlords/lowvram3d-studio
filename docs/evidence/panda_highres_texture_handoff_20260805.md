@@ -189,7 +189,7 @@ The synthetic gate then ran once against that candidate:
 
 - Report: `C:\AI\panda_xatlas_gate_v1\synthetic_xatlas_gate_report.json`
 - Contact sheet: `C:\AI\panda_xatlas_gate_v1\renders\basecolor_only_mip_linear_contact_sheet.png`
-- Mip-linear magenta interior samples: left 2,280; front 2,764; right 2,408; rear 2,653; top 2,115; bottom 1,696 (15,916 total); black interiors 0.
+- Mip-linear magenta interior samples: left 2,280; front 2,764; right 2,408; rear 2,653; top 2,115; bottom 1,696 (13,916 total); black interiors 0.
 - No-mip linear produced the same sentinel counts; nearest sampling produced tens of thousands of magenta hits per view.
 - Direct V orientation remained correct; flip-Y was worse.
 
