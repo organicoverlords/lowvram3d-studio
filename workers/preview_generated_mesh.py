@@ -99,6 +99,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", required=True)
     parser.add_argument("--size", type=int, default=420)
     parser.add_argument("--receipt", default="")
+    parser.add_argument(
+        "--up-axis", choices=("y", "z", "auto"), default="auto",
+        help="Up axis of the source mesh. glTF is Y-up by specification and "
+             "Hunyuan3D emits Y-up, but the online service's exports are Z-up, "
+             "which renders every character flat on its back. 'auto' guesses "
+             "from which axis the mesh rests on.")
     args = parser.parse_args(argv)
 
     import numpy as np
@@ -107,11 +113,44 @@ def main(argv: list[str] | None = None) -> int:
 
     source = Path(args.glb).resolve()
     scene = trimesh.load(str(source), process=False)
-    geometries = (list(scene.geometry.values())
-                  if hasattr(scene, "geometry") else [scene])
-    mesh = trimesh.util.concatenate(geometries) if len(geometries) > 1 else geometries[0]
+    if hasattr(scene, "geometry"):
+        # Flatten through the scene graph, not around it. Concatenating
+        # `scene.geometry.values()` directly discards every node transform, so a
+        # multi-node glTF renders with its parts stacked at the origin at
+        # whatever scale they were authored. Hunyuan3D emits a single node and
+        # never exposed this; the online service's exports do not, and they
+        # rendered as an unrecognisable close-up of one component.
+        mesh = (scene.to_geometry() if hasattr(scene, "to_geometry")
+                else scene.dump(concatenate=True))
+    else:
+        mesh = scene
     vertices = np.asarray(mesh.vertices, dtype=np.float64)
     faces = np.asarray(mesh.faces, dtype=np.int64)
+
+    # Which way is up. The cameras below assume Y-up, which glTF mandates and
+    # Hunyuan3D honours -- but the online service's exports are Z-up, and every
+    # one of them renders flat on its back, which reads as a broken mesh rather
+    # than a broken camera.
+    #
+    # The auto guess uses the one thing a generator almost always does: it rests
+    # the subject on the ground, so the up axis is the one whose minimum sits at
+    # zero while the others straddle it. Ambiguity falls back to Y, the
+    # specification default, rather than to a coin toss.
+    up_axis = args.up_axis
+    if up_axis == "auto":
+        low = vertices.min(axis=0)
+        high = vertices.max(axis=0)
+        span = np.maximum(high - low, 1e-9)
+        grounded = np.abs(low) / span          # 0 means the mesh sits on it
+        centred = np.abs(low + high) / span    # 0 means it straddles it
+        candidates = [i for i in (1, 2) if grounded[i] < 0.02 and centred[i] > 0.5]
+        up_axis = {1: "y", 2: "z"}.get(candidates[0], "y") if len(candidates) == 1 else "y"
+
+    if up_axis == "z":
+        # Z-up to Y-up: (x, y, z) -> (x, z, -y). A rotation, so handedness and
+        # therefore winding order are preserved and the shading stays correct.
+        vertices = np.column_stack(
+            [vertices[:, 0], vertices[:, 2], -vertices[:, 1]])
 
     sheet = Image.new("RGB", (args.size * len(VIEWS), args.size + 24), (255, 255, 255))
     draw = ImageDraw.Draw(sheet)

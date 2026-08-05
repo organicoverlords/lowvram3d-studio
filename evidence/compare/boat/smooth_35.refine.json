@@ -1,0 +1,16 @@
+{
+  "classification": "PROVEN",
+  "diagonal_extent": 2.8701,
+  "faces": 149720,
+  "filter": "apply_coord_two_steps_smoothing",
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat512_lod.glb",
+  "max_displacement_fraction_of_extent": 0.029757,
+  "mean_displacement_fraction_of_extent": 0.00343,
+  "normal_threshold_deg": 35.0,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\smooth_35.glb",
+  "output_bytes": 2687252,
+  "schema_version": "mesh_surface_refine_v1",
+  "smooth_steps": 3,
+  "topology_changed": false,
+  "vertices": 74151
+}

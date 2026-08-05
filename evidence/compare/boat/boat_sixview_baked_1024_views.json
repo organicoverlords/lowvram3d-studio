@@ -1,0 +1,17 @@
+{
+  "classification": "PROVEN",
+  "glb": "evidence\\compare\\boat\\boat_sixview_baked_1024.glb",
+  "out": "evidence\\compare\\boat\\boat_sixview_baked_1024_views.png",
+  "schema_version": "textured_views_v1",
+  "texture_size": [
+    1024,
+    1024
+  ],
+  "triangles": 149720,
+  "views": [
+    "front",
+    "three_quarter",
+    "side",
+    "rear"
+  ]
+}

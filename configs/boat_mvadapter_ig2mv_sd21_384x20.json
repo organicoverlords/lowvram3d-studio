@@ -1,8 +1,8 @@
 {
   "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
   "status": "EXECUTED_384_QA_REJECTED",
-  "asset": "architecture_house_025",
-  "purpose": "First six-view run on a scene-pipeline asset. Settles empirically which generated view carries the photograph, which is what fixes the raw-index-to-semantic mapping for every asset after it.",
+  "asset": "lucky_drown_casino_boat",
+  "purpose": "Six-view texture source for the riverboat. Near-square subject, so it does not hit the wide-aspect resolution ceiling that capped the barn.",
   "generator_family": "MVADAPTER_SD21",
   "conditioning": "IMAGE_PLUS_GEOMETRY",
   "text_conditioned_fallback": "FORBIDDEN",
@@ -14,36 +14,29 @@
   "base_model": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--stabilityai--stable-diffusion-2-1-base",
   "adapter": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--huanngzh--mv-adapter\\mvadapter_ig2mv_sd21.safetensors",
   "adapter_sha256": "7940d6197be614fc6a3483ece1ed37cac850f94375d127ada6ae6464ce9252c3",
-  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_uv.glb",
-  "immutable_mesh_sha256": "0aa988110f45221554786369925b18ede1fb46650d8390d3ce284915d7080540",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_uv.glb",
+  "immutable_mesh_sha256": "91bac83d6d5d95d31d999202ea240dcedf5139d94d4978777d9a7f2f2a312794",
   "mesh_provenance": {
-    "canonical_input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\scenes\\barn_full\\run-current\\generated_assets\\architecture_house_025\\architecture_house_025_lod.glb",
-    "generator": "hunyuan3d-dit-v2-mini-turbo, octree 384, 5 steps, seed 12345",
-    "unwrap": "workers/unwrap_mesh_uv.py, xatlas, 2048 atlas, padding 4",
-    "unwrap_receipt": "evidence/compare/barn_uv_unwrap.json",
-    "injectivity": "2 contested texels of 2336467 covered (8.56e-07)",
-    "geometry_mutated": false,
-    "note": "xatlas splits vertices along chart seams (74556 -> 99880); no position moves."
+    "canonical_input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat512_lod.glb",
+    "generator": "hunyuan3d-dit-v2-mini-turbo, octree 384, 5 steps, seed 12345, conditioning 512x512",
+    "conditioning_note": "512 not 1022: the model preprocessor resizes to 512, so a larger input is resampled twice and softens.",
+    "unwrap": "workers/unwrap_mesh_uv.py xatlas 2048",
+    "injectivity": "overlap 1.61e-06, out-of-bounds 0",
+    "geometry_mutated": false
   },
   "camera_semantics": {
-    "classification": "SELF_CONSISTENT_LABELS_AGREE_WITH_CONTROL_SPACE_CAMERA_POSITIONS",
-    "contract_index_semantics": {
-      "0": "front",
-      "1": "right",
-      "2": "rear",
-      "3": "left",
-      "4": "top",
-      "5": "bottom"
+    "classification": "PHOTOGRAPHED_VIEW_INDEX_1_BY_AGREEMENT_ACROSS_ASSETS",
+    "photographed_view_index": 1,
+    "silhouette_iou_per_view": {
+      "0": 0.7874,
+      "1": 0.8042,
+      "2": 0.7516,
+      "3": 0.791,
+      "4": 0.6893,
+      "5": 0.6514
     },
-    "measured_azimuth_deg": {
-      "0": -90.0,
-      "1": 0.0,
-      "2": 90.0,
-      "3": 180.0
-    },
-    "disagreement": "Resolved. Control-space camera positions are front (0,-1.8,0), top (0,0,+1.8): control space is Z-up with -Y forward, MV-Adapter own convention, and azimuth -90 measured from +X is -Y. Labels and geometry agree. The panda mapping {0: left, 1: front, ...} describes a different bundle (v9_upright_raw, built to preserve raw order without relabelling), not a contradiction.",
-    "resolution_method": "Still to be confirmed visually: whichever generated view resembles the conditioning photograph is the front. Label self-consistency is not evidence about the subject.",
-    "panda_reference": "configs/texture/gpu_panda_mvadapter_ig2mv_sd21_upright_384x20_20260803.json"
+    "margin_warning": "IoU picks index 1 but only by 0.013 over index 3; bbox registration is a weak discriminator between blocky horizontal views. The evidence is the agreement with the barn and with the panda proven mapping {0:left,1:front,2:right,3:rear}, not this number alone.",
+    "builder_labels_are_rotated_by_one": true
   },
   "primary": {
     "model": "SD2.1",
@@ -67,11 +60,11 @@
     "bf16": "DISABLED",
     "flash_attention_2": "DISABLED",
     "xformers_required": false,
-    "conditioning_reference": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_conditioning_384.png",
-    "conditioning_reference_sha256": "3b1c96ba59fab2ad22f420aa35da236b3f334050c95c0ea72245f6adf63b72db",
-    "control_tensor": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_controls_384_yup\\control_tensor.npy",
-    "control_tensor_sha256": "67d8aa58fbff25a077564d12dae3558bdfb22ab948f6080714bb8a0417afddc1",
-    "camera_contract": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\barn_controls_384_yup\\camera_contract.json",
+    "conditioning_reference": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\crop512.png",
+    "conditioning_reference_sha256": "ae730afe31e2d12ee6fd5780aa9444d08bc22b62c900dd374d3b599bb4b4c9bb",
+    "control_tensor": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\controls_384\\control_tensor.npy",
+    "control_tensor_sha256": "8e1a979f0426f188443e571874ef0629d0e42402987bc14ed3cfe71e2825c4ff",
+    "camera_contract": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\controls_384\\camera_contract.json",
     "camera_contract_sha256": "cfb6b97cc4d4097cd53a06996fcde494fa9dcf335d4ac3b38e5d82b76a2420b2"
   },
   "oom_fallback": {
@@ -81,7 +74,7 @@
     "adapter_switch": "FORBIDDEN",
     "text_conditioned_fallback": "FORBIDDEN"
   },
-  "prompt": "high quality clean albedo reference of the same weathered wooden barn, consistent materials, consistent identity, flat neutral lighting",
+  "prompt": "high quality clean albedo reference of the same weathered wooden paddle steamer riverboat casino, consistent materials, consistent identity, flat neutral lighting",
   "negative_prompt": null,
   "classifier_free_guidance": false,
   "attempts_authorized": 1,

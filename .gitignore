@@ -20,3 +20,11 @@ jobs/
 
 # ...except the curated evidence set for the documented run.
 !evidence/deliverable/*.glb
+
+# Control tensors and other raw arrays. Regenerable from the mesh + camera set
+# by workers/render_control_maps.py, and enormous: one 1024 control set is
+# 150 MB for the tensor alone, and evidence/compare holds 804 MB of them.
+*.npy
+
+# Local agent tool state, not project state.
+.opencode/

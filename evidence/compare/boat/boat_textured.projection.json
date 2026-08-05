@@ -1,0 +1,37 @@
+{
+  "albedo_gamma": 0.4504,
+  "albedo_target_luminance": 114.8,
+  "classification": "PROVEN",
+  "crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\crop.png",
+  "facing_min": 0.2,
+  "fill_rgb": [
+    119.7,
+    115.8,
+    108.4
+  ],
+  "flat_filled_face_fraction": 0.365,
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_lod.glb",
+  "mask_coverage": 0.488,
+  "mirrored_face_fraction": 0.3109,
+  "observed_face_fraction": 0.3241,
+  "observed_from": "single view. observed_face_fraction was genuinely seen; mirrored_face_fraction carries a mirrored copy of it and is plausible invention, not evidence; flat_filled_face_fraction is the grazing band, where a projection could only smear",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_textured.glb",
+  "output_bytes": 5037108,
+  "projection": "object_space_front_minus_z",
+  "schema_version": "crop_projection_v1",
+  "source_mean_luminance": 43.3,
+  "subject_box_norm_xyxy": [
+    0.0,
+    0.1008,
+    1.0,
+    0.8992
+  ],
+  "subject_fraction_of_crop": 0.7984,
+  "texture_size": [
+    1030,
+    1022
+  ],
+  "textured_face_fraction": 0.635,
+  "triangles": 149724,
+  "vertices": 117365
+}

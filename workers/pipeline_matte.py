@@ -34,6 +34,117 @@ def border_background_colour(rgb: np.ndarray, band: int = 8) -> np.ndarray:
     return np.median(edges, axis=0)
 
 
+def _feather_alpha(
+    rgb: np.ndarray,
+    subject: np.ndarray,
+    background: np.ndarray,
+    feather: int,
+    excluded: np.ndarray | None = None,
+) -> tuple[np.ndarray, dict]:
+    """Recover fractional coverage in a narrow band around the silhouette.
+
+    A binary key answers "is this pixel subject" when the honest answer for an
+    edge pixel is "partly". Rigging, railings, a flag on a pole and every
+    antialiased outline are made of pixels the camera filled somewhere between
+    0 and 1, and rounding them destroys thin structure in one direction and
+    builds a stair-stepped outline in the other.
+
+    Each such pixel is a mix of a foreground colour and the plate:
+
+        C = a*F + (1 - a)*B
+
+    B is known -- it is the plate colour already measured from the border. F is
+    not, so it is taken from the nearest pixel that is confidently interior,
+    which is the standard assumption that a boundary pixel is a mixture of the
+    plate and whatever foreground it abuts. Projecting C onto that line gives
+
+        a = clamp(((C - B) . (F - B)) / |F - B|^2, 0, 1)
+
+    Only pixels within `feather` of the boundary are solved. The interior stays
+    at 1 and the far plate at 0, so this cannot perforate the subject or revive
+    background -- the failure mode of a global unmix.
+
+    Where F is close to B the projection divides by a near-zero length and the
+    estimate is meaningless. Those pixels keep their binary value rather than
+    taking a fabricated fraction, and they are counted in the receipt.
+    """
+    if feather <= 0:
+        return (np.where(subject, 255, 0).astype(np.uint8),
+                {"feather_radius": 0, "partial_alpha_fraction": 0.0,
+                 "feather_band_pixels": 0, "feather_degenerate_pixels": 0})
+
+    structure = ndimage.generate_binary_structure(2, 2)
+    # Erode by one, not by `feather`. Eroding the full radius would delete any
+    # structure thinner than 2*feather+1 from the interior entirely -- exactly
+    # the masts, rigging and railings this is meant to rescue -- and then the
+    # nearest-interior lookup would hand them a foreground colour borrowed from
+    # an unrelated part of the subject. One pixel is enough to step off the
+    # antialiased boundary, and it keeps anything at least three pixels wide.
+    interior = ndimage.binary_erosion(subject, structure=structure, iterations=1)
+
+    # Structure thinner than three pixels erodes away completely, so it has no
+    # interior of its own to sample. The nearest-interior lookup is global -- it
+    # does not respect connected components -- so such a structure would silently
+    # borrow its foreground colour from whatever unrelated part of the subject
+    # happens to be closest. Measured: an isolated one-pixel red mast took its
+    # colour from a distant dark body and keyed to alpha 173 instead of 255,
+    # i.e. a solid structure rendered two-thirds opaque.
+    #
+    # Any subject pixel that no interior can reach therefore becomes its own
+    # colour source. For a one-pixel mast that is exactly right: the only honest
+    # estimate of its foreground colour is the pixel itself.
+    reachable = ndimage.binary_dilation(
+        interior, structure=structure, iterations=max(feather, 1))
+    core = interior | (subject & ~reachable)
+
+    outside = ~ndimage.binary_dilation(subject, structure=structure, iterations=feather)
+    band = ~(interior | outside)
+
+    # Nearest core pixel, for the foreground colour. The distance transform runs
+    # on the complement, so the indices it returns point at the closest True in
+    # `core`.
+    if not core.any():
+        return (np.where(subject, 255, 0).astype(np.uint8),
+                {"feather_radius": int(feather), "partial_alpha_fraction": 0.0,
+                 "feather_band_pixels": int(band.sum()),
+                 "feather_degenerate_pixels": int(band.sum())})
+    _, indices = ndimage.distance_transform_edt(~core, return_indices=True)
+    nearest_foreground = rgb[indices[0], indices[1]].astype(np.float32)
+
+    colour = rgb.astype(np.float32)
+    plate = background.astype(np.float32)
+    direction = nearest_foreground - plate
+    denominator = (direction * direction).sum(axis=-1)
+    numerator = ((colour - plate) * direction).sum(axis=-1)
+
+    # 8.0 is a squared colour distance, so a foreground within ~2.8 levels of the
+    # plate per channel. Below that the projection is noise.
+    usable = band & (denominator > 8.0)
+    estimate = np.zeros(subject.shape, dtype=np.float32)
+    estimate[usable] = np.clip(numerator[usable] / denominator[usable], 0.0, 1.0)
+
+    coverage = np.where(subject, 1.0, 0.0).astype(np.float32)
+    coverage[usable] = estimate[usable]
+
+    # Islands the caller already decided to drop sit inside the dilated band, so
+    # the solver happily assigns them coverage again -- measured at a full 255,
+    # not merely a faint ghost, because a speck's own colour projects cleanly
+    # onto its own direction. Feathering would then quietly undo the island drop.
+    # The exclusion is applied last so nothing downstream can revive them.
+    if excluded is not None:
+        coverage[excluded] = 0.0
+
+    alpha = np.round(coverage * 255.0).astype(np.uint8)
+
+    partial = (alpha > 0) & (alpha < 255)
+    return alpha, {
+        "feather_radius": int(feather),
+        "feather_band_pixels": int(band.sum()),
+        "feather_degenerate_pixels": int((band & ~usable).sum()),
+        "partial_alpha_fraction": round(float(partial.mean()), 6),
+    }
+
+
 def key_alpha(
     rgb: np.ndarray,
     tolerance: float,
@@ -43,6 +154,8 @@ def key_alpha(
     shadow_tolerance: float | None = None,
     shadow_from: float = 0.82,
     close_radius: int = 2,
+    min_detached_fraction: float = 0.001,
+    feather: int = 2,
 ) -> tuple[np.ndarray, dict]:
     background = border_background_colour(rgb)
     distance = np.linalg.norm(rgb.astype(np.float32) - background, axis=-1)
@@ -134,7 +247,43 @@ def key_alpha(
             if small:
                 subject |= np.isin(hole_labels, small)
 
-    alpha = np.where(subject, 255, 0).astype(np.uint8)
+    # Speckle that survived the key as its own island. The docstring above defends
+    # keeping detached parts, and that defence is sound for real ornaments -- but
+    # measured on both assets this repo uses, the parts it was protecting are not
+    # detached at all. On the shaman the ornaments hang from cords that keep them
+    # connected: the main component is 547180 px and all 31 others are <= 27 px.
+    # On the boat there is exactly one island, 67 px, floating below the hull.
+    #
+    # That one costs something specific. The bake registers the photograph by
+    # fitting its bounding box to the silhouette's, and the island drags the box
+    # from y=460 to y=481 -- 21 px on a 473 px subject, a 4.4% vertical stretch
+    # applied to the photograph.
+    #
+    # The floor is a fraction of the largest component rather than a pixel count,
+    # so it holds across the 4x resolution range between these two sources. At
+    # 1e-3 it clears the boat's island (3.9e-4) and the shaman's worst speck
+    # (5e-5) while preserving anything genuinely detached above a thousandth of
+    # the body.
+    dropped_components = 0
+    dropped_pixels = 0
+    doomed_mask = None
+    if min_detached_fraction > 0:
+        island_labels, island_count = ndimage.label(subject)
+        if island_count > 1:
+            island_sizes = ndimage.sum(
+                subject, island_labels, range(1, island_count + 1))
+            largest = float(island_sizes.max())
+            doomed = [i + 1 for i, size in enumerate(island_sizes)
+                      if size < largest * min_detached_fraction]
+            if doomed:
+                doomed_mask = np.isin(island_labels, doomed)
+                dropped_components = len(doomed)
+                dropped_pixels = int(doomed_mask.sum())
+                subject &= ~doomed_mask
+
+    alpha, feather_stats = _feather_alpha(
+        rgb, subject, background, feather, excluded=doomed_mask)
+
     kept_labels, kept_count = ndimage.label(subject)
     sizes = ndimage.sum(subject, kept_labels, range(1, kept_count + 1))
     stats = {
@@ -145,6 +294,10 @@ def key_alpha(
         "subject_components": int(kept_count),
         "largest_component_fraction": float(sizes.max() / subject.sum()) if kept_count else 0.0,
         "detached_components": int((sizes >= 40).sum() - 1) if kept_count else 0,
+        "min_detached_fraction": float(min_detached_fraction),
+        "dropped_island_components": dropped_components,
+        "dropped_island_pixels": dropped_pixels,
+        **feather_stats,
     }
     return alpha, stats
 
@@ -163,6 +316,15 @@ def main() -> int:
     parser.add_argument("--shadow-from", type=float, default=0.82)
     parser.add_argument("--close-radius", type=int, default=2)
     parser.add_argument("--mode", choices=("hybrid", "colour", "flood"), default="hybrid")
+    parser.add_argument(
+        "--min-detached-fraction", type=float, default=0.001,
+        help="Drop subject islands smaller than this fraction of the largest "
+             "component. 0 disables. Measured: boat speck 3.9e-4, shaman worst "
+             "speckle 5e-5, so 1e-3 clears both and keeps real detached parts.")
+    parser.add_argument(
+        "--feather", type=int, default=2,
+        help="Radius in pixels of the band where fractional coverage is solved "
+             "from the compositing equation. 0 restores the binary key.")
     args = parser.parse_args()
 
     source = Image.open(args.image).convert("RGB")
@@ -172,7 +334,7 @@ def main() -> int:
         report = []
         for raw in args.sweep.split(","):
             tolerance = float(raw)
-            alpha, stats = key_alpha(rgb, tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.close_radius)
+            alpha, stats = key_alpha(rgb, tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.close_radius, args.min_detached_fraction, args.feather)
             preview = Image.new("RGB", source.size, (255, 0, 255))
             preview.paste(source, mask=Image.fromarray(alpha, "L"))
             path = Path(args.output).with_name(f"matte_{args.mode}_t{int(tolerance)}.png")
@@ -189,10 +351,37 @@ def main() -> int:
             Path(args.stats_json).write_text(json.dumps(report, indent=2), encoding="utf-8")
         return 0
 
-    alpha, stats = key_alpha(rgb, args.tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.close_radius)
+    alpha, stats = key_alpha(rgb, args.tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.close_radius, args.min_detached_fraction, args.feather)
     # Neutralise the colour under the transparent region. Leaving the original plate colour there
     # lets any consumer that flattens without honouring alpha reintroduce the background.
     keyed = np.where(alpha[..., None] > 0, rgb, 255).astype(np.uint8)
+
+    # A partially covered pixel holds a mixture, C = a*F + (1-a)*B, but alpha
+    # compositing will itself apply the (1-a)*B term against whatever background
+    # it draws onto. Storing C unchanged therefore counts the plate twice and
+    # leaves a pale halo -- the classic fringe around a feathered cut-out. Solve
+    # the same equation the other way for the colour that belongs there:
+    #
+    #     F = B + (C - B) / a
+    #
+    # Only for pixels with enough coverage to divide by; below that the estimate
+    # amplifies noise faster than it removes fringe, and the mixed colour is the
+    # better of two imperfect answers.
+    if args.feather > 0:
+        coverage = alpha.astype(np.float32) / 255.0
+        unmixable = (coverage > 0.15) & (coverage < 1.0)
+        if unmixable.any():
+            plate = np.asarray(stats["background_rgb"], dtype=np.float32)
+            # Divide only where the division is defined. Computing across the
+            # whole frame and masking afterwards gives the same answer but walks
+            # through a divide-by-zero on every fully transparent pixel, which
+            # fills the array with inf and NaN and emits warnings that would
+            # train the reader to ignore warnings.
+            safe = np.where(unmixable, coverage, 1.0)[..., None]
+            recovered = plate + (rgb.astype(np.float32) - plate) / safe
+            keyed = np.where(unmixable[..., None],
+                             np.clip(recovered, 0, 255), keyed).astype(np.uint8)
+        stats["unmixed_pixels"] = int(unmixable.sum())
     rgba = np.dstack([keyed, alpha])
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)

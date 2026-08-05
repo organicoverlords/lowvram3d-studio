@@ -1,0 +1,33 @@
+{
+  "atlas_size": [
+    2694,
+    2693
+  ],
+  "atlas_utilization": 0.8017,
+  "chart_count": 3232,
+  "classification": "PROVEN",
+  "contested_texels": 3,
+  "covered_texels": 1860016,
+  "degenerate_uv_triangles": 0,
+  "errors": [],
+  "faces": 149720,
+  "gates": {
+    "max_degenerate_fraction": 0.005,
+    "max_overlap_fraction": 0.0001
+  },
+  "gates_not_applied": [
+    "chart_count -- packing quality, not bake correctness",
+    "tiny_chart_surface_percent -- packing quality, not bake correctness"
+  ],
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat512_lod.glb",
+  "input_vertices": 74151,
+  "out_of_bounds_triangles": 0,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_uv.glb",
+  "output_bytes": 3968836,
+  "output_vertices": 108538,
+  "overlap_fraction_upper_bound": 1.613e-06,
+  "padding": 4,
+  "resolution": 2048,
+  "schema_version": "mesh_uv_unwrap_v1",
+  "vertex_split_ratio": 1.4637
+}

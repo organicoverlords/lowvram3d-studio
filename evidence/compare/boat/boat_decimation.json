@@ -1,0 +1,15 @@
+{
+  "blender_exit_code": 0,
+  "classification": "PROVEN",
+  "decimated": true,
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat.glb",
+  "input_triangles": 1627024,
+  "min_part_fraction": 0.02,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_lod.glb",
+  "output_bytes": 3575632,
+  "output_triangles": 149724,
+  "ratio": 0.092193,
+  "reduction": 0.908,
+  "schema_version": "mesh_decimation_v1",
+  "target_triangles": 150000
+}

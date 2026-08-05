@@ -1,0 +1,25 @@
+{
+  "body_count": 71,
+  "classification": "PROVEN",
+  "euler_number": -328,
+  "extent": [
+    1.0492,
+    1.8558,
+    1.9663
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_mv2_s5.glb",
+  "merged_vertices": 504118,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\preview_mv2_s5.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 1008892,
+  "unwelded": false,
+  "vertex_split_ratio": 1.0,
+  "vertices": 504118,
+  "view_coverage": {
+    "front": 0.2867,
+    "side": 0.3978,
+    "three_quarter": 0.4251,
+    "top": 0.3809
+  },
+  "watertight": true
+}

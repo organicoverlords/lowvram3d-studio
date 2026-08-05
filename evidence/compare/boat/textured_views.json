@@ -1,0 +1,17 @@
+{
+  "classification": "PROVEN",
+  "glb": "evidence\\compare\\boat\\boat_textured.glb",
+  "out": "evidence\\compare\\boat\\textured_views.png",
+  "schema_version": "textured_views_v1",
+  "texture_size": [
+    1030,
+    1022
+  ],
+  "triangles": 149724,
+  "views": [
+    "front",
+    "three_quarter",
+    "side",
+    "rear"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "body_count": 252,
+  "classification": "PROVEN",
+  "euler_number": 468,
+  "extent": [
+    1.8342,
+    1.961,
+    1.9719
+  ],
+  "glb": "C:\\AI\\3d-studio-pipeline\\geometry\\bird_prepared.glb",
+  "merged_vertices": 58464,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\preview_bird.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 115992,
+  "unwelded": true,
+  "vertex_split_ratio": 3.955,
+  "vertices": 231229,
+  "view_coverage": {
+    "front": 0.5259,
+    "side": 0.4239,
+    "three_quarter": 0.417,
+    "top": 0.5018
+  },
+  "watertight": true
+}

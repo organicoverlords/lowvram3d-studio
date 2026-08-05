@@ -360,9 +360,14 @@ def main() -> int:
         payload["gpu"] = torch.cuda.get_device_name(0)
         _trace(trace_path, "cuda_ready", torch, diagnostic=args.diagnostic_telemetry, boundary_name="cuda_ready", device=str(torch.cuda.current_device()))
 
-        if args.conditioning_image:
-            from PIL import Image
+        # Hoisted out of the branch below. It used to be imported only when a
+        # conditioning image was supplied, which left the name unbound on the
+        # multiview path -- `--view` without `--conditioning-image` failed with
+        # "cannot access local variable 'Image'", a message that points at the
+        # multiview code rather than at the import that is actually missing.
+        from PIL import Image
 
+        if args.conditioning_image:
             supplied = Path(args.conditioning_image).resolve()
             if not supplied.is_file():
                 raise RuntimeError(f"Supplied conditioning image missing: {supplied}")

@@ -1,0 +1,25 @@
+{
+  "body_count": 1,
+  "classification": "PROVEN",
+  "euler_number": -82,
+  "extent": [
+    0.6233,
+    0.9112,
+    0.9535
+  ],
+  "glb": "C:\\AI\\LowVRAM3D-benchmarks\\production\\panda_online_model_targets_20260805\\panda_red_scout__20260730004905_ab3519e2.glb",
+  "merged_vertices": 749708,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\preview_panda_red.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 1499580,
+  "unwelded": false,
+  "vertex_split_ratio": 1.195,
+  "vertices": 895781,
+  "view_coverage": {
+    "front": 0.1848,
+    "side": 0.2494,
+    "three_quarter": 0.2343,
+    "top": 0.2711
+  },
+  "watertight": true
+}

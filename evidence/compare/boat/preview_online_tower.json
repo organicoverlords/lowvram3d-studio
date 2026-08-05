@@ -1,0 +1,25 @@
+{
+  "body_count": 1,
+  "classification": "PROVEN",
+  "euler_number": -2892,
+  "extent": [
+    0.4453,
+    0.9476,
+    0.6667
+  ],
+  "glb": "C:\\AI\\LowVRAM3D-benchmarks\\production\\panda_online_model_targets_20260805\\ornate_tower__20260729221745_18e55b4b.glb",
+  "merged_vertices": 746083,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\preview_online_tower.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 1497950,
+  "unwelded": false,
+  "vertex_split_ratio": 1.32,
+  "vertices": 984542,
+  "view_coverage": {
+    "front": 0.3335,
+    "side": 0.2796,
+    "three_quarter": 0.3818,
+    "top": 0.32
+  },
+  "watertight": true
+}

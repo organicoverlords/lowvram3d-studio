@@ -1,0 +1,141 @@
+{
+  "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
+  "status": "EXECUTED_384_QA_REJECTED",
+  "asset": "lucky_drown_casino_boat",
+  "purpose": "Second single-knob ablation against evidence/compare/boat_sixview_384. The first ablation tried guidance_scale=3.0 and could not run: the LowVRAM pipeline builds its reference cache and control tensor for 6 views, while CFG needs 12, and its cache-tiling guard at lowvram_mvadapter_i2mv_sd21.py:281 only tiles when the cache batch is exactly 1. Enabling CFG therefore requires changing the production pipeline, which is off limits. reference_conditioning_scale is config-exposed and needs no code change, so this raises it 1.0 -> 1.5 and changes nothing else.",
+  "generator_family": "MVADAPTER_SD21",
+  "conditioning": "IMAGE_PLUS_GEOMETRY",
+  "text_conditioned_fallback": "FORBIDDEN",
+  "sdxl_route": "REJECTED",
+  "comfyui_generation_route": "REJECTED",
+  "pipeline_class": "LowVRAMMVAdapterI2MVSDPipeline",
+  "pipeline_module": "workers/lowvram_mvadapter_i2mv_sd21.py",
+  "mvadapter_source": "C:\\AI\\mvadapter-upstream-inspection",
+  "base_model": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--stabilityai--stable-diffusion-2-1-base",
+  "adapter": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--huanngzh--mv-adapter\\mvadapter_ig2mv_sd21.safetensors",
+  "adapter_sha256": "7940d6197be614fc6a3483ece1ed37cac850f94375d127ada6ae6464ce9252c3",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_uv.glb",
+  "immutable_mesh_sha256": "91bac83d6d5d95d31d999202ea240dcedf5139d94d4978777d9a7f2f2a312794",
+  "mesh_provenance": {
+    "canonical_input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat512_lod.glb",
+    "generator": "hunyuan3d-dit-v2-mini-turbo, octree 384, 5 steps, seed 12345, conditioning 512x512",
+    "conditioning_note": "512 not 1022: the model preprocessor resizes to 512, so a larger input is resampled twice and softens.",
+    "unwrap": "workers/unwrap_mesh_uv.py xatlas 2048",
+    "injectivity": "overlap 1.61e-06, out-of-bounds 0",
+    "geometry_mutated": false
+  },
+  "camera_semantics": {
+    "classification": "PHOTOGRAPHED_VIEW_INDEX_1_BY_AGREEMENT_ACROSS_ASSETS",
+    "photographed_view_index": 1,
+    "silhouette_iou_per_view": {
+      "0": 0.7874,
+      "1": 0.8042,
+      "2": 0.7516,
+      "3": 0.791,
+      "4": 0.6893,
+      "5": 0.6514
+    },
+    "margin_warning": "IoU picks index 1 but only by 0.013 over index 3; bbox registration is a weak discriminator between blocky horizontal views. The evidence is the agreement with the barn and with the panda proven mapping {0:left,1:front,2:right,3:rear}, not this number alone.",
+    "builder_labels_are_rotated_by_one": true
+  },
+  "primary": {
+    "model": "SD2.1",
+    "views": 6,
+    "resolution": 384,
+    "steps": 20,
+    "guidance_scale": 1.0,
+    "reference_conditioning_scale": 1.5,
+    "control_conditioning_scale": 1.0,
+    "seed": 12345,
+    "scheduler": "DDPM_WITH_SHIFT_SNR",
+    "shift_mode": "interpolated",
+    "shift_scale": 8.0,
+    "offload": "SEQUENTIAL",
+    "attention": "SDPA",
+    "attention_slicing": "DISABLED",
+    "vae_slicing": "ON",
+    "dtype": "float16",
+    "vae_dtype": "float32",
+    "condition_encoder_dtype": "float32",
+    "bf16": "DISABLED",
+    "flash_attention_2": "DISABLED",
+    "xformers_required": false,
+    "conditioning_reference": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\crop512.png",
+    "conditioning_reference_sha256": "ae730afe31e2d12ee6fd5780aa9444d08bc22b62c900dd374d3b599bb4b4c9bb",
+    "control_tensor": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\controls_384\\control_tensor.npy",
+    "control_tensor_sha256": "8e1a979f0426f188443e571874ef0629d0e42402987bc14ed3cfe71e2825c4ff",
+    "camera_contract": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\controls_384\\camera_contract.json",
+    "camera_contract_sha256": "cfb6b97cc4d4097cd53a06996fcde494fa9dcf335d4ac3b38e5d82b76a2420b2"
+  },
+  "oom_fallback": {
+    "authorized_only_after_genuine_cuda_oom": false,
+    "note": "No 256 controls were built for this asset. A fallback would need its own control tensor and camera contract, so there is nothing to fall back to; an OOM here is a hard stop, not a retry.",
+    "second_oom": "HARD_BLOCKER",
+    "adapter_switch": "FORBIDDEN",
+    "text_conditioned_fallback": "FORBIDDEN"
+  },
+  "prompt": "high quality clean albedo reference of the same weathered wooden paddle steamer riverboat casino, consistent materials, consistent identity, flat neutral lighting",
+  "negative_prompt": null,
+  "classifier_free_guidance": false,
+  "attempts_authorized": 1,
+  "attempts_used": 0,
+  "gpu_sequence_consumed": true,
+  "fallback_eligible": false,
+  "next_action": "USER_REVIEW_REQUIRED",
+  "twenty_step_authorization": "INHERITED_FROM_PANDA_384X20_QA_PASSED",
+  "repair_proofs": {
+    "vae_fp32": "panda: proof/benchmarks/20260803-mvadapter-vae-fp16-nan-root-cause.json",
+    "cudnn_guard": "panda: proof/benchmarks/20260803-mvadapter-cudnn-convolution-guard.json",
+    "note": "Both are hardware defects of this GTX 1660 SUPER, not asset-specific, so they carry over unchanged."
+  },
+  "canonical_basis": "y_up_z_front",
+  "canonical_orientation": {
+    "up_axis_mesh_local": [
+      0,
+      1,
+      0
+    ],
+    "front_axis_mesh_local": [
+      0,
+      0,
+      1
+    ],
+    "evidence": "glTF is Y-up by specification and Hunyuan3D emits glTF; control occupancy agrees, with front/rear at 0.898 and left/right at 0.635 for a subject 3.05x wider than tall.",
+    "supersedes": "legacy_z_up, the builder's module default, which would lay the barn on its side"
+  },
+  "ablation": {
+    "baseline_run": "evidence/compare/boat_sixview_384",
+    "variable": "reference_conditioning_scale",
+    "baseline_value": 1.0,
+    "this_value": 1.5,
+    "prior_failed_ablation": {
+      "variable": "guidance_scale",
+      "value": 3.0,
+      "result": "RuntimeError: The size of tensor a (12) must match the size of tensor b (6)",
+      "run": "evidence/compare/boat_sixview_384_cfg3",
+      "wall_seconds": 48.9,
+      "conclusion": "CFG is unavailable in this pipeline without production changes"
+    },
+    "held_constant": [
+      "seed",
+      "steps",
+      "scheduler",
+      "shift_scale",
+      "guidance_scale",
+      "control_conditioning_scale",
+      "mesh",
+      "control_tensor",
+      "camera_contract",
+      "conditioning_reference",
+      "prompt"
+    ],
+    "expected_effect": "stronger attention to the reference should restore warm colour and may suppress the invented structure in views 3 and 4",
+    "risk": "too high leaks reference lighting and structure into every view",
+    "attempt_1": {
+      "result": "RuntimeError: CUDA error: an illegal memory access was encountered",
+      "wall_seconds": 103.4,
+      "reached": "denoising (memory_before_denoising recorded, 4781 MB free)",
+      "interpretation": "not a clean rejection. This GPU has a documented fp16 defect and the baseline at ref_scale 1.0 completed the same path in 251.8 s, so one retry separates a transient fault from a real interaction with the raised scale. If it dies at the same point again, the parameter is the cause."
+    }
+  }
+}

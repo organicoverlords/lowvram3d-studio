@@ -1,0 +1,101 @@
+{
+  "albedo_gamma": 0.821,
+  "albedo_target": 0.26,
+  "atlas_size": 1024,
+  "classification": "PROVEN",
+  "controls": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\controls_1024",
+  "facing_floor": 0.15,
+  "facing_power": 3.0,
+  "inpainted_texels": 750865,
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_uv.glb",
+  "observed_fraction_of_atlas": 0.2839,
+  "observed_from": "generated views conditioned on this mesh's geometry, except the photograph view, which is the only evidence here. Everything else is plausible synthesis. Inpainted texels are neither.",
+  "observed_texels": 297711,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_refsheet_a026.glb",
+  "output_bytes": 5709808,
+  "per_view": [
+    {
+      "face_on_fraction_of_silhouette": 0.6509,
+      "index": 0,
+      "label": "front",
+      "samples": 257740,
+      "silhouette_fraction": 0.3776,
+      "source": "photograph"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.6951,
+      "index": 1,
+      "label": "right",
+      "samples": 232281,
+      "silhouette_fraction": 0.3187,
+      "source": "generated"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.6599,
+      "index": 2,
+      "label": "rear",
+      "samples": 289724,
+      "silhouette_fraction": 0.4187,
+      "source": "generated"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.6726,
+      "index": 3,
+      "label": "left",
+      "samples": 224778,
+      "silhouette_fraction": 0.3187,
+      "source": "generated"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.9859,
+      "index": 4,
+      "label": "top",
+      "samples": 436387,
+      "silhouette_fraction": 0.4221,
+      "source": "generated"
+    },
+    {
+      "face_on_fraction_of_silhouette": 0.9974,
+      "index": 5,
+      "label": "bottom",
+      "samples": 441479,
+      "silhouette_fraction": 0.4221,
+      "source": "generated"
+    }
+  ],
+  "photograph": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\matte.png",
+  "photograph_priority": 8.0,
+  "photograph_registration": {
+    "exposure_gain": 1.2998,
+    "generated_mean": 51.5,
+    "method": "matte_bbox_to_silhouette_bbox_anisotropic_scale",
+    "photograph_mean": 39.6,
+    "registered": true,
+    "silhouette_iou": 0.8422,
+    "source_bbox": [
+      8,
+      460,
+      11,
+      605
+    ],
+    "target_bbox": [
+      147,
+      878,
+      47,
+      964
+    ]
+  },
+  "photograph_view_index": 0,
+  "schema_version": "multiview_atlas_bake_v1",
+  "source_mean_luminance": 49.4,
+  "texels_won_by_photograph": 66011,
+  "texels_won_per_view": {
+    "0": 66011,
+    "1": 21469,
+    "2": 39830,
+    "3": 38564,
+    "4": 71040,
+    "5": 60797
+  },
+  "views": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refviews_1024"
+}

@@ -1,0 +1,25 @@
+{
+  "body_count": 223679,
+  "classification": "PROVEN",
+  "euler_number": 77691,
+  "extent": [
+    1.8618,
+    1.9704,
+    1.9845
+  ],
+  "glb": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\turbo_bird\\state\\GENERATE\\proven\\master.glb",
+  "merged_vertices": 749923,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\preview_bird_master.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 1820142,
+  "unwelded": false,
+  "vertex_split_ratio": 1.0,
+  "vertices": 749923,
+  "view_coverage": {
+    "front": 0.5427,
+    "side": 0.4395,
+    "three_quarter": 0.4272,
+    "top": 0.5356
+  },
+  "watertight": false
+}
