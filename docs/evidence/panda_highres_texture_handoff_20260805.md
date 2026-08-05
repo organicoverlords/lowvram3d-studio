@@ -288,3 +288,20 @@ the protected 396,216 and direct 940,179 texels byte-exactly.
 The result modestly reduces mutable speckle while preserving the face, but
 the bottom white/support defects remain. Status:
 `CHART_LOCAL_DENOISE_DIAGNOSTIC_ONLY`; no further appearance loop is planned.
+
+### Bottom-patch diagnostic
+
+One bottom-facing, provenance-gated pass targeted only mutable procedural or
+material-prior pixels with neutral-white color (`face_normal_z < -0.25`,
+brightness >= 170, chroma <= 45). It changed 1,395 pixels: 722 same-triangle
+fills and 673 neutral fallbacks. Protected and direct texels remained exact;
+geometry, UVs, sampler, proof, and provenance were unchanged.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\bottom_patch_diagnostic_only\panda_bottom_patch_diagnostic_only.glb`
+- GLB SHA256: `a1001a8e4f2365ba2ec6629af27fb88d34653a73bbc15be17c196b180704f40b`
+- Atlas SHA256: `f7388b48c5d41bac22c2bbb1fc7f450e131dc201b2e0d967b75372c9f69a382d`
+- Receipt: `C:\AI\panda_diag_neutral_v1\bottom_patch_diagnostic_only\bottom_patch_receipt.json`
+
+The visible underside white patches are largely direct/valid evidence and did
+not materially disappear. Status: `BOTTOM_PATCH_DIAGNOSTIC_ONLY`; no further
+bottom recolor loop is authorized.
