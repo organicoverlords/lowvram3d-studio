@@ -1,0 +1,187 @@
+name: Panda atlas contract render on local PC
+run-name: Panda atlas contract render ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/panda-atlas-contract-render-20260805
+    paths:
+      - .github/workflows/panda-atlas-contract-render-local-worker.yml
+      - workers/panda_atlas_contract_diagnostic.py
+      - workers/analyze_panda_atlas_renders.py
+      - blender/render_panda_atlas_contract.py
+      - tests/test_panda_atlas_contract_diagnostic.py
+      - docs/research/panda_atlas_sampling_prework_20260805.md
+
+permissions:
+  contents: read
+
+concurrency:
+  group: panda-atlas-contract-render
+  cancel-in-progress: false
+
+jobs:
+  render-atlas-contract:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout exact diagnostic branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify branch, tools and local inputs
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          if ("${{ github.ref }}" -ne "refs/heads/agent/panda-atlas-contract-render-20260805") {
+            throw "Unexpected ref: ${{ github.ref }}"
+          }
+          if (@(git status --short).Count -gt 0) { throw "Checkout is dirty before execution" }
+
+          $pythonCandidates = @(
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $python = $null
+          foreach ($candidate in $pythonCandidates) {
+            & $candidate -c "import cv2,numpy,pytest; print('ATLAS_ENV_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) { $python = $candidate; break }
+          }
+          if (-not $python) { throw "No local Python has cv2, numpy and pytest" }
+
+          $blender = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
+          if (-not (Test-Path -LiteralPath $blender)) { throw "Blender 5.2 is missing: $blender" }
+
+          $mesh = "C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\pipeline_v2_injective_20260804\state\UV\proven\tactical_red_panda_scout_rewrapped.glb"
+          if (-not (Test-Path -LiteralPath $mesh)) { throw "Canonical panda UV mesh is missing: $mesh" }
+
+          $output = "C:\AI\LowVRAM3D-benchmarks\production\panda-atlas-contract-worker-${{ github.run_id }}"
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          "ATLAS_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "ATLAS_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "ATLAS_MESH=$mesh" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "ATLAS_OUTPUT=$output" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "ATLAS_ZIP=$output.zip" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+          [ordered]@{
+            schema = "panda_atlas_worker_preflight_v1"
+            run_id = "${{ github.run_id }}"
+            repository = "${{ github.repository }}"
+            ref = "${{ github.ref }}"
+            head_sha = "${{ github.sha }}"
+            python = $python
+            blender = $blender
+            mesh = $mesh
+            mesh_sha256 = (Get-FileHash -LiteralPath $mesh -Algorithm SHA256).Hash
+            output = $output
+            started_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $output "worker_preflight.json") -Encoding utf8
+
+      - name: Compile and run focused CPU tests
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $env:PYTHONPATH = "$PWD\workers;$PWD\src;$PWD"
+          & $env:ATLAS_PYTHON -m py_compile workers\panda_atlas_contract_diagnostic.py workers\analyze_panda_atlas_renders.py tests\test_panda_atlas_contract_diagnostic.py
+          if ($LASTEXITCODE -ne 0) { throw "Python compilation failed" }
+          & $env:ATLAS_PYTHON -m pytest -q tests\test_panda_atlas_contract_diagnostic.py tests\test_atlas_contract_materials.py tests\test_projection_coverage_static.py
+          if ($LASTEXITCODE -ne 0) { throw "Focused atlas-contract tests failed" }
+
+      - name: Build image-independent synthetic GLBs
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $env:PYTHONPATH = "$PWD\workers;$PWD\src;$PWD"
+          $synthetic = Join-Path $env:ATLAS_OUTPUT "synthetic"
+          & $env:ATLAS_PYTHON workers\panda_atlas_contract_diagnostic.py --mesh $env:ATLAS_MESH --output-dir $synthetic --atlas-size 1024
+          if ($LASTEXITCODE -ne 0) { throw "Synthetic atlas construction failed" }
+
+      - name: Fresh-import and render synthetic atlas GLBs
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $synthetic = Join-Path $env:ATLAS_OUTPUT "synthetic"
+          $renders = Join-Path $synthetic "renders"
+          & $env:ATLAS_BLENDER --background --factory-startup --python blender\render_panda_atlas_contract.py -- (Join-Path $synthetic "unique_triangle_test.glb") $renders "unique" 768
+          if ($LASTEXITCODE -ne 0) { throw "Unique-triangle Blender render failed" }
+          & $env:ATLAS_BLENDER --background --factory-startup --python blender\render_panda_atlas_contract.py -- (Join-Path $synthetic "uv_orientation_test.glb") $renders "orientation" 768
+          if ($LASTEXITCODE -ne 0) { throw "UV-orientation Blender render failed" }
+
+          & $env:ATLAS_PYTHON workers\analyze_panda_atlas_renders.py --render-dir $renders --prefix unique --kind synthetic --output-contact-sheet (Join-Path $synthetic "contact_sheet_unique_triangle.png") --output-report (Join-Path $synthetic "unique_triangle_render_report.json")
+          if ($LASTEXITCODE -ne 0) { throw "Synthetic render analysis failed" }
+          & $env:ATLAS_PYTHON workers\analyze_panda_atlas_renders.py --render-dir $renders --prefix orientation --kind orientation --output-contact-sheet (Join-Path $synthetic "contact_sheet_uv_orientation.png") --output-report (Join-Path $synthetic "uv_orientation_render_report.json")
+          if ($LASTEXITCODE -ne 0) { throw "Orientation render analysis failed" }
+
+      - name: Render latest real panda diagnostic unlit
+        continue-on-error: true
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $realGlb = "C:\AI\panda_diag_neutral_v1\chart_local_harmonization_diagnostic_only\chart_local_harmonization_canonical_mesh_diagnostic_only.glb"
+          $expected = "3D87476140967D1ADFD86B05D4B8A838DC9B997C42F07EE051E3AA3ECFB654A4"
+          $realRoot = Join-Path $env:ATLAS_OUTPUT "real_diagnostic"
+          New-Item -ItemType Directory -Path $realRoot -Force | Out-Null
+          if (-not (Test-Path -LiteralPath $realGlb)) {
+            [ordered]@{ status = "BLOCKED_MISSING"; path = $realGlb } | ConvertTo-Json | Set-Content (Join-Path $realRoot "real_status.json") -Encoding utf8
+            exit 0
+          }
+          $actual = (Get-FileHash -LiteralPath $realGlb -Algorithm SHA256).Hash
+          if ($actual -ne $expected) {
+            [ordered]@{ status = "BLOCKED_HASH_MISMATCH"; path = $realGlb; expected = $expected; actual = $actual } | ConvertTo-Json | Set-Content (Join-Path $realRoot "real_status.json") -Encoding utf8
+            exit 0
+          }
+          $renders = Join-Path $realRoot "renders"
+          & $env:ATLAS_BLENDER --background --factory-startup --python blender\render_panda_atlas_contract.py -- $realGlb $renders "real" 768
+          if ($LASTEXITCODE -ne 0) { throw "Real diagnostic fresh-import render failed" }
+          & $env:ATLAS_PYTHON workers\analyze_panda_atlas_renders.py --render-dir $renders --prefix real --kind real --output-contact-sheet (Join-Path $realRoot "contact_sheet_real_unlit.png") --output-report (Join-Path $realRoot "real_unlit_render_report.json")
+          if ($LASTEXITCODE -ne 0) { throw "Real diagnostic analysis failed" }
+          $oldSheet = "C:\AI\panda_diag_neutral_v1\chart_local_harmonization_diagnostic_only\renders\contact_sheet_chart_local_harmonization_9view.png"
+          if (Test-Path -LiteralPath $oldSheet) { Copy-Item -LiteralPath $oldSheet -Destination (Join-Path $realRoot "previous_contact_sheet.png") -Force }
+          [ordered]@{ status = "RENDERED"; path = $realGlb; sha256 = $actual } | ConvertTo-Json | Set-Content (Join-Path $realRoot "real_status.json") -Encoding utf8
+
+      - name: Seal reports and create ZIP
+        if: always()
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Continue"
+          if (-not $env:ATLAS_OUTPUT) { $env:ATLAS_OUTPUT = "C:\AI\LowVRAM3D-benchmarks\production\panda-atlas-contract-worker-${{ github.run_id }}" }
+          if (-not $env:ATLAS_ZIP) { $env:ATLAS_ZIP = "$env:ATLAS_OUTPUT.zip" }
+          New-Item -ItemType Directory -Path $env:ATLAS_OUTPUT -Force | Out-Null
+          [ordered]@{
+            schema = "panda_atlas_worker_receipt_v1"
+            run_id = "${{ github.run_id }}"
+            run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            ref = "${{ github.ref }}"
+            head_sha = "${{ github.sha }}"
+            completed_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $env:ATLAS_OUTPUT "workflow_receipt.json") -Encoding utf8
+          $manifest = @()
+          Get-ChildItem -LiteralPath $env:ATLAS_OUTPUT -File -Recurse | Sort-Object FullName | ForEach-Object {
+            $manifest += [ordered]@{
+              relative_path = $_.FullName.Substring($env:ATLAS_OUTPUT.Length).TrimStart("\")
+              bytes = $_.Length
+              sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+            }
+          }
+          $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $env:ATLAS_OUTPUT "sha256_manifest.json") -Encoding utf8
+          if (Test-Path -LiteralPath $env:ATLAS_ZIP) { Remove-Item -LiteralPath $env:ATLAS_ZIP -Force }
+          Compress-Archive -Path (Join-Path $env:ATLAS_OUTPUT "*") -DestinationPath $env:ATLAS_ZIP -CompressionLevel Optimal -Force
+          if (Test-Path -LiteralPath $env:ATLAS_ZIP) {
+            Write-Host "ATLAS_ARTIFACT_ZIP=$env:ATLAS_ZIP"
+            Write-Host "ATLAS_ARTIFACT_SHA256=$((Get-FileHash -LiteralPath $env:ATLAS_ZIP -Algorithm SHA256).Hash)"
+          }
+
+      - name: Upload atlas-contract ZIP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: panda-atlas-contract-${{ github.run_id }}
+          path: C:\AI\LowVRAM3D-benchmarks\production\panda-atlas-contract-worker-${{ github.run_id }}.zip
+          if-no-files-found: error
+          retention-days: 14
