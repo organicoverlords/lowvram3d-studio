@@ -1,4 +1,4 @@
-name: GigStack Capture Compatibility And Filesystem Validation
+name: GigStack Capture Compatibility And Native Validation
 
 on:
   workflow_dispatch:
@@ -18,20 +18,74 @@ concurrency:
 jobs:
   validate-private-gigstack-commit:
     runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 55
+    timeout-minutes: 60
     env:
-      GIGSTACK_COMMIT: 5307bdcb60b4e247e298405af7dc3a64d8ee00ba
+      GIGSTACK_COMMIT: 8ab47566c0afc4e875abcca7b09ff18b1bad5ece
       TRAYCER_COMMIT: 8f21d506f9945e409f4cd72f32c71e8810a4d236
       CUDA_VISIBLE_DEVICES: "-1"
       VITE_DESKTOP_LOCAL_STORAGE_KEY: gigstack-traycer-readonly-compatibility-v1
     steps:
       - uses: actions/checkout@v4
+
+      - name: Initialize bounded evidence paths
+        shell: pwsh
+        run: |
+          $output = Join-Path $env:RUNNER_TEMP "gigstack-validation-evidence-$env:GITHUB_RUN_ID"
+          $profile = Join-Path $env:RUNNER_TEMP "gigstack-validation-profile-$env:GITHUB_RUN_ID"
+          New-Item -ItemType Directory -Force -Path $output | Out-Null
+          New-Item -ItemType Directory -Force -Path $profile | Out-Null
+          "GIGSTACK_VALIDATION_OUTPUT=$output" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          "GIGSTACK_VALIDATION_USER_DATA=$profile" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          [ordered]@{
+            schema = "GIGSTACK_VALIDATION_PREFLIGHT_V1"
+            runId = $env:GITHUB_RUN_ID
+            runner = $env:RUNNER_NAME
+            gigstackCommit = $env:GIGSTACK_COMMIT
+            traycerCommit = $env:TRAYCER_COMMIT
+            cpuOnly = $true
+          } | ConvertTo-Json | Set-Content (Join-Path $output "preflight.json") -Encoding utf8NoBOM
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.12
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
+
+      - name: Use installed Windows Rust toolchain without Bash or WSL
+        shell: pwsh
+        run: |
+          $cargoBin = Join-Path $env:USERPROFILE ".cargo\bin"
+          if (-not (Test-Path -LiteralPath $cargoBin -PathType Container)) {
+            throw "Installed Rust cargo directory is missing: $cargoBin"
+          }
+          $rustup = Join-Path $cargoBin "rustup.exe"
+          $rustc = Join-Path $cargoBin "rustc.exe"
+          $cargo = Join-Path $cargoBin "cargo.exe"
+          $rustfmt = Join-Path $cargoBin "rustfmt.exe"
+          foreach ($tool in @($rustup, $rustc, $cargo, $rustfmt)) {
+            if (-not (Test-Path -LiteralPath $tool -PathType Leaf)) {
+              throw "Required installed Rust tool is missing: $tool"
+            }
+          }
+          $cargoBin | Out-File $env:GITHUB_PATH -Append -Encoding utf8
+          "RUSTUP_TOOLCHAIN=stable" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          & $rustup toolchain install stable --profile minimal
+          if ($LASTEXITCODE -ne 0) { throw "rustup stable toolchain installation/update failed" }
+          & $rustup component add rustfmt --toolchain stable
+          if ($LASTEXITCODE -ne 0) { throw "rustfmt component installation failed" }
+          $env:RUSTUP_TOOLCHAIN = "stable"
+          & $rustc --version
+          if ($LASTEXITCODE -ne 0) { throw "rustc preflight failed" }
+          & $cargo --version
+          if ($LASTEXITCODE -ne 0) { throw "cargo preflight failed" }
+          & $rustfmt --version
+          if ($LASTEXITCODE -ne 0) { throw "rustfmt preflight failed" }
+          [ordered]@{
+            schema = "GIGSTACK_WINDOWS_RUST_PREFLIGHT_V1"
+            rustc = (& $rustc --version | Out-String).Trim()
+            cargo = (& $cargo --version | Out-String).Trim()
+            rustfmt = (& $rustfmt --version | Out-String).Trim()
+            bashUsed = $false
+            wslUsed = $false
+          } | ConvertTo-Json | Set-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "rust-preflight.json") -Encoding utf8NoBOM
 
       - name: Prove machine and private-repository access
         shell: pwsh
@@ -67,35 +121,49 @@ jobs:
           if (((git -C $traycer rev-parse HEAD | Out-String).Trim()) -ne $env:TRAYCER_COMMIT) { throw "Traycer commit mismatch" }
           "GIGSTACK_VALIDATION_ROOT=$gigstack" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
           "TRAYCER_VALIDATION_ROOT=$traycer" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
-          "GIGSTACK_VALIDATION_OUTPUT=$(Join-Path $env:RUNNER_TEMP "gigstack-validation-evidence-$env:GITHUB_RUN_ID")" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
-          "GIGSTACK_VALIDATION_USER_DATA=$(Join-Path $env:RUNNER_TEMP "gigstack-validation-profile-$env:GITHUB_RUN_ID")" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
 
-      - name: Format and test capture and filesystem crates
+      - name: Format and test capture filesystem and native runtime crates
         shell: pwsh
         run: |
           Push-Location $env:GIGSTACK_VALIDATION_ROOT
           try {
-            $owned = @(
-              Get-ChildItem `
-                crates\traycer-capture-cli, `
-                crates\orchestrator-captured-runtime, `
-                crates\local-filesystem-provider `
-                -Filter *.rs -File -Recurse |
-                Sort-Object FullName |
-                ForEach-Object { $_.FullName }
+            $cratePaths = @(
+              "crates\traycer-capture-cli",
+              "crates\orchestrator-captured-runtime",
+              "crates\local-filesystem-provider",
+              "crates\orchestrator-native-runtime"
             )
-            if ($owned.Count -eq 0) { throw "No capture/filesystem Rust files found" }
-            & rustfmt --edition 2024 --check @owned
-            if ($LASTEXITCODE -ne 0) { throw "Capture/filesystem rustfmt failed" }
+            $owned = @(
+              foreach ($cratePath in $cratePaths) {
+                Get-ChildItem -LiteralPath $cratePath -Filter *.rs -File -Recurse
+              }
+            ) | Sort-Object FullName | ForEach-Object { $_.FullName }
+            if ($owned.Count -eq 0) { throw "No capture/filesystem/native runtime Rust files found" }
+            rustfmt --edition 2024 --check @owned
+            if ($LASTEXITCODE -ne 0) { throw "Capture/filesystem/native-runtime rustfmt failed" }
             cargo test `
               -p traycer-capture-cli `
               -p orchestrator-captured-runtime `
-              -p local-filesystem-provider
-            if ($LASTEXITCODE -ne 0) { throw "Capture/filesystem tests failed" }
+              -p local-filesystem-provider `
+              -p orchestrator-native-runtime
+            if ($LASTEXITCODE -ne 0) { throw "Capture/filesystem/native-runtime tests failed" }
+            $lockChanged = -not [string]::IsNullOrWhiteSpace((git diff -- Cargo.lock | Out-String))
+            if ($lockChanged) {
+              Copy-Item -LiteralPath Cargo.lock -Destination (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "generated-Cargo.lock") -Force
+            }
+            [ordered]@{
+              schema = "GIGSTACK_RUST_VALIDATION_RECEIPT_V1"
+              crates = $cratePaths
+              formattingPassed = $true
+              testsPassed = $true
+              cargoLockChanged = $lockChanged
+              stateChangingToolExecutions = 0
+              agentMessagesSent = 0
+            } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "rust-validation.json") -Encoding utf8NoBOM
           } finally {
             Pop-Location
           }
-          "GIGSTACK_CAPTURE_AND_FILESYSTEM_TESTS=PROVEN"
+          "GIGSTACK_CAPTURE_FILESYSTEM_NATIVE_TESTS=PROVEN"
 
       - name: Apply exact fail-closed Traycer overlay
         shell: pwsh
@@ -140,8 +208,6 @@ jobs:
             $electron = ([string]$electronLines[-1]).Trim()
           } finally { Pop-Location }
           if (-not (Test-Path -LiteralPath $electron -PathType Leaf)) { throw "Electron executable is missing" }
-          New-Item -ItemType Directory -Force -Path $env:GIGSTACK_VALIDATION_OUTPUT | Out-Null
-          New-Item -ItemType Directory -Force -Path $env:GIGSTACK_VALIDATION_USER_DATA | Out-Null
           $env:GIGSTACK_COMPATIBILITY_ADAPTER_BUNDLE = $bundle
           $env:GIGSTACK_COMPATIBILITY_OUTPUT_DIR = $env:GIGSTACK_VALIDATION_OUTPUT
           $env:GIGSTACK_COMPATIBILITY_USER_DATA_DIR = $env:GIGSTACK_VALIDATION_USER_DATA
@@ -163,29 +229,34 @@ jobs:
           if ([int]$receipt.totalDomMutations -ne 0 -or [int]$receipt.totalPromptSubmissions -ne 0) { throw "Read-only boundary violated" }
           if ([int]$receipt.machineToolExecutions -ne 0 -or [int]$receipt.agentMessagesSent -ne 0) { throw "Side-effect boundary violated" }
           if ($receipt.verdict -ne "TRAYCER_CHATGPT_READONLY_COMPATIBILITY_SYNTHETIC_PROVEN") { throw "Verdict mismatch" }
+          $rustReceipt = Get-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "rust-validation.json") -Raw | ConvertFrom-Json
           [ordered]@{
-            schema = "GIGSTACK_CROSS_REPO_VALIDATION_RECEIPT_V3"
+            schema = "GIGSTACK_CROSS_REPO_VALIDATION_RECEIPT_V4"
             runner = $env:RUNNER_NAME
             gigstackCommit = $env:GIGSTACK_COMMIT
             traycerCommit = $env:TRAYCER_COMMIT
             compatibilityReceiptSha256 = (Get-FileHash $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
             captureIntegrationTestsPassed = $true
             filesystemProviderTestsPassed = $true
+            nativeRuntimeTestsPassed = $true
+            cargoLockChanged = [bool]$rustReceipt.cargoLockChanged
             cpuOnly = $true
+            bashUsed = $false
+            wslUsed = $false
             realChatGptNetworkUsed = $false
             promptSubmissions = 0
             stateChangingFilesystemOperations = 0
             machineToolExecutionsDuringCompatibilityProbe = 0
             agentMessagesSent = 0
-            verdict = "CAPTURE_COMPATIBILITY_AND_FILESYSTEM_PROVIDER_PROVEN"
+            verdict = "CAPTURE_COMPATIBILITY_FILESYSTEM_AND_NATIVE_RUNTIME_PROVEN"
           } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "cross-repo-validation-receipt.json") -Encoding utf8NoBOM
-          "GIGSTACK_CAPTURE_COMPATIBILITY_AND_FILESYSTEM_PROVEN=YES"
+          "GIGSTACK_CAPTURE_COMPATIBILITY_FILESYSTEM_NATIVE_PROVEN=YES"
 
       - name: Upload bounded proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gigstack-capture-compatibility-filesystem-${{ github.run_id }}
+          name: gigstack-capture-compatibility-native-${{ github.run_id }}
           path: ${{ env.GIGSTACK_VALIDATION_OUTPUT }}
           if-no-files-found: warn
           retention-days: 14
