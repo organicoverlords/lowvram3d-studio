@@ -307,3 +307,22 @@ geometry, UVs, sampler, proof, and provenance were unchanged.
 The visible underside white patches are largely direct/valid evidence and did
 not materially disappear. Status: `BOTTOM_PATCH_DIAGNOSTIC_ONLY`; no further
 bottom recolor loop is authorized.
+
+### Alternate-mesh UV reprojection diagnostic
+
+The one approved reprojection transferred the cleanup-v3 atlas through
+per-triangle barycentric correspondence onto the xatlas candidate's native
+4664x4668 UV layout. Triangle correspondence was exact across all 644,348
+triangles (maximum centroid delta 0.0). The xatlas mesh remains non-authoritative
+because its vertex/normal/index hashes differ from the canonical asset.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\alt_mesh_reproject_diagnostic_only\alt_mesh_reproject_diagnostic_only.glb`
+- GLB SHA256: `56d65063abfaf496e508cca9c6e7be85b6014a1cef097ee53d5386da0c07ab62`
+- Atlas SHA256: `35e40751357e616cf12b3a1311fe2b97ef4e74d80a1570825993e409149915a4`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\alt_mesh_reproject_diagnostic_only\renders\contact_sheet_alt_mesh_reproject_9view_diagnostic_only.png`
+- Contact sheet SHA256: `6470c154a670315b13c9cb516839cff4a7521a8e6a6d98f25681e414e299f40f`
+- Receipt SHA256: `896ce73906bd508196860d69ff3ca90222b1a1e8690b2d6137f74845ed0094a6`
+
+The reprojected atlas had 2,861,262 valid same-triangle samples and
+18,910,290 neutral fallback pixels (13.1422% sampled coverage). It is a useful
+structural comparison, but remains `ALT_MESH_REPROJECT_DIAGNOSTIC_ONLY`.
