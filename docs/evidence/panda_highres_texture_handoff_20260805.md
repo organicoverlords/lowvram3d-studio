@@ -228,3 +228,10 @@ Restoring only that sampler field produced:
 The stripes/stretching are materially reduced and the face is readable in all
 six views. Residual speckle, unsupported neutral areas, and bottom white
 patches remain, so this is still `DIAGNOSTIC_ONLY_NOT_PRODUCTION_READY`.
+
+An independent binding audit found no further deterministic fix: TEXCOORD_0,
+the embedded 2048 atlas bytes, texture/image indices, UV orientation, and
+triangle partition all match the v4 source. The remaining bands correspond to
+the 86,489 zero-support triangles in the 2048 owner mask. Painting them or
+binding the atlas to every triangle would bypass the coverage gate, so no
+additional cleanup was promoted.
