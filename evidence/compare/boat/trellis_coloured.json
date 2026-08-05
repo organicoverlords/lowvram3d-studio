@@ -1,0 +1,53 @@
+{
+  "schema_version": "vertex_colour_projection_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_nodebris.glb",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_coloured.glb",
+  "vertices": 589507,
+  "triangles": 932568,
+  "views": {
+    "front": {
+      "image": "front.png",
+      "alpha_bbox": [
+        4,
+        4,
+        284,
+        468
+      ],
+      "vertices_coloured": 259993
+    },
+    "right": {
+      "image": "side.png",
+      "alpha_bbox": [
+        5,
+        6,
+        559,
+        470
+      ],
+      "vertices_coloured": 43527
+    },
+    "back": {
+      "image": "back.png",
+      "alpha_bbox": [
+        4,
+        4,
+        298,
+        414
+      ],
+      "vertices_coloured": 36992
+    },
+    "left": {
+      "image": "side_mirror.png",
+      "alpha_bbox": [
+        4,
+        6,
+        558,
+        470
+      ],
+      "vertices_coloured": 289819
+    }
+  },
+  "coverage": 0.8428,
+  "min_facing": 0.15,
+  "facing_power": 3.0,
+  "note": "vertex colours, not a UV atlas; colour resolution is bounded by vertex density. Preview quality, not production."
+}

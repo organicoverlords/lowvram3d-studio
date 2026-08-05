@@ -1,0 +1,40 @@
+{
+  "schema_version": "hybrid_atlas_composite_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_trellis_pbr.glb",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_hybrid2.glb",
+  "atlas": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_hybrid2_base.png",
+  "atlas_size": 1024,
+  "views": {
+    "front": {
+      "art": "front.png",
+      "texels_painted": 88328
+    },
+    "right": {
+      "art": "side.png",
+      "texels_painted": 121354
+    },
+    "back": {
+      "art": "back.png",
+      "texels_painted": 88928
+    },
+    "left": {
+      "art": "side_mirror.png",
+      "texels_painted": 122732
+    }
+  },
+  "texels_in_atlas": 573460,
+  "texels_painted": 374944,
+  "painted_fraction_of_surface": 0.6538,
+  "luma_transfer": 1.0,
+  "delight": true,
+  "grade": {
+    "contrast": 0.28,
+    "shadows": 0.15,
+    "highlights": 0.15,
+    "saturation": 1.2
+  },
+  "min_facing": 0.3,
+  "feather_texels": 12,
+  "dilated_texels": 475115,
+  "material_channels": "native, unmodified"
+}

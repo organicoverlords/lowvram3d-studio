@@ -1,0 +1,15 @@
+{
+  "blender_exit_code": 0,
+  "classification": "PROVEN",
+  "decimated": true,
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_trellis512.glb",
+  "input_triangles": 2812060,
+  "min_part_fraction": 0.02,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_lod.glb",
+  "output_bytes": 25775412,
+  "output_triangles": 1264970,
+  "ratio": 0.053342,
+  "reduction": 0.5502,
+  "schema_version": "mesh_decimation_v1",
+  "target_triangles": 150000
+}

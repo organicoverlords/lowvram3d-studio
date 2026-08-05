@@ -1,0 +1,18 @@
+{
+  "schema_version": "denoise_protected_v1",
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_lod_shell.glb",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_denoised10.glb",
+  "triangles": 538566,
+  "vertices": 220314,
+  "frozen_vertices": 182667,
+  "frozen_fraction": 0.8291,
+  "frozen_boundary": 80809,
+  "frozen_thin_or_small": 108186,
+  "frozen_crease": 0,
+  "clamped_vertices": 2,
+  "mean_displacement": 1e-05,
+  "iterations": 10,
+  "sigma_normal": 0.35,
+  "crease_degrees": 42.0,
+  "max_displacement_ratio": 0.2
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "lod_per_shell_v1",
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_nodebris.glb",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_lod_shell.glb",
+  "input_triangles": 932568,
+  "output_triangles": 538566,
+  "shells_total": 2904,
+  "shells_protected": 2895,
+  "shells_simplified": 9,
+  "protected_faces": 124531,
+  "boundary_weight": 12.0,
+  "min_faces_to_simplify": 400,
+  "min_thickness_ratio": 0.06,
+  "min_shell_retention": 0.15,
+  "note": "per-shell budgets by area; boundaries weighted so open shells cannot collapse across themselves"
+}

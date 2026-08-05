@@ -1,0 +1,16 @@
+{
+  "schema_version": "coloured_mesh_preview_v1",
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_coloured.glb",
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_coloured_6view.png",
+  "triangles": 932568,
+  "vertices": 589507,
+  "view_coverage": {
+    "front": 0.3418,
+    "right": 0.2345,
+    "back": 0.3418,
+    "left": 0.2345,
+    "top": 0.2914,
+    "bottom": 0.2915,
+    "three_quarter": 0.3436
+  }
+}

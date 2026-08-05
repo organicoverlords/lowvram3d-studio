@@ -1,0 +1,25 @@
+{
+  "body_count": 4005,
+  "classification": "PROVEN",
+  "euler_number": -15872,
+  "extent": [
+    0.4413,
+    0.6389,
+    1.0
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\trellis_lod_shell.glb",
+  "merged_vertices": 220314,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\preview_lod_shell.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 538566,
+  "unwelded": false,
+  "vertex_split_ratio": 1.135,
+  "vertices": 250130,
+  "view_coverage": {
+    "front": 0.3399,
+    "side": 0.2339,
+    "three_quarter": 0.3424,
+    "top": 0.289
+  },
+  "watertight": false
+}
