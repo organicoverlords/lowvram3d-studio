@@ -420,3 +420,24 @@ patches.
 
 Status: `BESGU_PALETTE_REFERENCE_DIAGNOSTIC_ONLY_REJECTED`; target remains a
 visual reference, not provenance evidence or production texture input.
+
+### Chart-local material harmonization diagnostic
+
+One CPU-only harmonization pass was applied to mutable, non-direct side,
+rear, and bottom triangles. It used same-triangle five-sample medians with a
+75% low-frequency / 25% original blend, without cross-triangle donors or
+high-frequency blur. Protected front and direct evidence remained untouched;
+invalid bottom white/gray pixels used explicit neutral fallback.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\chart_local_harmonization_diagnostic_only\chart_local_harmonization_canonical_mesh_diagnostic_only.glb`
+- GLB SHA256: `3d87476140967d1adfd86b05d4b8a838dc9b997c42f07ee051e3aa3ecfb654a4`
+- Atlas SHA256: `a7f8e6d84d627e4c5c9e9d8a0265759e040340040ab783008c356e62fc3ae1bb`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\chart_local_harmonization_diagnostic_only\renders\contact_sheet_chart_local_harmonization_9view.png`
+- Contact sheet SHA256: `45bca5274f3ddeb900f8340780509a35c089fe871ec0b9cc186279bb5ed3e1bf`
+- Receipt SHA256: `7530939a2163b33379f252e2ae5d86c17047b59e76bf9daac8b10dd895e435ca`
+
+Counts: 115,985 protected triangles, 335,981 direct triangles, 308,367
+mutable triangles, 169,464 harmonized occupied texels, and 802 invalid
+white/gray neutral fallbacks. Visual result: modest side/rear tone smoothing,
+but closeups remain mottled/pixelated and bright bottom structures persist.
+Status: `CHART_LOCAL_HARMONIZATION_DIAGNOSTIC_ONLY`; no production promotion.
