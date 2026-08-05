@@ -1,0 +1,299 @@
+name: Panda atlas root diagnostic on local worker
+run-name: Panda atlas root diagnostic ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/panda-texture-artifact-root-fix-20260805
+    paths:
+      - .github/workflows/panda-atlas-root-local-worker.yml
+      - workers/conservative_atlas.py
+      - workers/panda_atlas_root_diagnostic.py
+      - workers/build_contact_sheet.py
+      - blender/render_glb_diagnostic_set.py
+      - tests/test_conservative_atlas.py
+      - docs/research/panda_atlas_raster_research_20260805.md
+
+permissions:
+  contents: read
+
+concurrency:
+  group: panda-atlas-root-local-worker
+  cancel-in-progress: true
+
+jobs:
+  diagnose-and-render:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout exact diagnostic branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify trusted ref and clean checkout
+        shell: powershell
+        run: |
+          if ("${{ github.ref }}" -ne "refs/heads/agent/panda-texture-artifact-root-fix-20260805") {
+            throw "Ref is not the dedicated trusted panda diagnostic branch"
+          }
+          if (@(git status --short).Count -gt 0) {
+            throw "Checkout is dirty before panda diagnostic"
+          }
+          Write-Host "HEAD=$(git rev-parse HEAD)"
+
+      - name: Resolve bounded Python and Blender environments
+        shell: powershell
+        run: |
+          $pythonCandidates = @(
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $python = $null
+          foreach ($candidate in $pythonCandidates) {
+            & $candidate -c "import numpy, PIL; print('PANDA_DIAG_PYTHON_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              $python = $candidate
+              break
+            }
+          }
+          if (-not $python) {
+            throw "No Python environment with numpy and Pillow was found"
+          }
+
+          $blenderCandidates = @(
+            "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 5.0\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 4.4\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 4.3\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 4.2\blender.exe",
+            (Get-Command blender.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $blender = $blenderCandidates | Select-Object -First 1
+          if (-not $blender) {
+            throw "Blender executable was not found"
+          }
+
+          $root = "C:\AI\LowVRAM3D-benchmarks\production\panda_atlas_root_local_worker\${{ github.run_id }}"
+          if (Test-Path -LiteralPath $root) {
+            Remove-Item -LiteralPath $root -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $root -Force | Out-Null
+          New-Item -ItemType Directory -Path (Join-Path $root "upload") -Force | Out-Null
+
+          "PANDA_DIAG_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "PANDA_DIAG_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "PANDA_DIAG_ROOT=$root" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "PANDA_CANONICAL_MESH=C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\pipeline_v2_injective_20260804\state\UV\proven\tactical_red_panda_scout_rewrapped.glb" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "PANDA_HIGHRES_SOURCE=C:\AI\LowVRAM3D-benchmarks\images\red_panda_character.png" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+          Write-Host "Python: $python"
+          & $python --version
+          Write-Host "Blender: $blender"
+          & $blender --version | Select-Object -First 2
+
+      - name: Verify immutable local inputs
+        shell: powershell
+        run: |
+          foreach ($path in @($env:PANDA_CANONICAL_MESH, $env:PANDA_HIGHRES_SOURCE)) {
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+              throw "Required panda input is missing: $path"
+            }
+          }
+          $meshHash = (Get-FileHash -LiteralPath $env:PANDA_CANONICAL_MESH -Algorithm SHA256).Hash
+          $sourceHash = (Get-FileHash -LiteralPath $env:PANDA_HIGHRES_SOURCE -Algorithm SHA256).Hash
+          if ($meshHash -ne "950343DD7FF76877CE6ADB83D6D4A80A8D123E7AAFB397B566A762D454A9A5F1") {
+            throw "Canonical panda mesh hash changed: $meshHash"
+          }
+          if ($sourceHash -ne "FBDA3719B42366477F77E94D87CB1D32A5BF6ADC4B6F29782194CC154471159B") {
+            throw "Authoritative high-resolution source hash changed: $sourceHash"
+          }
+          Write-Host "PANDA_CANONICAL_MESH_HASH=PROVEN"
+          Write-Host "PANDA_HIGHRES_SOURCE_HASH=PROVEN"
+
+      - name: Compile and run focused synthetic tests
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\workers;$PWD"
+          & $env:PANDA_DIAG_PYTHON -m py_compile `
+            workers\conservative_atlas.py `
+            workers\panda_atlas_root_diagnostic.py `
+            workers\build_contact_sheet.py
+          if ($LASTEXITCODE -ne 0) {
+            throw "Panda diagnostic Python compilation failed"
+          }
+          & $env:PANDA_DIAG_PYTHON -c "import pytest" 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            & $env:PANDA_DIAG_PYTHON -m pip install --disable-pip-version-check pytest
+            if ($LASTEXITCODE -ne 0) {
+              throw "Could not ensure pytest is installed"
+            }
+          }
+          & $env:PANDA_DIAG_PYTHON -m pytest tests\test_conservative_atlas.py -q
+          if ($LASTEXITCODE -ne 0) {
+            throw "Conservative atlas synthetic tests failed"
+          }
+
+      - name: Audit canonical panda atlas support
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\workers;$PWD"
+          $out = Join-Path $env:PANDA_DIAG_ROOT "atlas_audit"
+          & $env:PANDA_DIAG_PYTHON workers\panda_atlas_root_diagnostic.py `
+            --mesh $env:PANDA_CANONICAL_MESH `
+            --out-dir $out `
+            --sizes 512 1024
+          if ($LASTEXITCODE -ne 0) {
+            throw "Canonical panda atlas audit failed"
+          }
+
+      - name: Resolve selected existing visual candidates
+        shell: powershell
+        run: |
+          $candidates = @()
+          $known = @(
+            [ordered]@{
+              label = "chart_local_harmonization"
+              path = "C:\AI\panda_diag_neutral_v1\chart_local_harmonization_diagnostic_only\chart_local_harmonization_canonical_mesh_diagnostic_only.glb"
+            },
+            [ordered]@{
+              label = "surface_space_completion"
+              path = "C:\AI\panda_diag_neutral_v1\surface_space_completion_diagnostic_only\surface_space_completion_diagnostic_only.glb"
+            },
+            [ordered]@{
+              label = "bottom_surface_correction"
+              path = "C:\AI\panda_diag_neutral_v1\bottom_surface_correction_diagnostic_only\bottom_surface_correction_diagnostic_only.glb"
+            }
+          )
+          foreach ($candidate in $known) {
+            if (Test-Path -LiteralPath $candidate.path -PathType Leaf) {
+              $candidates += $candidate
+            } else {
+              Write-Warning "Visual candidate missing: $($candidate.path)"
+            }
+          }
+
+          $highresDir = "C:\AI\LowVRAM3D-benchmarks\production\per_texel_evidence_compiler_validation\panda_original_highres_authority_20260805\projection\diagnostic_2048_exact1024_original_boundary_background_gate"
+          if (Test-Path -LiteralPath $highresDir -PathType Container) {
+            $highres = Get-ChildItem -LiteralPath $highresDir -File -Filter *.glb | Sort-Object Name | Select-Object -First 1
+            if ($highres) {
+              $candidates += [ordered]@{ label = "highres_exact_2048_rejected"; path = $highres.FullName }
+            }
+          }
+          if ($candidates.Count -eq 0) {
+            throw "No existing panda visual candidate was found for fresh rendering"
+          }
+          $candidatePath = Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json"
+          $candidates | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $candidatePath -Encoding utf8
+          Get-Content -LiteralPath $candidatePath
+
+      - name: Fresh-render selected GLBs and build contact sheets
+        shell: powershell
+        run: |
+          $candidates = @(Get-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Raw | ConvertFrom-Json)
+          $renderRoot = Join-Path $env:PANDA_DIAG_ROOT "fresh_renders"
+          New-Item -ItemType Directory -Path $renderRoot -Force | Out-Null
+          foreach ($candidate in $candidates) {
+            $out = Join-Path $renderRoot $candidate.label
+            New-Item -ItemType Directory -Path $out -Force | Out-Null
+            & $env:PANDA_DIAG_BLENDER `
+              --background `
+              --factory-startup `
+              --python "$PWD\blender\render_glb_diagnostic_set.py" `
+              -- `
+              --input $candidate.path `
+              --out-dir $out `
+              --label $candidate.label `
+              --resolution 768
+            if ($LASTEXITCODE -ne 0) {
+              throw "Blender diagnostic render failed for $($candidate.label)"
+            }
+            & $env:PANDA_DIAG_PYTHON workers\build_contact_sheet.py `
+              --render-dir $out `
+              --output (Join-Path $out "contact_sheet.png")
+            if ($LASTEXITCODE -ne 0) {
+              throw "Contact sheet build failed for $($candidate.label)"
+            }
+          }
+
+      - name: Package immutable diagnostic ZIP
+        shell: powershell
+        run: |
+          $package = Join-Path $env:PANDA_DIAG_ROOT "package"
+          New-Item -ItemType Directory -Path $package -Force | Out-Null
+          Copy-Item -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "atlas_audit") -Destination (Join-Path $package "atlas_audit") -Recurse -Force
+          Copy-Item -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "fresh_renders") -Destination (Join-Path $package "fresh_renders") -Recurse -Force
+          Copy-Item -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Destination $package -Force
+          Copy-Item -LiteralPath $env:PANDA_HIGHRES_SOURCE -Destination (Join-Path $package "authoritative_highres_source.png") -Force
+          Copy-Item -LiteralPath "docs\research\panda_atlas_raster_research_20260805.md" -Destination $package -Force
+
+          $candidates = @(Get-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Raw | ConvertFrom-Json)
+          $inputs = @(
+            [ordered]@{ role = "canonical_mesh"; path = $env:PANDA_CANONICAL_MESH; sha256 = (Get-FileHash -LiteralPath $env:PANDA_CANONICAL_MESH -Algorithm SHA256).Hash.ToLower() },
+            [ordered]@{ role = "authoritative_highres_source"; path = $env:PANDA_HIGHRES_SOURCE; sha256 = (Get-FileHash -LiteralPath $env:PANDA_HIGHRES_SOURCE -Algorithm SHA256).Hash.ToLower() }
+          )
+          foreach ($candidate in $candidates) {
+            $inputs += [ordered]@{
+              role = $candidate.label
+              path = $candidate.path
+              sha256 = (Get-FileHash -LiteralPath $candidate.path -Algorithm SHA256).Hash.ToLower()
+            }
+          }
+          $inputs | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $package "input_hashes.json") -Encoding utf8
+
+          $gpu = "not_available"
+          $nvidia = Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue
+          if ($nvidia) {
+            $gpu = (& $nvidia.Source --query-gpu=name,driver_version,memory.total --format=csv,noheader 2>&1) -join "`n"
+          }
+          [ordered]@{
+            schema = "panda_atlas_root_local_worker_receipt_v1"
+            repository = "${{ github.repository }}"
+            branch = "${{ github.ref_name }}"
+            head_sha = "${{ github.sha }}"
+            workflow_run_id = "${{ github.run_id }}"
+            workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            python = (& $env:PANDA_DIAG_PYTHON --version 2>&1) -join " "
+            blender = (& $env:PANDA_DIAG_BLENDER --version 2>&1 | Select-Object -First 1) -join " "
+            gpu = $gpu
+            classification = "DIAGNOSTIC_ONLY_NOT_PRODUCTION_READY"
+            production_asset_written = $false
+            golden_overwritten = $false
+            generated_views_regenerated = $false
+            uv_or_geometry_regenerated = $false
+            recorded_at_utc = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $package "worker_receipt.json") -Encoding utf8
+
+          Get-ChildItem -LiteralPath $package -File -Recurse | ForEach-Object {
+            $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLower()
+            $relative = $_.FullName.Substring($package.Length).TrimStart("\", "/").Replace("\", "/")
+            "$hash  $relative"
+          } | Sort-Object | Set-Content -LiteralPath (Join-Path $package "SHA256SUMS.txt") -Encoding ascii
+
+          $upload = Join-Path $env:PANDA_DIAG_ROOT "upload"
+          $zip = Join-Path $upload "panda_atlas_root_diagnostic_${{ github.run_id }}.zip"
+          Compress-Archive -LiteralPath $package -DestinationPath $zip -CompressionLevel Optimal -Force
+          $zipHash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLower()
+          "$zipHash  $([System.IO.Path]::GetFileName($zip))" | Set-Content -LiteralPath (Join-Path $upload "ZIP_SHA256SUMS.txt") -Encoding ascii
+          Copy-Item -LiteralPath (Join-Path $package "worker_receipt.json") -Destination $upload -Force
+          Copy-Item -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "atlas_audit\diagnostic_bundle.json") -Destination $upload -Force
+          Write-Host "PANDA_DIAGNOSTIC_ZIP=$zip"
+          Write-Host "PANDA_DIAGNOSTIC_ZIP_SHA256=$zipHash"
+
+      - name: Upload panda diagnostic ZIP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: panda-atlas-root-diagnostic-${{ github.run_id }}
+          path: |
+            C:\AI\LowVRAM3D-benchmarks\production\panda_atlas_root_local_worker\${{ github.run_id }}\upload\*
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 0
