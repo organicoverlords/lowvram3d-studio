@@ -254,3 +254,20 @@ texels were replaced.
 Speckle is modestly reduced and the sampler stripes remain absent, but
 unsupported neutral areas and bottom gaps remain. Status stays
 `DIAGNOSTIC_ONLY_NOT_PRODUCTION_READY`; no further cleanup loop is authorized.
+
+### Coverage-bypass visual comparison (not production evidence)
+
+One comparison bound the existing atlas material to both mesh primitives,
+changing only material binding `[1,2]` to `[1,1]`. Geometry, UVs, sampler,
+atlas bytes, provenance, and proof receipts were untouched.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\coverage_bypass_diagnostic_only\panda_coverage_bypass_diagnostic_only.glb`
+- GLB SHA256: `2241f1c4205159e4b1dba04bc22180cd8ba308f21fe3cccc1c6575238a2f7269`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\coverage_bypass_diagnostic_only\renders\contact_sheet_coverage_bypass_9view_diagnostic_only.png`
+- Contact sheet SHA256: `3c524643e69bf4bf71de041f91a4a1d206ea068ff4c43eb13645ca57b6b059a9`
+- Receipt SHA256: `46c73fbb8ec5c84a014c28cc077ca47ad67f8c6d052b4b94487eaede069654d1`
+
+This removes the explicit neutral strips and gives the clearest front/side/
+rear diagnostic, but deliberately bypasses the 86,489-triangle support mask.
+Unsupported atlas samples, speckle, and bottom white patches remain. Status:
+`COVERAGE_BYPASS_DIAGNOSTIC_ONLY`, never production evidence.
