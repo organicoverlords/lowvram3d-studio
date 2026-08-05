@@ -1,0 +1,73 @@
+{
+  "aligned_views": 1,
+  "candidate": "C:\\AI\\LowVRAM3D-benchmarks\\production\\panda_online_model_targets_20260805\\online_generated_target__besgu.glb",
+  "density_inflated": false,
+  "edge_density_ratio": 0.405,
+  "label": "NEGCTRL_cat",
+  "mean_f1": 0.3331,
+  "mean_precision": 0.5258,
+  "mean_recall": 0.2517,
+  "registration": {
+    "chamfer": 0.1615,
+    "criterion": "symmetric chamfer on surface points; blind to the feature score it enables",
+    "mode": "yaw",
+    "points": 20000,
+    "yaw_degrees": 10.0
+  },
+  "schema_version": "feature_edge_f1_v1",
+  "size": 512,
+  "teacher": "C:\\AI\\LowVRAM3D-benchmarks\\production\\panda_online_model_targets_20260805\\ornate_tower__20260729221745_18e55b4b.glb",
+  "thresholds": {
+    "crease_degrees": 30.0,
+    "depth_step": 0.012,
+    "silhouette_guard_px": 2
+  },
+  "tolerance_px": 2.0,
+  "trustworthy": false,
+  "views": {
+    "front": {
+      "aligned": true,
+      "candidate_edge_density": 0.18387,
+      "candidate_edge_pixels": 18034,
+      "f1": 0.5063,
+      "precision": 0.6309,
+      "recall": 0.4227,
+      "silhouette_iou": 0.6881,
+      "teacher_edge_density": 0.37736,
+      "teacher_edge_pixels": 31578
+    },
+    "side": {
+      "aligned": false,
+      "candidate_edge_density": 0.0946,
+      "candidate_edge_pixels": 8655,
+      "f1": 0.2631,
+      "precision": 0.4723,
+      "recall": 0.1823,
+      "silhouette_iou": 0.3943,
+      "teacher_edge_density": 0.45869,
+      "teacher_edge_pixels": 33540
+    },
+    "three_quarter": {
+      "aligned": false,
+      "candidate_edge_density": 0.13067,
+      "candidate_edge_pixels": 11397,
+      "f1": 0.3788,
+      "precision": 0.7609,
+      "recall": 0.2522,
+      "silhouette_iou": 0.5263,
+      "teacher_edge_density": 0.55994,
+      "teacher_edge_pixels": 52941
+    },
+    "top": {
+      "aligned": false,
+      "candidate_edge_density": 0.11453,
+      "candidate_edge_pixels": 8129,
+      "f1": 0.184,
+      "precision": 0.239,
+      "recall": 0.1496,
+      "silhouette_iou": 0.4946,
+      "teacher_edge_density": 0.16565,
+      "teacher_edge_pixels": 14465
+    }
+  }
+}

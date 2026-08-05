@@ -559,9 +559,10 @@ produced what seven Hunyuan experiments could not: a paddle wheel with separated
 spokes, railings with gaps, windows as openings. 248.6 s against mini's ~7 min.
 
 Confirmed independently on vision: "B shows the strongest internal structure
-... a clearly articulated paddle wheel with spokes", closing an estimated
-40-60% of the gap to the online reference, and explicitly rejecting that this
-was pattern-matching on one feature.
+... a clearly articulated paddle wheel with spokes", and explicitly rejecting
+that this was pattern-matching on one feature. That review also estimated
+40-60% of the gap to the online reference closed; **section 11a supersedes that
+figure with a measurement of 27% whole-asset, 41% excluding the top view.**
 
 **Texture.** The MV-Adapter SD2.1 lane was built around Hunyuan geometry --
 watertight, thirteen bodies. TRELLIS output is non-watertight with 7,144 open
@@ -611,6 +612,81 @@ that way, so the check for whether the decal worked returned the wrong answer.
 verdicts in this document were formed on degraded evidence and should be
 re-taken before being relied on.
 
+## 11a. The feature-edge metric, run correctly — TRELLIS measured at 0.690
+
+Section 11 records that the metric ran with an armoured cat as its teacher. It
+has now been re-run against `ornate_tower__20260729221745_18e55b4b.glb`, which is
+the real online boat despite the inventory JSON calling it a tower. The
+2.81M-face raw mesh OOMs at 16 GB, so the candidate is `trellis_nodebris.glb`
+(932,568 faces) — the debris-removed production geometry, not the raw decode.
+Labelled `trellis512_nodebris` in the receipt for that reason.
+
+| run | F1 | P | R | chamfer | aligned | trustworthy |
+|---|---:|---:|---:|---:|:--:|:--:|
+| self-test (teacher vs itself) | 1.000 | 1.000 | 1.000 | 0.000 | 4/4 | yes |
+| **trellis512_nodebris** | **0.690** | 0.678 | 0.713 | 0.047 | 4/4 | **yes** |
+| mini_mc320 | 0.573 | 0.611 | 0.551 | 0.076 | 4/4 | yes |
+| negative control (armoured cat) | 0.333 | 0.526 | 0.252 | 0.162 | 1/4 | **no** |
+
+**The metric passes its negative control for the first time.** In v1 the wrong
+object scored 0.3915, above every real candidate. It now lands below both and
+independently trips the trust gate. It fails for the designed reason, too:
+precision survives at 0.526 — a cat-shaped mesh does emit edges, some near boat
+edges by luck — while recall collapses to 0.252.
+
+**Where TRELLIS's win actually is.** Recall, +0.162 over mini, with edge density
+rising from 0.671x the teacher to 1.263x and precision rising as well. It is
+finding structure mini never produced, and not buying it with noise.
+
+**"40-60% of the gap" is withdrawn as a whole-asset claim.** Measured across all
+four views, `(0.690 - 0.573) / (1.000 - 0.573)` = **27%**. The estimate survives
+only for the three views a reviewer actually looks at: dropping the top view
+gives mini 0.619 and TRELLIS 0.776, which is 41%. The estimate was not wrong
+about what it saw; it was optimistic about the whole asset, because nobody
+inspects the top-down view.
+
+`evidence/compare/boat/f1v2_*.json` are the cat-teacher reports. They are marked
+`SUPERSEDED` in-file rather than deleted, because `f1v2_trellis512.json` reads
+0.411 and would otherwise support the conclusion that TRELLIS is *worse* than
+Hunyuan mini.
+
+## 11b. Denoising closed a second time, now with a mechanism
+
+The top view is the one weak view for both generators — mini 0.436, TRELLIS
+0.434 — and the only view where either exceeds the teacher's edge density.
+TRELLIS runs 0.330 against the teacher's 0.166 with precision 0.365. The edge
+overlay (`evidence/compare/boat/f1edges/trellis512/edges_top.png`) shows why: the
+teacher's roof is a clean line drawing of panels, the candidate's is a dense
+mottled field.
+
+That looked like an argument for re-opening denoising with a number to optimise
+against. It is not. Two measurements close it:
+
+**The filter is inert, and not because of the freezes.** On `trellis_nodebris`,
+79.9% frozen, mean displacement 5e-06, and **zero vertices reached the
+displacement cap**. It is not being restrained; it has nothing to say. Bilateral
+normal filtering weights neighbours by `exp(-||dn||^2 / 2 sigma^2)` with
+sigma 0.35, so a 90-degree pair gets weight 2.9e-04. It is designed to refuse
+exactly the geometry in question.
+
+**The geometry is real, not noise.** Dihedral percentiles on that mesh are
+p50 4.52, p75 20.99, p90 90.99, p95 137.72, p99 177.25 — bimodal. The hypothesis
+that the high tail is degenerate slivers was tested and **refuted**: faces on
+>90-degree adjacencies have 1.02x the median area and quality 0.597 against
+0.669, and only 0.2% of the mesh is under 5% of median area. Normal-sized,
+well-shaped triangles meeting at 177 degrees are **thin double-sided sheets** —
+TRELLIS emits open shells about a voxel thick, so a plate's two faces are
+adjacent across its rim. That accounts for 19.6% of surface area and is
+load-bearing for the paddle-wheel spokes and railings that made TRELLIS win.
+
+So the top-view density excess is a representational difference, not damage: the
+teacher models a roof as one solid panel, TRELLIS as an assembly of thin plates,
+and every rim legitimately emits an edge. Nothing should remove them.
+
+The four protection thresholds in `workers/denoise_protected.py` are now CLI
+arguments and the receipt records the dihedral percentiles, so the next person
+tempted by this can reach the same conclusion in one run instead of three.
+
 ## 12. Open, in priority order
 
 1. **ARAP local-chart projection.** The remaining texturing item: replace the
@@ -624,9 +700,8 @@ re-taken before being relied on.
    vertices against all four elevation silhouettes, freezing rails and spokes.
 3. **Re-take the visual verdicts** with the correct renderer, including the
    "background only" rating, which was given on vertex-colour images.
-4. **Re-run the feature-edge metric** with the correct teacher. The metric
-   itself is validated (self-test 1.0, registration finds yaw 0 and chamfer 0);
-   only its inputs were wrong.
+4. ~~**Re-run the feature-edge metric** with the correct teacher.~~ Done —
+   section 11a. Metric validated end to end, including its negative control.
 5. Paint3D on masked unpainted regions only -- the one external texture tool
    that survived scrutiny. Needs disk headroom.
 

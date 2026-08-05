@@ -68,6 +68,25 @@ def main(argv: list[str] | None = None) -> int:
                         help="Normal-filter iterations. 2-4 is the useful "
                              "range; more converges toward a flat surface.")
     parser.add_argument("--vertex-iterations", type=int, default=8)
+    # The four protection thresholds are exposed because the first run of this
+    # worker froze 83% of the mesh and moved the rest by 1e-5, and there was no
+    # way to tell which of the four freezes was responsible without editing the
+    # module. They are hyperparameters of an experiment, not constants.
+    parser.add_argument("--crease-degrees", type=float, default=CREASE_DEGREES,
+                        help="Freeze vertices on face pairs sharper than this. "
+                             "The original 42 assumed the speckle sits well "
+                             "below it; the feature-edge overlay shows the "
+                             "speckle firing a 30-degree crease detector "
+                             "densely, so that assumption is the thing under "
+                             "test.")
+    parser.add_argument("--min-faces", type=int, default=MIN_FACES_TO_SMOOTH,
+                        help="Shells smaller than this are frozen wholesale. "
+                             "49%% of this mesh is shells under 400 faces.")
+    parser.add_argument("--min-thickness", type=float,
+                        default=MIN_THICKNESS_RATIO)
+    parser.add_argument("--max-displacement", type=float,
+                        default=MAX_DISPLACEMENT)
+    parser.add_argument("--sigma-normal", type=float, default=SIGMA_NORMAL)
     parser.add_argument("--receipt", default="")
     args = parser.parse_args(argv)
 
@@ -108,8 +127,8 @@ def main(argv: list[str] | None = None) -> int:
         member_vertices = np.unique(faces[member_faces].reshape(-1))
         points = vertices[member_vertices]
         extents = np.sort(points.max(axis=0) - points.min(axis=0))
-        thin = extents[0] / max(extents[2], 1e-9) < MIN_THICKNESS_RATIO
-        if len(member_faces) >= MIN_FACES_TO_SMOOTH and not thin:
+        thin = extents[0] / max(extents[2], 1e-9) < args.min_thickness
+        if len(member_faces) >= args.min_faces and not thin:
             continue
         frozen[member_vertices] = True
         thin_or_small += len(member_vertices)
@@ -117,7 +136,15 @@ def main(argv: list[str] | None = None) -> int:
     # Creases, by dihedral angle across adjacent faces.
     adjacency = mesh.face_adjacency
     angles = mesh.face_adjacency_angles
-    sharp = adjacency[np.degrees(angles) > CREASE_DEGREES]
+    dihedral = np.degrees(angles)
+    # Where the mesh's dihedral energy actually sits. If the bulk of it is above
+    # the crease threshold then the crease freeze is protecting the speckle
+    # rather than the architecture, and no setting of the filter can help.
+    dihedral_percentiles = {
+        str(p): round(float(np.percentile(dihedral, p)), 2)
+        for p in (50, 75, 90, 95, 99)
+    }
+    sharp = adjacency[dihedral > args.crease_degrees]
     if len(sharp):
         frozen[np.unique(faces[sharp.reshape(-1)].reshape(-1))] = True
     crease_count = int(frozen.sum()) - boundary_count - thin_or_small
@@ -135,7 +162,7 @@ def main(argv: list[str] | None = None) -> int:
     for _ in range(args.iterations):
         difference = np.linalg.norm(normals[left] - normals[right], axis=1)
         spatial = np.exp(-(separation ** 2) / (2 * sigma_space ** 2))
-        angular = np.exp(-(difference ** 2) / (2 * SIGMA_NORMAL ** 2))
+        angular = np.exp(-(difference ** 2) / (2 * args.sigma_normal ** 2))
         weight = areas[right] * spatial * angular
 
         accumulated = np.zeros_like(normals)
@@ -182,7 +209,7 @@ def main(argv: list[str] | None = None) -> int:
 
     travel = vertices - original
     distance = np.linalg.norm(travel, axis=1)
-    limit = MAX_DISPLACEMENT * mean_edge
+    limit = args.max_displacement * mean_edge
     excessive = distance > limit
     scale = np.ones(len(vertices))
     scale[excessive] = limit[excessive] / np.clip(distance[excessive], 1e-12, None)
@@ -209,9 +236,13 @@ def main(argv: list[str] | None = None) -> int:
         "clamped_vertices": clamped,
         "mean_displacement": round(final_travel, 6),
         "iterations": args.iterations,
-        "sigma_normal": SIGMA_NORMAL,
-        "crease_degrees": CREASE_DEGREES,
-        "max_displacement_ratio": MAX_DISPLACEMENT,
+        "vertex_iterations": args.vertex_iterations,
+        "sigma_normal": args.sigma_normal,
+        "crease_degrees": args.crease_degrees,
+        "min_faces_to_smooth": args.min_faces,
+        "min_thickness_ratio": args.min_thickness,
+        "max_displacement_ratio": args.max_displacement,
+        "dihedral_percentiles": dihedral_percentiles,
     }
     if args.receipt:
         Path(args.receipt).write_text(json.dumps(receipt, indent=2) + "\n",

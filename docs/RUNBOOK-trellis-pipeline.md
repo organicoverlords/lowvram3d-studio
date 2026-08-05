@@ -187,7 +187,7 @@ hence per-shell budgets proportional to area.
 |---|---|
 | `--res 1024`, `--atlas 2048` | `MUL_MAT: misaligned address`, 3 attempts, incl. `--f32` |
 | Global quadric decimation | destroys the mesh |
-| `workers/denoise_protected.py` | no-op: 49% of the mesh is shells under 400 faces, so protection freezes everything worth freezing and there is nothing left to smooth. The granular look **is** those shells |
+| `workers/denoise_protected.py` | no-op, twice measured. 79.9% of vertices frozen, mean displacement 5e-06, and **zero** vertices reach the displacement cap — the filter is not restrained, it has nothing to say. Dihedral is bimodal (p50 4.5°, p99 177°) and the high tail is *not* degenerate: those faces have 1.02x median area and quality 0.60. They are thin double-sided sheets, 19.6% of surface area, and they are the spokes and railings. Do not smooth them |
 | Hunyuan3D levers | steps, octree, views, capacity, triangle count, MC vs DMC — seven measured dead ends |
 | Deck plan as roof texture | it is an interior floor plan |
 | MV-Adapter views for TRELLIS geometry | generated from Hunyuan geometry; they encode a different shape |
@@ -262,7 +262,42 @@ Subjects **with** reference elevations use the same tool with `--view` and a
 lower contrast, because the projected artwork brings its own contrast:
 `--contrast 0.10 --shadows 0.00 --highlights 0.18 --saturation 1.20`.
 
-## 9. Subject classes — what to expect
+## 9. Measuring geometry quality instead of eyeballing it
+
+```bash
+py workers/feature_edge_f1.py --teacher reference.glb --candidate asset.glb \
+  --out score.json --dump-edges edges/
+```
+
+Renders both meshes to depth and normal buffers across four shared cameras,
+extracts internal feature edges (occlusion steps plus creases, **silhouette
+excluded**), and reports precision/recall/F1 after registering the candidate by
+yaw. Read `trustworthy` before reading `mean_f1` — it is false when fewer than
+three views align or when the candidate's edge density exceeds 1.6x the
+teacher's, and a false there means the number is meaningless, not bad.
+
+Measured on the boat against the online reference:
+
+| candidate | F1 | P | R | density | trustworthy |
+|---|---:|---:|---:|---:|:--:|
+| teacher vs itself (self-test) | 1.000 | 1.000 | 1.000 | 1.000 | yes |
+| TRELLIS.2 512 (debris removed) | **0.690** | 0.678 | 0.713 | 1.263 | yes |
+| Hunyuan3D mini, octree 320 | 0.573 | 0.611 | 0.551 | 0.671 | yes |
+| a different object entirely | 0.333 | 0.526 | 0.252 | 0.405 | **no** |
+
+Two things to take from the table. **Use `--dump-edges` and look at the
+overlays** — teacher red, candidate green, yellow agreement — because the
+per-view numbers say *that* a view failed and the overlay says *why*. And treat
+the top view separately: both generators score ~0.43 there and both exceed the
+teacher's downward edge density, because they build roofs as assemblies of thin
+plates whose rims each emit an edge, while the reference models one solid panel.
+That is a representational difference, not a defect, and it drags the mean down
+by about 0.09 on every candidate equally.
+
+The candidate must be under roughly 1M faces. A 2.81M-face mesh exhausts 16 GB
+during the render; run the debris-removed or LOD version and say so in the label.
+
+## 10. Subject classes — what to expect
 
 Two subjects have been through the full pipeline and rated **mid-ground**: the
 boat (with four reference elevations) and the castle (single image, no artwork).
