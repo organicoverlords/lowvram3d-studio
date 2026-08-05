@@ -1,0 +1,51 @@
+{
+  "render_dir": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\reports\\texture_review",
+  "passed": false,
+  "blocking_codes": [
+    "FLAT_NEUTRAL_ATLAS_REGIONS"
+  ],
+  "advisory_codes": [],
+  "findings": [
+    {
+      "code": "FLAT_NEUTRAL_ATLAS_REGIONS",
+      "severity": "blocking",
+      "detail": "26.90% of examined triangles sit in UV islands with effectively constant colour, which renders as untextured flat fill",
+      "measured": {
+        "flat_triangle_percent": 26.904,
+        "limit": 5.0
+      }
+    }
+  ],
+  "measured": {
+    "atlas_orientation": {
+      "error_gltf_standard": 7.61,
+      "error_inverted": 61.741,
+      "samples": 3310
+    },
+    "synthesis": {
+      "observed_contrast": 0.0584,
+      "synthesized_contrast": 0.05589,
+      "ratio": 0.9571,
+      "synthesized_percent": 86.41
+    },
+    "flat_regions": {
+      "flat_islands": 186,
+      "flat_triangle_percent": 26.904
+    },
+    "material_id_components": 62,
+    "material_id_distinct_colours": 2171,
+    "rear_front_correlation": {
+      "mirrored": 0.8089,
+      "direct": 0.4224
+    },
+    "uv": {
+      "overlap_texels": 0.0,
+      "degenerate": 0,
+      "tested_pairs": 1267329,
+      "timed_out": false
+    },
+    "face": {
+      "edge_energy": 0.0987
+    }
+  }
+}

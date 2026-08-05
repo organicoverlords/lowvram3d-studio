@@ -1,0 +1,14 @@
+{
+  "source_crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-repo\\evidence\\visual-qa\\crops\\source_staff_head.png",
+  "before_crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-repo\\evidence\\visual-qa\\crops\\before_front.png",
+  "candidate_crop": "C:\\Users\\Lauri\\Desktop\\lowvram3d-repo\\evidence\\visual-qa\\crops\\before_front.png",
+  "feature_name": "staff ring through-hole",
+  "expected_description": "unchanged baseline; no repair was applied",
+  "constraints": [
+    "the opening must stay inside the original recessed centre",
+    "preserve the raised inner lip and layered carving",
+    "opening should be roughly 30-40 percent of the outer disc diameter",
+    "must not look like a generic machine-cut donut"
+  ],
+  "require_change": false
+}

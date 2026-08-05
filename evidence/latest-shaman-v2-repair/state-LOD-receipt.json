@@ -1,0 +1,561 @@
+{
+  "stage": "LOD",
+  "status": "failed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\shaman_v2_validation_stance_clean.glb": "2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80"
+  },
+  "outputs": {
+    "lod_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\lod_report.json",
+      "sha256": "4eaa572ee228bad69d56b02464c01e87a4c22f3ec1df22d61abb75b35a878fbe",
+      "bytes": 4064
+    },
+    "lod0": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod0.glb",
+      "sha256": "96e6bdbb2e823a98d91be08c3fdbbc39eb9986193c72d7208d0a2c2d53f6d496",
+      "bytes": 18427648
+    },
+    "lod1": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod1.glb",
+      "sha256": "92f213bf5cd61a9ade96c6436b8b541c75b8f859f7f92a4aca85e987bd2e4268",
+      "bytes": 6702624
+    },
+    "lod2": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod2.glb",
+      "sha256": "573cb7d228f6f49aa392cc361196289911bb213c3c30f9ea78d0cbe9e1015384",
+      "bytes": 2931288
+    },
+    "lod3": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod3.glb",
+      "sha256": "fd835300f55298c79dc65cd0d034514bff9824c815a56ea9a0b23fcb2539493d",
+      "bytes": 931120
+    }
+  },
+  "gates": {
+    "targets": [
+      220000,
+      80000,
+      35000,
+      12000
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "target": 220000,
+        "triangles": 219968,
+        "sha256": "96e6bdbb2e823a98d91be08c3fdbbc39eb9986193c72d7208d0a2c2d53f6d496"
+      },
+      {
+        "lod": 1,
+        "target": 80000,
+        "triangles": 79965,
+        "sha256": "92f213bf5cd61a9ade96c6436b8b541c75b8f859f7f92a4aca85e987bd2e4268"
+      },
+      {
+        "lod": 2,
+        "target": 35000,
+        "triangles": 34961,
+        "sha256": "573cb7d228f6f49aa392cc361196289911bb213c3c30f9ea78d0cbe9e1015384"
+      },
+      {
+        "lod": 3,
+        "target": 12000,
+        "triangles": 11950,
+        "sha256": "fd835300f55298c79dc65cd0d034514bff9824c815a56ea9a0b23fcb2539493d"
+      }
+    ],
+    "post_lod_cleanup_schema": 2,
+    "lod": 3,
+    "cleanup": {
+      "input": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod3.glb",
+      "output": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\candidate\\shaman_v2_validation_lod3_microclean.glb",
+      "height_min": 0.66,
+      "max_triangles": 20,
+      "max_diagonal": 0.16313,
+      "components_total": 58,
+      "components_removed": 52,
+      "triangles_before": 11950,
+      "triangles_after": 11892,
+      "triangles_removed": 58,
+      "triangles_removed_percent": 0.4854,
+      "uv_bit_identical": null,
+      "positions_bit_identical": true,
+      "removed": [
+        {
+          "component": 24,
+          "triangles": 4,
+          "height_mean": 0.955,
+          "diagonal": 0.08091,
+          "verdict": "removed: detached shard at/above the antlers"
+        },
+        {
+          "component": 28,
+          "triangles": 4,
+          "height_mean": 0.8635,
+          "diagonal": 0.06792,
+          "verdict": "removed: detached shard at/above the antlers"
+        },
+        {
+          "component": 1,
+          "triangles": 1,
+          "height_mean": 0.559,
+          "diagonal": 0.03996,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 2,
+          "triangles": 1,
+          "height_mean": 0.0575,
+          "diagonal": 0.02268,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 3,
+          "triangles": 1,
+          "height_mean": 0.0501,
+          "diagonal": 0.04981,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 5,
+          "triangles": 1,
+          "height_mean": 0.037,
+          "diagonal": 0.04937,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 6,
+          "triangles": 1,
+          "height_mean": 0.1016,
+          "diagonal": 0.07283,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 7,
+          "triangles": 1,
+          "height_mean": 0.3346,
+          "diagonal": 0.0102,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 8,
+          "triangles": 1,
+          "height_mean": 0.0435,
+          "diagonal": 0.06153,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 9,
+          "triangles": 1,
+          "height_mean": 0.4145,
+          "diagonal": 0.04673,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 10,
+          "triangles": 1,
+          "height_mean": 0.4918,
+          "diagonal": 0.00183,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 11,
+          "triangles": 1,
+          "height_mean": 0.424,
+          "diagonal": 0.0488,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 12,
+          "triangles": 1,
+          "height_mean": 0.2502,
+          "diagonal": 0.04101,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 13,
+          "triangles": 1,
+          "height_mean": 0.9301,
+          "diagonal": 0.05135,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 14,
+          "triangles": 1,
+          "height_mean": 0.9609,
+          "diagonal": 0.04979,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 15,
+          "triangles": 1,
+          "height_mean": 0.572,
+          "diagonal": 0.00024,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 16,
+          "triangles": 1,
+          "height_mean": 0.9151,
+          "diagonal": 0.03578,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 17,
+          "triangles": 1,
+          "height_mean": 0.9765,
+          "diagonal": 0.04332,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 18,
+          "triangles": 1,
+          "height_mean": 0.8464,
+          "diagonal": 0.0314,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 19,
+          "triangles": 1,
+          "height_mean": 0.6073,
+          "diagonal": 0.05079,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 20,
+          "triangles": 1,
+          "height_mean": 0.1637,
+          "diagonal": 0.06785,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 21,
+          "triangles": 1,
+          "height_mean": 0.4976,
+          "diagonal": 0.03121,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 22,
+          "triangles": 1,
+          "height_mean": 0.9224,
+          "diagonal": 0.04103,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 23,
+          "triangles": 1,
+          "height_mean": 0.8544,
+          "diagonal": 0.03369,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 25,
+          "triangles": 1,
+          "height_mean": 0.5608,
+          "diagonal": 0.02151,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 26,
+          "triangles": 1,
+          "height_mean": 0.928,
+          "diagonal": 0.06456,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 27,
+          "triangles": 1,
+          "height_mean": 0.8986,
+          "diagonal": 0.0366,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 30,
+          "triangles": 1,
+          "height_mean": 0.5402,
+          "diagonal": 0.03363,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 31,
+          "triangles": 1,
+          "height_mean": 0.0589,
+          "diagonal": 0.01745,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 32,
+          "triangles": 1,
+          "height_mean": 0.9967,
+          "diagonal": 0.02105,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 33,
+          "triangles": 1,
+          "height_mean": 0.9549,
+          "diagonal": 0.02744,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 34,
+          "triangles": 1,
+          "height_mean": 0.3287,
+          "diagonal": 0.00193,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 35,
+          "triangles": 1,
+          "height_mean": 0.5614,
+          "diagonal": 0.04165,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 36,
+          "triangles": 1,
+          "height_mean": 0.5463,
+          "diagonal": 0.03944,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 37,
+          "triangles": 1,
+          "height_mean": 0.0191,
+          "diagonal": 0.04516,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 38,
+          "triangles": 1,
+          "height_mean": 0.8653,
+          "diagonal": 0.01803,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 39,
+          "triangles": 1,
+          "height_mean": 0.0953,
+          "diagonal": 0.08728,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 40,
+          "triangles": 1,
+          "height_mean": 0.0388,
+          "diagonal": 0.02297,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 41,
+          "triangles": 1,
+          "height_mean": 0.0278,
+          "diagonal": 0.01233,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 42,
+          "triangles": 1,
+          "height_mean": 0.5193,
+          "diagonal": 0.01058,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 43,
+          "triangles": 1,
+          "height_mean": 0.2574,
+          "diagonal": 0.07163,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 44,
+          "triangles": 1,
+          "height_mean": 0.5232,
+          "diagonal": 0.04167,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 45,
+          "triangles": 1,
+          "height_mean": 0.3713,
+          "diagonal": 0.02072,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 46,
+          "triangles": 1,
+          "height_mean": 0.1231,
+          "diagonal": 0.04327,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 47,
+          "triangles": 1,
+          "height_mean": 0.5429,
+          "diagonal": 0.01396,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 48,
+          "triangles": 1,
+          "height_mean": 0.5451,
+          "diagonal": 0.00166,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 49,
+          "triangles": 1,
+          "height_mean": 0.1053,
+          "diagonal": 0.01823,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 50,
+          "triangles": 1,
+          "height_mean": 0.8795,
+          "diagonal": 0.01619,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 52,
+          "triangles": 1,
+          "height_mean": 0.8743,
+          "diagonal": 0.02135,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 53,
+          "triangles": 1,
+          "height_mean": 0.8991,
+          "diagonal": 0.03201,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 54,
+          "triangles": 1,
+          "height_mean": 0.0492,
+          "diagonal": 0.04456,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        },
+        {
+          "component": 57,
+          "triangles": 1,
+          "height_mean": 0.0295,
+          "diagonal": 0.03,
+          "verdict": "removed: single-triangle island cannot be a real feature"
+        }
+      ],
+      "kept_non_body": [
+        {
+          "component": 29,
+          "triangles": 8,
+          "height_mean": 0.5749,
+          "diagonal": 0.08693,
+          "verdict": "kept: below the head region"
+        },
+        {
+          "component": 55,
+          "triangles": 8,
+          "height_mean": 0.0953,
+          "diagonal": 0.1366,
+          "verdict": "kept: below the head region"
+        },
+        {
+          "component": 4,
+          "triangles": 5,
+          "height_mean": 0.0832,
+          "diagonal": 0.05197,
+          "verdict": "kept: below the head region"
+        },
+        {
+          "component": 51,
+          "triangles": 4,
+          "height_mean": 0.1225,
+          "diagonal": 0.08921,
+          "verdict": "kept: below the head region"
+        },
+        {
+          "component": 56,
+          "triangles": 4,
+          "height_mean": 0.0626,
+          "diagonal": 0.0887,
+          "verdict": "kept: below the head region"
+        }
+      ]
+    },
+    "verify": {
+      "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\candidate\\shaman_v2_validation_lod3_microclean.glb",
+      "triangles": 11892,
+      "components": 6,
+      "extent": {
+        "x": 1.6473346948623657,
+        "y": 1.948953628540039,
+        "z": 0.597893476486206
+      },
+      "axis_ratio": 3.2597,
+      "longest_axis": "y",
+      "debris": {
+        "unsupported_components_remaining": 0,
+        "triangles_in_shards": 0,
+        "shards": []
+      },
+      "failure_codes": [],
+      "advisory_codes": [],
+      "messages": [],
+      "passed": true
+    }
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "targets": [
+          220000,
+          80000,
+          35000,
+          12000
+        ],
+        "lods": [
+          {
+            "lod": 0,
+            "target": 220000,
+            "triangles": 219968,
+            "sha256": "96e6bdbb2e823a98d91be08c3fdbbc39eb9986193c72d7208d0a2c2d53f6d496"
+          },
+          {
+            "lod": 1,
+            "target": 80000,
+            "triangles": 79965,
+            "sha256": "92f213bf5cd61a9ade96c6436b8b541c75b8f859f7f92a4aca85e987bd2e4268"
+          },
+          {
+            "lod": 2,
+            "target": 35000,
+            "triangles": 34961,
+            "sha256": "573cb7d228f6f49aa392cc361196289911bb213c3c30f9ea78d0cbe9e1015384"
+          },
+          {
+            "lod": 3,
+            "target": 12000,
+            "triangles": 11950,
+            "sha256": "fd835300f55298c79dc65cd0d034514bff9824c815a56ea9a0b23fcb2539493d"
+          }
+        ]
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 119.6
+    }
+  ],
+  "finished_at": "2026-08-01T14:12:45Z",
+  "failure_codes": [
+    "MICRO_FLOATING_DEBRIS"
+  ],
+  "needs_human": false,
+  "detail": "LOD3 verification failed loss=0.4854%: GEOMETRY_QA passed=True axis_ratio=3.26 components=6 shards=0 codes=[] advisory=[]\n"
+}

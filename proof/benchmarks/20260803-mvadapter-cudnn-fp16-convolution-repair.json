@@ -1,0 +1,430 @@
+{
+  "schema": "lowvram3d_mvadapter_cudnn_repair_proof_v1",
+  "date": "2026-08-03",
+  "branch": "integration/unified-pipeline-v2-20260802",
+  "classification": "MVADAPTER_STEP1_NAN_FIXED_SMOKE_PROVEN",
+  "root_cause": {
+    "statement": "On this GTX 1660 SUPER with torch 2.8.0+cu126 / CUDA 12.6 / cuDNN 91002, an FP16 convolution executed through cuDNN returns partly non-finite output from entirely finite inputs. This is a defect of this specific runtime stack; it is not a claim about Turing or about cuDNN FP16 convolution in general.",
+    "first_finite_to_nonfinite_module": "down_blocks.0.resnets.0.conv1",
+    "isolated_reproducer": "workers/lowvram_mvadapter_i2mv_sd21.py::convolution_self_test"
+  },
+  "workaround": {
+    "statement": "Every MV-Adapter UNet forward runs under torch.backends.cudnn.flags(enabled=False).",
+    "scope": "unet.forward only",
+    "covers": [
+      "reference_unet_pass",
+      "denoising_unet_pass"
+    ],
+    "cudnn_left_enabled_for": [
+      "vae (fp32)",
+      "cond_encoder (fp32)",
+      "text_encoder"
+    ],
+    "preserved": [
+      "UNet FP16 weights",
+      "VAE FP32",
+      "condition encoder FP32",
+      "scheduler configuration",
+      "guidance and conditioning scales",
+      "adapter and camera contracts"
+    ]
+  },
+  "convolution_benchmark": "proof/benchmarks/20260803-mvadapter-cudnn-convolution-benchmark.json",
+  "runs": {
+    "smoke_256_2step": {
+      "output_dir": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_smoke_256_2step_v1",
+      "config": "configs\\texture\\gpu_panda_mvadapter_ig2mv_sd21_cudnn_smoke_256_20260803.json",
+      "status": "QA_REJECTED",
+      "resolution": 256,
+      "steps_requested": 2,
+      "steps_completed": 2,
+      "seed": 12345,
+      "views": 6,
+      "vae_dtype": "float32",
+      "condition_encoder_dtype": "float32",
+      "unet_dtype": "float16",
+      "convolution_self_test": {
+        "schema": "mvadapter_convolution_self_test_v1",
+        "probe": {
+          "module": "down_blocks.0.resnets.0.conv1",
+          "channels": 320,
+          "spatial": 32,
+          "kernel": 3,
+          "padding": 1,
+          "input_abs_max_target": 3.82,
+          "seed": 12345
+        },
+        "torch_version": "2.8.0+cu126",
+        "cuda_version": "12.6",
+        "cudnn_version": 91002,
+        "cudnn_available": true,
+        "gpu_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "compute_capability": "7.5",
+        "cuda_available": true,
+        "fp16_cudnn_finite_fraction": 0.74930423,
+        "fp16_no_cudnn_finite_fraction": 1.0,
+        "fp32_cudnn_finite_fraction": 1.0,
+        "max_error_fp16_no_cudnn_vs_fp32": 0.0014584064483642578,
+        "max_error_fp16_cudnn_vs_fp32": 2.262791872024536,
+        "executed": true,
+        "cudnn_fp16_convolution_safe": false,
+        "unet_cudnn_disabled": true,
+        "verdict_reason": "FP16_CUDNN_NON_FINITE"
+      },
+      "unet_cudnn_guard": {
+        "installed": true,
+        "scope": "unet.forward",
+        "covers": [
+          "reference_unet_pass",
+          "denoising_unet_pass"
+        ],
+        "cudnn_left_enabled_for": [
+          "vae",
+          "cond_encoder",
+          "text_encoder"
+        ],
+        "reason": "FP16_CUDNN_NON_FINITE"
+      },
+      "reference_unet_output_finite": true,
+      "finite_gate": {
+        "schema": "mvadapter_finite_gate_v1",
+        "expected_steps": 2,
+        "reference_forwards": 1,
+        "steps_recorded": 2,
+        "checks": {
+          "reference_unet_output_finite": true,
+          "step1_scaled_input_finite": true,
+          "step1_raw_unet_output_finite": true,
+          "step1_scheduler_output_finite": true,
+          "step1_latent_finite": true,
+          "step2_scaled_input_finite": true,
+          "step2_raw_unet_output_finite": true,
+          "step2_scheduler_output_finite": true,
+          "step2_latent_finite": true,
+          "final_latent_finite": true,
+          "latent_hashes_change_between_steps": true,
+          "views_not_all_identical": true
+        },
+        "missing_checks": [],
+        "failed_checks": [],
+        "passed": true,
+        "report": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_smoke_256_2step_v1\\finite_gate\\step_split_probe.json"
+      },
+      "latent_hashes": {
+        "step01_15_latent_for_next_iteration": "7a38499856fdaa451b204ab3d04cefae8a76f69d8ce0e740a390d09d98b36080",
+        "step02_15_latent_for_next_iteration": "2f1e101f12688ec45a61a8686a5a5e2b5f4f10da66cee59fb82389ec83567549"
+      },
+      "decoded_image_gate": {
+        "schema": "lowvram3d_mvadapter_decoded_image_gate_v1",
+        "image_count": 6,
+        "views": [
+          {
+            "index": 0,
+            "finite": true,
+            "mean": 102.374779,
+            "std": 34.666855,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 1,
+            "finite": true,
+            "mean": 93.424706,
+            "std": 36.049862,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 2,
+            "finite": true,
+            "mean": 101.370399,
+            "std": 26.895641,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 3,
+            "finite": true,
+            "mean": 102.701561,
+            "std": 36.492908,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 4,
+            "finite": true,
+            "mean": 119.968788,
+            "std": 31.445704,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 5,
+            "finite": true,
+            "mean": 110.732552,
+            "std": 33.830482,
+            "non_black": true,
+            "non_flat": true
+          }
+        ],
+        "distinct_image_hashes": 6,
+        "all_views_identical": false,
+        "vae_output_finite": true,
+        "all_non_black": true,
+        "all_non_flat": true,
+        "passed": true
+      },
+      "latent_telemetry": {
+        "schema": "mvadapter_latent_telemetry_v1",
+        "checkpoint_count": 1,
+        "step_count": 2,
+        "step_hashes_all_distinct": true,
+        "violations": [],
+        "first_failure": null,
+        "clean": true
+      },
+      "output_images": [
+        {
+          "index": 0,
+          "name": "view_0_front.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_smoke_256_2step_v1\\view_0_front.png",
+          "sha256": "1a3f886add9537239a8f947d61d277d4ce90f43a4dc93320077193e511e13782"
+        },
+        {
+          "index": 1,
+          "name": "view_1_right.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_smoke_256_2step_v1\\view_1_right.png",
+          "sha256": "b0ffd7d51d90055dbed89701441fb0a71c2024b3a7b56651929c83d9da2370ec"
+        },
+        {
+          "index": 2,
+          "name": "view_2_rear.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_smoke_256_2step_v1\\view_2_rear.png",
+          "sha256": "7de21ea5478109032d84f29a7b4e3430ab26caade450ff6e89c8c46dc7ad4999"
+        },
+        {
+          "index": 3,
+          "name": "view_3_left.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_smoke_256_2step_v1\\view_3_left.png",
+          "sha256": "9f8b8aa02068faaa684c9867a22206828145966ff766887fad6a9f2690f1f31a"
+        },
+        {
+          "index": 4,
+          "name": "view_4_top.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_smoke_256_2step_v1\\view_4_top.png",
+          "sha256": "9900d7836cb4db1ae2743f7fe674b7b2b1472a04bec1423af7aa2b2f322d09f0"
+        },
+        {
+          "index": 5,
+          "name": "view_5_bottom.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_smoke_256_2step_v1\\view_5_bottom.png",
+          "sha256": "f8bafca4189593d4a8a4ca1780273e9e387ba3cc1a64f338e5917827cfd14b57"
+        }
+      ],
+      "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_smoke_256_2step_v1\\six_view_contact_sheet.png",
+      "wall_seconds": 33.676,
+      "peak_memory_allocated_mb": 373.679,
+      "peak_memory_reserved_mb": 394.0,
+      "production_qa_passed": false,
+      "production_qa_note": "Two denoising steps of a twenty-step schedule: the structural and colour gates reject an undercooked image, which is expected and is not part of the numerical repair claim."
+    },
+    "diagnostic_384_2step": {
+      "output_dir": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_diagnostic_384_2step_v1",
+      "config": "configs\\texture\\gpu_panda_mvadapter_ig2mv_sd21_cudnn_diagnostic_384_20260803.json",
+      "status": "QA_REJECTED",
+      "resolution": 384,
+      "steps_requested": 2,
+      "steps_completed": 2,
+      "seed": 12345,
+      "views": 6,
+      "vae_dtype": "float32",
+      "condition_encoder_dtype": "float32",
+      "unet_dtype": "float16",
+      "convolution_self_test": {
+        "schema": "mvadapter_convolution_self_test_v1",
+        "probe": {
+          "module": "down_blocks.0.resnets.0.conv1",
+          "channels": 320,
+          "spatial": 32,
+          "kernel": 3,
+          "padding": 1,
+          "input_abs_max_target": 3.82,
+          "seed": 12345
+        },
+        "torch_version": "2.8.0+cu126",
+        "cuda_version": "12.6",
+        "cudnn_version": 91002,
+        "cudnn_available": true,
+        "gpu_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "compute_capability": "7.5",
+        "cuda_available": true,
+        "fp16_cudnn_finite_fraction": 0.74866027,
+        "fp16_no_cudnn_finite_fraction": 1.0,
+        "fp32_cudnn_finite_fraction": 1.0,
+        "max_error_fp16_no_cudnn_vs_fp32": 0.0011115074157714844,
+        "max_error_fp16_cudnn_vs_fp32": 2.5586724281311035,
+        "executed": true,
+        "cudnn_fp16_convolution_safe": false,
+        "unet_cudnn_disabled": true,
+        "verdict_reason": "FP16_CUDNN_NON_FINITE"
+      },
+      "unet_cudnn_guard": {
+        "installed": true,
+        "scope": "unet.forward",
+        "covers": [
+          "reference_unet_pass",
+          "denoising_unet_pass"
+        ],
+        "cudnn_left_enabled_for": [
+          "vae",
+          "cond_encoder",
+          "text_encoder"
+        ],
+        "reason": "FP16_CUDNN_NON_FINITE"
+      },
+      "reference_unet_output_finite": true,
+      "finite_gate": {
+        "schema": "mvadapter_finite_gate_v1",
+        "expected_steps": 2,
+        "reference_forwards": 1,
+        "steps_recorded": 2,
+        "checks": {
+          "reference_unet_output_finite": true,
+          "step1_scaled_input_finite": true,
+          "step1_raw_unet_output_finite": true,
+          "step1_scheduler_output_finite": true,
+          "step1_latent_finite": true,
+          "step2_scaled_input_finite": true,
+          "step2_raw_unet_output_finite": true,
+          "step2_scheduler_output_finite": true,
+          "step2_latent_finite": true,
+          "final_latent_finite": true,
+          "latent_hashes_change_between_steps": true,
+          "views_not_all_identical": true
+        },
+        "missing_checks": [],
+        "failed_checks": [],
+        "passed": true,
+        "report": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_diagnostic_384_2step_v1\\finite_gate\\step_split_probe.json"
+      },
+      "latent_hashes": {
+        "step01_15_latent_for_next_iteration": "09fc18d94585624e0dd10e2e86e79ba3f43478468b5db5a1c537e8c1c76c2858",
+        "step02_15_latent_for_next_iteration": "28dfaaba8ba169e809599db2375820b83f9ed3323f9db0c322e3a5426a3dacd6"
+      },
+      "decoded_image_gate": {
+        "schema": "lowvram3d_mvadapter_decoded_image_gate_v1",
+        "image_count": 6,
+        "views": [
+          {
+            "index": 0,
+            "finite": true,
+            "mean": 114.193474,
+            "std": 14.900507,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 1,
+            "finite": true,
+            "mean": 110.092377,
+            "std": 15.015876,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 2,
+            "finite": true,
+            "mean": 115.987,
+            "std": 13.709492,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 3,
+            "finite": true,
+            "mean": 124.181366,
+            "std": 13.871672,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 4,
+            "finite": true,
+            "mean": 117.940201,
+            "std": 15.918542,
+            "non_black": true,
+            "non_flat": true
+          },
+          {
+            "index": 5,
+            "finite": true,
+            "mean": 118.805862,
+            "std": 16.76195,
+            "non_black": true,
+            "non_flat": true
+          }
+        ],
+        "distinct_image_hashes": 6,
+        "all_views_identical": false,
+        "vae_output_finite": true,
+        "all_non_black": true,
+        "all_non_flat": true,
+        "passed": true
+      },
+      "latent_telemetry": {
+        "schema": "mvadapter_latent_telemetry_v1",
+        "checkpoint_count": 1,
+        "step_count": 2,
+        "step_hashes_all_distinct": true,
+        "violations": [],
+        "first_failure": null,
+        "clean": true
+      },
+      "output_images": [
+        {
+          "index": 0,
+          "name": "view_0_front.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_diagnostic_384_2step_v1\\view_0_front.png",
+          "sha256": "d943aff1f85cde1be4229b2dcd938e56f796a4ec2b1d5e396dd6bd1f4ebd52fd"
+        },
+        {
+          "index": 1,
+          "name": "view_1_right.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_diagnostic_384_2step_v1\\view_1_right.png",
+          "sha256": "2894df0d7b9d79948e5e858b56acb95f64623d186d52b655cc9e870198c3de13"
+        },
+        {
+          "index": 2,
+          "name": "view_2_rear.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_diagnostic_384_2step_v1\\view_2_rear.png",
+          "sha256": "517b5c29ecd1a67ff001b2cdc6b97bd2ce2d06d58f5a98805a6da01dcf275326"
+        },
+        {
+          "index": 3,
+          "name": "view_3_left.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_diagnostic_384_2step_v1\\view_3_left.png",
+          "sha256": "7e53fcf5709ff49f8a24ffa15b7c658efd0580b95c0f56ce6821c7af80b8e7dc"
+        },
+        {
+          "index": 4,
+          "name": "view_4_top.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_diagnostic_384_2step_v1\\view_4_top.png",
+          "sha256": "8f50d613ddcebaa71109d42a240ca8541d1942ced108b9e8f7531deb170e4072"
+        },
+        {
+          "index": 5,
+          "name": "view_5_bottom.png",
+          "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_diagnostic_384_2step_v1\\view_5_bottom.png",
+          "sha256": "33d8e071328c47e4d2afd97343747a895e33e84f42352b2b710460db9f964c43"
+        }
+      ],
+      "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cudnn_diagnostic_384_2step_v1\\six_view_contact_sheet.png",
+      "wall_seconds": 44.273,
+      "peak_memory_allocated_mb": 828.771,
+      "peak_memory_reserved_mb": 892.0,
+      "production_qa_passed": false,
+      "production_qa_note": "Two denoising steps of a twenty-step schedule: the structural and colour gates reject an undercooked image, which is expected and is not part of the numerical repair claim."
+    }
+  },
+  "twenty_step_production_run": "NOT_AUTHORIZED_BY_THIS_PROOF"
+}

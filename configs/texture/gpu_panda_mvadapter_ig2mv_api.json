@@ -1,0 +1,26 @@
+{
+  "base_url": "http://127.0.0.1:8188",
+  "workflow_api": "gpu_panda_mvadapter_ig2mv_api_workflow.json",
+  "gpu_lock": "C:\\AI\\LowVRAM3D-benchmarks\\locks\\panda-hybrid-gpu.lock",
+  "bindings": {
+    "source": {"node": "2", "input": "image"},
+    "mesh": {"node": "3", "input": "mesh_path"},
+    "prompt": {"node": "3", "input": "prompt"},
+    "negative_prompt": {"node": "3", "input": "negative_prompt"},
+    "width": {"node": "3", "input": "width"},
+    "height": {"node": "3", "input": "height"},
+    "seed": {"node": "3", "input": "seed"},
+    "view_index": {"node": "4", "input": "batch_index"},
+    "output_prefix": {"node": "5", "input": "filename_prefix"}
+  },
+  "output_nodes": ["5"],
+  "runtime": {
+    "dtype": "FP16",
+    "bf16": false,
+    "flash_attention_2": false,
+    "attention": "PYTORCH_SDPA_OR_CURRENT_PROVEN_DEFAULT",
+    "batch_size": 1,
+    "parallel_gpu_jobs": 1,
+    "unload_models_after_attempt": true
+  }
+}

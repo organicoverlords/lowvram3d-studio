@@ -1,0 +1,23 @@
+{
+  "classification": "PROVEN",
+  "scope": "repository fixtures only",
+  "models_folder_stability": "NOT_PROVEN_USER_STILL_MOVING_FILES",
+  "live_collection_scanned": false,
+  "live_collection_rendered": false,
+  "tool": "workers/content_addressed_pairing.py",
+  "tests": {
+    "command": "python -m unittest -q tests/test_content_addressed_pairing.py",
+    "passed": 7
+  },
+  "covered_behaviors": [
+    "content identity survives path change",
+    "duplicate model formats link by SHA-256",
+    "near-duplicate PNG grouping",
+    "one image ranks multiple provenance-backed models",
+    "filename-only evidence cannot become high confidence",
+    "unchanged inventory records reuse cached hashes",
+    "changed snapshot is provisional",
+    "source files remain byte-identical"
+  ],
+  "next_action": "wait for explicit MODELS FOLDER READY before real collection inventory"
+}

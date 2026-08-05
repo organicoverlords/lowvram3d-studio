@@ -1,0 +1,24 @@
+﻿{
+    "passed":  true,
+    "workflow_run_id":  "30705751225",
+    "head_sha":  "c89a51eeaca586a87bc11739686789bcd07610fc",
+    "replay_only":  false,
+    "forbidden_shaman_fbx_used":  false,
+    "source_sha256":  "4d23adc758c5b700dd29939e37c043ce61919792b566bdcf13f58b1409d6cf6f",
+    "canonical_high_sha256":  "ca4749bc47181e27e7652a95f1cde59a21870772730cf0845d6d6794564a0ffe",
+    "required_stage_status":  {
+                                  "LOD":  "passed",
+                                  "UV":  "passed",
+                                  "BAKE":  "passed",
+                                  "TEXTURE":  "passed",
+                                  "TEXTURE_QA":  "passed"
+                              },
+    "front_direction":  "+z",
+    "front_policy":  "explicit_semantic_override",
+    "textured_glb":  {
+                         "path":  "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_textured_lod0.glb",
+                         "sha256":  "3dea9803c726a99ebc8dafd9124399d8e4d3e0d7009a24cc4f351d325d6efaf7",
+                         "bytes":  127222244
+                     },
+    "recorded_at":  "2026-08-01T15:40:33.1448986Z"
+}

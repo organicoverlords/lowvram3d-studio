@@ -1,0 +1,35 @@
+{
+  "stage": "GENERATE",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\high\\shaman_high_clean.glb": "ca4749bc47181e27e7652a95f1cde59a21870772730cf0845d6d6794564a0ffe"
+  },
+  "outputs": {
+    "master": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\GENERATE\\proven\\master.glb",
+      "sha256": "ca4749bc47181e27e7652a95f1cde59a21870772730cf0845d6d6794564a0ffe",
+      "bytes": 91754564
+    }
+  },
+  "gates": {
+    "adopted_existing_master": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\high\\shaman_high_clean.glb",
+    "sha256": "ca4749bc47181e27e7652a95f1cde59a21870772730cf0845d6d6794564a0ffe"
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "adopted_existing_master": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\high\\shaman_high_clean.glb",
+        "sha256": "ca4749bc47181e27e7652a95f1cde59a21870772730cf0845d6d6794564a0ffe"
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 0.1
+    }
+  ],
+  "finished_at": "2026-08-01T13:03:37Z"
+}

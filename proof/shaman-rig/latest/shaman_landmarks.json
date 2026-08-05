@@ -1,0 +1,380 @@
+{
+  "stage": "LANDMARKS",
+  "body_segmentation": "REJECTED_NOT_OBSERVABLE",
+  "ground_z": -1.0099999904632568,
+  "crown_z": 0.9709314703941345,
+  "total_height_including_antlers": 1.9809314608573914,
+  "skull_top_z": 0.8858133216854185,
+  "body_height_ground_to_skull": 1.8958133121486753,
+  "symmetry_plane_x": -0.014997720718383789,
+  "torso_centreline_y": 0.012085400521755219,
+  "shoulder_z": 0.4524845646228641,
+  "shoulder_half_width": 0.2625808119773865,
+  "shoulder_core_width": 0.525161623954773,
+  "neck_z": 0.6072448350023478,
+  "neck_core_width": 0.32946714758872986,
+  "head_centre_z": 0.7542670918628573,
+  "hip_z": 0.03463183459825814,
+  "waist_z": 0.15163059900514783,
+  "chest_z": 0.377271073218435,
+  "knee_z": -0.49650541334412995,
+  "ankle_z": -0.9867859499063343,
+  "hip_half_width": 0.11028394103050232,
+  "lateral_arm_lobes": {
+    "r": {
+      "vertex_count": 11336,
+      "x_mean": 0.5996358394622803,
+      "x_outer": 0.8003538846969604,
+      "z_min": -0.4013766348361969,
+      "z_max": 0.0992855355143547,
+      "hand_centroid": [
+        0.486795574426651,
+        -0.0655856654047966,
+        -0.33530193567276
+      ]
+    },
+    "l": {
+      "vertex_count": 0,
+      "x_mean": -0.6296312808990479,
+      "x_outer": -0.830349326133728,
+      "z_min": -0.4013766348361969,
+      "z_max": 0.0992855355143547,
+      "hand_centroid": [
+        -0.5167910158634186,
+        -0.0655856654047966,
+        -0.33530193567276
+      ],
+      "mirrored_from": "r"
+    }
+  },
+  "robe_hem_z": -0.9867859499063343,
+  "anthropometric_fractions": {
+    "ankle": 0.039,
+    "knee": 0.285,
+    "hip": 0.53,
+    "waist": 0.63,
+    "chest": 0.72,
+    "shoulder": 0.818,
+    "neck": 0.87
+  },
+  "joint_count": 24,
+  "joints": [
+    {
+      "name": "root",
+      "position": [
+        -0.014997720718383789,
+        0.012085400521755219,
+        -1.0099999904632568
+      ],
+      "confidence": 0.9,
+      "source": "geometry_ground_plane",
+      "uncertainty_radius": 0.005,
+      "adjustable_during_deformation_qa": false,
+      "note": ""
+    },
+    {
+      "name": "pelvis",
+      "position": [
+        -0.014997720718383789,
+        0.012085400521755219,
+        0.03463183459825814
+      ],
+      "confidence": 0.55,
+      "source": "silhouette_skirt_flare_onset",
+      "uncertainty_radius": 0.09479066560743377,
+      "adjustable_during_deformation_qa": true,
+      "note": "pelvis bone hidden; height inferred from robe flare"
+    },
+    {
+      "name": "spine_01",
+      "position": [
+        -0.014997720718383789,
+        0.012085400521755219,
+        0.15163059900514783
+      ],
+      "confidence": 0.5,
+      "source": "interpolated_hip_to_shoulder",
+      "uncertainty_radius": 0.07583253248594701,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "spine_02",
+      "position": [
+        -0.014997720718383789,
+        0.012085400521755219,
+        0.26445083611179143
+      ],
+      "confidence": 0.5,
+      "source": "interpolated_hip_to_shoulder",
+      "uncertainty_radius": 0.07583253248594701,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "chest",
+      "position": [
+        -0.014997720718383789,
+        0.012085400521755219,
+        0.377271073218435
+      ],
+      "confidence": 0.55,
+      "source": "interpolated_hip_to_shoulder",
+      "uncertainty_radius": 0.06635346592520364,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "neck",
+      "position": [
+        -0.014997720718383789,
+        0.012085400521755219,
+        0.6072448350023478
+      ],
+      "confidence": 0.7,
+      "source": "silhouette_core_minimum",
+      "uncertainty_radius": 0.037916266242973506,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "head",
+      "position": [
+        -0.014997720718383789,
+        0.012085400521755219,
+        0.7542670918628573
+      ],
+      "confidence": 0.7,
+      "source": "silhouette_head_mass_centre",
+      "uncertainty_radius": 0.05687439936446026,
+      "adjustable_during_deformation_qa": false,
+      "note": ""
+    },
+    {
+      "name": "clavicle_l",
+      "position": [
+        -0.09902358055114746,
+        0.012085400521755219,
+        0.4524845646228641
+      ],
+      "confidence": 0.55,
+      "source": "silhouette_cape_shoulder_widening",
+      "uncertainty_radius": 0.07583253248594701,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "upperarm_l",
+      "position": [
+        -0.24081721901893616,
+        0.012085400521755219,
+        0.4145682983798906
+      ],
+      "confidence": 0.5,
+      "source": "silhouette_cape_shoulder_widening",
+      "uncertainty_radius": 0.09479066560743377,
+      "adjustable_during_deformation_qa": true,
+      "note": "sleeve exterior only; humerus not observable"
+    },
+    {
+      "name": "lowerarm_l",
+      "position": [
+        -0.49354635924100876,
+        0.012085400521755219,
+        0.1934158720076084
+      ],
+      "confidence": 0.4,
+      "source": "measured_lateral_arm_lobe",
+      "uncertainty_radius": 0.11374879872892052,
+      "adjustable_during_deformation_qa": true,
+      "note": "elbow hidden by sleeve"
+    },
+    {
+      "name": "hand_l",
+      "position": [
+        -0.5167910158634186,
+        -0.0655856654047966,
+        -0.33530193567276
+      ],
+      "confidence": 0.45,
+      "source": "measured_distal_arm_lobe_centroid",
+      "uncertainty_radius": 0.09479066560743377,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "thigh_l",
+      "position": [
+        -0.1252816617488861,
+        0.012085400521755219,
+        0.03463183459825814
+      ],
+      "confidence": 0.3,
+      "source": "anthropometric_fallback_inside_robe",
+      "uncertainty_radius": 0.11374879872892052,
+      "adjustable_during_deformation_qa": true,
+      "note": "hidden inside robe"
+    },
+    {
+      "name": "calf_l",
+      "position": [
+        -0.1252816617488861,
+        0.012085400521755219,
+        -0.49650541334412995
+      ],
+      "confidence": 0.3,
+      "source": "anthropometric_fallback_inside_robe",
+      "uncertainty_radius": 0.11374879872892052,
+      "adjustable_during_deformation_qa": true,
+      "note": "hidden inside robe"
+    },
+    {
+      "name": "foot_l",
+      "position": [
+        -0.1252816617488861,
+        0.012085400521755219,
+        -0.9867859499063343
+      ],
+      "confidence": 0.45,
+      "source": "lowest_mass_bearing_contact_slice",
+      "uncertainty_radius": 0.09479066560743377,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "toe_l",
+      "position": [
+        -0.1252816617488861,
+        -0.1047036424279213,
+        -1.0099999904632568
+      ],
+      "confidence": 0.35,
+      "source": "contact_slice_estimate",
+      "uncertainty_radius": 0.07583253248594701,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "clavicle_r",
+      "position": [
+        0.06902813911437988,
+        0.012085400521755219,
+        0.4524845646228641
+      ],
+      "confidence": 0.55,
+      "source": "silhouette_cape_shoulder_widening",
+      "uncertainty_radius": 0.07583253248594701,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "upperarm_r",
+      "position": [
+        0.21082177758216858,
+        0.012085400521755219,
+        0.4145682983798906
+      ],
+      "confidence": 0.5,
+      "source": "silhouette_cape_shoulder_widening",
+      "uncertainty_radius": 0.09479066560743377,
+      "adjustable_during_deformation_qa": true,
+      "note": "sleeve exterior only; humerus not observable"
+    },
+    {
+      "name": "lowerarm_r",
+      "position": [
+        0.4635509178042412,
+        0.012085400521755219,
+        0.1934158720076084
+      ],
+      "confidence": 0.4,
+      "source": "measured_lateral_arm_lobe",
+      "uncertainty_radius": 0.11374879872892052,
+      "adjustable_during_deformation_qa": true,
+      "note": "elbow hidden by sleeve"
+    },
+    {
+      "name": "hand_r",
+      "position": [
+        0.486795574426651,
+        -0.0655856654047966,
+        -0.33530193567276
+      ],
+      "confidence": 0.45,
+      "source": "measured_distal_arm_lobe_centroid",
+      "uncertainty_radius": 0.09479066560743377,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "thigh_r",
+      "position": [
+        0.09528622031211853,
+        0.012085400521755219,
+        0.03463183459825814
+      ],
+      "confidence": 0.3,
+      "source": "anthropometric_fallback_inside_robe",
+      "uncertainty_radius": 0.11374879872892052,
+      "adjustable_during_deformation_qa": true,
+      "note": "hidden inside robe"
+    },
+    {
+      "name": "calf_r",
+      "position": [
+        0.09528622031211853,
+        0.012085400521755219,
+        -0.49650541334412995
+      ],
+      "confidence": 0.3,
+      "source": "anthropometric_fallback_inside_robe",
+      "uncertainty_radius": 0.11374879872892052,
+      "adjustable_during_deformation_qa": true,
+      "note": "hidden inside robe"
+    },
+    {
+      "name": "foot_r",
+      "position": [
+        0.09528622031211853,
+        0.012085400521755219,
+        -0.9867859499063343
+      ],
+      "confidence": 0.45,
+      "source": "lowest_mass_bearing_contact_slice",
+      "uncertainty_radius": 0.09479066560743377,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "toe_r",
+      "position": [
+        0.09528622031211853,
+        -0.1047036424279213,
+        -1.0099999904632568
+      ],
+      "confidence": 0.35,
+      "source": "contact_slice_estimate",
+      "uncertainty_radius": 0.07583253248594701,
+      "adjustable_during_deformation_qa": true,
+      "note": ""
+    },
+    {
+      "name": "staff_grip",
+      "position": [
+        -0.33727504808318753,
+        0.02017905082807604,
+        -0.0981524773873389
+      ],
+      "confidence": 0.7,
+      "source": "proven_staff_axis_at_hand_height",
+      "uncertainty_radius": 0.03,
+      "adjustable_during_deformation_qa": false,
+      "note": ""
+    }
+  ],
+  "observable_joint_count": 4,
+  "inferred_joint_count": 20,
+  "policy": "Hidden limb joints are anthropometric fallback anchored on observed ground and skull-top landmarks. They are explicitly not proven anatomy and are marked adjustable so deformation QA can move them.",
+  "source_mesh": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig-base\\shaman_rig_base.blend",
+  "regions_manifest": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_semantic_regions.json"
+}

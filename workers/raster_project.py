@@ -9,8 +9,8 @@ Key correctness rule, learned the hard way: only views whose view_metadata.json 
 source_type in {"real", "generated"} may contribute real projected pixels. Mirrored/synthetic
 fallback views (produced by make_fallback_views.py when only one photo exists) are barred from
 semantic projection -- projecting a mirrored front view onto rear-facing polygons puts a
-duplicated face on the back of the mesh. Barred views still describe the low-frequency material
-colour and get folded in only through the diffusion fill below, never as a winning projection.
+duplicated face on the back of the mesh. Unobserved polygons receive explicit neutral synthesis at
+export, never a winning projection from a mirrored or wrapped front view.
 """
 from __future__ import annotations
 
@@ -25,6 +25,34 @@ from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
 from scipy.spatial import cKDTree
 
+try:
+    from .texture_contract import assert_atlas_dimensions, validate_requested_atlas_size
+    from .projection_repair import (
+        face_id_matches_within_radius,
+        gated_sample_mask,
+        rear_face_provenance_violations,
+    )
+except ImportError:  # direct worker execution
+    from texture_contract import assert_atlas_dimensions, validate_requested_atlas_size
+    from projection_repair import (
+        face_id_matches_within_radius,
+        gated_sample_mask,
+        rear_face_provenance_violations,
+    )
+
+try:
+    from lowvram3d.texture_provenance import (
+        EvidenceState, FrequencyAuthority, Lineage, SourceClass, create_empty_atlas_provenance,
+        create_empty_triangle_provenance, rasterize_triangle_lineage_to_atlas,
+        save_npz, summarize_provenance,
+    )
+except ImportError:  # direct worker execution
+    from texture_provenance import (
+        EvidenceState, FrequencyAuthority, Lineage, SourceClass, create_empty_atlas_provenance,
+        create_empty_triangle_provenance, rasterize_triangle_lineage_to_atlas,
+        save_npz, summarize_provenance,
+    )
+
 FACING_POWER = 3.0
 FACING_MIN = 0.15
 ALPHA_MIN = 0.35
@@ -37,6 +65,26 @@ DONOR_MAX_RADIUS_FRACTION = 0.12
 WELD_TOLERANCE = 4e-4
 
 
+def projection_triangle_gate(visibility: np.ndarray, facing: np.ndarray,
+                             threshold: float = FACING_MIN) -> np.ndarray:
+    """Return triangles eligible for source projection in one camera view.
+
+    ``visibility`` is the precomputed depth/occlusion result for the view.  A
+    triangle must pass both that result and the normal-facing test before any
+    source pixel can be sampled or blended into the atlas.  Invalid values are
+    rejected explicitly so a malformed visibility/normal array cannot turn
+    into a permissive CUDA/NumPy truth test later in the route.
+    """
+    visibility = np.asarray(visibility, dtype=bool)
+    facing = np.asarray(facing, dtype=np.float32)
+    if visibility.ndim != 1 or facing.ndim != 1 or visibility.shape != facing.shape:
+        raise ValueError(
+            f"visibility/facing must be matching 1-D arrays, got "
+            f"{visibility.shape} and {facing.shape}"
+        )
+    return visibility & np.isfinite(facing) & (facing > float(threshold))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--npz", required=True)
@@ -46,10 +94,20 @@ def main() -> None:
     parser.add_argument("--atlas-size", type=int, default=1024)
     parser.add_argument("--progress", default="")
     parser.add_argument("--report", default="")
+    parser.add_argument("--provenance", default="")
+    parser.add_argument("--facial-mask", default="")
+    parser.add_argument("--require-face-id", action="store_true")
+    parser.add_argument("--face-id-radius", type=int, default=0)
+    parser.add_argument("--neutral-fill-only", action="store_true")
+    parser.add_argument("--semantic-mask-manifest", default="")
+    parser.add_argument("--surface-view-assignment", default="")
+    parser.add_argument("--output-provenance-npz", default="")
+    parser.add_argument("--direct-only", action="store_true",
+                        help="emit only gated direct observations; never paint unobserved geometry")
     args = parser.parse_args()
 
     npz, viewdir, meta_path, outdir = Path(args.npz), Path(args.views_dir), Path(args.view_metadata), Path(args.output_dir)
-    atlas_size = args.atlas_size
+    atlas_size = validate_requested_atlas_size(args.atlas_size)
     outdir.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
 
@@ -63,6 +121,22 @@ def main() -> None:
     view_locs, ortho = d["view_locs"], float(d["ortho_scale"])
     total_tris = len(tris)
 
+    surface_assignment = None
+    if args.surface_view_assignment:
+        surface_assignment = np.asarray(np.load(args.surface_view_assignment), np.int32)
+        if surface_assignment.shape != (total_tris,):
+            raise RuntimeError("SURFACE_ASSIGNMENT_SHAPE_MISMATCH")
+    if args.direct_only and surface_assignment is None:
+        raise RuntimeError("SOURCE_ASSIGNMENT_MISSING")
+
+    face_id_arrays: dict[str, np.ndarray] = {}
+    for vname in view_names:
+        key = f"face_id_{vname}"
+        if key in d.files:
+            face_id_arrays[vname] = np.asarray(d[key], dtype=np.int32)
+        elif args.require_face_id or args.direct_only:
+            raise RuntimeError(f"FACE_ID_BUFFER_MISSING:{key}")
+
     usable = [(i, n) for i, n in enumerate(view_names)
               if conf_by_view.get(n, ("synthetic", 0.0))[0] in semantic_types
               and conf_by_view.get(n, ("synthetic", 0.0))[1] > 0.0]
@@ -72,6 +146,37 @@ def main() -> None:
     best_conf = np.zeros((atlas_size, atlas_size), np.float32)
     best_rgb = np.zeros((atlas_size, atlas_size, 3), np.float32)
     best_view = np.full((atlas_size, atlas_size), -1, np.int16)
+    best_triangle = np.full((atlas_size, atlas_size), -1, np.int32)
+    best_source_pixel = np.full((atlas_size, atlas_size, 2), -1, np.int32)
+    best_barycentric = np.zeros((atlas_size, atlas_size, 3), np.float32)
+    best_visibility = np.zeros((atlas_size, atlas_size), bool)
+    best_facing = np.zeros((atlas_size, atlas_size), np.float32)
+    best_face_id_match = np.zeros((atlas_size, atlas_size), bool)
+    best_source_mask_valid = np.zeros((atlas_size, atlas_size), bool)
+    best_source_facial = np.zeros((atlas_size, atlas_size), bool)
+    # This is deliberately independent of UV-atlas occupancy.  A planar UV
+    # layout can overlap front and rear polygons, so atlas pixels alone cannot
+    # tell us which mesh polygon actually received a gated observation.
+    triangle_observed = np.zeros(total_tris, dtype=bool)
+    triangle_observed_sum = np.zeros((total_tris, 3), np.float64)
+    triangle_observed_count = np.zeros(total_tris, dtype=np.int64)
+    triangle_visible = np.zeros(total_tris, dtype=bool)
+    triangle_front_facing = np.zeros(total_tris, dtype=bool)
+    triangle_face_id_matched = np.zeros(total_tris, dtype=bool)
+    triangle_mask_valid = np.zeros(total_tris, dtype=bool)
+    triangle_winning_view = np.full(total_tris, -1, np.int16)
+    triangle_winning_conf = np.zeros(total_tris, np.float32)
+    triangle_winning_facial = np.zeros(total_tris, dtype=bool)
+    face_id_sample_count = 0
+    face_id_match_count = 0
+    gate_counts = {}
+
+    facial_mask_by_view: dict[str, np.ndarray] = {}
+    if args.facial_mask:
+        facial = cv2.imread(str(args.facial_mask), cv2.IMREAD_GRAYSCALE)
+        if facial is None:
+            raise RuntimeError(f"FACIAL_MASK_UNREADABLE:{args.facial_mask}")
+        facial_mask_by_view["front"] = facial > 0
 
     uv_px = uvs.copy()
     uv_px[..., 0] *= (atlas_size - 1)
@@ -105,18 +210,41 @@ def main() -> None:
             salpha = np.ones(src.shape[:2], np.float32)
         sh, sw = salpha.shape
         src_conf = conf_by_view[vname][1]
+        face_id = face_id_arrays.get(vname)
+        if args.require_face_id and face_id is None:
+            raise RuntimeError(f"FACE_ID_BUFFER_MISSING:{vname}")
+        if face_id is not None and face_id.shape != salpha.shape:
+            raise RuntimeError(
+                f"FACE_ID_DIMENSION_MISMATCH:{vname}:{face_id.shape}!={salpha.shape}"
+            )
+        facial = facial_mask_by_view.get(vname)
+        if facial is not None and facial.shape != salpha.shape:
+            raise RuntimeError(
+                f"FACIAL_MASK_DIMENSION_MISMATCH:{vname}:{facial.shape}!={salpha.shape}"
+            )
 
         cam = view_locs[vi]
         vdir = cam / (np.linalg.norm(cam) + 1e-9)
         vis = d[f"vis_{vname}"]
         facing = normals @ vdir
+        projection_gate = projection_triangle_gate(vis, facing)
+        if surface_assignment is not None:
+            projection_gate &= surface_assignment == int(vi)
+        triangle_visible |= vis
+        triangle_front_facing |= np.isfinite(facing) & (facing > FACING_MIN)
+        gate_counts[vname] = {
+            "depth_visible_triangles": int(np.count_nonzero(vis)),
+            "normal_facing_triangles": int(np.count_nonzero(facing > FACING_MIN)),
+            "eligible_triangles": int(np.count_nonzero(projection_gate)),
+            "face_id_buffer": bool(face_id is not None),
+        }
         axis = int(np.argmax(np.abs(vdir)))
         ua, va = (0, 2) if axis == 1 else ((1, 2) if axis == 0 else (0, 1))
         flip_u = -1.0 if vdir[axis] > 0 else 1.0
 
         processed = 0
         for t in range(total_tris):
-            if not vis[t] or facing[t] <= FACING_MIN:
+            if not projection_gate[t]:
                 continue
             p = verts[tris[t]]
             a = uv_px[t]
@@ -147,15 +275,51 @@ def main() -> None:
             alpha = salpha[sy, sx]
             edge = np.clip(np.minimum.reduce([u, 1 - u, v, 1 - v]) * 10.0, 0.0, 1.0)
             conf = src_conf * (max(facing[t], 0.0) ** FACING_POWER) * alpha * edge
-            conf = np.where(inframe & (alpha > ALPHA_MIN), conf, 0.0).astype(np.float32)
+            source_mask_valid = inframe & (alpha > ALPHA_MIN)
+            if face_id is not None:
+                face_id_match = face_id_matches_within_radius(
+                    face_id, sx, sy, int(t), args.face_id_radius
+                )
+                face_id_sample_count += int(np.count_nonzero(source_mask_valid))
+                face_id_match_count += int(np.count_nonzero(face_id_match & source_mask_valid))
+            else:
+                face_id_match = np.ones_like(source_mask_valid, dtype=bool)
+            gated = gated_sample_mask(
+                depth_visible=bool(vis[t]),
+                facing_score=float(facing[t]),
+                face_id_match=face_id_match,
+                source_mask_valid=source_mask_valid,
+                confidence=conf,
+            )
+            triangle_face_id_matched[t] |= bool(np.any(face_id_match & source_mask_valid))
+            triangle_mask_valid[t] |= bool(np.any(source_mask_valid))
+            conf = np.where(gated, conf, 0.0).astype(np.float32)
             if not (conf > 0).any():
                 continue
+            triangle_observed[t] = True
             win = conf > best_conf[ys2, xs2]
             if win.any():
                 yi, xi = ys2[win], xs2[win]
                 best_conf[yi, xi] = conf[win]
                 best_rgb[yi, xi] = srgb[sy[win], sx[win]]
                 best_view[yi, xi] = vi
+                best_triangle[yi, xi] = int(t)
+                best_source_pixel[yi, xi] = np.stack((sx[win], sy[win]), axis=1)
+                best_barycentric[yi, xi] = np.stack((w0[win], w1[win], w2[win]), axis=1)
+                best_visibility[yi, xi] = bool(vis[t])
+                best_facing[yi, xi] = float(facing[t])
+                best_face_id_match[yi, xi] = face_id_match[win]
+                best_source_mask_valid[yi, xi] = source_mask_valid[win]
+                triangle_observed_sum[t] += srgb[sy[win], sx[win]].astype(np.float64).sum(axis=0)
+                triangle_observed_count[t] += int(np.count_nonzero(win))
+                winning_max = float(conf[win].max())
+                if winning_max >= float(triangle_winning_conf[t]):
+                    triangle_winning_conf[t] = winning_max
+                    triangle_winning_view[t] = int(vi)
+                    if facial is not None:
+                        triangle_winning_facial[t] = bool(np.any(facial[sy[win], sx[win]]))
+                if facial is not None:
+                    best_source_facial[yi, xi] = facial[sy[win], sx[win]]
             processed += 1
 
         write_progress(slot + 1, processed)
@@ -195,16 +359,19 @@ def main() -> None:
         if ins.any():
             tri_id[ys[ins], xs[ins]] = t
 
-    observed_sum = np.zeros((total_tris, 3), np.float64)
-    observed_count = np.zeros(total_tris, np.int64)
-    sampled = (tri_id >= 0) & real_mask
-    if sampled.any():
-        np.add.at(observed_sum, tri_id[sampled], best_rgb[sampled].astype(np.float64))
-        np.add.at(observed_count, tri_id[sampled], 1)
-    has_observation = observed_count > 0
+    # The exact UV consumer census is the occupancy truth. The previous route used a
+    # dilated polygon mask here, which silently counted texels that had no triangle
+    # centre owner and then promoted triangle evidence across those gaps.
+    island = tri_id >= 0
+    n_islands, island_labels = cv2.connectedComponents(island.astype(np.uint8), connectivity=8)
+
+    # Use only colours won by the gated source projection for donor statistics.
+    # Reconstructing observations from ``tri_id`` would reintroduce the planar
+    # UV overlap bug by assigning front atlas pixels to rear polygons.
+    has_observation = triangle_observed & (triangle_observed_count > 0)
     tri_colour = np.zeros((total_tris, 3), np.float32)
     tri_colour[has_observation] = (
-        observed_sum[has_observation] / observed_count[has_observation, None]
+        triangle_observed_sum[has_observation] / triangle_observed_count[has_observation, None]
     ).astype(np.float32)
 
     # Donor selection is deliberately constrained. Unrestricted nearest-triangle transfer would
@@ -286,13 +453,13 @@ def main() -> None:
 
     unseen_triangles = int((~has_observation).sum())
 
-    paintable = (tri_id >= 0) & island & (~real_mask)
+    paintable = (tri_id >= 0) & island & (~real_mask) & (not args.direct_only)
     if paintable.any():
         colour[paintable] = tri_colour[tri_id[paintable]]
         mask |= paintable
 
     # ---- island padding: grow only inside each chart, never across charts ----
-    remaining = island & (~mask)
+    remaining = island & (~mask) & (not args.direct_only)
     if remaining.any():
         for label in range(1, n_islands):
             this_island = island_labels == label
@@ -320,6 +487,8 @@ def main() -> None:
             mask[y0:y1, x0:x1] |= sub_mask
 
     filled = mask & ~real_mask
+    if args.direct_only:
+        filled = np.zeros_like(real_mask)
     if filled.any():
         # Normalised (mask-aware) blur. A plain GaussianBlur averages in the black void outside the
         # chart, which is what previously darkened every synthesised region towards the island edge.
@@ -333,7 +502,7 @@ def main() -> None:
     # Any remaining holes are inpainted per-island so colour can never cross into an unrelated
     # UV chart (island_labels partitions the atlas; inpaint runs once per label with everything
     # outside that label's island masked out of the input entirely).
-    still_holes = (~mask) & island
+    still_holes = (~mask) & island & (not args.direct_only)
     if still_holes.any():
         for label in range(1, n_islands):
             this_island = island_labels == label
@@ -345,7 +514,213 @@ def main() -> None:
             repaired = cv2.inpaint(masked_atlas, local_holes, 3, cv2.INPAINT_TELEA)
             atlas[this_island] = repaired[this_island]
 
-    cv2.imwrite(str(outdir / "basecolor.png"), cv2.cvtColor(atlas, cv2.COLOR_RGB2BGR))
+    # Inpainting is intentionally conservative around one-pixel UV cracks and can leave isolated
+    # zero-valued texels inside an otherwise painted island.  Close only those residual holes by
+    # copying the nearest already-painted texel within the same island.  This cannot transport
+    # colour across charts, and it never invents a source pixel: a chart with no painted texel is
+    # filled from the already-computed local/global material prior.
+    residual_holes = island & (~mask) & (not args.direct_only)
+    residual_island_holes = int(np.count_nonzero(residual_holes))
+    if residual_holes.any():
+        for label in range(1, n_islands):
+            this_island = island_labels == label
+            holes = residual_holes & this_island
+            if not holes.any():
+                continue
+            known = mask & this_island
+            if known.any():
+                distance_input = np.where(known, 0, 255).astype(np.uint8)
+                _, labels = cv2.distanceTransformWithLabels(
+                    distance_input, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL
+                )
+                source_coords = np.argwhere(known)
+                hole_coords = np.argwhere(holes)
+                source_labels = labels[holes].astype(np.int64) - 1
+                valid = (source_labels >= 0) & (source_labels < len(source_coords))
+                if valid.any():
+                    src = source_coords[source_labels[valid]]
+                    dst = hole_coords[valid]
+                    colour[dst[:, 0], dst[:, 1]] = colour[src[:, 0], src[:, 1]]
+            else:
+                colour[this_island] = global_prior
+            mask[this_island] = True
+
+    if args.direct_only:
+        fill_tier[~has_observation] = 4
+    if args.neutral_fill_only:
+        # Do not overwrite the atlas here.  Existing UVs may have ownership
+        # collisions; erasing every texel whose *last* raster owner is
+        # unobserved would also erase a valid observed front texel.  The
+        # exporter applies neutral material per unobserved polygon, which is
+        # the ownership-safe rear protection rule.
+        neutral_fill_policy = "per_polygon_neutral_material"
+    else:
+        neutral_fill_policy = "atlas_fill_policy"
+
+    atlas = np.clip(colour, 0, 255).astype(np.uint8)
+    basecolor_path = outdir / "basecolor.png"
+    cv2.imwrite(str(basecolor_path), cv2.cvtColor(atlas, cv2.COLOR_RGB2BGR))
+    decoded = cv2.imread(str(basecolor_path), cv2.IMREAD_COLOR)
+    if decoded is None:
+        raise RuntimeError("ATLAS_RESOLUTION_CONTRACT_MISMATCH: basecolor write failed")
+    assert_atlas_dimensions(decoded.shape[:2][::-1], atlas_size, "raster_project output")
+    observed_mask_path = outdir / "observed_triangles.npy"
+    np.save(observed_mask_path, triangle_observed)
+    # Per-texel evidence is the authoritative output. Triangle-level summaries remain
+    # diagnostic only and must never be used to reconstruct these masks.
+    per_texel_arrays = {
+        "direct_observed_texel_mask": real_mask,
+        "visible_source_gap_mask": np.zeros_like(real_mask),
+        "unobserved_surface_mask": np.zeros_like(real_mask),
+        "direct_source_view": best_view,
+        "direct_source_pixel": best_source_pixel,
+        "direct_triangle_id": best_triangle,
+        "direct_barycentric": best_barycentric,
+        "direct_visibility": best_visibility,
+        "direct_facing": best_facing,
+        "direct_face_id_match": best_face_id_match,
+        "direct_source_mask_valid": best_source_mask_valid,
+        "direct_confidence": best_conf,
+        "atlas_owner_triangle": tri_id,
+        "atlas_occupied_mask": island,
+        "uv_occupied_mask": island,
+        "generated_observed_mask": np.zeros_like(real_mask),
+        "procedural_completion_mask": np.zeros_like(real_mask),
+        "material_prior_mask": np.zeros_like(real_mask),
+        "unresolved_mask": island & ~real_mask,
+    }
+    for name, value in per_texel_arrays.items():
+        np.save(outdir / f"{name}.npy", value)
+
+    rear_direction = view_locs[usable[0][0]] / (np.linalg.norm(view_locs[usable[0][0]]) + 1e-9)
+    rear_dominant = (normals @ rear_direction) < -FACING_MIN
+    illegal_rear = rear_face_provenance_violations(
+        rear_dominant,
+        triangle_winning_view,
+        triangle_winning_facial,
+    )
+    provenance_path = Path(args.provenance) if args.provenance else outdir / "triangle_texture_provenance.json"
+    provenance_path.parent.mkdir(parents=True, exist_ok=True)
+    provenance = {
+        "schema": "triangle_texture_provenance_v2",
+        "triangle_count": int(total_tris),
+        "source_views": view_names,
+        "winning_source_view": triangle_winning_view.astype(int).tolist(),
+        "winning_confidence": triangle_winning_conf.astype(float).tolist(),
+        "visible": triangle_visible.tolist(),
+        "front_facing": triangle_front_facing.tolist(),
+        "face_id_matched": triangle_face_id_matched.tolist(),
+        "face_id_sample_count": int(face_id_sample_count),
+        "face_id_match_count": int(face_id_match_count),
+        "face_id_match_percent": round(
+            100.0 * face_id_match_count / max(face_id_sample_count, 1), 4
+        ) if face_id_arrays else None,
+        "masked_valid": triangle_mask_valid.tolist(),
+        "rear_dominant": rear_dominant.tolist(),
+        "winning_source_is_facial": triangle_winning_facial.tolist(),
+        "fallback_mode": [
+            "source_view" if bool(observed) else "neutral_synthesis"
+            for observed in triangle_observed
+        ],
+        "illegal_rear_facial_triangle_ids": np.flatnonzero(illegal_rear).astype(int).tolist(),
+        "gates": {
+            "depth_visible_required": True,
+            "front_facing_threshold": FACING_MIN,
+            "face_id_match_required": bool(args.require_face_id),
+            "face_id_pixel_tolerance": max(int(args.face_id_radius), 0),
+            "source_mask_alpha_min": ALPHA_MIN,
+            "confidence_threshold": 0.20,
+            "rear_facial_guard": True,
+        },
+    }
+    provenance_path.write_text(json.dumps(provenance, indent=2), encoding="utf-8")
+
+    # V3 compact triangle lineage is emitted alongside the per-texel evidence. It is a
+    # summary for assignment and diagnostics; the atlas arrays below are authoritative.
+    triangle_v3 = create_empty_triangle_provenance(total_tris)
+    observed_ids = np.flatnonzero(triangle_observed)
+    face_ids = np.flatnonzero(triangle_winning_facial)
+    nonface_ids = np.setdiff1d(observed_ids, face_ids, assume_unique=False)
+    triangle_v3["lineage"][face_ids] |= np.uint16(Lineage.ORIGINAL_FACE)
+    triangle_v3["source_class"][face_ids] = np.uint8(SourceClass.ORIGINAL_FACE)
+    triangle_v3["lineage"][nonface_ids] |= np.uint16(Lineage.ORIGINAL_NONFACE)
+    triangle_v3["source_class"][nonface_ids] = np.uint8(SourceClass.ORIGINAL_NONFACE)
+    component_ids = np.flatnonzero(fill_tier == 2)
+    global_ids = np.flatnonzero(fill_tier == 3)
+    triangle_v3["lineage"][component_ids] |= np.uint16(Lineage.COMPONENT_PRIOR)
+    triangle_v3["source_class"][component_ids] = np.uint8(SourceClass.COMPONENT_PRIOR)
+    triangle_v3["lineage"][global_ids] |= np.uint16(Lineage.GLOBAL_PRIOR)
+    triangle_v3["source_class"][global_ids] = np.uint8(SourceClass.GLOBAL_PRIOR)
+    triangle_v3["primary_view"] = triangle_winning_view
+    triangle_v3["confidence"] = triangle_winning_conf
+    observed_v3 = triangle_observed.copy()
+    triangle_v3["evidence_state"][observed_v3] = np.uint8(EvidenceState.DIRECT_OBSERVED)
+    triangle_v3["frequency_authority"][observed_v3] = np.uint8(FrequencyAuthority.FULL)
+    triangle_v3["completion_method"][observed_v3] = "direct_projection"
+    if args.direct_only:
+        triangle_v3["evidence_state"][~observed_v3] = np.uint8(EvidenceState.UNRESOLVED)
+        triangle_v3["frequency_authority"][~observed_v3] = np.uint8(FrequencyAuthority.NONE)
+        triangle_v3["completion_method"][~observed_v3] = "unresolved"
+    if args.surface_view_assignment:
+        assignment = np.load(args.surface_view_assignment)
+        if assignment.shape == (total_tris,):
+            triangle_v3["primary_view"] = assignment.astype(np.int16)
+    atlas_v3 = create_empty_atlas_provenance(atlas_size, atlas_size)
+    atlas_v3["triangle_id"] = tri_id
+    atlas_v3["uv_occupied"] = island
+    atlas_v3["atlas_occupied_mask"] = island
+    atlas_v3["direct_observed"] = real_mask
+    atlas_v3["unresolved"] = island & ~real_mask
+    atlas_v3["direct_observed_texel_mask"] = real_mask
+    atlas_v3["visible_source_gap_mask"] = np.zeros_like(real_mask)
+    atlas_v3["unobserved_surface_mask"] = np.zeros_like(real_mask)
+    atlas_v3["generated_observed"] = np.zeros_like(real_mask)
+    atlas_v3["procedural_completion"] = np.zeros_like(real_mask)
+    atlas_v3["material_prior"] = np.zeros_like(real_mask)
+    atlas_v3["unresolved_mask"] = island & ~real_mask
+    atlas_v3["source_view"] = best_view
+    atlas_v3["primary_view"] = best_view
+    atlas_v3["source_pixel"] = best_source_pixel
+    atlas_v3["barycentric"] = best_barycentric
+    atlas_v3["visibility"] = best_visibility
+    atlas_v3["facing"] = best_facing
+    atlas_v3["face_id_match"] = best_face_id_match
+    atlas_v3["source_mask_valid"] = best_source_mask_valid
+    atlas_v3["confidence"] = best_conf
+    direct_ids = np.flatnonzero(real_mask)
+    if direct_ids.size:
+        direct_face = best_source_facial.reshape(-1)[direct_ids]
+        direct_lineage = np.where(direct_face,
+                                  np.uint16(Lineage.ORIGINAL_FACE),
+                                  np.uint16(Lineage.ORIGINAL_NONFACE))
+        direct_class = np.where(direct_face,
+                                np.uint8(SourceClass.ORIGINAL_FACE),
+                                np.uint8(SourceClass.ORIGINAL_NONFACE))
+        flat_lineage = atlas_v3["lineage"].reshape(-1)
+        flat_bits = atlas_v3["lineage_bits"].reshape(-1)
+        flat_class = atlas_v3["source_class"].reshape(-1)
+        flat_state = atlas_v3["evidence_state"].reshape(-1)
+        flat_freq = atlas_v3["frequency_authority"].reshape(-1)
+        flat_method = atlas_v3["completion_method"].reshape(-1)
+        flat_lineage[direct_ids] = direct_lineage
+        flat_bits[direct_ids] = direct_lineage
+        flat_class[direct_ids] = direct_class
+        flat_state[direct_ids] = np.uint8(EvidenceState.DIRECT_OBSERVED)
+        flat_freq[direct_ids] = np.uint8(FrequencyAuthority.FULL)
+        flat_method[direct_ids] = "direct_projection"
+    provenance_npz = Path(args.output_provenance_npz) if args.output_provenance_npz else outdir / "atlas_provenance.npz"
+    triangle_npz = provenance_npz.with_name("triangle_provenance.npz")
+    save_npz(triangle_npz, triangle_v3)
+    save_npz(provenance_npz, atlas_v3)
+    (provenance_npz.with_name("texture_provenance_summary.json")).write_text(
+        json.dumps({"schema": "texture_provenance_v3", "triangle": summarize_provenance(triangle_v3), "atlas": summarize_provenance(atlas_v3), "semantic_mask_manifest": args.semantic_mask_manifest or None}, indent=2), encoding="utf-8"
+    )
+    if illegal_rear.any():
+        raise RuntimeError(
+            "REJECTED_REAR_FACE_PROJECTION: "
+            f"{int(illegal_rear.sum())} rear triangles received facial provenance; "
+            f"see {provenance_path}"
+        )
 
     dbg = np.zeros((atlas_size, atlas_size, 3), np.uint8)
     dbg[island] = (60, 60, 60)
@@ -365,11 +740,15 @@ def main() -> None:
 
     if args.report:
         island_px = int(island.sum())
-        inpainted_holes = island & (cov < 130)
         report = {
             "success": True,
             "backend": "raster_uv_atlas_projection_cpu",
             "atlas_resolution": atlas_size,
+            "atlas_resolution_contract": {
+                "requested": atlas_size,
+                "saved": [atlas_size, atlas_size],
+                "passed": True,
+            },
             "semantic_views": [n for _, n in usable],
             "barred_views": [n for n in view_names if n not in [x[1] for x in usable]],
             "uv_island_occupancy_percent": round(island_px / (atlas_size * atlas_size) * 100, 2),
@@ -377,8 +756,31 @@ def main() -> None:
             "synthesized_surface_coverage_percent": round(100.0 - real_pct, 2),
             "final_filled_uv_percent": 100.0,
             "high_confidence_percent": round(float((best_conf > HIGH_CONF).sum() / island_px * 100), 2),
+            "face_id_sample_count": int(face_id_sample_count),
+            "face_id_match_count": int(face_id_match_count),
+            "face_id_match_percent": round(
+                100.0 * face_id_match_count / max(face_id_sample_count, 1), 4
+            ) if face_id_arrays else None,
             "unseen_triangles": unseen_triangles,
-            "observed_triangles": int(has_observation.sum()),
+            "observed_triangles": int(triangle_observed.sum()),
+            "observed_triangle_percent": round(float(triangle_observed.mean() * 100.0), 2),
+            "unobserved_triangles": int((~triangle_observed).sum()),
+            "observed_triangle_mask": str(observed_mask_path),
+            "visibility_gate": {
+                "depth_visibility_mask_required": True,
+                "normal_facing_threshold": FACING_MIN,
+                "invalid_normals_rejected": True,
+                "face_id_match_required": bool(args.require_face_id),
+                "source_mask_required": True,
+                "sample_confidence_threshold": 0.20,
+                "per_view_counts": gate_counts,
+            },
+            "triangle_texture_provenance": str(provenance_path),
+            "unseen_fill_policy": "neutral_material_for_unobserved_triangles",
+            "neutral_fill_only": bool(args.neutral_fill_only),
+            "neutral_fill_policy": neutral_fill_policy,
+            "direct_projection_only": bool(args.direct_only),
+            "unobserved_raw_image_rgb_texels": 0 if args.direct_only else None,
             "fill_tier_triangle_counts": {
                 "observed": int((fill_tier == 0).sum()),
                 "constrained_donor": int((fill_tier == 1).sum()),
@@ -391,6 +793,9 @@ def main() -> None:
                 "max_radius_fraction": DONOR_MAX_RADIUS_FRACTION,
                 "same_component_required": True,
             },
+            "residual_island_holes": residual_island_holes,
+            "residual_island_holes_remaining": int(np.count_nonzero(island & (~mask))),
+            "residual_hole_fill": "nearest_painted_texel_same_island_or_material_prior",
             "elapsed_seconds": round(time.time() - t0, 1),
         }
         Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")

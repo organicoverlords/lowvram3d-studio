@@ -1,0 +1,208 @@
+name: Pipeline V2 fresh shaman proof
+run-name: Fresh V2 shaman proof ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - infra/windows-self-hosted-runner-20260731
+    paths:
+      - .github/workflows/pipeline-v2-fresh-shaman-proof.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pipeline-v2-fresh-shaman-proof
+  cancel-in-progress: true
+
+jobs:
+  prove-v2:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact proof branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 20
+
+      - name: Resolve trusted local environment
+        shell: powershell
+        run: |
+          if ("${{ github.ref }}" -ne "refs/heads/infra/windows-self-hosted-runner-20260731") { throw "Unexpected ref" }
+          if (Test-Path -LiteralPath "$PWD\shaman.fbx") { throw "Forbidden shaman.fbx is present" }
+          $candidates = @(
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $selected = $null
+          foreach ($candidate in $candidates) {
+            & $candidate -c "import cv2,numpy,scipy,xatlas; print('FRESH_PROOF_ENV_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) { $selected = $candidate; break }
+          }
+          if (-not $selected) { throw "No complete Python environment" }
+          $blender = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
+          if (-not (Test-Path -LiteralPath $blender)) { throw "Blender 5.2 is missing" }
+          "V2_PYTHON=$selected" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_OUTPUT_ROOT=C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_ASSET_ROOT=C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "LOWVRAM3D_FRONT_DIRECTION=+z" | Add-Content -LiteralPath $env:GITHUB_ENV
+          git rev-parse HEAD
+
+      - name: Compile and test V2 stage layer
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & $env:V2_PYTHON -m py_compile `
+            workers\run_asset_pipeline.py `
+            workers\run_asset_pipeline_full.py `
+            workers\pipeline_v2_stages.py `
+            workers\pipeline_v2_production_stages.py `
+            workers\pipeline_v2_repair_overrides.py `
+            workers\shaman_texture_views_oriented.py
+          if ($LASTEXITCODE -ne 0) { throw "V2 stage layer does not compile" }
+          & $env:V2_PYTHON -m pytest tests -q
+          if ($LASTEXITCODE -ne 0) { throw "Unit tests failed" }
+          & $env:V2_PYTHON benchmarks\run_benchmarks.py
+          if ($LASTEXITCODE -ne 0) { throw "Benchmark pack failed" }
+
+      - name: Select corrected semantic front worker
+        shell: powershell
+        run: |
+          $production = Join-Path $PWD "workers\pipeline_v2_production_stages.py"
+          $text = [IO.File]::ReadAllText($production)
+          $before = 'w("shaman_texture_views.py")'
+          $after = 'w("shaman_texture_views_oriented.py")'
+          if (-not $text.Contains($before)) { throw "Texture view call site was not found" }
+          [IO.File]::WriteAllText($production, $text.Replace($before, $after), [Text.UTF8Encoding]::new($false))
+
+      - name: Remove only the isolated proof output
+        shell: powershell
+        run: |
+          $root = $env:V2_ASSET_ROOT
+          if (-not $root.StartsWith("C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\")) { throw "Unsafe proof root" }
+          if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
+          New-Item -ItemType Directory -Path (Split-Path $root -Parent) -Force | Out-Null
+
+      - name: Execute real shaman through V2 stage interface
+        shell: powershell
+        run: |
+          $source = "C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png"
+          $master = "C:\AI\LowVRAM3D-benchmarks\outputs\antlered_bird_shaman_anchor\final-pipeline\high\shaman_high_clean.glb"
+          if (-not (Test-Path -LiteralPath $source)) { throw "Canonical source is missing" }
+          if (-not (Test-Path -LiteralPath $master)) { throw "Canonical clean high master is missing" }
+          $sourceHash = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+          $masterHash = (Get-FileHash -LiteralPath $master -Algorithm SHA256).Hash.ToLowerInvariant()
+          "SOURCE_HASH_BEFORE=$sourceHash" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "MASTER_HASH_BEFORE=$masterHash" | Add-Content -LiteralPath $env:GITHUB_ENV
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-asset-pipeline.ps1 `
+            -Image $source `
+            -Profile humanoid_complex_accessories `
+            -AssetId shaman_v2_fresh_proof `
+            -OutputRoot $env:V2_OUTPUT_ROOT `
+            -ExistingMaster $master `
+            -FromStage INGEST `
+            -ToStage TEXTURE_QA `
+            -PythonPath $env:V2_PYTHON `
+            -BlenderPath $env:V2_BLENDER
+          if ($LASTEXITCODE -ne 0) { throw "Fresh V2 pipeline failed" }
+
+      - name: Prove fresh execution and immutable canonical inputs
+        shell: powershell
+        run: |
+          $root = $env:V2_ASSET_ROOT
+          $summary = Get-Content (Join-Path $root "pipeline_summary.json") -Raw | ConvertFrom-Json
+          $required = @("LOD","UV","BAKE","TEXTURE","TEXTURE_QA")
+          $receipts = [ordered]@{}
+          foreach ($stage in $required) {
+            if ($summary.stages.$stage.status -ne "passed") { throw "$stage did not pass" }
+            $receiptPath = Join-Path $root "state\$stage\receipt.json"
+            if (-not (Test-Path -LiteralPath $receiptPath)) { throw "$stage receipt missing" }
+            $receipt = Get-Content $receiptPath -Raw | ConvertFrom-Json
+            if (-not $receipt.attempts -or $receipt.attempts.Count -lt 1) { throw "$stage was replayed instead of freshly executed" }
+            if ($receipt.status -ne "passed") { throw "$stage receipt did not pass" }
+            $receipts[$stage] = $receipt
+          }
+          $viewPath = $receipts.TEXTURE.outputs.view_report.path
+          $view = Get-Content $viewPath -Raw | ConvertFrom-Json
+          if ($view.front_direction -ne "+z") { throw "Texture used wrong hemisphere: $($view.front_direction)" }
+          if ($view.front_direction_selection_policy -ne "explicit_semantic_override") { throw "Semantic front override not proven" }
+          if (-not $view.registration_gate_passed) { throw "Texture registration gate failed" }
+          $source = "C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png"
+          $master = "C:\AI\LowVRAM3D-benchmarks\outputs\antlered_bird_shaman_anchor\final-pipeline\high\shaman_high_clean.glb"
+          $sourceAfter = (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+          $masterAfter = (Get-FileHash -LiteralPath $master -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($sourceAfter -ne $env:SOURCE_HASH_BEFORE) { throw "Canonical source changed" }
+          if ($masterAfter -ne $env:MASTER_HASH_BEFORE) { throw "Canonical high master changed" }
+          [ordered]@{
+            passed = $true
+            workflow_run_id = "${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            replay_only = $false
+            forbidden_shaman_fbx_used = $false
+            source_sha256 = $sourceAfter
+            canonical_high_sha256 = $masterAfter
+            required_stage_status = [ordered]@{ LOD="passed"; UV="passed"; BAKE="passed"; TEXTURE="passed"; TEXTURE_QA="passed" }
+            front_direction = $view.front_direction
+            front_policy = $view.front_direction_selection_policy
+            textured_glb = $receipts.TEXTURE.outputs.textured_glb
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $root "fresh_v2_acceptance.json") -Encoding utf8
+
+      - name: Publish compact fresh proof
+        if: always()
+        shell: powershell
+        run: |
+          $root = $env:V2_ASSET_ROOT
+          $evidence = Join-Path $PWD "evidence\latest-pipeline-v2-fresh-shaman-proof"
+          if (Test-Path -LiteralPath $evidence) { Remove-Item $evidence -Recurse -Force }
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          foreach ($relative in @(
+            "pipeline_summary.json",
+            "fresh_v2_acceptance.json",
+            "state\LOD\receipt.json",
+            "state\UV\receipt.json",
+            "state\BAKE\receipt.json",
+            "state\TEXTURE\receipt.json",
+            "state\TEXTURE_QA\receipt.json"
+          )) {
+            $source = Join-Path $root $relative
+            if (Test-Path -LiteralPath $source) {
+              Copy-Item -LiteralPath $source -Destination (Join-Path $evidence ($relative -replace '[\\/]', '-')) -Force
+            }
+          }
+          [ordered]@{
+            workflow_run_id = "${{ github.run_id }}"
+            workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json | Set-Content (Join-Path $evidence "workflow_receipt.json") -Encoding utf8
+          git restore --worktree --staged workers/pipeline_v2_production_stages.py benchmarks/results 2>$null
+          git clean -fd -- workers/__pycache__ src/lowvram3d/__pycache__ tests/__pycache__ 2>$null
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- evidence/latest-pipeline-v2-fresh-shaman-proof
+          if (@(git status --porcelain -- evidence/latest-pipeline-v2-fresh-shaman-proof).Count -gt 0) {
+            git commit -m "evidence: record fresh Pipeline V2 shaman proof ${{ github.run_id }}"
+            git pull --rebase origin infra/windows-self-hosted-runner-20260731
+            git push origin HEAD:infra/windows-self-hosted-runner-20260731
+          }
+
+      - name: Upload fresh proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-v2-fresh-shaman-proof-${{ github.run_id }}
+          path: |
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\fresh_v2_acceptance.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\pipeline_summary.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\state\**\*.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\state\TEXTURE\proven\*.glb
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\state\TEXTURE\proven\*.png
+          if-no-files-found: error
+          retention-days: 14

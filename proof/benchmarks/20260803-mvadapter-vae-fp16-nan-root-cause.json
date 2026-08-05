@@ -1,0 +1,108 @@
+{
+  "schema": "mvadapter_vae_fp16_nan_root_cause_v1",
+  "classification": "MVADAPTER_LATENTS_COLLAPSE_DURING_DENOISING",
+  "date": "2026-08-03",
+  "headline": "Two independent defects. The VAE in float16 returns 100% NaN from both encode and decode on this GPU -- found, proven and fixed. Underneath it, the denoising latents are already 100% NaN after step 1, which the new telemetry exposed and which the VAE fix does not address.",
+  "first_stage_where_valid_variation_is_lost": {
+    "stage": "denoising step 1 output latents",
+    "evidence": "finite_fraction = 0.0 at step 1 and step 2; the initial latent is randn and finite by construction, so the collapse happens inside the first UNet forward or the first scheduler step",
+    "downstream": "NaN latents -> NaN decode -> NaN survives clamp -> uint8 cast yields 0 -> pure black"
+  },
+  "defect_1_vae_fp16_nan": {
+    "status": "PROVEN_AND_FIXED",
+    "symptom": "vae.encode and vae.decode both return 100% NaN from finite inputs in float16",
+    "fp16_evidence": {
+      "test_a_encoded_latent_finite_fraction": 0.0,
+      "test_b_known_good_latent_finite_fraction": 1.0,
+      "test_b_decoded_finite_fraction": 0.0,
+      "note": "test B fed a verified-finite latent, so this is the VAE itself, not the denoiser"
+    },
+    "fp32_evidence": {
+      "test_a_passed": true,
+      "test_a_unique_values": 256,
+      "test_a_std": 100.41664992790945,
+      "test_b_passed": true,
+      "test_b_views_identical": false,
+      "classification": "DECODE_PATH_PROVEN_HEALTHY",
+      "roundtrip_png": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\decode_boundary_fp32\\test_a_roundtrip.png"
+    },
+    "isolated_probe": {
+      "fp16_cuda_finite": 0.0,
+      "fp32_cuda_finite": 1.0,
+      "fp32_cpu_finite": 1.0,
+      "fp32_std": 0.7494,
+      "fp32_range": [
+        -2.183,
+        1.834
+      ]
+    },
+    "fix": "build_low_vram_pipeline(vae_dtype=torch.float32) plus a casting boundary on vae.encode and vae.decode so the rest of the pipeline stays float16",
+    "cost": "about 160 MB, against a measured 737 MB peak on a 6144 MB card"
+  },
+  "defect_2_latents_nan_at_step_1": {
+    "status": "NEWLY_EXPOSED_NOT_YET_FIXED",
+    "telemetry": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\smoke_256_2step_v2\\latent_telemetry\\latent_telemetry.json",
+    "steps": [
+      {
+        "step": 1,
+        "timestep": 501.0,
+        "sigma": 2.7349809309106665,
+        "finite_fraction": 0.0,
+        "failures": [
+          "NAN",
+          "NON_FINITE_PRESENT",
+          "ALL_ZERO",
+          "ALL_VIEWS_IDENTICAL"
+        ]
+      },
+      {
+        "step": 2,
+        "timestep": 1.0,
+        "sigma": 0.04135643811535019,
+        "finite_fraction": 0.0,
+        "failures": [
+          "NAN",
+          "NON_FINITE_PRESENT",
+          "ALL_ZERO",
+          "ALL_VIEWS_IDENTICAL"
+        ]
+      }
+    ],
+    "first_failure": {
+      "kind": "checkpoint",
+      "at": "final_postprocessed_image_tensor",
+      "failures": [
+        "ALL_ZERO",
+        "NEAR_ZERO_STD",
+        "ALL_VIEWS_IDENTICAL"
+      ]
+    },
+    "why_earlier_gates_missed_it": "the tiny and 384 one-forward diagnostics exercise a single UNet forward and reported PROVEN. They do not run a scheduler step, so a collapse in the first scheduler update, or an overflow that only appears once the UNet output is combined with the latent, was invisible to them.",
+    "next_diagnostic": "capture the pre-denoise initial latent and the raw UNet noise prediction for step 1, and separate the UNet forward from the scheduler update. The open question is whether the UNet output is already NaN or whether the shifted-SNR DDPM update produces it."
+  },
+  "phase_5_smoke": {
+    "config": "configs/texture/gpu_panda_mvadapter_ig2mv_sd21_smoke_20260803.json",
+    "resolution": 256,
+    "steps": 2,
+    "views": 6,
+    "seed": 12345,
+    "vae_dtype": "float32",
+    "result": "FAILED_AS_DESIGNED",
+    "telemetry_files_exist": true,
+    "latent_checkpoints_finite": false,
+    "hashes_change_between_steps": false,
+    "views_not_all_identical": false,
+    "vae_test_outputs_non_black": true,
+    "diagnostics_detect_intentionally_zeroed_tensor": true,
+    "gate_decision": "The smoke did not pass, so no new 384 production config was created and Phase 6 was not run. That is the gate working, not a blocked task."
+  },
+  "phase_6_384_attempt": {
+    "run": false,
+    "reason": "Phase 5 requires the smoke to pass before a new production config may be created."
+  },
+  "ship_pipeline": {
+    "status": "SHIP_SINGLE_VIEW_TEXTURE_CLEAN_BUT_INCOMPLETE",
+    "modified_this_session": false,
+    "note": "ship geometry, cleanup, UV and projection outputs are untouched and not promoted"
+  }
+}

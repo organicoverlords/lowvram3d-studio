@@ -1,0 +1,42 @@
+{
+  "render_dir": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\reports\\texture_review",
+  "passed": true,
+  "blocking_codes": [],
+  "advisory_codes": [],
+  "findings": [],
+  "measured": {
+    "atlas_orientation": {
+      "error_gltf_standard": 7.581,
+      "error_inverted": 64.397,
+      "samples": 3310
+    },
+    "synthesis": {
+      "observed_contrast": 0.05783,
+      "synthesized_contrast": 0.06306,
+      "ratio": 1.0905,
+      "synthesized_percent": 86.41
+    },
+    "flat_regions": {
+      "flat_islands": 37,
+      "flat_triangle_percent": 0.431
+    },
+    "orm": {
+      "roughness_mean": 0.8137,
+      "roughness_p05": 0.7333,
+      "roughness_std": 0.0623,
+      "metallic_percent_above_0_5": 1.0091
+    },
+    "view_labels": {
+      "front_source_resemblance": 0.1622,
+      "back_source_resemblance": 0.0928,
+      "basis": "colour correlation, mirror-invariant"
+    },
+    "rear_front_correlation": {
+      "mirrored": 0.2254,
+      "direct": 0.0742
+    },
+    "face": {
+      "edge_energy": 0.0987
+    }
+  }
+}

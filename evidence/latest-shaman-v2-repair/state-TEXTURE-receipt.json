@@ -1,0 +1,164 @@
+{
+  "stage": "TEXTURE",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\INGEST\\proven\\matte.png": "2dbb1323021cfbf5a7ebd43a874f2ce76ce2a3aa214eccf031cd71bd989750e0",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb": "c508e66e107e9bedcb7508eaea9a3080351fa7f5305b9b49129e2a2780b245ed",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_normal_4k.png": "f3daff9a1a42ba9f593c016382a911e93b14a4520622de0985a983f0c36bbded",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_ao_4k.png": "a5ffa54974b8ee63486a3ddab534e683a072a02d7b12997bd13ea677fcfc6605",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_cavity_4k.png": "f7603f413d58c9cc34fff16119037f5981532e75b0fd407157296d96c18e1b19",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\BAKE\\proven\\shaman_v2_validation_material_id_4k.png": "5562d8eacf2b08cce22346be63990684b22399b2b53e194668a3a84160ce1569"
+  },
+  "outputs": {
+    "basecolor": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_basecolor_4k.png",
+      "sha256": "96be403b0ce9203e149da67bd496856c5f0b91faa983487854c0ef02713ed1c9",
+      "bytes": 14249713
+    },
+    "normal": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_normal_4k.png",
+      "sha256": "f3daff9a1a42ba9f593c016382a911e93b14a4520622de0985a983f0c36bbded",
+      "bytes": 88792640
+    },
+    "orm": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_orm_4k.png",
+      "sha256": "674bb7b5140d1ca98d1c3654868cdffcb1c5cdc8c339c549241cd85d2abe716a",
+      "bytes": 18153921
+    },
+    "coverage": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\coverage_oriented.png",
+      "sha256": "653bc5f58d23e6b64f956d523e1b574ec16eea7d9ae3cb79ec9fa60b54c334ae",
+      "bytes": 674076
+    },
+    "material_id": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_material_id_4k.png",
+      "sha256": "5562d8eacf2b08cce22346be63990684b22399b2b53e194668a3a84160ce1569",
+      "bytes": 2057941
+    },
+    "textured_glb": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb",
+      "sha256": "6bff55b9940b0f28fa3f11fe8fadec4020469e47b664167b16b0fc48ac7fe757",
+      "bytes": 128246108
+    },
+    "textured_blend": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.blend",
+      "sha256": "ef56bd1d82ef239b3a03624527e9682ea784a0656e373a74fae523d4129b8288",
+      "bytes": 131498043
+    },
+    "projection_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\projection_report.json",
+      "sha256": "e3751cc8306eaa2d773a9564b2b393f94be5582ca969d641f5839887a89b7af8",
+      "bytes": 793
+    },
+    "orientation_truth": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\orientation_truth.json",
+      "sha256": "99b23bbe6660f1ddf1e2f9f2c3d5fa58f01c94eb2926e8d844d0dd910f3662e2",
+      "bytes": 211186
+    },
+    "region_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\region_report.json",
+      "sha256": "dadd9e7685a1b76892c0dbaed714c55af62a4fd30373a0f695627713b5a4ab24",
+      "bytes": 506756
+    },
+    "orm_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\orm_report.json",
+      "sha256": "5b2e69a43b49c3c42e6d3006b728183cc4164dec1958ad87d1c6f9b145a8bba0",
+      "bytes": 691
+    },
+    "material_manifest": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\material_manifest.json",
+      "sha256": "f2047a67202e841809a50681d43d83a764811d3348d838f33966a559172895f7",
+      "bytes": 2238
+    },
+    "review_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\review_report.json",
+      "sha256": "9b62610b3302c9939134c0c65a4369cd30cc938206f995311d9d1cf396aefd4a",
+      "bytes": 4105
+    },
+    "render_front": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\front.png",
+      "sha256": "e14c32bc84de773a3e10fc5e9fc554ea631137a2df24d788f8c9bf05b064c8d3",
+      "bytes": 766194
+    },
+    "render_three_quarter_front": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\three_quarter_front.png",
+      "sha256": "707890ff3176a9213196df9c2c1a2e58328d09a132f71d901e2a0e7244e83e03",
+      "bytes": 727612
+    },
+    "render_side": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\side.png",
+      "sha256": "db6bce4ff7c53adf9e85613c0223d51878af82d0d81700b8b1ed5f1f9c64fc67",
+      "bytes": 529855
+    },
+    "render_back": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\back.png",
+      "sha256": "506ba8431a547be435a543e934293f05a0c2ef605ef747d8aad9b7d0df0a6f8b",
+      "bytes": 692742
+    },
+    "render_close_head_antlers": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_head_antlers.png",
+      "sha256": "6af4a9b219d5ea43f959352cc7f0343c5dc35ca04643c507a6347a682c279009",
+      "bytes": 1123485
+    },
+    "render_close_face": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_face.png",
+      "sha256": "05a66a9551abffb7da4d53da854564abfce488d991db1f51341215904c8f0bb6",
+      "bytes": 1683215
+    },
+    "render_close_ornaments": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_ornaments.png",
+      "sha256": "6d1db46b12034f0f4396c62ec163c1d76932d9528bf63bb12ee670c688cb1489",
+      "bytes": 1537499
+    },
+    "render_close_staff": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\TEXTURE\\proven\\close_staff.png",
+      "sha256": "bca00d76a070a57c3da69ff469cfcafd70225361cf8bbc3b721af87afd3bbf73",
+      "bytes": 1478766
+    }
+  },
+  "gates": {
+    "observed_percent": 13.56,
+    "synthesized_percent": 86.44,
+    "final_filled_uv_percent": 100.0,
+    "material_slot_count": 1,
+    "review_views": [
+      "back",
+      "close_face",
+      "close_head_antlers",
+      "close_ornaments",
+      "close_staff",
+      "front",
+      "side",
+      "three_quarter_front"
+    ]
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "observed_percent": 13.56,
+        "synthesized_percent": 86.44,
+        "final_filled_uv_percent": 100.0,
+        "material_slot_count": 1,
+        "review_views": [
+          "back",
+          "close_face",
+          "close_head_antlers",
+          "close_ornaments",
+          "close_staff",
+          "front",
+          "side",
+          "three_quarter_front"
+        ]
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 333.8
+    }
+  ],
+  "finished_at": "2026-08-01T13:20:46Z"
+}

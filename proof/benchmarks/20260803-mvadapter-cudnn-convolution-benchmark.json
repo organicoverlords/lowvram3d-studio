@@ -1,0 +1,52 @@
+{
+  "schema": "mvadapter_cudnn_convolution_benchmark_v1",
+  "module": "down_blocks.0.resnets.0.conv1",
+  "dtype": "float16",
+  "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "torch_version": "2.8.0+cu126",
+  "cuda_version": "12.6",
+  "cudnn_version": 91002,
+  "note": "No end-to-end cuDNN-enabled baseline exists on this machine: that path returns non-finite output, so there is no correct run to time it against.",
+  "measurements": [
+    {
+      "resolution": 256,
+      "latent": 32,
+      "batch": 6,
+      "cudnn_enabled": {
+        "cudnn": true,
+        "iterations": 50,
+        "total_seconds": 0.660663,
+        "milliseconds_per_call": 13.2133,
+        "finite_fraction": 0.74957943
+      },
+      "cudnn_disabled": {
+        "cudnn": false,
+        "iterations": 50,
+        "total_seconds": 1.067757,
+        "milliseconds_per_call": 21.3551,
+        "finite_fraction": 1.0
+      },
+      "slowdown_factor": 1.6162
+    },
+    {
+      "resolution": 384,
+      "latent": 48,
+      "batch": 6,
+      "cudnn_enabled": {
+        "cudnn": true,
+        "iterations": 50,
+        "total_seconds": 1.385121,
+        "milliseconds_per_call": 27.7024,
+        "finite_fraction": 0.74969977
+      },
+      "cudnn_disabled": {
+        "cudnn": false,
+        "iterations": 50,
+        "total_seconds": 3.200189,
+        "milliseconds_per_call": 64.0038,
+        "finite_fraction": 1.0
+      },
+      "slowdown_factor": 2.3104
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "stage": "GEOMETRY_QA",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\GENERATE\\proven\\master.glb": "ca4749bc47181e27e7652a95f1cde59a21870772730cf0845d6d6794564a0ffe"
+  },
+  "outputs": {
+    "geometry_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\GEOMETRY_QA\\proven\\geometry_report.json",
+      "sha256": "d346de9d30267227f4be265a3aece6a5bd8b63ca32feaee530c458c556f57b5c",
+      "bytes": 744
+    }
+  },
+  "gates": {
+    "extent": {
+      "x": 1.6501639485359192,
+      "y": 1.9809314608573914,
+      "z": 0.5952337384223938
+    },
+    "triangles": 1093124,
+    "components": 62,
+    "debris": {
+      "unsupported_components_remaining": 1,
+      "triangles_in_shards": 16,
+      "shards": [
+        {
+          "component": 61,
+          "triangles": 16,
+          "height_mean": 0.9072,
+          "diagonal": 0.00593
+        }
+      ]
+    },
+    "axis_ratio": 3.328
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "extent": {
+          "x": 1.6501639485359192,
+          "y": 1.9809314608573914,
+          "z": 0.5952337384223938
+        },
+        "triangles": 1093124,
+        "components": 62,
+        "debris": {
+          "unsupported_components_remaining": 1,
+          "triangles_in_shards": 16,
+          "shards": [
+            {
+              "component": 61,
+              "triangles": 16,
+              "height_mean": 0.9072,
+              "diagonal": 0.00593
+            }
+          ]
+        },
+        "axis_ratio": 3.328
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 3.7
+    }
+  ],
+  "finished_at": "2026-08-01T13:03:41Z"
+}

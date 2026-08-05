@@ -1,0 +1,133 @@
+{
+  "schema": "ship_bounded_mesh_cleanup_receipt_v1",
+  "classification": "PYMESHLAB_CLEANUP_PROVEN",
+  "date": "2026-08-03",
+  "backend": "pymeshlab 2025.7",
+  "input": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ab_miniturbo_cleaned\\candidate.glb",
+  "input_sha256": "f5ecb8b06d00d8fa9335b69708b901f5bcec9346cdf7b285632b58c8502c5783",
+  "input_choice_reason": "The cleaned-input Mini Turbo candidate was used rather than candidate 2: it is the better base (0 boundary edges, 0 island protrusion, 21 islands vs 25) at equal visual coherence.",
+  "chained": false,
+  "chaining_note": "Stages run independently from the same input so a bad stage cannot poison the others.",
+  "baseline": {
+    "vertices": 368490,
+    "triangles": 738134,
+    "boundary_edges": 0,
+    "non_manifold_edges": 11233,
+    "degenerate_triangles": 24,
+    "extreme_aspect_triangles": 6840,
+    "max_triangle_aspect": 147795.3,
+    "bounds_min": [
+      -0.655387,
+      -0.855429,
+      -0.998323
+    ],
+    "bounds_max": [
+      0.613959,
+      0.816386,
+      0.961594
+    ],
+    "extent": [
+      1.269346,
+      1.671815,
+      1.959917
+    ],
+    "surface_area": 16.854891
+  },
+  "stages": {
+    "CLEANUP_A": {
+      "description": "duplicate/null faces, duplicate+unreferenced vertices, conservative close-vertex merge, recomputed normals",
+      "output": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\cleanup_miniturbo_cleaned\\cleanup_a.glb",
+      "output_sha256": "2fb089f9e066c10048ca210718e8c514cf10f647f17b28b83de687203db9004f",
+      "before": {
+        "triangles": 738134,
+        "vertices": 368490,
+        "boundary_edges": 0,
+        "non_manifold_edges": 11233,
+        "degenerate_triangles": 24,
+        "extreme_aspect_triangles": 6840,
+        "max_triangle_aspect": 147795.3
+      },
+      "after": {
+        "triangles": 737776,
+        "vertices": 368311,
+        "boundary_edges": 0,
+        "non_manifold_edges": 10915,
+        "degenerate_triangles": 0,
+        "extreme_aspect_triangles": 6599,
+        "max_triangle_aspect": 2050.8
+      },
+      "detached_islands_after": 21,
+      "eight_view_silhouette_change_percent": 0.0,
+      "renders": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\cleanup_miniturbo_cleaned\\cleanup_a_views",
+      "verdict": "PYMESHLAB_CLEANUP_PROVEN",
+      "reason": "Removed all 24 degenerate triangles and 241 extreme-aspect triangles for 358 faces, with a byte-exact silhouette across all eight views (0 pixels changed).",
+      "visual_regression": false
+    },
+    "CLEANUP_B": {
+      "description": "remove detached components below a threshold derived from the island inventory",
+      "output": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\cleanup_miniturbo_cleaned\\cleanup_b.glb",
+      "output_sha256": "2c9a10be68ed0bed6f597db96c5247c44c10bb648bf622dc735162e5961334f8",
+      "before": {
+        "triangles": 738134,
+        "vertices": 368490,
+        "boundary_edges": 0,
+        "non_manifold_edges": 11233,
+        "degenerate_triangles": 24,
+        "extreme_aspect_triangles": 6840,
+        "max_triangle_aspect": 147795.3
+      },
+      "after": {
+        "triangles": 737618,
+        "vertices": 368212,
+        "boundary_edges": 0,
+        "non_manifold_edges": 11219,
+        "degenerate_triangles": 24,
+        "extreme_aspect_triangles": 6834,
+        "max_triangle_aspect": 147795.3
+      },
+      "detached_islands_after": 11,
+      "eight_view_silhouette_change_percent": 0.0324,
+      "renders": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\cleanup_miniturbo_cleaned\\cleanup_b_views",
+      "verdict": "PYMESHLAB_CLEANUP_PROVEN",
+      "reason": "Detached islands 21 -> 11 for 516 faces. Silhouette moved by 121 of 373879 pixels (0.0324%), all of it debris, with no structure lost.",
+      "visual_regression": false,
+      "island_face_floor": 137,
+      "island_face_floor_reason": "25% of the largest detached island (548 faces); islands at or above this size are large enough to be deck equipment and are kept"
+    },
+    "CLEANUP_C": {
+      "description": "close only small simple holes; large intentional openings left open",
+      "output": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\cleanup_miniturbo_cleaned\\cleanup_c.glb",
+      "output_sha256": "574e5ae926f1e987f9fffb79716f326c52c99f686bd28f4bbb58d60ec5c451e1",
+      "before": {
+        "triangles": 738134,
+        "vertices": 368490,
+        "boundary_edges": 0,
+        "non_manifold_edges": 11233,
+        "degenerate_triangles": 24,
+        "extreme_aspect_triangles": 6840,
+        "max_triangle_aspect": 147795.3
+      },
+      "after": {
+        "triangles": 738134,
+        "vertices": 368490,
+        "boundary_edges": 0,
+        "non_manifold_edges": 11233,
+        "degenerate_triangles": 24,
+        "extreme_aspect_triangles": 6840,
+        "max_triangle_aspect": 147795.3
+      },
+      "detached_islands_after": 21,
+      "eight_view_silhouette_change_percent": 0.0,
+      "renders": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\cleanup_miniturbo_cleaned\\cleanup_c_views",
+      "verdict": "PYMESHLAB_CLEANUP_NO_BENEFIT",
+      "reason": "The input already has zero boundary edges, so there were no holes to close. The filter ran and changed nothing; it is a no-op on this mesh, not a failure.",
+      "visual_regression": false
+    }
+  },
+  "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\cleanup_miniturbo_cleaned\\cleanup_stages_sheet.png",
+  "recommended_chain": [
+    "CLEANUP_A",
+    "CLEANUP_B"
+  ],
+  "recommended_chain_reason": "A and B are both accepted and touch disjoint concerns (degenerate triangles vs detached islands). C is a no-op here and adds nothing."
+}

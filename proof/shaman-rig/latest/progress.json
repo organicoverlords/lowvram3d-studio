@@ -1,0 +1,282 @@
+{
+  "branch": "magicmusic/parts-pose-materials-20260802",
+  "milestone": "SEMANTIC_WEIGHT_REPAIR",
+  "milestone_name": "TEXTURED_ANIMATION_REVIEW_TARGET",
+  "canonical_source": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\shaman_v2_validation_stance_clean.glb",
+  "canonical_sha256": "2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80",
+  "canonical_source_modified": false,
+  "run_root": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123",
+  "rejected_evidence_preserved": [
+    "...\\state\\TEXTURE\\proven\\shaman_v2_validation_textured_lod0.glb",
+    "previous staff-hole cutter result"
+  ],
+  "systems": [
+    {
+      "system": "SOURCE_IDENTITY",
+      "status": "PROVEN",
+      "proof": "sha256 match against required canonical hash",
+      "next_action": "none",
+      "blocker": "none"
+    },
+    {
+      "system": "SOURCE_AUDIT",
+      "status": "PROVEN",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\source-audit.json",
+      "next_action": "none",
+      "blocker": "none"
+    },
+    {
+      "system": "SOURCE_PREVIEW",
+      "status": "PROVEN",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\shaman_source_contact_sheet.png",
+      "next_action": "none",
+      "blocker": "none"
+    },
+    {
+      "system": "RIG_BASE_TOPOLOGY",
+      "status": "PROVEN",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig-base\\rig_base_report.json",
+      "next_action": "none",
+      "blocker": "none"
+    },
+    {
+      "system": "PARTS",
+      "status": "NOT PROVEN",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_region_contact_sheet.png",
+      "next_action": "anatomical segmentation of a robed figure",
+      "blocker": "legs hidden inside skirt; bands are not anatomy"
+    },
+    {
+      "system": "STAFF_POLICY",
+      "status": "PROVEN",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_semantic_regions.json (staff cylinder, 9845 verts)",
+      "next_action": "bind staff vertex group to a staff control bone",
+      "blocker": "none"
+    },
+    {
+      "system": "POSE_PREP",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "blender A-pose proof with gates",
+      "blocker": "none"
+    },
+    {
+      "system": "RIG_READINESS",
+      "status": "NOT PROVEN",
+      "proof": "audit verdict humanoid_enough=true",
+      "next_action": "re-derive on rig base",
+      "blocker": "none"
+    },
+    {
+      "system": "RIG",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "build modular game skeleton",
+      "blocker": "none"
+    },
+    {
+      "system": "FINGER_TIER",
+      "status": "NOT PROVEN",
+      "proof": "audit recommends TIER 1 capped at TIER 1",
+      "next_action": "re-derive from segmented hands",
+      "blocker": "none"
+    },
+    {
+      "system": "SKIN",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "automatic weights",
+      "blocker": "none"
+    },
+    {
+      "system": "SKIN_QA",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "deformation validation poses",
+      "blocker": "none"
+    },
+    {
+      "system": "MOTION",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "4 clips",
+      "blocker": "none"
+    },
+    {
+      "system": "MOTION_QA",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "loop and drift validation",
+      "blocker": "none"
+    },
+    {
+      "system": "EFFECTS",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "socket manifest and preview collection",
+      "blocker": "none"
+    },
+    {
+      "system": "EXPORT",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "glb fbx blend export",
+      "blocker": "none"
+    },
+    {
+      "system": "EXPORT_QA",
+      "status": "NOT PROVEN",
+      "proof": "",
+      "next_action": "clean process fresh import",
+      "blocker": "none"
+    },
+    {
+      "system": "TEXTURE",
+      "status": "REJECTED",
+      "proof": "rejected visual baseline preserved",
+      "next_action": "keep out of production manifest",
+      "blocker": "texture cuda lane"
+    },
+    {
+      "system": "TEXTURE_CUDA_LANE",
+      "status": "BLOCKED",
+      "proof": "C:\\AI\\LowVRAM3D-benchmarks\\mv-adapter-cond-fp32-canary\\cond-fp32-20260802-121425",
+      "next_action": "instrumented cuda checkpoint diagnostic",
+      "blocker": "CUDA illegal memory access mid-denoise"
+    }
+  ],
+  "counts": {
+    "objects": 1,
+    "mesh_objects": 1,
+    "armature_objects": 0,
+    "vertices": 3258048,
+    "polygons": 1086965,
+    "triangles": 1086965,
+    "materials": 0,
+    "actions": 0,
+    "armature_datablocks": 0,
+    "vertex_groups": 0,
+    "shape_key_meshes": 0
+  },
+  "welded_topology": {
+    "weld_distance": 0.0001,
+    "welded_vertices": 537041,
+    "welded_edges": 1611294,
+    "welded_faces": 1074083,
+    "connected_components": 60,
+    "largest_component_vertices": 531389,
+    "largest_component_ratio": 0.989475663869239,
+    "components_over_1000_vertices": 1,
+    "boundary_edges": 348,
+    "non_manifold_edges": 13,
+    "is_closed": false
+  },
+  "verdict": {
+    "humanoid_enough_for_automatic_rigging": true,
+    "blocking_reasons": [],
+    "advisory_codes": [
+      "ARMS_DOWN_AT_SIDES_ELEVATES_ARM_TORSO_WEIGHT_BLEED_RISK"
+    ],
+    "posture": "arms_down_at_sides"
+  },
+  "finger_tier_recommendation": 1,
+  "artifacts": {
+    "source_audit": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\source-audit.json",
+    "source_contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\shaman_source_contact_sheet.png",
+    "source_preview_dir": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\audit\\source-preview",
+    "rig_base_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig-base\\shaman_rig_base.blend",
+    "rig_base_glb": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig-base\\shaman_rig_base.glb",
+    "parts_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_parts.blend",
+    "semantic_regions": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_semantic_regions.json",
+    "region_contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\parts\\shaman_region_contact_sheet.png",
+    "landmarks": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig\\shaman_landmarks.json",
+    "rigged_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig\\shaman_rigged.blend",
+    "animated_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\motion\\shaman_animated.blend",
+    "game_ready_glb": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\export\\shaman_game_ready.glb",
+    "game_ready_fbx": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\export\\shaman_game_ready.fbx",
+    "milestone_a_overlay": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\milestone-a",
+    "cleanup_dir": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\cleanup",
+    "textured_rigged_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\textured_rig\\shaman_textured_rigged.blend",
+    "textured_game_ready_glb": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\export_textured\\shaman_textured_game_ready.glb",
+    "motion_textured_dir": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\motion_textured",
+    "skin_repair_dir": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair",
+    "rigged_v2_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig\\shaman_rigged_v2.blend",
+    "animated_v2_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\motion\\shaman_animated_v2.blend",
+    "textured_rigged_v2_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\textured_rig\\shaman_textured_rigged_v2.blend",
+    "motion_textured_v2_dir": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\motion_textured_v2",
+    "v3_attempt": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\v3_attempt_20260802-20260802-114642",
+    "garment_separation_attempt": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\shaman_garment_separation\\candidate-20260802-20260802-115132"
+  },
+  "rig_base": {
+    "lost_faces": 12882,
+    "collapsible_faces": 12992,
+    "allowed_face_loss": 13251,
+    "face_loss_ratio": 0.011851347559489037,
+    "volume_delta_ratio": 3.188887325613797e-07,
+    "volume_delta_limit": 0.005,
+    "bounds_delta": 0.0,
+    "bounds_delta_limit": 0.0001,
+    "dominant_component_ratio": 0.989475663869239,
+    "dominant_component_limit": 0.95,
+    "vertices_shared": true,
+    "vertex_reduction_ratio": 0.8351647980631347
+  },
+  "parts_status": "POSITIONAL_BANDS_ONLY_ANATOMY_NOT_PROVEN",
+  "parts_blocking_codes": [
+    "PARTS_ANATOMY_NOT_PROVEN_ROBED_FIGURE"
+  ],
+  "parts_safe_for_skinning": [
+    "staff"
+  ],
+  "carrier_format_rule": "Rig stages must carry the welded mesh as .blend. Exporting to GLB and reimporting re-splits vertices per corner and silently undoes the weld (537041 -> ~3.2M). GLB is export-only.",
+  "path": "B",
+  "classifications": {
+    "BODY_SEGMENTATION": "REJECTED_NOT_OBSERVABLE",
+    "PROXY_ANATOMY": "PROVEN",
+    "SOURCE_POSE_RIG": "PROVEN",
+    "A_POSE": "NOT_ATTEMPTED",
+    "ROBE_SKINNING": "PROVEN",
+    "CLOTH_BONES": "PROVEN",
+    "STAFF_CONTROL": "PROVEN",
+    "FINGER_TIER": 0,
+    "MOTION_PROOF": "BLOCKED",
+    "WALK_ANIMATION": "REJECTED_POOR_BODY_MECHANICS",
+    "WAVE_ANIMATION": "REJECTED_POOR_ARM_DEFORMATION",
+    "CLOTH_RESPONSE": "REJECTED",
+    "ACCESSORY_SECONDARY_MOTION": "REJECTED",
+    "PRODUCTION_MOTION_BASELINE": "NOT_AVAILABLE",
+    "ANTLER_DEBRIS_CLEANUP": "PROVEN",
+    "TEXTURED_RIG_BIND": "PROVEN",
+    "MILESTONE_B_ARM_ARTICULATION": "RENDERED_AWAITING_REVIEW",
+    "MILESTONE_C_IDLE_BREATHE": "RENDERED_AWAITING_REVIEW",
+    "MILESTONE_D_WAVE": "RENDERED_AWAITING_REVIEW",
+    "EXPORT_STRUCTURE_PROVEN": true,
+    "EXPORT_NAME_PARITY_PROVEN": true,
+    "EXPORT_MATERIAL_PARITY_PROVEN": true,
+    "EXPORT_TEXTURE_BINDINGS_PROVEN": true,
+    "EXPORT_ANIMATION_PARITY_PROVEN": true,
+    "EXPORT_TOPOLOGY_PARITY_PROVEN": false,
+    "EXPORT_FIDELITY_PROVEN": false,
+    "TEXTURE_QUALITY": "REJECTED_VISUAL_BASELINE_NOT_PRODUCTION_READY",
+    "WEIGHT_SEMANTIC_CORRECTNESS": "PROVEN",
+    "WEIGHT_NORMALIZATION": "PROVEN",
+    "MILESTONE_B_V2": "RENDERED_AWAITING_REVIEW",
+    "MILESTONE_D_WAVE_V2": "RENDERED_AWAITING_REVIEW",
+    "MILESTONE_C_IDLE_V2": "RENDERED_AWAITING_REVIEW_STILL_SUBTLE",
+    "ANTLER_CLEANUP_CANDIDATE_2": "NOT_ATTEMPTED",
+    "V3_SLEEVE_CORE_DRAPE": "BLOCKED_FUSED_SLEEVE_TOPOLOGY_REQUIRES_GARMENT_SEPARATION",
+    "GARMENT_SEPARATION_CANDIDATE": "BLOCKED_SHAMAN_SLEEVE_REQUIRES_MANUAL_RETOPOLOGY"
+  },
+  "milestone_a": {
+    "status": "PROVEN",
+    "rest_pose_max_vertex_delta": 1.043e-07,
+    "observed_joints": 4,
+    "inferred_joints": 20,
+    "overlay_renders": 5
+  },
+  "negative_motion_fixtures": [
+    "tests/fixtures/motion/rejected_walk/manifest.json",
+    "tests/fixtures/motion/rejected_wave/manifest.json"
+  ],
+  "next_action": "continue unrelated multi-asset pipeline; Shaman sleeve lane requires manual retopology"
+}

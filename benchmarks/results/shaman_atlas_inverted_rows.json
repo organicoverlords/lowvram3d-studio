@@ -1,0 +1,39 @@
+{
+  "render_dir": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\reports\\texture_review",
+  "passed": false,
+  "blocking_codes": [
+    "UV_ROW_ORIENTATION_MISMATCH"
+  ],
+  "advisory_codes": [],
+  "findings": [
+    {
+      "code": "UV_ROW_ORIENTATION_MISMATCH",
+      "severity": "blocking",
+      "detail": "atlas matches the inverted row convention; it is vertically mirrored against its own UVs and every chart samples an unrelated chart",
+      "measured": {
+        "error_gltf_standard": 61.934,
+        "error_inverted": 3.219
+      }
+    }
+  ],
+  "measured": {
+    "atlas_orientation": {
+      "error_gltf_standard": 61.934,
+      "error_inverted": 3.219,
+      "samples": 3310
+    },
+    "synthesis": {
+      "observed_contrast": 0.0584,
+      "synthesized_contrast": 0.05589,
+      "ratio": 0.9571,
+      "synthesized_percent": 86.41
+    },
+    "rear_front_correlation": {
+      "mirrored": 0.2254,
+      "direct": 0.0742
+    },
+    "face": {
+      "edge_energy": 0.0987
+    }
+  }
+}

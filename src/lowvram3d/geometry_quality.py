@@ -35,6 +35,12 @@ TINY_MAX_AREA_FRACTION = 0.0005
 TINY_MAX_EXTENT_FRACTION = 0.025
 STRICT_PROTECT_FACE_FRACTION = 0.08
 STRICT_PROTECT_EXTENT_FRACTION = 0.50
+STRICT_SPARSE_ARTIFACT_MAX_FACES = 32
+STRICT_SPARSE_ARTIFACT_MAX_AREA_FRACTION = 0.001
+STRICT_STRETCHED_ARTIFACT_MAX_FACES = 2500
+STRICT_STRETCHED_ARTIFACT_MAX_FACE_FRACTION = 0.005
+STRICT_STRETCHED_ARTIFACT_MAX_AREA_FRACTION = 0.01
+STRICT_STRETCHED_ARTIFACT_MIN_EXTENT_FRACTION = 0.40
 
 
 def decide_component(metrics: ComponentMetrics, mode: str) -> CleanupDecision:
@@ -45,6 +51,32 @@ def decide_component(metrics: ComponentMetrics, mode: str) -> CleanupDecision:
         raise ValueError(f"Unsupported cleanup mode: {mode}")
 
     if mode == "single_subject_strict":
+        # A malformed generated surface can contain a handful of triangles stretched across a
+        # large distance.  Extent alone would incorrectly protect that line/bulb-shaped debris
+        # as a "major part".  Remove only the unambiguously sparse, detached, negligible-area
+        # case; meaningful detached parts remain protected below.
+        if (
+            metrics.contact_ratio <= 0.0
+            and metrics.face_count <= STRICT_SPARSE_ARTIFACT_MAX_FACES
+            and metrics.area_fraction <= STRICT_SPARSE_ARTIFACT_MAX_AREA_FRACTION
+        ):
+            return CleanupDecision(
+                "REMOVE_SPARSE_DETACHED_ARTIFACT",
+                "detached component is too sparse and negligible in area to be a subject part",
+                True,
+            )
+        if (
+            metrics.contact_ratio <= 0.0
+            and metrics.face_count <= STRICT_STRETCHED_ARTIFACT_MAX_FACES
+            and metrics.face_fraction <= STRICT_STRETCHED_ARTIFACT_MAX_FACE_FRACTION
+            and metrics.area_fraction <= STRICT_STRETCHED_ARTIFACT_MAX_AREA_FRACTION
+            and metrics.extent_fraction >= STRICT_STRETCHED_ARTIFACT_MIN_EXTENT_FRACTION
+        ):
+            return CleanupDecision(
+                "REMOVE_STRETCHED_DETACHED_ARTIFACT",
+                "detached component is sparse, low-area, and stretched across the subject bounds",
+                True,
+            )
         protected = (
             metrics.face_fraction >= STRICT_PROTECT_FACE_FRACTION
             or metrics.extent_fraction >= STRICT_PROTECT_EXTENT_FRACTION

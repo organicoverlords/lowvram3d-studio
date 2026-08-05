@@ -1,0 +1,176 @@
+{
+  "stage": "TEXTURE_QA",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_fresh_proof",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_textured_lod0.glb": "3dea9803c726a99ebc8dafd9124399d8e4d3e0d7009a24cc4f351d325d6efaf7",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_basecolor_4k.png": "2bf71b2bdb68e4040d3d81a0626af8c0f913fbbb6914e748d4d8b21f3a8eef8d",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_orm_4k.png": "d07ac7dc3189ea61fb0cd2e758905545269d493b9e332a07884df478c21ba7da",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\shaman_v2_fresh_proof_material_id_4k.png": "daaf2b5e4250764283ecaf611252661bb2d96f8ba44ccb29d7d5bd63c6554c04",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\coverage_oriented.png": "7ca2bbc782c6f8c4ba662da45b64a082c20f3ecdacd713c87af0c142820ad1fd",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\view_report.json": "fb047902f100089cc8989573b223a67fbf578c0df01ac77e43129d6fec66f9f8",
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod0_geometry.json": "09ea92c6c19f72c9d03750ac871b7348fcbf35a62730c7430bc6f0764de6dd56"
+  },
+  "outputs": {
+    "visual_evaluation": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE_QA\\proven\\visual_evaluation.json",
+      "sha256": "e461ad16ca9115d73b454da0d541bf1df876b7c6a915f34ff0d9c0aa76c2a813",
+      "bytes": 1427
+    },
+    "texture_registration": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE_QA\\proven\\texture_registration.json",
+      "sha256": "a73ce24da3a1753822d6c52a4c0b871e11bf53f3a9e2fe28c275b8436960213b",
+      "bytes": 580
+    }
+  },
+  "gates": {
+    "atlas_orientation": {
+      "error_gltf_standard": 6.682,
+      "error_inverted": 67.666,
+      "samples": 3557
+    },
+    "synthesis": {
+      "observed_contrast": 0.05104,
+      "synthesized_contrast": 0.05848,
+      "ratio": 1.1459,
+      "synthesized_percent": 84.38
+    },
+    "flat_regions": {
+      "flat_islands": 101,
+      "flat_triangle_percent": 2.055
+    },
+    "material_id_components": 60,
+    "material_id_distinct_colours": 1911,
+    "orm": {
+      "roughness_mean": 0.817,
+      "roughness_p05": 0.7333,
+      "roughness_std": 0.058,
+      "metallic_percent_above_0_5": 0.4314
+    },
+    "view_labels": {
+      "front_source_resemblance": 0.1299,
+      "back_source_resemblance": 0.1123,
+      "basis": "colour correlation, mirror-invariant"
+    },
+    "rear_front_correlation": {
+      "mirrored": 0.1971,
+      "direct": 0.1007
+    },
+    "axis_ratio": 3.297,
+    "debris": {
+      "triangles_removed": 0,
+      "components_remaining": 0
+    },
+    "uv": {
+      "overlap_texels": 0.0,
+      "degenerate": 0,
+      "tested_pairs": 1285395,
+      "timed_out": false
+    },
+    "face": {
+      "edge_energy": 0.10343
+    },
+    "texture_registration": {
+      "policy_version": 3,
+      "registration_report": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\view_report.json",
+      "passed": true,
+      "failure_code": null,
+      "affine_iou": 0.616502,
+      "dense_iou": 0.616502,
+      "dense_accepted": false,
+      "final_iou": 0.616502,
+      "flow_p95_pixels": 0.0,
+      "flow_cap_pixels": 54.4,
+      "flow_cap_saturation": 0.0,
+      "visible_percent": 21.272,
+      "limits": {
+        "min_final_iou": 0.58,
+        "max_flow_cap_saturation": 0.98,
+        "min_visible_percent": 5.0
+      },
+      "failures": []
+    },
+    "geometry_report_source": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod0_geometry.json"
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "atlas_orientation": {
+          "error_gltf_standard": 6.682,
+          "error_inverted": 67.666,
+          "samples": 3557
+        },
+        "synthesis": {
+          "observed_contrast": 0.05104,
+          "synthesized_contrast": 0.05848,
+          "ratio": 1.1459,
+          "synthesized_percent": 84.38
+        },
+        "flat_regions": {
+          "flat_islands": 101,
+          "flat_triangle_percent": 2.055
+        },
+        "material_id_components": 60,
+        "material_id_distinct_colours": 1911,
+        "orm": {
+          "roughness_mean": 0.817,
+          "roughness_p05": 0.7333,
+          "roughness_std": 0.058,
+          "metallic_percent_above_0_5": 0.4314
+        },
+        "view_labels": {
+          "front_source_resemblance": 0.1299,
+          "back_source_resemblance": 0.1123,
+          "basis": "colour correlation, mirror-invariant"
+        },
+        "rear_front_correlation": {
+          "mirrored": 0.1971,
+          "direct": 0.1007
+        },
+        "axis_ratio": 3.297,
+        "debris": {
+          "triangles_removed": 0,
+          "components_remaining": 0
+        },
+        "uv": {
+          "overlap_texels": 0.0,
+          "degenerate": 0,
+          "tested_pairs": 1285395,
+          "timed_out": false
+        },
+        "face": {
+          "edge_energy": 0.10343
+        },
+        "texture_registration": {
+          "policy_version": 3,
+          "registration_report": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\TEXTURE\\proven\\view_report.json",
+          "passed": true,
+          "failure_code": null,
+          "affine_iou": 0.616502,
+          "dense_iou": 0.616502,
+          "dense_accepted": false,
+          "final_iou": 0.616502,
+          "flow_p95_pixels": 0.0,
+          "flow_cap_pixels": 54.4,
+          "flow_cap_saturation": 0.0,
+          "visible_percent": 21.272,
+          "limits": {
+            "min_final_iou": 0.58,
+            "max_flow_cap_saturation": 0.98,
+            "min_visible_percent": 5.0
+          },
+          "failures": []
+        },
+        "geometry_report_source": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-fresh-proof\\shaman_v2_fresh_proof\\state\\LOD\\proven\\lod0_geometry.json"
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 3.3
+    }
+  ],
+  "finished_at": "2026-08-01T15:40:30Z"
+}

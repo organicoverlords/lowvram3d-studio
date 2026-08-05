@@ -1,0 +1,66 @@
+{
+  "manifest_version": 2,
+  "asset_id": "titan_60k",
+  "profile": "static_prop",
+  "source": {
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\titan.png",
+    "sha256": "b3fab6268a352997a958cf51e7d700efbf5755bd7a50b3030b2202dbd458297c",
+    "bytes": 1936817
+  },
+  "generator_runtime": {
+    "python": "C:\\AI\\HY3D2\\python_standalone\\python.exe",
+    "pythonpath": ["C:\\AI\\HY3D2\\Hunyuan3D-2"]
+  },
+  "generation_prompt": "ancient titan tree-and-stone guardian, complete static 3D character with a massive rocky head, four rooted legs, bark, moss, hanging vines and dorsal stone spines; preserve the full silhouette; no rig, no animation",
+  "generator_settings": {
+    "steps": 5,
+    "octree_ladder": "384:3000,320:2000,256:1500"
+  },
+  "geometry": {"preserve_thin_features": true},
+  "orientation": {
+    "up_axis": "z",
+    "right_axis": "x",
+    "front_axis": "y",
+    "up_sign": 1,
+    "front_sign": 1,
+    "allow_source_mirror": true,
+    "provenance": "manual source-facing axis review from orientation_diagnostics/upz_latx"
+  },
+  "conditioning": {"tolerance": 42.0, "enclosed_tolerance": 32.0, "shadow_tolerance": 180.0, "shadow_from": 0.78},
+  "lod": {
+    "mode": "generate",
+    "allow_topology_regression_for_delivery": true,
+    "delivery_visual_gate": {
+      "asset_family": "mixed",
+      "quality": "gameplay",
+      "samples": 50000,
+      "silhouette_size": 256,
+      "manual_review": {
+        "accept": true,
+        "selected_lod": 0,
+        "evidence": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\titan_60k\\state\\LOD\\candidate\\renders_400k",
+        "rationale": "Manual comparison of cleaned 400k and permitted 800k candidates found coherent front, rear, side and three-quarter form with no material visual improvement at 800k; retain the smaller candidate and preserve all metric failures in the receipt."
+      }
+    }
+  },
+  "lod_policy": [400000, 800000],
+  "uv": {
+    "route": "injective",
+    "allow_fallback": true,
+    "fallback_route": "fast_blender",
+    "resolution": 4096,
+    "padding": 4,
+    "max_degenerate_uv_triangles": 0,
+    "candidate_timeout_seconds": 900
+  },
+  "texture": {
+    "route": "mvadapter_sixview",
+    "allow_fallback": true,
+    "fallback_route": "raster_project",
+    "resolution": 2048,
+    "bundle": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\titan_60k\\controls",
+    "views_receipt": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\titan_60k\\views\\inference_receipt.json"
+  },
+  "rig": {"required": false, "separate_props": false},
+  "output_root": "C:\\AI\\LowVRAM3D-benchmarks\\production\\two-character-models-20260804\\titan_60k"
+}

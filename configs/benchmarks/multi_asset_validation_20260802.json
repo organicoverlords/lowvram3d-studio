@@ -1,0 +1,208 @@
+{
+  "schema_version": 3,
+  "name": "multi_asset_validation_20260802",
+  "description": "Automatic-profile and local-vs-online-reference validation across the shaman, Lucky Drown casino boat, steampunk snapping turtle, frog salvage diver, and a static barn-with-trees scene.",
+  "manual_profile_selection_allowed": false,
+  "gpu_heavy_jobs_parallelism": 1,
+  "output_root_template": "C:\\AI\\LowVRAM3D-benchmarks\\multi-asset-validation\\run-{timestamp}",
+  "search_roots": [
+    "C:\\Users\\Lauri\\Downloads",
+    "C:\\Users\\Lauri\\Desktop",
+    "C:\\AI"
+  ],
+  "reference_model_extensions": [
+    ".glb",
+    ".gltf",
+    ".fbx",
+    ".obj",
+    ".ply",
+    ".blend",
+    ".stl",
+    ".zip"
+  ],
+  "assets": [
+    {
+      "id": "antlered_bird_shaman_anchor",
+      "required": true,
+      "role": "mandatory_regression_anchor",
+      "source_path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\shaman_v2_validation_stance_clean.glb",
+      "source_sha256": "2f712b49a88a39cb10fb08e6bfb08becef2025b153ce87103e86fde97dfb8c80",
+      "expected_base_profiles": [
+        "humanoid",
+        "generic_character_shell"
+      ],
+      "expected_traits": [
+        "robed",
+        "fused_weapon",
+        "horned_or_antlered",
+        "hanging_accessories",
+        "finger_geometry_uncertain"
+      ],
+      "current_status": "BLOCKED_SHAMAN_SLEEVE_REQUIRES_MANUAL_RETOPOLOGY",
+      "current_next_action": "preserve as regression anchor; do not retry automatic sleeve separation or weighting; resume only with a dedicated manual-retopology lane"
+    },
+    {
+      "id": "lucky_drown_casino_boat",
+      "required": true,
+      "role": "primary_noncharacter_benchmark",
+      "source_filename_candidates": [
+        "Tumman Lucky Drown -jokilaivan konseptilevy.png",
+        "Lucky Drown",
+        "casino boat",
+        "casino riverboat"
+      ],
+      "expected_base_profiles": [
+        "vehicle",
+        "building",
+        "articulated_prop"
+      ],
+      "expected_traits": [
+        "multi_deck",
+        "paddlewheel",
+        "doors",
+        "railings",
+        "windows",
+        "lights",
+        "thin_structures"
+      ],
+      "forbidden_routes": [
+        "humanoid_rig",
+        "a_pose",
+        "character_skinning"
+      ],
+      "optional_articulation": [
+        "paddlewheel_rotation",
+        "entrance_door_hinges",
+        "flag_secondary_motion",
+        "emissive_light_sockets"
+      ]
+    },
+    {
+      "id": "steampunk_snapping_turtle",
+      "required": true,
+      "role": "quadruped_creature_benchmark",
+      "source_filename_candidates": [
+        "Suomuinen höyrykilpikonna sumuisessa suossa.png",
+        "höyrykilpikonna",
+        "steampunk snapping turtle"
+      ],
+      "expected_base_profiles": [
+        "quadruped",
+        "generic_character_shell"
+      ],
+      "expected_traits": [
+        "shell",
+        "saddle_or_seat",
+        "tailed",
+        "mechanical_organic_hybrid",
+        "jaw_candidate"
+      ],
+      "forbidden_routes": [
+        "humanoid_a_pose"
+      ]
+    },
+    {
+      "id": "frog_salvage_diver",
+      "required": true,
+      "role": "second_character_benchmark",
+      "source_filename_candidates": [
+        "Mutainen sammakkosukeltaja ruostevarusteissa.png",
+        "sammakkosukeltaja",
+        "frog salvage diver"
+      ],
+      "expected_base_profiles": [
+        "humanoid",
+        "generic_character_shell"
+      ],
+      "expected_traits": [
+        "nonhuman_humanoid",
+        "bulky_clothing",
+        "backpack_or_tank",
+        "hoses",
+        "lantern",
+        "webbed_feet",
+        "attached_equipment"
+      ],
+      "equipment_policy": "rigid equipment and sockets must be separated from soft-body weighting when topology permits"
+    },
+    {
+      "id": "barn_with_trees_static_scene",
+      "required": true,
+      "role": "static_environment_benchmark",
+      "source_filename_candidates": [
+        "ChatGPT Image 2.8.2026 klo 14.41.01.png",
+        "ChatGPT Image 2.8.2026 klo 14.41.01(1).png",
+        "barn with trees",
+        "barn and trees"
+      ],
+      "visual_identity": [
+        "a static barn",
+        "trees surrounding or beside the barn",
+        "an outdoor scene",
+        "no walking elements",
+        "no mechanical legs",
+        "no vending machine",
+        "no vehicle"
+      ],
+      "expected_base_profiles": [
+        "building",
+        "static_prop",
+        "unknown"
+      ],
+      "expected_traits": [
+        "barn",
+        "trees",
+        "static_environment",
+        "outdoor_scene",
+        "multiple_objects",
+        "natural_vegetation"
+      ],
+      "forbidden_routes": [
+        "humanoid_rig",
+        "humanoid_a_pose",
+        "quadruped_creature_rig",
+        "vehicle_route",
+        "articulated_mechanical_route",
+        "animation_generation"
+      ],
+      "benchmark_addendum": "docs/BENCHMARK_ADDENDUM_BARN_AND_TREES_20260802.md"
+    }
+  ],
+  "required_discovery_outputs": [
+    "inputs/discovery_manifest.json",
+    "benchmark_matrix.json",
+    "profile_discovery/{asset_id}.json",
+    "reference_audit/{asset_id}/audit.json",
+    "reference_audit/{asset_id}/contact_sheet.png",
+    "comparison/{asset_id}/metrics.json",
+    "comparison/{asset_id}/contact_sheet.png",
+    "comparison/overall_matrix.json",
+    "CONTINUE_HERE.md"
+  ],
+  "comparison_dimensions": [
+    "source_resemblance",
+    "silhouette",
+    "orientation",
+    "dimensions",
+    "mesh_object_component_counts",
+    "vertices_triangles",
+    "boundary_nonmanifold_counts",
+    "thin_feature_survival",
+    "materials_textures",
+    "uv_quality",
+    "front_back_side_texture_quality",
+    "runtime",
+    "peak_vram",
+    "peak_ram",
+    "file_size",
+    "fresh_import_survival",
+    "asset_specific_articulation_readiness"
+  ],
+  "failure_isolation": "A failure blocks only the affected asset and stage unless a shared regression test proves a generic pipeline defect.",
+  "classification_values": [
+    "PROVEN",
+    "REJECTED",
+    "NOT_PROVEN",
+    "BLOCKED"
+  ]
+}

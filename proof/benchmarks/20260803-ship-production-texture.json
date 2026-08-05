@@ -1,0 +1,157 @@
+{
+  "schema": "ship_production_texture_receipt_v1",
+  "classification": "SHIP_TEXTURE_QA_REJECTED",
+  "classification_reason": "Every background gate passes -- there is no checkerboard, no plate colour, no light halo and no ground shadow on the geometry, which is exactly what the previous run failed. But only 19.0% of owned texels are directly observed; the other 81% is nearest-observed synthesis. The lit sign and window rows are not legible in any view and the underside carries visible flat fill patches. It is a clean texture, not a production-ready one.",
+  "date": "2026-08-03",
+  "promoted": false,
+  "pipeline": {
+    "source": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\baatti.jpg",
+    "conditioning_variant": "C_BIREFNET_HARD_MASK",
+    "conditioning_image": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\cleaned_conditioning\\conditioning_cleaned.png",
+    "conditioning_sha256": "059b2ca44bc3eebd831c2be282ffb5caa8cd704f0889095d1fe96475c36b0362",
+    "generator": "mini_turbo",
+    "generator_settings": {
+      "seed": 777,
+      "steps": 3,
+      "octree_resolution": 256,
+      "num_chunks": 1500,
+      "guidance_scale": 5.0
+    },
+    "cleanup": "PyMeshLab CLEANUP_A then CLEANUP_B, chained",
+    "uv": "2048 atlas, 1 px padding, 89 degree angle"
+  },
+  "production_geometry": {
+    "path": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\production_cleanup_ab\\ship_production_geometry.glb",
+    "sha256": "17cdf81d7013d9bc7cc0ba4b104eba05b2707061b8d3dfc0a32e8d40a60a7f93",
+    "triangles": 737260,
+    "vertices": 368033,
+    "detached_islands": 11,
+    "boundary_edges": 0,
+    "non_manifold_edges": 10901,
+    "degenerate_triangles": 0,
+    "extreme_aspect_triangles": 6593,
+    "max_triangle_aspect": 2050.8,
+    "silhouette_change_vs_pre_cleanup_percent": 0.0324
+  },
+  "cleanup_ab": {
+    "stage_a": {
+      "triangles": 737776,
+      "degenerate_triangles": 0,
+      "extreme_aspect_triangles": 6599
+    },
+    "stage_b_chained_on_a": {
+      "triangles": 737260,
+      "degenerate_triangles": 0,
+      "extreme_aspect_triangles": 6593
+    },
+    "islands_after_b": 11,
+    "all_degenerates_removed": true,
+    "new_boundary_or_non_manifold_defects": false,
+    "structures_preserved": "hull, four deck tiers, paddle wheel, mast, flag and railings all present in the eight-view render"
+  },
+  "uv": {
+    "atlas_size": 2048,
+    "padding_px": 1,
+    "smart_angle_deg": 89,
+    "utilisation_percent": 32.75,
+    "promotion_target_percent": 20,
+    "meets_target": true,
+    "chose_2048_over_4096": "yes - 2048 beat the earlier 4096 packing (27.5%), so the larger atlas was not needed",
+    "degenerate_uv_triangles": 38,
+    "degenerate_uv_fraction": 5.15e-05,
+    "degenerate_uv_note": "38 of 737260 (0.005%); they own no texels. The stated gate was zero, so this is recorded as a metric warning rather than claimed clean.",
+    "uv_finite": true,
+    "uv_in_unit_range": true,
+    "geometry_surfaces_unchanged": true
+  },
+  "projection": {
+    "worker": "workers/fast_texture_projection.py",
+    "input_contract": "PROJECTION_INPUT_ACCEPTED",
+    "camera": {
+      "yaw": 311.667,
+      "pitch": -36.667,
+      "roll": 21.667,
+      "silhouette_iou": 0.709,
+      "scale": 184.46311026138318,
+      "offset": [
+        246.18274292787908,
+        262.9453172265481
+      ],
+      "centre": [
+        -0.014944275867070858,
+        -0.2306967162206064,
+        -0.17623328799290527
+      ],
+      "image_size": [
+        512,
+        512
+      ]
+    },
+    "atlas": {
+      "owned_texels": 1513152,
+      "owned_fraction": 0.360764,
+      "observed_texels": 287266,
+      "observed_fraction_of_owned": 0.189846,
+      "synthesized_texels": 1225886,
+      "rejected_background_texels": 50978
+    },
+    "gates": {
+      "in_bounds": 1513152,
+      "matte_foreground": 1322764,
+      "front_facing": 708860,
+      "depth_consistent": 358255,
+      "accepted": 287266,
+      "rejected_as_background": 50978,
+      "depth_tolerance": 0.01148737,
+      "front_facing_min": 0.1
+    },
+    "artifacts": {
+      "basecolor": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\production_projection\\basecolor.png",
+      "basecolor_sha256": "9e0240015891eaf468474296bdc869527b46ea244d55dd3a7345d21187a02db9",
+      "observed_mask": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\production_projection\\observed_mask.png",
+      "synthesized_mask": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\production_projection\\synthesized_mask.png",
+      "rejected_background_mask": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\production_projection\\rejected_background_mask.png",
+      "confidence": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\production_projection\\confidence.png",
+      "depth_consistency": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\production_projection\\depth_consistency.png",
+      "textured_glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\production_projection\\textured.glb",
+      "textured_glb_sha256": "a32f303e1e025be517c241973268b2b00d159653416d9d701c0d2e4f0c14fd41"
+    },
+    "timings_seconds": {
+      "load": 0.141,
+      "camera_fit": 28.473,
+      "depth_buffer": 0.728,
+      "atlas_raster": 1.512,
+      "sampling": 0.799,
+      "fill": 0.284,
+      "write_and_bind": 0.294,
+      "total": 32.441
+    },
+    "geometry_uv_index_preserved": true
+  },
+  "qa": {
+    "fresh_import": "PROVEN",
+    "views_rendered": [
+      "front",
+      "right",
+      "rear",
+      "left",
+      "top",
+      "bottom",
+      "front_three_quarter",
+      "rear_three_quarter"
+    ],
+    "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\production_projection\\eight_view_sheet.png",
+    "checkerboard_projection": "NONE",
+    "ground_shadow_projection": "NONE",
+    "light_grey_halo_around_charts": "NONE",
+    "plate_background_on_geometry": "NONE",
+    "observed_fraction_of_owned": 0.189846,
+    "failing_criteria": [
+      "sign and window rows not legible in any view",
+      "81% of owned texels are nearest-observed synthesis rather than observed colour",
+      "flat fill patches visible on the underside",
+      "camera fit plateaus at silhouette IoU 0.709 across several distinct poses, so the single-view pose is not uniquely determined and detail is smeared"
+    ]
+  },
+  "root_cause_of_remaining_gap": "A single real view cannot cover a closed hull: 5 of the 6 conditioning views are mirrored fills at confidence 0. The observed fraction is bounded by what one camera can see. This is the gap MV-Adapter is meant to close."
+}

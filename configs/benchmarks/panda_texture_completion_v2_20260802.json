@@ -1,0 +1,39 @@
+{
+  "manifest_version": 2,
+  "asset_id": "tactical_red_panda_scout_texture_completion_v2",
+  "profile": "humanoid_complex_accessories",
+  "source": {
+    "path": "C:\\Users\\Lauri\\Desktop\\lowvram3d-unified-pipeline-v2-20260802\\benchmarks\\source-images\\20260802-six-variation-pack\\02_tactical_red_panda_scout.jpg",
+    "sha256": "e4bfb2b11e4397e8d1db0f6d487d0074f4557ff668027876b5b8c183f7ac6f7e"
+  },
+  "output_root": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\texture_completion_v2\\unified_pipeline",
+  "generator": "mini_turbo",
+  "geometry_source": {
+    "kind": "existing_sanitized_5step",
+    "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_4_5_degenerate_boundary\\5step_sanitized.glb",
+    "sha256": "1170cff8c1e29b6ab210cac1f8100ca160575e692063c7de0f478db0d7597ff2"
+  },
+  "lod": {
+    "mode": "preserve_source"
+  },
+  "uv": {
+    "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\texture_completion_v2\\uv_source\\tactical_red_panda_scout_5step_uv_source_immutable.glb",
+    "mesh_sha256": "296e274db799efb86a0e6c1984ce9fca46f32ece6ab28b061eda00658ac94e0e",
+    "resolution": 1024,
+    "padding": 4,
+    "route": "existing",
+    "candidate_timeout_seconds": 180
+  },
+  "texture": {
+    "resolution": 1024,
+    "uv_max_charts": 3000
+  },
+  "rig": {
+    "required": false
+  },
+  "intent": {
+    "static": true,
+    "rigged": false,
+    "animated": false
+  }
+}

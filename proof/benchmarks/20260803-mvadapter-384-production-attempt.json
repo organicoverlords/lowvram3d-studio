@@ -1,0 +1,76 @@
+{
+  "schema": "mvadapter_384_production_attempt_v1",
+  "classification": "MVADAPTER_RUNTIME_REJECTED_NO_IMAGES",
+  "classification_reason": "Six PNG files were written and are readable, but every one is uniformly black (min=max=0, std=0) and all six share one SHA-256. The worker's own gate caught it and raised MVADAPTER_OUTPUT_BLANK_OR_FLAT. Files existing is not images existing.",
+  "date": "2026-08-03",
+  "config": "configs/texture/gpu_panda_mvadapter_ig2mv_sd21_inference_authorized_20260803.json",
+  "attempts_used": 1,
+  "attempts_authorized": 1,
+  "preflight_gates": {
+    "all_ten_proven_before_launch": true,
+    "adapter_keys": "198/198",
+    "adapter_missing_keys": [],
+    "adapter_unexpected_keys": [],
+    "reference_cache_keys": "32/32",
+    "condition_encoder_dtype": "fp32",
+    "one_forward_384": "PROVEN",
+    "gpu_free_mb_before": 5369,
+    "unrelated_gpu_compute_processes": "none"
+  },
+  "run": {
+    "model": "SD2.1 image+geometry adapter only",
+    "resolution": 384,
+    "views": 6,
+    "steps": 20,
+    "seed": 12345,
+    "offload": "SEQUENTIAL",
+    "attention": "PYTORCH_SDPA",
+    "vae_slicing": "ON",
+    "sdxl": false,
+    "comfyui": false,
+    "wall_seconds": 142.487
+  },
+  "progress": {
+    "reference_unet_pass_started": true,
+    "reference_unet_call_count": 1,
+    "cond_encoder_executed": true,
+    "denoising_started": true,
+    "denoising_steps_completed": 20,
+    "denoising_steps_requested": 20,
+    "denoising_unet_call_count": 20,
+    "vae_decode_completed": true,
+    "output_count": 6,
+    "rowcol_attention_processors": 32
+  },
+  "vram": {
+    "peak_allocated_mb": 736.792,
+    "peak_reserved_mb": 822.0,
+    "card_total_mb": 6144,
+    "cuda_oom": "NO",
+    "finding": "Sequential offload keeps peak at 737 MB allocated against a 6144 MB card. VRAM is definitively not the blocker for 384 six-view 20-step inference."
+  },
+  "fallback_256": {
+    "authorized": false,
+    "reason": "no CUDA OOM occurred; the failure is a blank decode, which the rules explicitly exclude from retry"
+  },
+  "what_this_advances": "The previous best reached 18 of 20 steps and produced no images. This attempt completed all 20 denoising steps, completed VAE decode, and wrote six files, at a fraction of the VRAM budget. The failure moved from the denoising loop to the content of the latents.",
+  "latent_snapshots": {
+    "implemented": false,
+    "note": "The brief asked for crash-safe latent snapshots after steps 5, 10, 15, 18 and 19. They were not added to the worker before this attempt ran, so the run carries no per-step latent evidence. Since the run completed all 20 steps rather than crashing, snapshots would not have rescued it, but they are exactly what would show at which step the latents went flat. This is the gap to close before the next authorized attempt."
+  },
+  "artifacts": {
+    "receipt": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\production_384_run\\inference_receipt.json",
+    "heartbeat": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\production_384_run\\heartbeat.jsonl",
+    "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\production_384_run\\six_view_contact_sheet.png",
+    "images": [
+      "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\production_384_run\\view_0_front.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\production_384_run\\view_1_right.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\production_384_run\\view_2_rear.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\production_384_run\\view_3_left.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\production_384_run\\view_4_top.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\mvadapter\\production_384_run\\view_5_bottom.png"
+    ],
+    "image_sha256_all_identical": "45f33a6621685c84d53d6e2c9782df59675f6e5946691409dece1cd280b36e3a"
+  },
+  "next_diagnostic": "Add per-step latent finite/statistics snapshots and re-authorize one attempt. The question is whether the latents are zero from the first step or collapse partway, and whether the decode input is already flat."
+}

@@ -1,0 +1,29 @@
+{
+  "asset_id": "barn_with_trees_static_scene",
+  "classification": "BLOCKED_CUDA_DEVICE_ASSERT",
+  "route": "building/static_environment",
+  "source_sha256": "3ba8d68c90e82460c2525b07199fade4be0ef9508d0c00a815f77c0624bcd09e",
+  "source": "C:\\AI\\LowVRAM3D-benchmarks\\multi-asset-validation\\run-20260802-20260802-120447\\staged_inputs\\barn_with_trees_static_scene\\ChatGPT Image 2.8.2026 klo 14.41.01.png",
+  "pipeline": "workers/run_asset_pipeline.py",
+  "stages": {
+    "INGEST": "PROVEN",
+    "GENERATE": "BLOCKED",
+    "TEXTURE": "NOT_PROVEN",
+    "FRESH_IMPORT": "NOT_PROVEN"
+  },
+  "generator": "mini_turbo",
+  "gpu": "NVIDIA GeForce GTX 1660 SUPER",
+  "failure": "CUDA error: device-side assert triggered in Hunyuan3D volume-decoder attention select_topkv",
+  "attempt_seconds": 653.9,
+  "report": "C:\\AI\\LowVRAM3D-benchmarks\\multi-asset-validation\\run-20260802-20260802-120447\\pipeline\\barn_with_trees_static_scene\\barn_with_trees_static_scene\\state\\GENERATE\\candidate\\generate_report.json",
+  "procedural_fixture": "REJECTED",
+  "classifications": {
+    "STEPS_1_OCTREE_64_128_256_384": "PROVEN_REDUCED_CANARIES",
+    "STEPS_2_DIFFUSION": "PROVEN_BY_TRACE",
+    "STEPS_2_MESH_DECODE": "PROVEN_IN_MEMORY",
+    "STEPS_2_GLB_WRITE": "NOT_PROVEN_LOGGER_ABORT",
+    "ORIGINAL_STEPS_5_ROOT_CAUSE": "NOT_PROVEN_DEFERRED",
+    "NEXT_BARN_GPU_RUN": "NOT_AUTHORIZED"
+  },
+  "next_action": "Fix telemetry with CPU fixtures only; next GPU target is the first staged non-barn benchmark input."
+}

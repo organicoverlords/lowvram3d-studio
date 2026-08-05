@@ -267,6 +267,7 @@ def main() -> None:
         decision = decide_component(metrics, args.cleanup_mode)
         if not decision.removable:
             keep_keys.add(key)
+        component_low, component_high = world_bounds(component["world_vertices"])
         decisions.append(
             {
                 "object": component["object"].name,
@@ -277,6 +278,8 @@ def main() -> None:
                 "extent_fraction": round(metrics.extent_fraction, 6),
                 "contact_ratio": round(metrics.contact_ratio, 6),
                 "nearest_distance_fraction": round(metrics.nearest_distance_fraction, 6),
+                "bounds_min": [round(float(value), 6) for value in component_low],
+                "bounds_max": [round(float(value), 6) for value in component_high],
                 "action": decision.action,
                 "reason": decision.reason,
             }
@@ -317,10 +320,17 @@ def main() -> None:
         obj.data.update()
         object_reports.append({"object": obj.name, "before": item["before"], "after": after})
 
+    # Partition in a single pass and never touch a removed object again. Reading obj.name after
+    # bpy.data.objects.remove() dereferences a freed StructRNA and raises ReferenceError, which
+    # Blender reports on stderr while still exiting 0 -- so this aborted the whole raster route
+    # silently, leaving no npz and no cleanup report for the caller to diagnose.
+    surviving: list = []
     for obj in list(objects):
         if len(obj.data.polygons) == 0:
             bpy.data.objects.remove(obj, do_unlink=True)
-    objects = [obj for obj in objects if obj.name in bpy.data.objects and len(obj.data.polygons) > 0]
+        else:
+            surviving.append(obj)
+    objects = surviving
 
     gate_passed, gate_errors = topology_gate(
         faces_before=faces_before,

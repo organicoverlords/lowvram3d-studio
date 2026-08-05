@@ -43,6 +43,42 @@ def smart_project(objects: list[bpy.types.Object], margin: float, per_object: bo
         bpy.ops.object.mode_set(mode="OBJECT")
 
 
+def smooth_normals_for_export(objects: list[bpy.types.Object]) -> int:
+    """Keep flat-face normal identity from needlessly splitting every exported UV corner.
+
+    The generated meshes arrive with a separate flat normal on nearly every face.  After Smart UV
+    Project, Blender's glTF exporter treats the position/UV/normal tuple as the vertex identity and
+    consequently expands the mesh to one vertex per triangle corner.  Smooth normals do not move
+    geometry or change UVs; they only allow shared positions with the same UV to remain indexed.
+    """
+    polygons = 0
+    for obj in objects:
+        for polygon in obj.data.polygons:
+            polygon.use_smooth = True
+            polygons += 1
+    return polygons
+
+
+def planar_front_project(objects: list[bpy.types.Object]) -> None:
+    """Assign a shared front X/Z projection for single-image source appearance."""
+    points = [vertex.co.copy() for obj in objects for vertex in obj.data.vertices]
+    if not points:
+        raise RuntimeError("Cannot create planar UVs for an empty mesh")
+    low = points[0].copy()
+    high = points[0].copy()
+    for point in points[1:]:
+        low.x = min(low.x, point.x); low.z = min(low.z, point.z)
+        high.x = max(high.x, point.x); high.z = max(high.z, point.z)
+    width = max(high.x - low.x, 1e-9)
+    height = max(high.z - low.z, 1e-9)
+    for obj in objects:
+        layer = obj.data.uv_layers.get("UVMap") or obj.data.uv_layers.new(name="UVMap")
+        obj.data.uv_layers.active = layer
+        for loop in obj.data.loops:
+            point = obj.data.vertices[loop.vertex_index].co
+            layer.data[loop.index].uv = ((point.x - low.x) / width, (point.z - low.z) / height)
+
+
 def make_lightmap_uv(objects: list[bpy.types.Object], margin_divisor: float) -> list[str]:
     created: list[str] = []
     for obj in objects:
@@ -195,6 +231,8 @@ def main() -> None:
     parser.add_argument("--lightmap-uv", action="store_true")
     parser.add_argument("--smart-angle-deg", type=float, default=66.0)
     parser.add_argument("--area-weight", type=float, default=0.0)
+    parser.add_argument("--smooth-export-normals", action="store_true", default=True)
+    parser.add_argument("--uv-route", choices=("smart", "planar_front"), default="smart")
     args = parser.parse_args(argv_after_double_dash())
 
     reset_scene()
@@ -203,9 +241,13 @@ def main() -> None:
         raise RuntimeError("No mesh objects imported")
     has_valid_uv = all(obj.data.uv_layers and len(obj.data.uv_layers.active.data) > 0 for obj in objects)
     preserve = args.atlas_mode == "preserve_or_per_object" and has_valid_uv
-    if not preserve:
+    if args.uv_route == "planar_front":
+        planar_front_project(objects)
+        preserve = False
+    elif not preserve:
         margin = max(1, args.padding_px) / max(args.texture_size, 1)
         smart_project(objects, margin, per_object=args.atlas_mode != "shared", angle_degrees=args.smart_angle_deg, area_weight=args.area_weight)
+    smoothed_polygons = smooth_normals_for_export(objects) if args.smooth_export_normals else 0
     lightmap_objects = make_lightmap_uv(objects, max(0.01, args.texture_size / max(args.padding_px, 1))) if args.lightmap_uv else []
     triangles = uv_triangles(objects)
     metrics = estimate_uv_metrics(triangles)
@@ -223,6 +265,7 @@ def main() -> None:
             "success": not errors,
             "backend": "blender_smart_uv",
             "atlas_mode": args.atlas_mode,
+            "uv_route": args.uv_route,
             "preserved_existing_uv": preserve,
             "texture_size": args.texture_size,
             "padding_px": args.padding_px,
@@ -230,6 +273,8 @@ def main() -> None:
             "area_weight": args.area_weight,
             "metrics": metrics,
             "lightmap_uv_objects": lightmap_objects,
+            "smooth_export_normals": args.smooth_export_normals,
+            "smooth_polygons": smoothed_polygons,
             "mesh_stats": extended_mesh_stats(objects),
             "errors": errors,
             "warnings": ["UV overlap/utilization values are CPU raster estimates, not exact polygon-boolean results."],

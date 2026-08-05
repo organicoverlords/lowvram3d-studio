@@ -1,0 +1,144 @@
+name: Shaman V2 unseen-surface texture repair
+run-name: Shaman unseen-surface repair ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - infra/windows-self-hosted-runner-20260731
+    paths:
+      - .github/workflows/shaman-v2-unseen-surface-repair.yml
+      - workers/pipeline_unseen_material_fill.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-v2-local-worker
+  cancel-in-progress: true
+
+jobs:
+  repair-texture:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 180
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 20
+
+      - name: Resolve environment
+        shell: powershell
+        run: |
+          if ("${{ github.ref }}" -ne "refs/heads/infra/windows-self-hosted-runner-20260731") { throw "Unexpected ref" }
+          $candidates = @(
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $selected = $null
+          foreach ($candidate in $candidates) {
+            & $candidate -c "import cv2,numpy,scipy,xatlas; print('UNSEEN_REPAIR_ENV_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) { $selected = $candidate; break }
+          }
+          if (-not $selected) { throw "No complete Python environment" }
+          $blender = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
+          if (-not (Test-Path -LiteralPath $blender)) { throw "Blender 5.2 is missing" }
+          "V2_PYTHON=$selected" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_OUTPUT_ROOT=C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "V2_ASSET_ROOT=C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "LOWVRAM3D_FRONT_DIRECTION=+z" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Compile and select repair workers
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & $env:V2_PYTHON -m py_compile `
+            workers\pipeline_unseen_material_fill.py `
+            workers\shaman_texture_views_oriented.py `
+            workers\run_asset_pipeline_full.py
+          if ($LASTEXITCODE -ne 0) { throw "Repair worker does not compile" }
+          $production = Join-Path $PWD "workers\pipeline_v2_production_stages.py"
+          $text = [IO.File]::ReadAllText($production)
+          $text = $text.Replace('w("shaman_texture_views.py")', 'w("shaman_texture_views_oriented.py")')
+          $text = $text.Replace('w("pipeline_prior_repaint.py")', 'w("pipeline_unseen_material_fill.py")')
+          if (-not $text.Contains('w("pipeline_unseen_material_fill.py")')) { throw "Unseen fill call site was not patched" }
+          [IO.File]::WriteAllText($production, $text, [Text.UTF8Encoding]::new($false))
+
+      - name: Invalidate texture stages only
+        shell: powershell
+        run: |
+          $root = $env:V2_ASSET_ROOT
+          if (-not $root.StartsWith("C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\")) { throw "Unsafe asset root" }
+          foreach ($stage in @("TEXTURE", "TEXTURE_QA")) {
+            $path = Join-Path $root "state\$stage"
+            if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Recurse -Force }
+          }
+
+      - name: Rebuild texture and QA
+        shell: powershell
+        run: |
+          $source = "C:\Users\Lauri\Downloads\ChatGPT Image 29.7.2026 klo 20.00.45.png"
+          $master = "C:\AI\LowVRAM3D-benchmarks\outputs\antlered_bird_shaman_anchor\final-pipeline\high\shaman_high_clean.glb"
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-asset-pipeline.ps1 `
+            -Image $source `
+            -Profile humanoid_complex_accessories `
+            -AssetId shaman_v2_fresh_proof `
+            -OutputRoot $env:V2_OUTPUT_ROOT `
+            -ExistingMaster $master `
+            -FromStage TEXTURE `
+            -ToStage TEXTURE_QA `
+            -PythonPath $env:V2_PYTHON `
+            -BlenderPath $env:V2_BLENDER
+          if ($LASTEXITCODE -ne 0) { throw "Texture repair pipeline failed" }
+
+      - name: Prove remote smearing is disabled
+        shell: powershell
+        run: |
+          $root = $env:V2_ASSET_ROOT
+          $summary = Get-Content (Join-Path $root "pipeline_summary.json") -Raw | ConvertFrom-Json
+          if ($summary.stages.TEXTURE.status -ne "passed") { throw "TEXTURE did not pass" }
+          if ($summary.stages.TEXTURE_QA.status -ne "passed") { throw "TEXTURE_QA did not pass" }
+          $texture = Get-Content (Join-Path $root "state\TEXTURE\receipt.json") -Raw | ConvertFrom-Json
+          $glb = $texture.outputs.textured_glb.path
+          $hash = (Get-FileHash -LiteralPath $glb -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -eq "3dea9803c726a99ebc8dafd9124399d8e4d3e0d7009a24cc4f351d325d6efaf7") {
+            throw "Rejected texture GLB was reproduced byte-for-byte"
+          }
+          $report = Join-Path $root "state\TEXTURE\proven\repaint_report.json"
+          if (-not (Test-Path -LiteralPath $report)) { throw "Unseen material report is missing" }
+          $fill = Get-Content $report -Raw | ConvertFrom-Json
+          if (-not $fill.remote_front_smearing_disabled) { throw "Remote front smearing remains enabled" }
+          if (-not $fill.observed_unchanged) { throw "Observed front texels changed" }
+          [ordered]@{
+            workflow_run_id = "${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            candidate_only = $true
+            human_review_required = $true
+            rejected_predecessor_sha256 = "3dea9803c726a99ebc8dafd9124399d8e4d3e0d7009a24cc4f351d325d6efaf7"
+            candidate_sha256 = $hash
+            remote_front_smearing_disabled = $fill.remote_front_smearing_disabled
+            observed_unchanged = $fill.observed_unchanged
+            textured_glb = $glb
+            recorded_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $root "unseen_surface_repair_acceptance.json") -Encoding utf8
+          Write-Host "CANDIDATE_SHA256=$hash"
+          Write-Host "HUMAN_REVIEW_REQUIRED=true"
+
+      - name: Upload repaired candidate and review renders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shaman-unseen-surface-repair-${{ github.run_id }}
+          path: |
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\unseen_surface_repair_acceptance.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\pipeline_summary.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\state\TEXTURE\proven\*.json
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\state\TEXTURE\proven\*.glb
+            C:\AI\LowVRAM3D-benchmarks\pipeline-v2-fresh-proof\shaman_v2_fresh_proof\state\TEXTURE\proven\*.png
+          if-no-files-found: error
+          retention-days: 14

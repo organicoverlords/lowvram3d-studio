@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "artifacts": [
+    {
+      "asset_id": "shaman_v2_validation",
+      "sha256": "9468db9a28171dea7dd49d9adb7f4af41114b23a00df89def3fd52a53d5f83e6",
+      "bytes": 127222296,
+      "historical_path": "state/TEXTURE/proven/shaman_v2_validation_textured_lod0.glb",
+      "status": "REJECTED_VISUAL_BASELINE",
+      "promotable": false,
+      "usable_as": [
+        "failure_evidence",
+        "geometry_and_file-identity evidence only"
+      ],
+      "not_usable_as": [
+        "canonical textured asset",
+        "material-stage input",
+        "rigging visual baseline",
+        "production export"
+      ],
+      "observed_defects": [
+        "rear and upper-back surfaces are largely pale and untextured",
+        "rear skirt contains broad horizontally smeared front-derived colour bands",
+        "side views show abrupt boundaries between observed front projection and synthesized rear texture",
+        "head, antlers, staff and rear accessories have weak or missing semantic texture coverage"
+      ],
+      "classification": {
+        "global_uv_row_reversal": "not_primary_defect",
+        "complete_front_back_swap": false,
+        "single_view_projection_bias": true,
+        "unseen_surface_synthesis_failure": true,
+        "cross_surface_texture_leakage": true
+      },
+      "replacement_policy": "Regenerate from clean geometry using independently registered front/right/back/left semantic views. Do not promote a replacement until visual coverage and fresh-import renders pass."
+    }
+  ]
+}

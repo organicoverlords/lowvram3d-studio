@@ -1,0 +1,136 @@
+{
+  "schema": "ship_input_cleaning_ab_receipt_v1",
+  "classification": [
+    "BACKGROUND_CLEANING_IMPROVES_MINITURBO",
+    "BACKGROUND_CLEANING_IMPROVES_SF3D"
+  ],
+  "date": "2026-08-03",
+  "controlled_for": "Both cleaned runs were framed by workers/normalize_conditioning.py with the same crop, 10% padding and 512x512 square resize the original benchmark used, so the only variable is the matting method. Mini Turbo reused candidate 2's exact settings: seed 777, 3 steps, octree 256, 1500 chunks, guidance 5.0, identical prompt.",
+  "triposr_rerun": "NOT RUN, per the bounded scope: Mini Turbo cleaned did not fail",
+  "candidates": {
+    "mini_turbo_original": {
+      "conditioning_variant": "original plate matte (shaman_matte key)",
+      "glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\miniturbo_c2\\candidate.glb",
+      "glb_sha256": "789a3cca41b6a756bff1551b127678445f0319241492dae2c1fe617a077bcd75",
+      "vertices": 381434,
+      "triangles": 763850,
+      "components": 26,
+      "detached_islands": 25,
+      "boundary_edges": 20,
+      "non_manifold_edges": 11018,
+      "degenerate_triangles": 19,
+      "extreme_aspect_triangles": 6780,
+      "max_triangle_aspect": 132916.3,
+      "extent": [
+        1.29228,
+        1.67708,
+        1.97204
+      ],
+      "source_silhouette_best_iou": 0.8766,
+      "flat_eight_views": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\miniturbo_c2\\flat_eight_views",
+      "wall_seconds": 195.873,
+      "peak_vram_mb": 4772,
+      "seed": 777,
+      "note": "reused unchanged from the prior benchmark; not regenerated"
+    },
+    "mini_turbo_cleaned": {
+      "conditioning_variant": "C_BIREFNET_HARD_MASK",
+      "glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ab_miniturbo_cleaned\\candidate.glb",
+      "glb_sha256": "f5ecb8b06d00d8fa9335b69708b901f5bcec9346cdf7b285632b58c8502c5783",
+      "vertices": 368490,
+      "triangles": 738134,
+      "components": 22,
+      "detached_islands": 21,
+      "boundary_edges": 0,
+      "non_manifold_edges": 11233,
+      "degenerate_triangles": 24,
+      "extreme_aspect_triangles": 6840,
+      "max_triangle_aspect": 147795.3,
+      "extent": [
+        1.26935,
+        1.67181,
+        1.95992
+      ],
+      "source_silhouette_best_iou": 0.8664,
+      "flat_eight_views": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ab_miniturbo_cleaned\\flat_eight_views",
+      "wall_seconds": 196.9,
+      "peak_vram_mb": 4649,
+      "seed": 777
+    },
+    "sf3d_original": {
+      "conditioning_variant": "original plate matte (shaman_matte key)",
+      "glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\sf3d_c1\\candidate.glb",
+      "glb_sha256": "184e8f0527ab335ed9d6b29b0fd5f94b284fd4ba64b57d21748ac149d8afdc23",
+      "vertices": 14152,
+      "triangles": 28296,
+      "components": 2,
+      "detached_islands": 1,
+      "boundary_edges": 0,
+      "non_manifold_edges": 332,
+      "degenerate_triangles": 5,
+      "extreme_aspect_triangles": 300,
+      "max_triangle_aspect": 28792.0,
+      "extent": [
+        0.6438,
+        0.88936,
+        0.75269
+      ],
+      "source_silhouette_best_iou": 0.7842,
+      "flat_eight_views": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\sf3d_c1\\flat_eight_views",
+      "wall_seconds": 24.5,
+      "peak_vram_mb": 6072.2,
+      "seed": null
+    },
+    "sf3d_cleaned": {
+      "conditioning_variant": "C_BIREFNET_HARD_MASK",
+      "glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ab_sf3d_cleaned\\candidate.glb",
+      "glb_sha256": "caa1ecd96340a6aeb2c8087fe8c4cc6986a97c57dae716901ccb45733a82b7f8",
+      "vertices": 14776,
+      "triangles": 29548,
+      "components": 1,
+      "detached_islands": 0,
+      "boundary_edges": 0,
+      "non_manifold_edges": 301,
+      "degenerate_triangles": 0,
+      "extreme_aspect_triangles": 246,
+      "max_triangle_aspect": 704.6,
+      "extent": [
+        0.69352,
+        0.88946,
+        0.73151
+      ],
+      "source_silhouette_best_iou": 0.7755,
+      "flat_eight_views": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ab_sf3d_cleaned\\flat_eight_views",
+      "wall_seconds": 26.3,
+      "peak_vram_mb": 6072.2,
+      "seed": null
+    }
+  },
+  "contact_sheet": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\ab_cleaned_vs_original_contact_sheet.png",
+  "findings": {
+    "mini_turbo": {
+      "verdict": "IMPROVED",
+      "detached_islands": "25 -> 21",
+      "debris_triangles": "4718 (0.62%) -> 3340 (0.45%)",
+      "island_protrusion_beyond_hull_bbox": "0.08% -> 0.00%",
+      "boundary_edges": "20 -> 0",
+      "extreme_aspect_triangles": "6780 -> 6840 (marginally worse)",
+      "degenerate_triangles": "19 -> 24 (marginally worse)",
+      "source_silhouette_iou": "0.8766 -> 0.8664",
+      "structure": "hull, four deck tiers, mast, flag and paddle wheel all preserved; no visible defect",
+      "level": "METRIC_WARNING only"
+    },
+    "sf3d": {
+      "verdict": "TOPOLOGY_IMPROVED_BUT_STILL_HARD_REJECT",
+      "detached_islands": "1 -> 0",
+      "degenerate_triangles": "5 -> 0",
+      "extreme_aspect_triangles": "300 -> 246",
+      "max_triangle_aspect": "28792 -> 705",
+      "island_protrusion": "1.69% -> 0.00%",
+      "source_silhouette_iou": "0.7842 -> 0.7755",
+      "structure": "still a collapsed featureless pod with no hull, decks or paddle wheel",
+      "level": "HARD_REJECT (collapsed hull, missing major ship structures)",
+      "note": "Cleaning the plate measurably fixes SF3D's topology but does not make SF3D reconstruct the vessel. Cleaner triangles on an unusable shape is not usability."
+    }
+  }
+}

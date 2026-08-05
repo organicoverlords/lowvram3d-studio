@@ -1,0 +1,78 @@
+{
+  "schema": "ship_texture_trial_rejected_v1",
+  "classification": "SHIP_TEXTURE_TRIAL_QA_REJECTED_WRONG_SOURCE",
+  "date": "2026-08-03",
+  "promoted": false,
+  "glb_produced": false,
+  "rejection_reason": "The projection was given the original plate JPEG as its source image. That file carries a baked-in transparency checkerboard and the ground shadow, so plate background was painted onto geometry. The selected cleaned BiRefNet hard-mask conditioning was never wired in. The run is invalid at its input, so no GLB was waited for.",
+  "process": {
+    "pid": 28468,
+    "started": "2026-08-03T08:42:49",
+    "terminated": "2026-08-03T11:52 (approx, gracefully)",
+    "elapsed_minutes": 189.82,
+    "cpu_seconds": 11199.4,
+    "working_set_mb_at_termination": 428.5,
+    "termination": "graceful; only this projection process was signalled",
+    "command_line": "\"C:\\Program Files\\Blender Foundation\\Blender 5.2\\blender.exe\" --background --factory-startup --python-expr \"import sys; sys.path.insert(0, r\\'...\\blender\\')\" --python ...\\blender\\project_texture.py -- --input ...\\winner_texture\\ship_uv_v2.glb --views-dir ...\\ship-benchmark-20260803-generators\\conditioning --source-image ...\\ship-benchmark-20260803-generators\\baatti.jpg --output ...\\winner_texture\\ship_textured.glb --texture ...\\winner_texture\\ship_basecolor.png --report ...\\winner_texture\\project_texture.json --size 4096"
+  },
+  "inputs": {
+    "source_image_used": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\baatti.jpg",
+    "source_image_used_sha256": "5a6d39c08efa9c4177fe77a19060c494c724a023acbccfec48444d8009706152",
+    "original_plate": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\baatti.jpg",
+    "original_plate_sha256": "5a6d39c08efa9c4177fe77a19060c494c724a023acbccfec48444d8009706152",
+    "source_equals_original_plate": true,
+    "mask_method_used": "NONE - raw JPEG, no alpha",
+    "mask_method_required": "BIREFNET_HARD_MASK",
+    "cleaned_conditioning_that_should_have_been_used": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\cleaned_conditioning\\conditioning_cleaned.png",
+    "cleaned_conditioning_sha256": "059b2ca44bc3eebd831c2be282ffb5caa8cd704f0889095d1fe96475c36b0362",
+    "uv_glb": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\winner_texture\\ship_uv_v2.glb",
+    "uv_glb_sha256": "231f6438f715a7d3bde5006f22a6c7f8398255cca49c4b4b72aee3bcf1ba0739",
+    "views_dir": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\conditioning",
+    "views_note": "1 real front view plus 5 mirrored fills at confidence 0.0",
+    "atlas_size": 4096
+  },
+  "partial_atlas_evidence": {
+    "atlas": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\rejected_projection_20260803_wrong_source\\ship_basecolor.png",
+    "atlas_sha256": "84a81fcee528118de3d81ec8988df7571a1b0d691351f3845c453b6123d2a688",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "unpainted_gutter_fraction": 0.35996,
+    "plate_coloured_texel_fraction": 0.00047,
+    "light_halo_texel_fraction": 0.02599,
+    "mean_saturation": 5.66,
+    "median_luminance": 83.0,
+    "visual_finding": "The two largest charts show the ornate facade ringed by a light-grey halo - the plate background projected onto the hull. The remaining charts are thin slivers separated by unpainted gutter."
+  },
+  "preserved_artifacts": {
+    "ship_basecolor.png": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\rejected_projection_20260803_wrong_source\\ship_basecolor.png",
+      "sha256": "84a81fcee528118de3d81ec8988df7571a1b0d691351f3845c453b6123d2a688",
+      "bytes": 14245303
+    },
+    "ship_basecolor_preview.png": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\rejected_projection_20260803_wrong_source\\ship_basecolor_preview.png",
+      "sha256": "c76d6ffff4331a8b15c21070ca8751dc7e556dc23315626ddb7dbf7636f40831",
+      "bytes": 1246260
+    },
+    "uv_report_v2.json": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\rejected_projection_20260803_wrong_source\\uv_report_v2.json",
+      "sha256": "052aa922d2072db89fba6318f6d374eb574213c9495efd85397f93237d085135",
+      "bytes": 1452
+    },
+    "uv_layout_v2.png": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\rejected_projection_20260803_wrong_source\\uv_layout_v2.png",
+      "sha256": "9c4e525aed13ce3c86bca44600018f4fc8d46e44ac6162afe712dd8f2556fd28",
+      "bytes": 277866
+    },
+    "stdout_stderr": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\ship-benchmark-20260803-generators\\rejected_projection_20260803_wrong_source\\projection_stdout_stderr.log",
+      "bytes": 0,
+      "note": "empty: project_texture.py emitted nothing before the per-polygon ray_cast loop"
+    }
+  },
+  "not_deleted": "All prior panda and ship evidence and receipts are untouched.",
+  "supersedes_nothing": true,
+  "next_action": "Re-run projection under the Part 2 input contract with the cleaned hard mask."
+}

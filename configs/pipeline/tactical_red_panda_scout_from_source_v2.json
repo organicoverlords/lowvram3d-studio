@@ -1,0 +1,45 @@
+{
+  "manifest_version": 2,
+  "asset_id": "tactical_red_panda_scout_from_source",
+  "profile": "humanoid",
+  "source": {
+    "path": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\panda.jpg",
+    "sha256": "e4bfb2b11e4397e8d1db0f6d487d0074f4557ff668027876b5b8c183f7ac6f7e",
+    "bytes": 71294
+  },
+  "generator": "mini_turbo",
+  "generator_runtime": {
+    "python": "C:\\AI\\HY3D2\\python_standalone\\python.exe",
+    "pythonpath": ["C:\\AI\\HY3D2\\Hunyuan3D-2"]
+  },
+  "generation_prompt": "tactical red panda scout in a ghillie suit static non-animated asset; preserve the complete visible silhouette and thin details; no rig, no animation",
+  "geometry": {
+    "lod_triangle_targets": [800000, 400000, 150000, 50000],
+    "lod_triangle_targets_note": "The humanoid profile's [220000, 80000, 35000, 12000] tears this asset: a 7x cut from 1.59M faces shreds the ghillie fringe and every rung regressed boundary and non-manifold edge counts. LOD0 is held near the proven panda's 644k so the fringe survives.",
+    "preserve_thin_features": true
+  },
+  "lod": {
+    "mode": "generate",
+    "allow_topology_regression_below_lod0": true,
+    "allow_topology_regression_note": "LOD0 at 800k improves topology (boundary 63->60, non-manifold 109->85) and stays strict. Below it the ghillie fringe shreds: measured boundary edges 209/249/312 at LOD1/2/3. Losing thin strands at distance LODs is intended behaviour, so those are recorded as advisory rather than failing the stage."
+  },
+  "clean": {
+    "stance_repair": false,
+    "stance_repair_note": "Crouched sniper pose with a long ghillie skirt: the legs are connected in the source art, so the repair can only open a rigging gap by deleting ~35,000 faces (2.21%) of garment between the thighs. Geometry is kept intact and the legs are separated at rig time with bone weights."
+  },
+  "uv": {
+    "route": "injective",
+    "resolution": 4096,
+    "padding": 4,
+    "max_degenerate_uv_triangles": 0
+  },
+  "texture": {
+    "route": "raster_project",
+    "resolution": 4096
+  },
+  "rig": {
+    "required": true,
+    "separate_props": false
+  },
+  "output_root": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\pipeline_v2_from_source_20260804_full_ladder"
+}

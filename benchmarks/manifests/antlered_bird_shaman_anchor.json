@@ -1,0 +1,49 @@
+{
+  "schema_version": 2,
+  "fixture_id": "antlered_bird_shaman_anchor",
+  "title": "Antlered bird-shaman ornament anchor",
+  "priority": 0,
+  "required_first": true,
+  "canonical_source": {
+    "benchmark_pack_name": "antlered_bird_shaman_anchor.png",
+    "original_filename": "ChatGPT Image 29.7.2026 klo 20.00.45.png",
+    "sha256": "4d23adc758c5b700dd29939e37c043ce61919792b566bdcf13f58b1409d6cf6f",
+    "width": 1122,
+    "height": 1402,
+    "format": "PNG",
+    "mode": "RGBA",
+    "role": "canonical_source_image",
+    "committed_to_git": false,
+    "required_local_root": "C:\\AI\\LowVRAM3D-benchmarks\\images",
+    "verification": {
+      "status": "LOCAL_FILE_HASH_REPORTED_BY_MAGICMUSIC",
+      "verified_path": "C:\\Users\\Lauri\\Downloads\\ChatGPT Image 29.7.2026 klo 20.00.45.png",
+      "verified_at": "2026-07-31T18:58:54.155Z",
+      "previous_rejected_sha256": "eccef854f816f446ce2bf2e08559df519adff223b425c1dccc1c0a9b299f13f6",
+      "reason": "The previous hash did not match the user's exact local source path during a manual MagicMusic run. Manual file proof supersedes the unverified recorded value."
+    }
+  },
+  "repository_preview": {
+    "path": "benchmarks/images/antlered_bird_shaman_anchor.preview.webp",
+    "sha256": "e4e991109ada22837cc58720b671df1c64979ec37fb585dc177bc4f8293d537a",
+    "width": 256,
+    "height": 320,
+    "format": "WEBP",
+    "role": "review_preview_not_generation_input"
+  },
+  "canonical_master": {
+    "benchmark_pack_name": "antlered_bird_shaman_anchor.glb",
+    "status": "LOCAL_RECOVERY_AND_HASH_VERIFICATION_REQUIRED",
+    "required_local_root": "C:\\AI\\LowVRAM3D-benchmarks\\masters",
+    "sha256": null,
+    "vertices": null,
+    "faces": null
+  },
+  "provenance": {
+    "generated_in_user_chat_session": true,
+    "source_pixels_modified_after_generation": null,
+    "source_pixel_identity_status": "NOT_PROVEN",
+    "repository_preview_is_resized": true,
+    "external_inference_calls_for_repository_update": 0
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "1": {
+    "class_type": "[Comfy3D] Load MVAdapter IG2MV Pipeline",
+    "inputs": {
+      "base_model": "stabilityai/stable-diffusion-xl-base-1.0",
+      "vae_model": "madebyollin/sdxl-vae-fp16-fix",
+      "adapter_path": "huanngzh/mv-adapter",
+      "scheduler": "ddpm",
+      "num_views": 6,
+      "use_fp16": true,
+      "use_mmgp": true
+    }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "inputs": {"image": "panda_front_albedo.png"}
+  },
+  "3": {
+    "class_type": "[Comfy3D] MVAdapter IG2MV",
+    "inputs": {
+      "mvadapter_pipe": ["1", 0],
+      "reference_image": ["2", 0],
+      "mesh_path": "",
+      "prompt": "high quality unlit tactical red panda scout, coherent fur, ghillie suit, rifle and backpack, physically consistent multiview appearance",
+      "negative_prompt": "watermark, ugly, deformed, noisy, blurry, low contrast, face on rear, eyes on rear, muzzle on rear, mirrored front view",
+      "num_inference_steps": 20,
+      "guidance_scale": 3.0,
+      "reference_conditioning_scale": 1.0,
+      "height": 512,
+      "width": 512,
+      "seed": 12345,
+      "remove_background": false,
+      "lora_scale": 1.0
+    }
+  },
+  "4": {
+    "class_type": "ImageFromBatch",
+    "inputs": {"image": ["3", 0], "batch_index": 0, "length": 1}
+  },
+  "5": {
+    "class_type": "SaveImage",
+    "inputs": {"images": ["4", 0], "filename_prefix": "lowvram3d/panda_hybrid"}
+  }
+}

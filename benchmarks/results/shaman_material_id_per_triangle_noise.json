@@ -1,0 +1,29 @@
+{
+  "render_dir": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\reports\\texture_review",
+  "passed": false,
+  "blocking_codes": [
+    "MATERIAL_ID_NOISE"
+  ],
+  "advisory_codes": [],
+  "findings": [
+    {
+      "code": "MATERIAL_ID_NOISE",
+      "severity": "blocking",
+      "detail": "material-ID resolved 27097 components; the map is per-triangle noise rather than per-part identity",
+      "measured": {
+        "components": 27097,
+        "limit": 500
+      }
+    }
+  ],
+  "measured": {
+    "material_id_components": 27097,
+    "rear_front_correlation": {
+      "mirrored": 0.2254,
+      "direct": 0.0742
+    },
+    "face": {
+      "edge_energy": 0.0987
+    }
+  }
+}

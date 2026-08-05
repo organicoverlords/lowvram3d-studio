@@ -1,0 +1,236 @@
+{
+  "stage": "EFFECTS",
+  "socket_count": 10,
+  "sockets": [
+    {
+      "socket": "root_fx",
+      "parent_bone": "root",
+      "local_position": [
+        0.0,
+        0.0,
+        0.02
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "vfx",
+      "enabled": true,
+      "confidence": 0.7,
+      "reason": null
+    },
+    {
+      "socket": "head_fx",
+      "parent_bone": "head",
+      "local_position": [
+        0.0,
+        0.0,
+        0.06
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "vfx",
+      "enabled": true,
+      "confidence": 0.7,
+      "reason": null
+    },
+    {
+      "socket": "hand_l_fx",
+      "parent_bone": "hand_l",
+      "local_position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "vfx",
+      "enabled": true,
+      "confidence": 0.4,
+      "reason": null
+    },
+    {
+      "socket": "hand_r_fx",
+      "parent_bone": "hand_r",
+      "local_position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "vfx",
+      "enabled": true,
+      "confidence": 0.4,
+      "reason": null
+    },
+    {
+      "socket": "foot_l_fx",
+      "parent_bone": "foot_l",
+      "local_position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "vfx",
+      "enabled": true,
+      "confidence": 0.4,
+      "reason": null
+    },
+    {
+      "socket": "foot_r_fx",
+      "parent_bone": "foot_r",
+      "local_position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "vfx",
+      "enabled": true,
+      "confidence": 0.4,
+      "reason": null
+    },
+    {
+      "socket": "hand_l_socket",
+      "parent_bone": "hand_l",
+      "local_position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "attachment",
+      "enabled": true,
+      "confidence": 0.4,
+      "reason": null
+    },
+    {
+      "socket": "hand_r_socket",
+      "parent_bone": "hand_r",
+      "local_position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "attachment",
+      "enabled": true,
+      "confidence": 0.4,
+      "reason": null
+    },
+    {
+      "socket": "staff_socket",
+      "parent_bone": "staff_deform",
+      "local_position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "attachment",
+      "enabled": true,
+      "confidence": 0.7,
+      "reason": null
+    },
+    {
+      "socket": "staff_tip_fx",
+      "parent_bone": "staff_deform",
+      "local_position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "effect_type": "vfx",
+      "enabled": true,
+      "confidence": 0.7,
+      "reason": null
+    }
+  ]
+}

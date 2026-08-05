@@ -1,0 +1,129 @@
+{
+  "stage": "MILESTONE_A_SOURCE_POSE_SKELETON",
+  "passed": true,
+  "failures": [],
+  "rest_pose": {
+    "max_vertex_delta": 1.043081283569336e-07,
+    "tolerance": 1e-05,
+    "finite": true,
+    "vertex_count": 537041
+  },
+  "joint_overlay_renders": [
+    "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\milestone-a\\overlay_front.png",
+    "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\milestone-a\\overlay_right.png",
+    "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\milestone-a\\overlay_back.png",
+    "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\milestone-a\\overlay_left.png",
+    "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\milestone-a\\overlay_three_quarter.png"
+  ],
+  "observed_joint_count": 4,
+  "inferred_joint_count": 20,
+  "observed_joints": [
+    "root",
+    "neck",
+    "head",
+    "staff_grip"
+  ],
+  "inferred_joints": [
+    {
+      "name": "pelvis",
+      "confidence": 0.55,
+      "source": "silhouette_skirt_flare_onset"
+    },
+    {
+      "name": "spine_01",
+      "confidence": 0.5,
+      "source": "interpolated_hip_to_shoulder"
+    },
+    {
+      "name": "spine_02",
+      "confidence": 0.5,
+      "source": "interpolated_hip_to_shoulder"
+    },
+    {
+      "name": "chest",
+      "confidence": 0.55,
+      "source": "interpolated_hip_to_shoulder"
+    },
+    {
+      "name": "clavicle_l",
+      "confidence": 0.55,
+      "source": "silhouette_cape_shoulder_widening"
+    },
+    {
+      "name": "upperarm_l",
+      "confidence": 0.5,
+      "source": "silhouette_cape_shoulder_widening"
+    },
+    {
+      "name": "lowerarm_l",
+      "confidence": 0.4,
+      "source": "measured_lateral_arm_lobe"
+    },
+    {
+      "name": "hand_l",
+      "confidence": 0.45,
+      "source": "measured_distal_arm_lobe_centroid"
+    },
+    {
+      "name": "thigh_l",
+      "confidence": 0.3,
+      "source": "anthropometric_fallback_inside_robe"
+    },
+    {
+      "name": "calf_l",
+      "confidence": 0.3,
+      "source": "anthropometric_fallback_inside_robe"
+    },
+    {
+      "name": "foot_l",
+      "confidence": 0.45,
+      "source": "lowest_mass_bearing_contact_slice"
+    },
+    {
+      "name": "toe_l",
+      "confidence": 0.35,
+      "source": "contact_slice_estimate"
+    },
+    {
+      "name": "clavicle_r",
+      "confidence": 0.55,
+      "source": "silhouette_cape_shoulder_widening"
+    },
+    {
+      "name": "upperarm_r",
+      "confidence": 0.5,
+      "source": "silhouette_cape_shoulder_widening"
+    },
+    {
+      "name": "lowerarm_r",
+      "confidence": 0.4,
+      "source": "measured_lateral_arm_lobe"
+    },
+    {
+      "name": "hand_r",
+      "confidence": 0.45,
+      "source": "measured_distal_arm_lobe_centroid"
+    },
+    {
+      "name": "thigh_r",
+      "confidence": 0.3,
+      "source": "anthropometric_fallback_inside_robe"
+    },
+    {
+      "name": "calf_r",
+      "confidence": 0.3,
+      "source": "anthropometric_fallback_inside_robe"
+    },
+    {
+      "name": "foot_r",
+      "confidence": 0.45,
+      "source": "lowest_mass_bearing_contact_slice"
+    },
+    {
+      "name": "toe_r",
+      "confidence": 0.35,
+      "source": "contact_slice_estimate"
+    }
+  ],
+  "bone_count": 46
+}

@@ -1,0 +1,73 @@
+{
+  "note": "Frozen benchmark evidence from the V1 shaman run. These artifacts are the reference the Pipeline V2 regression cases replay against; do not regenerate them.",
+  "frozen_at": "2026-08-01T12:38:49.0714798Z",
+  "repo_head": "b4b13b2222685506772cf2ad945fa129ab7476c3",
+  "artifacts": [
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\textured\\shaman_textured_lod0.glb",
+      "relative": "textured\\shaman_textured_lod0.glb",
+      "bytes": 132385632,
+      "sha256": "958da24b830d66c3062a5602d3f448435b8ee709e284dace036ffba28892e1d1"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\textured\\shaman_lod0_uv_clean.glb",
+      "relative": "textured\\shaman_lod0_uv_clean.glb",
+      "bytes": 7079016,
+      "sha256": "50704d82c66e48e7b9c651b49ff5183f31b04745cf890ea3369d6634b360b1b6"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\textures\\shaman_basecolor_4k.png",
+      "relative": "textures\\shaman_basecolor_4k.png",
+      "bytes": 16943343,
+      "sha256": "8b0d8f9db4a980cef3a6c8e25d46b873323216a3402303baf4be5a295a702b7f"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\textures\\shaman_normal_4k.png",
+      "relative": "textures\\shaman_normal_4k.png",
+      "bytes": 89937578,
+      "sha256": "8d91876d68c2c5dbbda116f1a1d0de39d902bd1e2a1663dd8d68c055b73d4ef0"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\textures\\shaman_orm_4k.png",
+      "relative": "textures\\shaman_orm_4k.png",
+      "bytes": 18421477,
+      "sha256": "ce6df76af7b2b6dc0d1132a44eaa7fc0c2581bf4d9357cdc6638a62a763d8df5"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\textures\\shaman_material_id_4k.png",
+      "relative": "textures\\shaman_material_id_4k.png",
+      "bytes": 1968173,
+      "sha256": "d57ec0190e0931e1fb3adf0ec054d22be5b97605c2139ebe07ed37a5c29fb419"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\textures\\shaman_ao_4k.png",
+      "relative": "textures\\shaman_ao_4k.png",
+      "bytes": 12970003,
+      "sha256": "6ad7408341d3788e1d9165c11a673955ef29a397b06806170a537488f7010607"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\textures\\shaman_cavity_4k.png",
+      "relative": "textures\\shaman_cavity_4k.png",
+      "bytes": 9214353,
+      "sha256": "73335cba4c0463ebeec74aec400f659fdddb784869f75ec9a1951bc775c58685"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\game\\shaman_lod0.glb",
+      "relative": "game\\shaman_lod0.glb",
+      "bytes": 18446064,
+      "sha256": "a3564864260446dbeb18f8a78ff5c73d6e04f7913c0ec975e3cc8086b1ce3626"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\game\\shaman_lod0_uv.glb",
+      "relative": "game\\shaman_lod0_uv.glb",
+      "bytes": 7087652,
+      "sha256": "585930d9b9c3114b7a50cf0009b194523c1a4a1977602b7af92f8622a09712e6"
+    },
+    {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\high\\shaman_high_master.glb",
+      "relative": "high\\shaman_high_master.glb",
+      "bytes": 24237656,
+      "sha256": "db1818a3b804c64e38767fde3235dc388621f08a8e8dd3da9ffc3b9692c654d4"
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
+  "status": "EXECUTED_384_QA_PASSED",
+  "asset": "tactical_red_panda_scout",
+  "purpose": "384x20 on the upright canonical basis with the anchored camera permutation",
+  "generator_family": "MVADAPTER_SD21",
+  "conditioning": "IMAGE_PLUS_GEOMETRY",
+  "text_conditioned_fallback": "FORBIDDEN",
+  "sdxl_route": "REJECTED",
+  "comfyui_generation_route": "REJECTED",
+  "pipeline_class": "LowVRAMMVAdapterI2MVSDPipeline",
+  "pipeline_module": "workers/lowvram_mvadapter_i2mv_sd21.py",
+  "mvadapter_source": "C:\\AI\\mvadapter-upstream-inspection",
+  "base_model": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--stabilityai--stable-diffusion-2-1-base",
+  "adapter": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--huanngzh--mv-adapter\\mvadapter_ig2mv_sd21.safetensors",
+  "adapter_sha256": "7940d6197be614fc6a3483ece1ed37cac850f94375d127ada6ae6464ce9252c3",
+  "mesh": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\bar_local_closure_v1\\tactical_red_panda_scout_bar_repaired.glb",
+  "immutable_mesh_sha256": "78c55133165e931bc8d6765610a679d1d18badcdc178820a69e31b7b32bcbfb8",
+  "mesh_provenance": {
+    "canonical_input": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\bundle\\tactical_red_panda_scout_5step_uv_chart_separated.glb",
+    "canonical_input_sha256": "ec335a02e8975b1302f3a5c3a3a842e7ab256cff270f54ab415795b0c0ec76c1",
+    "repair": "PANDA_PRODUCTION_MESH_BAR_REPAIR_PROVEN",
+    "repair_receipt": "proof/integration/20260803-panda-bar-repair/bar_repair_canonical_report.json",
+    "removed_face_count": 64,
+    "added_face_count": 0
+  },
+  "camera_semantics": {
+    "classification": "PANDA_CAMERA_SEMANTICS_PROVEN_BY_USER_REVIEW_AND_CAMERA_VECTORS",
+    "raw_to_semantic": {
+      "0": "left",
+      "1": "front",
+      "2": "right",
+      "3": "rear",
+      "4": "top",
+      "5": "bottom"
+    },
+    "semantic_to_raw": {
+      "left": 0,
+      "front": 1,
+      "right": 2,
+      "rear": 3,
+      "top": 4,
+      "bottom": 5
+    },
+    "superseded_raw_to_semantic": {
+      "0": "left",
+      "1": "rear",
+      "2": "right",
+      "3": "front",
+      "4": "top",
+      "5": "bottom"
+    },
+    "superseded_reason": "derived on the legacy z-up basis, which was itself wrong",
+    "raw_order_preserved": true,
+    "control_arrays_rewritten": false
+  },
+  "primary": {
+    "model": "SD2.1",
+    "views": 6,
+    "resolution": 384,
+    "steps": 20,
+    "guidance_scale": 1.0,
+    "reference_conditioning_scale": 1.0,
+    "control_conditioning_scale": 1.0,
+    "seed": 12345,
+    "scheduler": "DDPM_WITH_SHIFT_SNR",
+    "shift_mode": "interpolated",
+    "shift_scale": 8.0,
+    "offload": "SEQUENTIAL",
+    "attention": "SDPA",
+    "attention_slicing": "DISABLED",
+    "vae_slicing": "ON",
+    "dtype": "float16",
+    "vae_dtype": "float32",
+    "condition_encoder_dtype": "float32",
+    "bf16": "DISABLED",
+    "flash_attention_2": "DISABLED",
+    "xformers_required": false,
+    "conditioning_reference": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\mvadapter_conditioning_v3\\conditioning_384.png",
+    "conditioning_reference_sha256": "8e77e68845069430185cbdec8dd21260f79cee5e412222c5ff85d0ef9e39df08",
+    "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v9_upright_raw\\control_tensor.npy",
+    "control_tensor_sha256": "e627c0ad4380a328b29ffbeb422b54ff3303384f64dbfe48e68e5c8ebd12289c",
+    "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v9_upright_raw\\camera_contract.json",
+    "camera_contract_sha256": "b3216d048d0774c878c6224cb244c6cfba0b1ac011bdeb28aa7f0ee388ea85e0"
+  },
+  "oom_fallback": {
+    "authorized_only_after_genuine_cuda_oom": true,
+    "resolution": 256,
+    "steps": 20,
+    "conditioning_reference": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\mvadapter_conditioning_v3\\conditioning_256.png",
+    "conditioning_reference_sha256": "0fd5491bdf4dfcbcfccc49f6b9af85956fbb87970858a8c61129e1a4c4fe147d",
+    "control_tensor": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_256_v5_official_scene\\control_tensor.npy",
+    "control_tensor_sha256": "efca119c9e56f2aafc1c9c32d21d959a1f73556875450ec87de8567417319e3d",
+    "camera_contract": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_256_v5_official_scene\\camera_contract.json",
+    "camera_contract_sha256": "0f3d49d43afd2531e1eca8d055fbe842947bfce0df21f76624ea04d06aa12b12",
+    "second_oom": "HARD_BLOCKER",
+    "adapter_switch": "FORBIDDEN",
+    "text_conditioned_fallback": "FORBIDDEN",
+    "note": "256 fallback still carries the pre-repair controls and the superseded permutation; a fallback result is diagnostic only and may not be promoted."
+  },
+  "prompt": "high quality clean albedo reference of the same tactical red panda character, consistent materials, consistent identity, flat neutral lighting",
+  "negative_prompt": null,
+  "classifier_free_guidance": false,
+  "attempts_authorized": 1,
+  "attempts_used": 0,
+  "gpu_sequence_consumed": true,
+  "fallback_eligible": false,
+  "next_action": "USER_REVIEW_REQUIRED",
+  "twenty_step_authorization": "AUTHORIZED_AFTER_384X2_NUMERICAL_GATE",
+  "repair_proofs": {
+    "vae_fp32": "proof/benchmarks/20260803-mvadapter-vae-fp16-nan-root-cause.json",
+    "cudnn_guard": "proof/benchmarks/20260803-mvadapter-cudnn-convolution-guard.json",
+    "reference_zero_sentinel": "CACHE_SIDE_EFFECT_WITH_ZERO_SENTINEL",
+    "bar_repair": "proof/integration/20260803-panda-bar-repair/bar_repair_proof.json",
+    "camera_permutation": "proof/integration/20260803-panda-camera-permutation/CAMERA_SEMANTICS.md"
+  },
+  "supersedes": "configs/texture/gpu_panda_mvadapter_ig2mv_sd21_repaired_384x20_retry_20260803.json",
+  "two_step_validation": {
+    "classification": "PANDA_REPAIRED_CONTROLS_384X2_NUMERICALLY_PROVEN_VISUAL_REJECTED",
+    "receipt": "proof/integration/20260803-panda-camera-permutation/mvadapter_384x2_inference_receipt.json",
+    "structural_rejection_cause": "two denoising steps resolve no background; not evidence about mesh or labels"
+  },
+  "canonical_basis": "y_up_z_front",
+  "canonical_orientation": {
+    "up_axis_mesh_local": [
+      0,
+      1,
+      0
+    ],
+    "front_axis_mesh_local": [
+      0,
+      0,
+      1
+    ],
+    "evidence": "orientation_probe/up_pY axis renders; longest extent Y=1.952; tail centroid at 22% of Y",
+    "supersedes": "legacy_z_up basis, which rotated the character onto its side"
+  }
+}

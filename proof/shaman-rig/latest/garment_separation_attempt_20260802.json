@@ -1,0 +1,41 @@
+{
+  "classification": "BLOCKED",
+  "blocker": "BLOCKED_SHAMAN_SLEEVE_REQUIRES_MANUAL_RETOPOLOGY",
+  "implementation_attempts": 1,
+  "canonical_source_modified": false,
+  "artifact_root": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\shaman_garment_separation\\candidate-20260802-20260802-115132",
+  "candidate_blend": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\shaman_garment_separation\\candidate-20260802-20260802-115132\\shaman_garment_candidate.blend",
+  "reports": {
+    "garment": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\shaman_garment_separation\\candidate-20260802-20260802-115132\\garment_report.json",
+    "topology_and_qa": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\shaman_garment_separation\\candidate-20260802-20260802-115132\\topology_report.json"
+  },
+  "metrics": {
+    "source_vertices": 537041,
+    "source_triangles": 1074083,
+    "extracted_garment_vertices": 10401,
+    "extracted_garment_triangles": 19302,
+    "seam_edge_count": 1486,
+    "body_new_boundary_count": 1834,
+    "body_closure_faces": 0,
+    "new_non_manifold_count": 13,
+    "duplicate_face_count": 0,
+    "uv_preservation": true,
+    "material_slot_preservation": true,
+    "flipped_triangles": 104,
+    "newly_degenerate_triangles": 0,
+    "extreme_stretch_or_shear_triangles": 260,
+    "torso_displacement_from_free_arm": 0,
+    "rear_cape_displacement_from_free_arm": 0,
+    "side_cape_displacement_from_free_arm": 0,
+    "staff_displacement_from_free_arm": 0,
+    "broad_drape_displacement_from_wrist": 0,
+    "broad_drape_displacement_from_elbow": 0,
+    "all_transforms_finite": true
+  },
+  "failure_reasons": [
+    "body closure did not close the extracted seam",
+    "new non-manifold and boundary edges remain",
+    "garment isolated motion fails flipped-triangle and extreme stretch/shear gates"
+  ],
+  "next_action": "stop Shaman sleeve lane; manual retopology required; continue unrelated multi-asset pipeline"
+}

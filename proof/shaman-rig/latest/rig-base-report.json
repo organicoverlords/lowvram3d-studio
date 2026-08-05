@@ -1,0 +1,82 @@
+{
+  "stage": "RIG_BASE",
+  "passed": true,
+  "failures": [],
+  "canonical_source": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\CLEAN\\proven\\shaman_v2_validation_stance_clean.glb",
+  "canonical_source_modified": false,
+  "weld": {
+    "before": {
+      "verts": 3258048,
+      "edges": 3259477,
+      "faces": 1086965
+    },
+    "after": {
+      "verts": 537041,
+      "edges": 1611294,
+      "faces": 1074083
+    },
+    "distance": 0.0001
+  },
+  "collapsible_analysis": {
+    "weld_distance": 0.0001,
+    "short_edges": 15821,
+    "collapsible_faces": 12992,
+    "total_faces": 1086965
+  },
+  "source": {
+    "vertices": 3258048,
+    "polygons": 1086965,
+    "triangles": 1086965,
+    "volume": 0.28883363338651447,
+    "bounds_min": [
+      -0.8374379277229309,
+      -0.2942837178707123,
+      -1.0099999904632568
+    ],
+    "bounds_max": [
+      0.8127260208129883,
+      0.3009500205516815,
+      0.9709314703941345
+    ]
+  },
+  "rig_base": {
+    "vertices": 537041,
+    "polygons": 1074083,
+    "triangles": 1074083,
+    "volume": 0.2888335412807232,
+    "bounds_min": [
+      -0.8374379277229309,
+      -0.2942837178707123,
+      -1.0099999904632568
+    ],
+    "bounds_max": [
+      0.8127260208129883,
+      0.3009500205516815,
+      0.9709314703941345
+    ]
+  },
+  "components": {
+    "vertices": 537041,
+    "connected_components": 60,
+    "largest_component_vertices": 531389,
+    "largest_component_ratio": 0.989475663869239,
+    "boundary_edges": 348,
+    "non_manifold_edges": 13
+  },
+  "gates": {
+    "lost_faces": 12882,
+    "collapsible_faces": 12992,
+    "allowed_face_loss": 13251,
+    "face_loss_ratio": 0.011851347559489037,
+    "volume_delta_ratio": 3.188887325613797e-07,
+    "volume_delta_limit": 0.005,
+    "bounds_delta": 0.0,
+    "bounds_delta_limit": 0.0001,
+    "dominant_component_ratio": 0.989475663869239,
+    "dominant_component_limit": 0.95,
+    "vertices_shared": true,
+    "vertex_reduction_ratio": 0.8351647980631347
+  },
+  "method": "bmesh_remove_doubles_fixed_distance",
+  "note": "Topology invariance is enforced from this rig base onward. The corner-split canonical buffer is not preserved through skinning and this stage is where that is recorded."
+}

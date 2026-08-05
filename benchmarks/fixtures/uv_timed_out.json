@@ -1,0 +1,15 @@
+{
+  "note": "Fixture: exact UV overlap detector that exhausted its time budget building candidate pairs. It reports zero overlap because it never tested a pair; those zeroes are not evidence of a clean atlas.",
+  "positive_overlap_total_texels_equivalent": 0.0,
+  "degenerate_uv_triangles": 0,
+  "exact_overlap": {
+    "candidate_pair_count": 3510801,
+    "tested_pair_count": 0,
+    "positive_overlap_pair_count": 0,
+    "positive_overlap_total_texels_equivalent": 0.0,
+    "degenerate_uv_triangle_count": 0,
+    "out_of_bounds_triangle_count": 0,
+    "timed_out": true,
+    "success": false
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "stage": "UV",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "shaman_v2_validation",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\LOD\\proven\\shaman_v2_validation_lod0_microclean.glb": "93465df1c0213bd81be4cb9fa27fc9237a1cae181df9d5221ff3471585f3b7c6"
+  },
+  "outputs": {
+    "uv_mesh": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\shaman_v2_validation_lod0_uv.glb",
+      "sha256": "a08cc2547a2867b1a4ff78f8edac2efe46d2b5d6bcd1b55b1097edafbb354ef3",
+      "bytes": 7014896
+    },
+    "uv_report": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\pipeline-v2-validation\\shaman_v2_validation\\state\\UV\\proven\\uv_report.json",
+      "sha256": "29f17f39a514d0955b8253cf8ed74de51ad658168778a63f5a697add22779fd2",
+      "bytes": 1630
+    }
+  },
+  "gates": {
+    "gate_passed": true,
+    "chart_count": 2480,
+    "profile_chart_limit": 3000,
+    "atlas_utilization": 0.48796797266221076,
+    "stretch_p95": 1.093167950379223,
+    "candidate_pair_count": 3329643,
+    "tested_pair_count": 1285395,
+    "timed_out": false,
+    "positive_overlap_pairs": 0,
+    "positive_overlap_texels": 0.0,
+    "degenerate_uv_triangles": 0,
+    "out_of_bounds_triangles": 0
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "gate_passed": true,
+        "chart_count": 2480,
+        "profile_chart_limit": 3000,
+        "atlas_utilization": 0.48796797266221076,
+        "stretch_p95": 1.093167950379223,
+        "candidate_pair_count": 3329643,
+        "tested_pair_count": 1285395,
+        "timed_out": false,
+        "positive_overlap_pairs": 0,
+        "positive_overlap_texels": 0.0,
+        "degenerate_uv_triangles": 0,
+        "out_of_bounds_triangles": 0
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 410.8
+    }
+  ],
+  "finished_at": "2026-08-01T14:37:42Z"
+}

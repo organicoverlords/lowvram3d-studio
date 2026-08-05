@@ -1,0 +1,224 @@
+name: Shaman 1.5M geometry comparison
+run-name: Shaman 1.5M comparison ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - infra/windows-self-hosted-runner-20260731
+    paths:
+      - .github/workflows/shaman-1p5m-comparison.yml
+      - workers/clay_compare.py
+      - blender/clay_render_set.py
+      - tests/test_clay_orientation.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shaman-1p5m-comparison
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 150
+
+    steps:
+      - name: Checkout exact comparison branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 20
+
+      - name: Verify repository and resolve tools
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ("${{ github.ref }}" -ne "refs/heads/infra/windows-self-hosted-runner-20260731") {
+            throw "Unexpected ref: ${{ github.ref }}"
+          }
+          $remote = git remote get-url origin
+          $head = git rev-parse HEAD
+          $dirty = @(git status --porcelain)
+          if ($dirty.Count -ne 0) { throw "Checkout is dirty before execution: $($dirty -join '; ')" }
+          Write-Host "REPO=$PWD"
+          Write-Host "BRANCH=${{ github.ref_name }}"
+          Write-Host "HEAD=$head"
+          Write-Host "REMOTE=$remote"
+          Write-Host "DIRTY=no"
+
+          $pythonCandidates = @(
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+          $python = $null
+          foreach ($candidate in $pythonCandidates) {
+            & $candidate -c "import cv2,numpy; print('COMPARE_ENV_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) { $python = $candidate; break }
+          }
+          if (-not $python) { throw "No Python environment with cv2 and numpy" }
+          $blender = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
+          if (-not (Test-Path -LiteralPath $blender)) { throw "Blender 5.2 is missing" }
+
+          "COMPARE_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "COMPARE_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "COMPARE_ROOT=C:\AI\LowVRAM3D-benchmarks\shaman-1p5m-comparison\${{ github.run_id }}" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Locate the real 1.5M-class master and comparators
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = "C:\AI\LowVRAM3D-benchmarks"
+          $candidatePreferred = "C:\AI\LowVRAM3D-benchmarks\outputs\antlered_bird_shaman_anchor\geometry-latest\shaman_geometry_master.glb"
+
+          function Find-One([string[]]$Preferred, [string[]]$Names, [bool]$Required = $true) {
+            foreach ($path in $Preferred) {
+              if ($path -and (Test-Path -LiteralPath $path)) { return (Resolve-Path -LiteralPath $path).Path }
+            }
+            foreach ($name in $Names) {
+              $match = Get-ChildItem -LiteralPath $root -Filter $name -File -Recurse -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTimeUtc -Descending |
+                Select-Object -First 1
+              if ($match) { return $match.FullName }
+            }
+            if ($Required) { throw "Could not locate any of: $($Names -join ', ')" }
+            return ""
+          }
+
+          $candidate = Find-One @($candidatePreferred) @("shaman_geometry_master.glb") $true
+          $baseline = Find-One @() @("shaman_v2_validation_stance_clean.glb", "shaman_high_clean.glb") $true
+          $reference = Find-One @() @("shaman33.glb") $false
+
+          "CANDIDATE_15M=$candidate" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "BASELINE_REPAIRED=$baseline" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "REFERENCE_SHAMAN=$reference" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "CANDIDATE_15M=$candidate"
+          Write-Host "BASELINE_REPAIRED=$baseline"
+          Write-Host "REFERENCE_SHAMAN=$reference"
+
+      - name: Compile and test comparison tooling
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          & $env:COMPARE_PYTHON -m py_compile workers\clay_compare.py blender\clay_render_set.py
+          if ($LASTEXITCODE -ne 0) { throw "Comparison tooling does not compile" }
+          & $env:COMPARE_PYTHON -m pytest tests\test_clay_orientation.py -q
+          if ($LASTEXITCODE -ne 0) { throw "Clay orientation tests failed" }
+
+      - name: Validate triangle class and immutable inputs
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Path $env:COMPARE_ROOT -Force | Out-Null
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          $script = @'
+          import hashlib, json, os
+          from pathlib import Path
+          from mesh_io import read_glb
+
+          def sha256(path):
+              h = hashlib.sha256()
+              with open(path, 'rb') as f:
+                  for chunk in iter(lambda: f.read(1024 * 1024), b''):
+                      h.update(chunk)
+              return h.hexdigest()
+
+          rows = {}
+          for key, env_name in [('candidate_1p5m', 'CANDIDATE_15M'), ('baseline_repaired', 'BASELINE_REPAIRED'), ('reference', 'REFERENCE_SHAMAN')]:
+              value = os.environ.get(env_name, '')
+              if not value:
+                  continue
+              path = Path(value)
+              positions, _, _, triangles = read_glb(path)
+              rows[key] = {
+                  'path': str(path),
+                  'sha256': sha256(path),
+                  'bytes': path.stat().st_size,
+                  'vertices': int(len(positions)),
+                  'triangles': int(len(triangles)),
+              }
+          candidate = rows['candidate_1p5m']['triangles']
+          if not 1_300_000 <= candidate <= 1_700_000:
+              raise SystemExit(f'Candidate is not 1.5M-class: {candidate:,} triangles')
+          payload = {
+              'passed': True,
+              'decision_scope': 'geometry comparison only; no source or mesh mutation',
+              'target_triangles': 1_500_000,
+              'accepted_target_band': [1_300_000, 1_700_000],
+              'meshes': rows,
+          }
+          out = Path(os.environ['COMPARE_ROOT']) / 'input_receipt.json'
+          out.write_text(json.dumps(payload, indent=2), encoding='utf-8')
+          print(json.dumps(payload, indent=2))
+          '@
+          $scriptPath = Join-Path $env:COMPARE_ROOT "validate_inputs.py"
+          [IO.File]::WriteAllText($scriptPath, $script, [Text.UTF8Encoding]::new($false))
+          & $env:COMPARE_PYTHON $scriptPath
+          if ($LASTEXITCODE -ne 0) { throw "1.5M input validation failed" }
+
+      - name: Render orientation-normalised comparison
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:PYTHONPATH = "$PWD\blender;$PWD\src;$PWD\workers;$PWD"
+          $args = @(
+            "workers\clay_compare.py",
+            "--mesh", "candidate_1p5m=$env:CANDIDATE_15M",
+            "--mesh", "baseline_repaired=$env:BASELINE_REPAIRED"
+          )
+          if ($env:REFERENCE_SHAMAN) {
+            $args += @("--mesh", "reference_shaman33=$env:REFERENCE_SHAMAN")
+          }
+          $args += @(
+            "--output-root", (Join-Path $env:COMPARE_ROOT "renders"),
+            "--report", (Join-Path $env:COMPARE_ROOT "comparison_report.json"),
+            "--contact-sheet", (Join-Path $env:COMPARE_ROOT "comparison_sheet.png"),
+            "--blender", $env:COMPARE_BLENDER
+          )
+          & $env:COMPARE_PYTHON @args
+          if ($LASTEXITCODE -ne 0) { throw "Clay comparison failed" }
+          if (-not (Test-Path -LiteralPath (Join-Path $env:COMPARE_ROOT "comparison_sheet.png"))) {
+            throw "Comparison sheet was not produced"
+          }
+
+      - name: Copy candidate and write final receipt
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Copy-Item -LiteralPath $env:CANDIDATE_15M -Destination (Join-Path $env:COMPARE_ROOT "candidate_1p5m.glb") -Force
+          $input = Get-Content (Join-Path $env:COMPARE_ROOT "input_receipt.json") -Raw | ConvertFrom-Json
+          $comparison = Get-Content (Join-Path $env:COMPARE_ROOT "comparison_report.json") -Raw | ConvertFrom-Json
+          [ordered]@{
+            passed = $true
+            workflow_run_id = "${{ github.run_id }}"
+            head_sha = "${{ github.sha }}"
+            branch = "${{ github.ref_name }}"
+            candidate_triangles = $input.meshes.candidate_1p5m.triangles
+            candidate_sha256 = $input.meshes.candidate_1p5m.sha256
+            baseline_triangles = $input.meshes.baseline_repaired.triangles
+            comparison_sheet = (Join-Path $env:COMPARE_ROOT "comparison_sheet.png")
+            candidate_copy = (Join-Path $env:COMPARE_ROOT "candidate_1p5m.glb")
+            source_inputs_unchanged = $true
+            texture_run = $false
+            note = "Use this sheet to decide which geometry should receive the next texture pass. Triangle count alone is not treated as quality."
+            completed_at = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $env:COMPARE_ROOT "final_receipt.json") -Encoding utf8
+
+      - name: Upload 1.5M comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shaman-1p5m-comparison-${{ github.run_id }}
+          path: |
+            C:\AI\LowVRAM3D-benchmarks\shaman-1p5m-comparison\${{ github.run_id }}\comparison_sheet.png
+            C:\AI\LowVRAM3D-benchmarks\shaman-1p5m-comparison\${{ github.run_id }}\comparison_report.json
+            C:\AI\LowVRAM3D-benchmarks\shaman-1p5m-comparison\${{ github.run_id }}\input_receipt.json
+            C:\AI\LowVRAM3D-benchmarks\shaman-1p5m-comparison\${{ github.run_id }}\final_receipt.json
+            C:\AI\LowVRAM3D-benchmarks\shaman-1p5m-comparison\${{ github.run_id }}\candidate_1p5m.glb
+            C:\AI\LowVRAM3D-benchmarks\shaman-1p5m-comparison\${{ github.run_id }}\renders\**\*.png
+            C:\AI\LowVRAM3D-benchmarks\shaman-1p5m-comparison\${{ github.run_id }}\renders\**\*.json
+          if-no-files-found: error
+          retention-days: 14

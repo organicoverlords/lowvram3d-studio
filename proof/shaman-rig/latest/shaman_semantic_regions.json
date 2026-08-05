@@ -1,0 +1,873 @@
+{
+  "stage": "PARTS",
+  "source": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig-base\\shaman_rig_base.blend",
+  "vertex_total": 537041,
+  "vertices_assigned": 537041,
+  "coverage_ratio": 1.0,
+  "unassigned": 0,
+  "context": {
+    "model_height": 1.9809314608573914,
+    "z_min": -1.0099999904632568,
+    "torso_core": {
+      "low": -0.6142076253890991,
+      "high": 0.6514526605606079,
+      "width": 1.265660285949707
+    },
+    "body_centre_x": 0.007870130240917206,
+    "staff": {
+      "detected": true,
+      "confidence": 0.7,
+      "vertex_count": 9845,
+      "z_coverage": 0.872672160252677,
+      "cylinder_radius": 0.055,
+      "axis_x_slope_intercept": [
+        -0.03783180394583107,
+        -0.34098833336450296
+      ],
+      "axis_y_slope_intercept": [
+        0.03319899286414817,
+        0.023437614224456768
+      ],
+      "band": [
+        -0.45927535618344945,
+        -0.2358156548192104
+      ],
+      "footprint_x": 0.14767524600028992,
+      "footprint_y": 0.1400706022977829,
+      "centroid": [
+        -0.326837420463562,
+        0.015357774682343006,
+        -0.15953455865383148
+      ],
+      "method": "median_axis_fit_plus_cylinder_selection",
+      "reason": null
+    }
+  },
+  "region_count": 22,
+  "region_colour_palette": {
+    "antler": [
+      0.95,
+      0.2375,
+      0.2375
+    ],
+    "chest": [
+      0.2375,
+      0.4454,
+      0.95
+    ],
+    "cloth": [
+      0.6533,
+      0.95,
+      0.2375
+    ],
+    "foot_l": [
+      0.95,
+      0.2375,
+      0.8612
+    ],
+    "foot_r": [
+      0.2375,
+      0.95,
+      0.8309
+    ],
+    "hand_l": [
+      0.95,
+      0.623,
+      0.2375
+    ],
+    "hand_r": [
+      0.4151,
+      0.2375,
+      0.95
+    ],
+    "head": [
+      0.2678,
+      0.95,
+      0.2375
+    ],
+    "lowerarm_l": [
+      0.95,
+      0.2375,
+      0.4757
+    ],
+    "lowerarm_r": [
+      0.2375,
+      0.6836,
+      0.95
+    ],
+    "neck": [
+      0.8915,
+      0.95,
+      0.2375
+    ],
+    "ornament_bar": [
+      0.8005,
+      0.2375,
+      0.95
+    ],
+    "ornament_hanging": [
+      0.2375,
+      0.95,
+      0.5926
+    ],
+    "pelvis": [
+      0.95,
+      0.3847,
+      0.2375
+    ],
+    "shin_l": [
+      0.2375,
+      0.2982,
+      0.95
+    ],
+    "shin_r": [
+      0.5061,
+      0.95,
+      0.2375
+    ],
+    "spine": [
+      0.95,
+      0.2375,
+      0.714
+    ],
+    "staff": [
+      0.2375,
+      0.9219,
+      0.95
+    ],
+    "thigh_l": [
+      0.95,
+      0.7702,
+      0.2375
+    ],
+    "thigh_r": [
+      0.5623,
+      0.2375,
+      0.95
+    ],
+    "upperarm_l": [
+      0.2375,
+      0.95,
+      0.3544
+    ],
+    "upperarm_r": [
+      0.95,
+      0.2375,
+      0.3285
+    ]
+  },
+  "regions": [
+    {
+      "id": "staff",
+      "label": "staff",
+      "confidence": 0.7,
+      "vertex_group": "staff",
+      "vertex_count": 9845,
+      "bounding_box": {
+        "min": [
+          -0.42236363887786865,
+          -0.05349917337298393,
+          -0.8918466567993164
+        ],
+        "max": [
+          -0.27468839287757874,
+          0.08657142519950867,
+          0.8368571400642395
+        ]
+      },
+      "centroid": [
+        -0.326837420463562,
+        0.015357774682343006,
+        -0.15953455865383148
+      ],
+      "principal_axis": [
+        -0.04838839740559872,
+        0.0234260330606344,
+        0.9985538463055261
+      ],
+      "mesh_state": "fused",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "staff_control_only",
+      "empty": false
+    },
+    {
+      "id": "hand_l",
+      "label": "left hand region",
+      "confidence": 0.35,
+      "vertex_group": "hand_l",
+      "vertex_count": 2302,
+      "bounding_box": {
+        "min": [
+          -0.5079110264778137,
+          -0.24727246165275574,
+          -0.45516249537467957
+        ],
+        "max": [
+          -0.4117168188095093,
+          0.05995786190032959,
+          -0.3066844940185547
+        ]
+      },
+      "centroid": [
+        -0.4491177201271057,
+        -0.12943676114082336,
+        -0.3792499899864197
+      ],
+      "principal_axis": [
+        0.10991515962226078,
+        0.99390189202233,
+        0.008814007014127268
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "lowerarm_l",
+      "label": "left lower arm region",
+      "confidence": 0.3,
+      "vertex_group": "lowerarm_l",
+      "vertex_count": 6173,
+      "bounding_box": {
+        "min": [
+          -0.5790798664093018,
+          -0.2844696044921875,
+          -0.3063516616821289
+        ],
+        "max": [
+          -0.41171878576278687,
+          0.07888191193342209,
+          -0.059026774019002914
+        ]
+      },
+      "centroid": [
+        -0.48074859380722046,
+        -0.11835264414548874,
+        -0.15315812826156616
+      ],
+      "principal_axis": [
+        0.2600251814148284,
+        0.9621069343361344,
+        -0.08208015553414946
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "upperarm_l",
+      "label": "left upper arm region",
+      "confidence": 0.3,
+      "vertex_group": "upperarm_l",
+      "vertex_count": 6688,
+      "bounding_box": {
+        "min": [
+          -0.6290977597236633,
+          -0.2754545509815216,
+          -0.05894719436764717
+        ],
+        "max": [
+          -0.411726176738739,
+          0.07407564669847488,
+          0.21797315776348114
+        ]
+      },
+      "centroid": [
+        -0.5062258243560791,
+        -0.11651144921779633,
+        0.051466863602399826
+      ],
+      "principal_axis": [
+        0.4405905216098652,
+        0.852133062318243,
+        -0.28239907289451166
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "hand_r",
+      "label": "right hand region",
+      "confidence": 0.3,
+      "vertex_group": "hand_r",
+      "vertex_count": 1103,
+      "bounding_box": {
+        "min": [
+          0.4490148425102234,
+          -0.08176764100790024,
+          -0.4538441598415375
+        ],
+        "max": [
+          0.49164679646492004,
+          0.028857143595814705,
+          -0.30693507194519043
+        ]
+      },
+      "centroid": [
+        0.4689565598964691,
+        -0.031320493668317795,
+        -0.3680785000324249
+      ],
+      "principal_axis": [
+        0.12746803686807648,
+        -0.206769859814534,
+        0.9700505783974755
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "lowerarm_r",
+      "label": "right lower arm region",
+      "confidence": 0.3,
+      "vertex_group": "lowerarm_r",
+      "vertex_count": 3835,
+      "bounding_box": {
+        "min": [
+          0.4489803910255432,
+          -0.14428570866584778,
+          -0.3042308986186981
+        ],
+        "max": [
+          0.6227068901062012,
+          0.08657142519950867,
+          -0.057661205530166626
+        ]
+      },
+      "centroid": [
+        0.4955267906188965,
+        -0.03529870882630348,
+        -0.16154702007770538
+      ],
+      "principal_axis": [
+        0.4360851546753593,
+        0.4014576912184272,
+        0.805395219773086
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "upperarm_r",
+      "label": "right upper arm region",
+      "confidence": 0.3,
+      "vertex_group": "upperarm_r",
+      "vertex_count": 14752,
+      "bounding_box": {
+        "min": [
+          0.44895973801612854,
+          -0.07607792317867279,
+          -0.057343851774930954
+        ],
+        "max": [
+          0.8003538846969604,
+          0.16026870906352997,
+          0.21812757849693298
+        ]
+      },
+      "centroid": [
+        0.5939717888832092,
+        0.05540601909160614,
+        0.06051908805966377
+      ],
+      "principal_axis": [
+        -0.945647580616529,
+        -0.31896897193023094,
+        0.06332020388372514
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "foot_l",
+      "label": "left foot band",
+      "confidence": 0.45,
+      "vertex_group": "foot_l",
+      "vertex_count": 5573,
+      "bounding_box": {
+        "min": [
+          -0.4299122393131256,
+          -0.254369854927063,
+          -1.0099999904632568
+        ],
+        "max": [
+          -0.12429474294185638,
+          0.20936928689479828,
+          -0.8614761829376221
+        ]
+      },
+      "centroid": [
+        -0.2554304897785187,
+        -0.08377650380134583,
+        -0.9421471953392029
+      ],
+      "principal_axis": [
+        -0.5896950699248645,
+        -0.8064700080459821,
+        -0.04319549315175045
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "foot_r",
+      "label": "right foot band",
+      "confidence": 0.45,
+      "vertex_group": "foot_r",
+      "vertex_count": 7411,
+      "bounding_box": {
+        "min": [
+          0.0980609804391861,
+          -0.23945333063602448,
+          -0.9938831329345703
+        ],
+        "max": [
+          0.40907299518585205,
+          0.22833296656608582,
+          -0.8616705536842346
+        ]
+      },
+      "centroid": [
+        0.25323808193206787,
+        0.00376349245198071,
+        -0.9317210912704468
+      ],
+      "principal_axis": [
+        -0.28743637275134304,
+        0.9357529307386571,
+        0.2043202981437856
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "shin_l",
+      "label": "shin-height left band (skirt-dominated)",
+      "confidence": 0.2,
+      "vertex_group": "shin_l",
+      "vertex_count": 33277,
+      "bounding_box": {
+        "min": [
+          -0.44268643856048584,
+          -0.24816584587097168,
+          -0.8610695600509644
+        ],
+        "max": [
+          0.007840603590011597,
+          0.2696586549282074,
+          -0.584100604057312
+        ]
+      },
+      "centroid": [
+        -0.20233283936977386,
+        0.07906560599803925,
+        -0.6873638033866882
+      ],
+      "principal_axis": [
+        -0.5368654303038733,
+        -0.8436675386545445,
+        0.000770691390874545
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "shin_r",
+      "label": "shin-height right band (skirt-dominated)",
+      "confidence": 0.2,
+      "vertex_group": "shin_r",
+      "vertex_count": 37898,
+      "bounding_box": {
+        "min": [
+          0.007936079055070877,
+          -0.22921520471572876,
+          -0.8614276051521301
+        ],
+        "max": [
+          0.47279998660087585,
+          0.2758024036884308,
+          -0.5841174125671387
+        ]
+      },
+      "centroid": [
+        0.21941469609737396,
+        0.09919726103544235,
+        -0.6999200582504272
+      ],
+      "principal_axis": [
+        -0.7245877713069757,
+        0.6891283197462702,
+        -0.008644107592615968
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "thigh_l",
+      "label": "lower-left band (skirt-dominated)",
+      "confidence": 0.2,
+      "vertex_group": "thigh_l",
+      "vertex_count": 64804,
+      "bounding_box": {
+        "min": [
+          -0.4654383659362793,
+          -0.2553306519985199,
+          -0.583918571472168
+        ],
+        "max": [
+          0.007861525751650333,
+          0.26741868257522583,
+          -0.27708831429481506
+        ]
+      },
+      "centroid": [
+        -0.16107915341854095,
+        0.04560838267207146,
+        -0.43738341331481934
+      ],
+      "principal_axis": [
+        -0.07683715453672142,
+        -0.9964983662843856,
+        -0.03297055770304447
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "thigh_r",
+      "label": "lower-right band (skirt-dominated)",
+      "confidence": 0.2,
+      "vertex_group": "thigh_r",
+      "vertex_count": 70912,
+      "bounding_box": {
+        "min": [
+          0.007870130240917206,
+          -0.26496103405952454,
+          -0.5840499401092529
+        ],
+        "max": [
+          0.46909356117248535,
+          0.26656821370124817,
+          -0.2770969569683075
+        ]
+      },
+      "centroid": [
+        0.19363152980804443,
+        0.031183060258626938,
+        -0.43258368968963623
+      ],
+      "principal_axis": [
+        -0.20724773360988186,
+        0.9782379854750727,
+        -0.009940859481900322
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "pelvis",
+      "label": "pelvis-height band",
+      "confidence": 0.25,
+      "vertex_group": "pelvis",
+      "vertex_count": 57580,
+      "bounding_box": {
+        "min": [
+          -0.411603718996048,
+          -0.2675211727619171,
+          -0.2770543694496155
+        ],
+        "max": [
+          0.4488759934902191,
+          0.29889729619026184,
+          -0.10869336128234863
+        ]
+      },
+      "centroid": [
+        0.034308455884456635,
+        0.053524360060691833,
+        -0.1982717663049698
+      ],
+      "principal_axis": [
+        -0.985266176410841,
+        0.1710226266214244,
+        -0.0013501126880489725
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "spine",
+      "label": "torso-height band",
+      "confidence": 0.25,
+      "vertex_group": "spine",
+      "vertex_count": 71492,
+      "bounding_box": {
+        "min": [
+          -0.41161206364631653,
+          -0.28486108779907227,
+          -0.10864172130823135
+        ],
+        "max": [
+          0.44892194867134094,
+          0.3009500205516815,
+          0.14879488945007324
+        ]
+      },
+      "centroid": [
+        0.010239813476800919,
+        0.034771136939525604,
+        0.011229457333683968
+      ],
+      "principal_axis": [
+        -0.9966253609818921,
+        0.07773041074835689,
+        0.026379406600705344
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "chest",
+      "label": "chest-height band",
+      "confidence": 0.25,
+      "vertex_group": "chest",
+      "vertex_count": 26282,
+      "bounding_box": {
+        "min": [
+          -0.7866547107696533,
+          -0.24542397260665894,
+          0.1488647758960724
+        ],
+        "max": [
+          0.7609476447105408,
+          0.2979913353919983,
+          0.3073021471500397
+        ]
+      },
+      "centroid": [
+        0.004885263741016388,
+        0.040927182883024216,
+        0.2327684760093689
+      ],
+      "principal_axis": [
+        -0.9891187150581188,
+        -0.14691222480727395,
+        0.007808055068541187
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "neck",
+      "label": "neck-height band",
+      "confidence": 0.2,
+      "vertex_group": "neck",
+      "vertex_count": 19599,
+      "bounding_box": {
+        "min": [
+          -0.7952229976654053,
+          -0.258891761302948,
+          0.3073315918445587
+        ],
+        "max": [
+          0.8119960427284241,
+          0.24301443994045258,
+          0.3766271471977234
+        ]
+      },
+      "centroid": [
+        -0.04860657826066017,
+        0.006436326075345278,
+        0.34409254789352417
+      ],
+      "principal_axis": [
+        -0.9879456217727324,
+        -0.15474409131741007,
+        0.004208874248335354
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "head",
+      "label": "head-height band",
+      "confidence": 0.35,
+      "vertex_group": "head",
+      "vertex_count": 58756,
+      "bounding_box": {
+        "min": [
+          -0.8053766489028931,
+          -0.2942837178707123,
+          0.3766598105430603
+        ],
+        "max": [
+          0.8127260208129883,
+          0.22525444626808167,
+          0.6935928463935852
+        ]
+      },
+      "centroid": [
+        -0.0266194436699152,
+        -0.017997270449995995,
+        0.509448230266571
+      ],
+      "principal_axis": [
+        -0.9873714688041905,
+        -0.158412789040114,
+        -0.0017236182836251961
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "positional_band_not_proven_anatomy",
+      "empty": false
+    },
+    {
+      "id": "antler",
+      "label": "antler / crown band",
+      "confidence": 0.3,
+      "vertex_group": "antler",
+      "vertex_count": 22587,
+      "bounding_box": {
+        "min": [
+          -0.3965304493904114,
+          -0.2177402526140213,
+          0.6936270594596863
+        ],
+        "max": [
+          0.4122414290904999,
+          0.21856199204921722,
+          0.9709314703941345
+        ]
+      },
+      "centroid": [
+        0.04493094980716705,
+        0.0016817707801237702,
+        0.781447172164917
+      ],
+      "principal_axis": [
+        -0.9916878873423405,
+        -0.11745378604922066,
+        0.0525332489114213
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "secondary_chain_candidate",
+      "empty": false
+    },
+    {
+      "id": "ornament_bar",
+      "label": "ornament bar band",
+      "confidence": 0.3,
+      "vertex_group": "ornament_bar",
+      "vertex_count": 16172,
+      "bounding_box": {
+        "min": [
+          -0.8374379277229309,
+          -0.24469463527202606,
+          0.6937201023101807
+        ],
+        "max": [
+          0.7649134993553162,
+          0.18004563450813293,
+          0.9216526746749878
+        ]
+      },
+      "centroid": [
+        -0.2842632234096527,
+        -0.06382035464048386,
+        0.7950636744499207
+      ],
+      "principal_axis": [
+        -0.9771904050805859,
+        -0.21070089445696277,
+        0.026533851840173338
+      ],
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "secondary_chain_candidate",
+      "empty": false
+    },
+    {
+      "id": "ornament_hanging",
+      "label": "hanging ornaments",
+      "confidence": 0.0,
+      "vertex_group": "ornament_hanging",
+      "vertex_count": 0,
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "do_not_deform",
+      "empty": true
+    },
+    {
+      "id": "cloth",
+      "label": "residual cloth",
+      "confidence": 0.0,
+      "vertex_group": "cloth",
+      "vertex_count": 0,
+      "mesh_state": "ambiguous",
+      "source_method": "density_core_band_segmentation",
+      "safety_classification": "do_not_deform",
+      "empty": true
+    }
+  ],
+  "unsupported_labels": [
+    {
+      "label": "tail",
+      "reason": "NO_SUPPORTING_GEOMETRY_EVIDENCE",
+      "confidence": 0.0
+    },
+    {
+      "label": "feathers",
+      "reason": "NO_SUPPORTING_GEOMETRY_EVIDENCE",
+      "confidence": 0.0
+    },
+    {
+      "label": "ropes",
+      "reason": "NO_SUPPORTING_GEOMETRY_EVIDENCE",
+      "confidence": 0.0
+    }
+  ],
+  "staff_mode": "fused_staff_control",
+  "staff_mode_note": "Production-safe default. No boolean cutter, no hole, no separate mesh. separate_staff_candidate is not run here and can never auto-promote.",
+  "method": "density_core_band_segmentation",
+  "anatomy_proven": false,
+  "status": "POSITIONAL_BANDS_ONLY_ANATOMY_NOT_PROVEN",
+  "blocking_codes": [
+    "PARTS_ANATOMY_NOT_PROVEN_ROBED_FIGURE"
+  ],
+  "confidence_policy": "Bands and lateral lobes are geometric heuristics on a single fused mesh. No region claims a separate mesh state it cannot prove.",
+  "review_finding": "The rendered region proof shows horizontal slabs across a robed figure. Legs sit inside a skirt, so lower-body bands are skirt-dominated and must not be treated as thighs or shins. Only the staff cylinder is a positively identified structure.",
+  "safe_for_skinning": [
+    "staff"
+  ]
+}

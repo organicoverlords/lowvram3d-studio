@@ -1,0 +1,505 @@
+{
+  "stage": "TRIANGLE_AND_SEMANTIC_V3_DIAGNOSTICS",
+  "label": "v2",
+  "input": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\rig\\shaman_rigged_v2.blend",
+  "vertex_count": 537041,
+  "triangle_count": 1074083,
+  "region_sizes": {
+    "staff": 9845,
+    "torso_core": 88364,
+    "rear_cape": 142458,
+    "cape_l": 17725,
+    "cape_r": 5575,
+    "arm_core_l": 1080,
+    "hand_core_l": 0,
+    "sleeve_anchor_l": 1149,
+    "sleeve_drape_upper_l": 3375,
+    "sleeve_drape_lower_l": 1535,
+    "arm_core_r": 3371,
+    "hand_core_r": 152,
+    "sleeve_anchor_r": 1173,
+    "sleeve_drape_upper_r": 8147,
+    "sleeve_drape_lower_r": 2261,
+    "hanging_accessories": 32937
+  },
+  "cross_region_triangles": {
+    "mixed_triangles": 17282,
+    "mixed_ratio": 0.01609000421755116,
+    "arm_core_to_torso": 33,
+    "arm_core_to_cape": 102,
+    "hand_core_to_sleeve_drape": 102,
+    "sleeve_anchor_to_drape": 420
+  },
+  "isolated_tests": [
+    {
+      "test": "clavicle",
+      "bone": "clavicle_r",
+      "rotation_degrees": [
+        0.0,
+        0.0,
+        -25.0
+      ],
+      "displaced_vertices": 13311,
+      "max_displacement": 0.19436456102703295,
+      "finite": true,
+      "sleeve_drape_r_displaced": 8615,
+      "regions": {
+        "staff": {
+          "region_vertices": 9845,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "torso_core": {
+          "region_vertices": 88364,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "rear_cape": {
+          "region_vertices": 142458,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "cape_l": {
+          "region_vertices": 17725,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "cape_r": {
+          "region_vertices": 5575,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "arm_core_l": {
+          "region_vertices": 1080,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "hand_core_l": {
+          "region_vertices": 0,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_anchor_l": {
+          "region_vertices": 1149,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_drape_upper_l": {
+          "region_vertices": 3375,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_drape_lower_l": {
+          "region_vertices": 1535,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "arm_core_r": {
+          "region_vertices": 3371,
+          "displaced": 3371,
+          "max_displacement": 0.19436456102703295
+        },
+        "hand_core_r": {
+          "region_vertices": 152,
+          "displaced": 152,
+          "max_displacement": 0.18896212041143085
+        },
+        "sleeve_anchor_r": {
+          "region_vertices": 1173,
+          "displaced": 1173,
+          "max_displacement": 0.14147501622402148
+        },
+        "sleeve_drape_upper_r": {
+          "region_vertices": 8147,
+          "displaced": 7924,
+          "max_displacement": 0.18390853378971891
+        },
+        "sleeve_drape_lower_r": {
+          "region_vertices": 2261,
+          "displaced": 691,
+          "max_displacement": 0.08414479999698321
+        },
+        "hanging_accessories": {
+          "region_vertices": 32937,
+          "displaced": 0,
+          "max_displacement": 0.0
+        }
+      },
+      "triangles": {
+        "triangles": 1074083,
+        "max_edge_stretch": 38.22747232473236,
+        "max_area_ratio": 67616.24856130306,
+        "min_area_ratio": 0.016808003690621093,
+        "max_aspect_ratio_change": 49.59243383483053,
+        "flipped_normals": 3537,
+        "inverted_triangles": 3537,
+        "degenerate_introduced": 0,
+        "extreme_stretch_triangles": 12418,
+        "extreme_shear_triangles": 2031,
+        "longest_new_edge": 0.15266594097975517,
+        "longest_new_stretched_edge": 0.15266594097975517
+      }
+    },
+    {
+      "test": "upperarm",
+      "bone": "upperarm_r",
+      "rotation_degrees": [
+        -12.0,
+        0.0,
+        -45.0
+      ],
+      "displaced_vertices": 13311,
+      "max_displacement": 0.5612449633412017,
+      "finite": true,
+      "sleeve_drape_r_displaced": 8615,
+      "regions": {
+        "staff": {
+          "region_vertices": 9845,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "torso_core": {
+          "region_vertices": 88364,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "rear_cape": {
+          "region_vertices": 142458,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "cape_l": {
+          "region_vertices": 17725,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "cape_r": {
+          "region_vertices": 5575,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "arm_core_l": {
+          "region_vertices": 1080,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "hand_core_l": {
+          "region_vertices": 0,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_anchor_l": {
+          "region_vertices": 1149,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_drape_upper_l": {
+          "region_vertices": 3375,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_drape_lower_l": {
+          "region_vertices": 1535,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "arm_core_r": {
+          "region_vertices": 3371,
+          "displaced": 3371,
+          "max_displacement": 0.5492278253004879
+        },
+        "hand_core_r": {
+          "region_vertices": 152,
+          "displaced": 152,
+          "max_displacement": 0.5509386105300406
+        },
+        "sleeve_anchor_r": {
+          "region_vertices": 1173,
+          "displaced": 1173,
+          "max_displacement": 0.20898869459470254
+        },
+        "sleeve_drape_upper_r": {
+          "region_vertices": 8147,
+          "displaced": 7924,
+          "max_displacement": 0.5612449633412017
+        },
+        "sleeve_drape_lower_r": {
+          "region_vertices": 2261,
+          "displaced": 691,
+          "max_displacement": 0.2877431628188501
+        },
+        "hanging_accessories": {
+          "region_vertices": 32937,
+          "displaced": 0,
+          "max_displacement": 0.0
+        }
+      },
+      "triangles": {
+        "triangles": 1074083,
+        "max_edge_stretch": 87.66588586052356,
+        "max_area_ratio": 196450.91767249952,
+        "min_area_ratio": 0.02663820102032527,
+        "max_aspect_ratio_change": 425.97788894197896,
+        "flipped_normals": 7835,
+        "inverted_triangles": 7835,
+        "degenerate_introduced": 0,
+        "extreme_stretch_triangles": 19557,
+        "extreme_shear_triangles": 6672,
+        "longest_new_edge": 0.22968059010200248,
+        "longest_new_stretched_edge": 0.22968059010200248
+      }
+    },
+    {
+      "test": "elbow",
+      "bone": "lowerarm_r",
+      "rotation_degrees": [
+        -55.0,
+        0.0,
+        0.0
+      ],
+      "displaced_vertices": 12972,
+      "max_displacement": 0.5643493533039521,
+      "finite": true,
+      "sleeve_drape_r_displaced": 8493,
+      "regions": {
+        "staff": {
+          "region_vertices": 9845,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "torso_core": {
+          "region_vertices": 88364,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "rear_cape": {
+          "region_vertices": 142458,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "cape_l": {
+          "region_vertices": 17725,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "cape_r": {
+          "region_vertices": 5575,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "arm_core_l": {
+          "region_vertices": 1080,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "hand_core_l": {
+          "region_vertices": 0,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_anchor_l": {
+          "region_vertices": 1149,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_drape_upper_l": {
+          "region_vertices": 3375,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_drape_lower_l": {
+          "region_vertices": 1535,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "arm_core_r": {
+          "region_vertices": 3371,
+          "displaced": 3281,
+          "max_displacement": 0.5325453888802086
+        },
+        "hand_core_r": {
+          "region_vertices": 152,
+          "displaced": 152,
+          "max_displacement": 0.5456418451679058
+        },
+        "sleeve_anchor_r": {
+          "region_vertices": 1173,
+          "displaced": 1046,
+          "max_displacement": 0.06656867041258174
+        },
+        "sleeve_drape_upper_r": {
+          "region_vertices": 8147,
+          "displaced": 7802,
+          "max_displacement": 0.5643493533039521
+        },
+        "sleeve_drape_lower_r": {
+          "region_vertices": 2261,
+          "displaced": 691,
+          "max_displacement": 0.29597659984126257
+        },
+        "hanging_accessories": {
+          "region_vertices": 32937,
+          "displaced": 0,
+          "max_displacement": 0.0
+        }
+      },
+      "triangles": {
+        "triangles": 1074083,
+        "max_edge_stretch": 92.9268001042515,
+        "max_area_ratio": 165657.63774092842,
+        "min_area_ratio": 0.013559083722005311,
+        "max_aspect_ratio_change": 72.73968004769749,
+        "flipped_normals": 4983,
+        "inverted_triangles": 4983,
+        "degenerate_introduced": 0,
+        "extreme_stretch_triangles": 13901,
+        "extreme_shear_triangles": 4099,
+        "longest_new_edge": 0.16417056453611165,
+        "longest_new_stretched_edge": 0.16417056453611165
+      }
+    },
+    {
+      "test": "wrist",
+      "bone": "hand_r",
+      "rotation_degrees": [
+        0.0,
+        0.0,
+        -45.0
+      ],
+      "displaced_vertices": 3491,
+      "max_displacement": 0.061097301625340196,
+      "finite": true,
+      "sleeve_drape_r_displaced": 2217,
+      "regions": {
+        "staff": {
+          "region_vertices": 9845,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "torso_core": {
+          "region_vertices": 88364,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "rear_cape": {
+          "region_vertices": 142458,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "cape_l": {
+          "region_vertices": 17725,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "cape_r": {
+          "region_vertices": 5575,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "arm_core_l": {
+          "region_vertices": 1080,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "hand_core_l": {
+          "region_vertices": 0,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_anchor_l": {
+          "region_vertices": 1149,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_drape_upper_l": {
+          "region_vertices": 3375,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_drape_lower_l": {
+          "region_vertices": 1535,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "arm_core_r": {
+          "region_vertices": 3371,
+          "displaced": 1122,
+          "max_displacement": 0.022186769683412443
+        },
+        "hand_core_r": {
+          "region_vertices": 152,
+          "displaced": 152,
+          "max_displacement": 0.033823721240027554
+        },
+        "sleeve_anchor_r": {
+          "region_vertices": 1173,
+          "displaced": 0,
+          "max_displacement": 0.0
+        },
+        "sleeve_drape_upper_r": {
+          "region_vertices": 8147,
+          "displaced": 1526,
+          "max_displacement": 0.061097301625340196
+        },
+        "sleeve_drape_lower_r": {
+          "region_vertices": 2261,
+          "displaced": 691,
+          "max_displacement": 0.043995580333155024
+        },
+        "hanging_accessories": {
+          "region_vertices": 32937,
+          "displaced": 0,
+          "max_displacement": 0.0
+        }
+      },
+      "triangles": {
+        "triangles": 1074083,
+        "max_edge_stretch": 18.22474708976732,
+        "max_area_ratio": 9088.444226008447,
+        "min_area_ratio": 0.5556418458091752,
+        "max_aspect_ratio_change": 9.332467547638645,
+        "flipped_normals": 9,
+        "inverted_triangles": 9,
+        "degenerate_introduced": 0,
+        "extreme_stretch_triangles": 292,
+        "extreme_shear_triangles": 24,
+        "longest_new_edge": 0.06789477847263087,
+        "longest_new_stretched_edge": 0.03251480791879728
+      }
+    },
+    {
+      "test": "sleeve_bones",
+      "bone": "sleeve_r_drape_01",
+      "skipped": "BONE_ABSENT"
+    }
+  ],
+  "gates": {
+    "torso_core_displaced_by_arm": 0,
+    "rear_cape_displaced_by_arm": 0,
+    "side_cape_displaced_by_arm": 0,
+    "staff_displaced_by_arm": 0,
+    "drape_displaced_by_wrist": 2217,
+    "drape_displaced_by_elbow": 8493,
+    "drape_total": 10408,
+    "flipped_normals": 7835,
+    "inverted_triangles": 7835,
+    "degenerate_introduced": 0,
+    "extreme_stretch_triangles": 19557,
+    "max_edge_stretch": 92.9268001042515,
+    "all_finite": true
+  },
+  "renders": {
+    "semantic_regions": [
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair_v3\\semantic_regions_v2_front.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair_v3\\semantic_regions_v2_back.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair_v3\\semantic_regions_v2_three_quarter.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair_v3\\semantic_regions_v2_side.png"
+    ],
+    "cross_region": [
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair_v3\\cross_region_triangles_v2_front.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair_v3\\cross_region_triangles_v2_back.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair_v3\\cross_region_triangles_v2_three_quarter.png",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair_v3\\cross_region_triangles_v2_side.png"
+    ]
+  }
+}

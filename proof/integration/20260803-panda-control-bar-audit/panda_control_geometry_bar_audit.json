@@ -1,0 +1,579 @@
+{
+  "schema": "panda_control_geometry_bar_audit_v1",
+  "classification": "PANDA_CONTROL_BAR_LOCALIZATION_PROVEN",
+  "pre_repair_control_bundle_classification": "PANDA_CONTROL_GEOMETRY_REJECTED",
+  "repaired_control_bundle_classification": "PANDA_REPAIRED_CONTROL_BUNDLE_BAR_ABSENT",
+  "gpu_used": false,
+  "control_bundle": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front",
+  "target": {
+    "classification": "STRETCHED_TRIANGLE_STRIP",
+    "component_id": 0,
+    "triangle_count": 14,
+    "connectivity": "connected to main mesh through shared edges; not a detached graph component",
+    "material_assignment": [
+      {
+        "face_id": 632321,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 632326,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 632330,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 632332,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 633141,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 633147,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 633157,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 633957,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 633963,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 633973,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 633975,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 634897,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 634900,
+        "primitive_index": 1,
+        "material": 1
+      },
+      {
+        "face_id": 634902,
+        "primitive_index": 1,
+        "material": 1
+      }
+    ],
+    "source_topology": {
+      "target_face_count": 14,
+      "target_face_ids": [
+        632321,
+        632326,
+        632330,
+        632332,
+        633141,
+        633147,
+        633157,
+        633957,
+        633963,
+        633973,
+        633975,
+        634897,
+        634900,
+        634902
+      ],
+      "target_vertex_count": 18,
+      "component_id": 0,
+      "connected_to_main_mesh": true,
+      "internal_shared_edges": 12,
+      "external_shared_edge_incidence": 47,
+      "bounds_min": [
+        -0.860684871673584,
+        -0.14162108302116394,
+        0.02750972844660282
+      ],
+      "bounds_max": [
+        0.6988255977630615,
+        -0.05108949542045593,
+        0.03536964952945709
+      ],
+      "extent": [
+        1.5595104694366455,
+        0.09053158760070801,
+        0.007859921082854271
+      ],
+      "triangle_aspect_ratio_min": 179.70655822753906,
+      "triangle_aspect_ratio_median": 204.24728393554688,
+      "triangle_aspect_ratio_max": 1394.869384765625,
+      "global_vertex_bounds": {
+        "min": [
+          -0.860684871673584,
+          -0.9988951683044434,
+          -0.7312211990356445
+        ],
+        "max": [
+          0.8070874810218811,
+          0.95353764295578,
+          0.7910826206207275
+        ]
+      },
+      "material_assignments": [
+        {
+          "face_id": 632321,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 632326,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 632330,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 632332,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633141,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633147,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633157,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633957,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633963,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633973,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633975,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 634897,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 634900,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 634902,
+          "primitive_index": 1,
+          "material": 1
+        }
+      ]
+    }
+  },
+  "glb_comparison": {
+    "source_glb": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\bundle\\tactical_red_panda_scout_5step_uv_chart_separated.glb",
+      "sha256": "ec335a02e8975b1302f3a5c3a3a842e7ab256cff270f54ab415795b0c0ec76c1",
+      "vertices": 462769,
+      "triangles": 644412,
+      "primitive_ranges": [
+        {
+          "mesh_index": 0,
+          "primitive_index": 0,
+          "face_start": 0,
+          "face_end_exclusive": 92388,
+          "triangle_count": 92388,
+          "material": 0
+        },
+        {
+          "mesh_index": 0,
+          "primitive_index": 1,
+          "face_start": 92388,
+          "face_end_exclusive": 644412,
+          "triangle_count": 552024,
+          "material": 1
+        }
+      ],
+      "target_material_assignments_in_source_face_numbering": [
+        {
+          "face_id": 632321,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 632326,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 632330,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 632332,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633141,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633147,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633157,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633957,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633963,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633973,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 633975,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 634897,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 634900,
+          "primitive_index": 1,
+          "material": 1
+        },
+        {
+          "face_id": 634902,
+          "primitive_index": 1,
+          "material": 1
+        }
+      ],
+      "target_exact_presence": {
+        "target_faces_present_by_exact_vertex_triplet": 14,
+        "target_face_ids_present": [
+          632321,
+          632326,
+          632330,
+          632332,
+          633141,
+          633147,
+          633157,
+          633957,
+          633963,
+          633973,
+          633975,
+          634897,
+          634900,
+          634902
+        ],
+        "target_faces_absent": 0
+      }
+    },
+    "cpu_fallback_glb": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\material_aware_recovery_v4_material_bound\\tactical_red_panda_scout_cpu_material_bound.glb",
+      "sha256": "3a0004e3188614cee258394db0ad39ef4f5c4edf7d4d10290b000a2678995931",
+      "vertices": 462769,
+      "triangles": 644412,
+      "primitive_ranges": [
+        {
+          "mesh_index": 0,
+          "primitive_index": 0,
+          "face_start": 0,
+          "face_end_exclusive": 92388,
+          "triangle_count": 92388,
+          "material": 0
+        },
+        {
+          "mesh_index": 0,
+          "primitive_index": 1,
+          "face_start": 92388,
+          "face_end_exclusive": 644412,
+          "triangle_count": 552024,
+          "material": 1
+        }
+      ],
+      "target_material_assignments_in_source_face_numbering": [],
+      "target_exact_presence": {
+        "target_faces_present_by_exact_vertex_triplet": 14,
+        "target_face_ids_present": [
+          632321,
+          632326,
+          632330,
+          632332,
+          633141,
+          633147,
+          633157,
+          633957,
+          633963,
+          633973,
+          633975,
+          634897,
+          634900,
+          634902
+        ],
+        "target_faces_absent": 0
+      }
+    },
+    "local_repair_candidate_glb": {
+      "path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260802\\tactical_red_panda_scout\\diagnostics\\panda_projection_repair_bounded_v2\\spike_repair_v3\\tactical_red_panda_scout_cpu_material_bound_spike_repaired.glb",
+      "sha256": "6ceeef345ca34319f38eca5213224af2e26bed413b67bc3e83099154c2c4d0d5",
+      "vertices": 462769,
+      "triangles": 644333,
+      "primitive_ranges": [
+        {
+          "mesh_index": 0,
+          "primitive_index": 0,
+          "face_start": 0,
+          "face_end_exclusive": 92388,
+          "triangle_count": 92388,
+          "material": 0
+        },
+        {
+          "mesh_index": 0,
+          "primitive_index": 1,
+          "face_start": 92388,
+          "face_end_exclusive": 644333,
+          "triangle_count": 551945,
+          "material": 1
+        }
+      ],
+      "target_material_assignments_in_source_face_numbering": [],
+      "target_exact_presence": {
+        "target_faces_present_by_exact_vertex_triplet": 0,
+        "target_face_ids_present": [],
+        "target_faces_absent": 14
+      }
+    }
+  },
+  "control_render_trace": {
+    "front": {
+      "triangle_id_array": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\front_triangle_ids.npy",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\front_mask.png",
+      "selected_pixel_count": 0,
+      "selected_bbox_xyxy": null,
+      "selected_face_ids": []
+    },
+    "right": {
+      "triangle_id_array": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\right_triangle_ids.npy",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\right_mask.png",
+      "selected_pixel_count": 5,
+      "selected_bbox_xyxy": [
+        169,
+        186,
+        173,
+        186
+      ],
+      "selected_face_ids": [
+        633957,
+        633963,
+        633975,
+        634900,
+        634902
+      ]
+    },
+    "rear": {
+      "triangle_id_array": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\rear_triangle_ids.npy",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\rear_mask.png",
+      "selected_pixel_count": 4,
+      "selected_bbox_xyxy": [
+        110,
+        186,
+        113,
+        186
+      ],
+      "selected_face_ids": [
+        632332,
+        633157,
+        633975,
+        634902
+      ]
+    },
+    "left": {
+      "triangle_id_array": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\left_triangle_ids.npy",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\left_mask.png",
+      "selected_pixel_count": 0,
+      "selected_bbox_xyxy": null,
+      "selected_face_ids": []
+    },
+    "top": {
+      "triangle_id_array": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\top_triangle_ids.npy",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\top_mask.png",
+      "selected_pixel_count": 267,
+      "selected_bbox_xyxy": [
+        167,
+        261,
+        173,
+        312
+      ],
+      "selected_face_ids": [
+        633957,
+        633963,
+        633973,
+        633975,
+        634897,
+        634900,
+        634902
+      ]
+    },
+    "bottom": {
+      "triangle_id_array": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\bottom_triangle_ids.npy",
+      "mask": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v6_semantic_front\\bottom_mask.png",
+      "selected_pixel_count": 265,
+      "selected_bbox_xyxy": [
+        167,
+        72,
+        173,
+        126
+      ],
+      "selected_face_ids": [
+        632321,
+        632326,
+        632330,
+        632332,
+        633141,
+        633147,
+        633157
+      ]
+    }
+  },
+  "repaired_control_bundle_comparison": {
+    "front": {
+      "source_foreground_pixels": 47956,
+      "repaired_foreground_pixels": 47956,
+      "source_minus_repaired_pixels": 0,
+      "source_minus_repaired_bbox_xyxy": null,
+      "repaired_triangle_ids_path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v7_spike_repaired_semantic_front\\front_triangle_ids.npy"
+    },
+    "right": {
+      "source_foreground_pixels": 57819,
+      "repaired_foreground_pixels": 57819,
+      "source_minus_repaired_pixels": 0,
+      "source_minus_repaired_bbox_xyxy": null,
+      "repaired_triangle_ids_path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v7_spike_repaired_semantic_front\\right_triangle_ids.npy"
+    },
+    "rear": {
+      "source_foreground_pixels": 47956,
+      "repaired_foreground_pixels": 47956,
+      "source_minus_repaired_pixels": 0,
+      "source_minus_repaired_bbox_xyxy": null,
+      "repaired_triangle_ids_path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v7_spike_repaired_semantic_front\\rear_triangle_ids.npy"
+    },
+    "left": {
+      "source_foreground_pixels": 57819,
+      "repaired_foreground_pixels": 57819,
+      "source_minus_repaired_pixels": 0,
+      "source_minus_repaired_bbox_xyxy": null,
+      "repaired_triangle_ids_path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v7_spike_repaired_semantic_front\\left_triangle_ids.npy"
+    },
+    "top": {
+      "source_foreground_pixels": 63943,
+      "repaired_foreground_pixels": 63676,
+      "source_minus_repaired_pixels": 267,
+      "source_minus_repaired_bbox_xyxy": [
+        167,
+        261,
+        173,
+        312
+      ],
+      "repaired_triangle_ids_path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v7_spike_repaired_semantic_front\\top_triangle_ids.npy"
+    },
+    "bottom": {
+      "source_foreground_pixels": 63942,
+      "repaired_foreground_pixels": 63675,
+      "source_minus_repaired_pixels": 267,
+      "source_minus_repaired_bbox_xyxy": [
+        167,
+        70,
+        173,
+        121
+      ],
+      "repaired_triangle_ids_path": "C:\\AI\\LowVRAM3D-benchmarks\\miniturbo-3step-experiment-20260803\\tactical_red_panda_scout\\sd21_cpu_controls_384_v7_spike_repaired_semantic_front\\bottom_triangle_ids.npy"
+    }
+  },
+  "evidence": {
+    "legitimate_equipment": "REJECTED_BY_STRETCHED_ASPECT_AND_SOURCE_PROOF",
+    "misplaced_or_stretched_triangle_strip": "PROVEN",
+    "detached_thin_component": "NOT_PROVEN",
+    "leftover_original_mesh_artifact": "PROVEN_PRESENT_IN_SOURCE_AND_CPU_FALLBACK",
+    "repair_candidate_status": "REJECTED_TOPOLOGY_BOUNDARY_GROWTH"
+  },
+  "promotion_gate": {
+    "bar_absent_front": true,
+    "bar_absent_three_quarter": true,
+    "bar_absent_left_top_bottom_control_views": true,
+    "fresh_import_existing": true,
+    "no_new_boundary_growth": "NOT_PROVEN_BY_THIS_CONTROL_AUDIT",
+    "result": "PROVEN_CONTROL_BUNDLE"
+  },
+  "superseded_classification": "PANDA_CONTROL_GEOMETRY_CLEAN",
+  "classification_correction": {
+    "reason": "PANDA_CONTROL_GEOMETRY_CLEAN was read as a statement about the production mesh. It was only ever a statement about one rendered control bundle, so it is split into separate claims.",
+    "superseded_on": "2026-08-03",
+    "separate_classifications": {
+      "PANDA_CONTROL_BAR_LOCALIZATION_PROVEN": "the 14 stretched faces are located and identified",
+      "PANDA_REPAIRED_CONTROL_BUNDLE_BAR_ABSENT": "the v7 control bundle shows no bar",
+      "PANDA_PRODUCTION_MESH_REPAIR_NOT_PROVEN": "superseded by the 20260803-panda-bar-repair proof",
+      "PANDA_OLD_MV_OUTPUTS_UNPROMOTED": "the 384x20 sequence and spike_repair_v3 stay unpromoted"
+    },
+    "evidence_retained": true,
+    "successor_proof": "proof/integration/20260803-panda-bar-repair"
+  },
+  "production_mesh_classification_at_time_of_audit": "PANDA_PRODUCTION_MESH_REPAIR_NOT_PROVEN"
+}

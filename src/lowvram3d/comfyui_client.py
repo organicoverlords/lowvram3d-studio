@@ -51,6 +51,7 @@ class ComfyUIClient:
         output_dir: Path,
         timeout_seconds: int = 1800,
     ) -> list[Path]:
+        output_dir.mkdir(parents=True, exist_ok=True)
         prompt = self.load_api_workflow(workflow_path, replacements)
         response = requests.post(
             f"{self.base_url}/prompt",
@@ -76,9 +77,29 @@ class ComfyUIClient:
             raise TimeoutError(f"ComfyUI workflow timed out: {prompt_id}")
         if history.get("status", {}).get("status_str") == "error":
             raise RuntimeError(f"ComfyUI execution failed: {history.get('status')}")
+
+        # Preserve the exact history packet for failure diagnosis. 3D save nodes vary widely in
+        # whether they expose a downloadable output record, even when they successfully write a
+        # mesh to the path supplied in the workflow.
+        (output_dir / "comfyui_history.json").write_text(
+            json.dumps(history, indent=2), encoding="utf-8"
+        )
+
         outputs = self._collect_files(history, output_dir)
+        # Save 3D Mesh nodes commonly write directly to ${OUTPUT_DIR} but return no filename in
+        # /history. The old client treated that as failure and discarded a valid Mini Turbo mesh.
+        # Poll briefly for the direct file write, then merge it with history-reported outputs.
+        for _ in range(10):
+            direct = self._collect_direct_outputs(output_dir)
+            outputs = self._deduplicate_paths([*outputs, *direct])
+            if any(path.suffix.lower() in {".glb", ".gltf", ".obj", ".ply", ".stl"} for path in outputs):
+                break
+            time.sleep(0.5)
         if not outputs:
-            raise RuntimeError("ComfyUI completed but returned no files")
+            raise RuntimeError(
+                "ComfyUI completed but returned no files and wrote no direct outputs; "
+                f"history saved to {output_dir / 'comfyui_history.json'}"
+            )
         return outputs
 
     def ui_to_api(self, workflow: dict[str, Any], object_info: dict[str, Any]) -> dict[str, Any]:
@@ -155,7 +176,8 @@ class ComfyUIClient:
                         source = Path(item)
                         if source.is_file():
                             target = output_dir / source.name
-                            target.write_bytes(source.read_bytes())
+                            if source.resolve() != target.resolve():
+                                target.write_bytes(source.read_bytes())
                             saved.append(target)
                         continue
                     if not isinstance(item, dict) or not item.get("filename"):
@@ -170,7 +192,31 @@ class ComfyUIClient:
                     target = output_dir / Path(item["filename"]).name
                     target.write_bytes(response.content)
                     saved.append(target)
-        return saved
+        return self._deduplicate_paths(saved)
+
+    @staticmethod
+    def _collect_direct_outputs(output_dir: Path) -> list[Path]:
+        allowed = {
+            ".glb", ".gltf", ".obj", ".ply", ".stl",
+            ".png", ".jpg", ".jpeg", ".webp", ".json",
+        }
+        return [
+            path
+            for path in output_dir.rglob("*")
+            if path.is_file() and path.stat().st_size > 0 and path.suffix.lower() in allowed
+        ]
+
+    @staticmethod
+    def _deduplicate_paths(paths: list[Path]) -> list[Path]:
+        result: list[Path] = []
+        seen: set[str] = set()
+        for path in paths:
+            key = str(path.resolve()).lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            result.append(path)
+        return result
 
     def _replace(self, value: Any, replacements: dict[str, Any]) -> Any:
         if isinstance(value, dict):

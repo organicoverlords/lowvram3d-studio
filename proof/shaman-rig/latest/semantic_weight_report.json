@@ -1,0 +1,161 @@
+{
+  "stage": "SEMANTIC_WEIGHT_REPAIR",
+  "root_cause": "Arm reach was a raw lateral band plus a distance falloff, and every vertex the arm volume touched at all was removed from the torso blend. A cape vertex grazed with influence 0.001 therefore normalised to 100% arm weight, producing the fan-shaped cape slabs.",
+  "fix": [
+    "arm bones may only reach vertices classified sleeve_* or hand_*_region",
+    "torso_core and rear_cape are defined geometrically first; the sleeve is defined by exclusion from them",
+    "body bones still reach sleeve vertices, scaled by (1 - arm_share), instead of being removed",
+    "nearest-bone fallback may no longer target arm bones"
+  ],
+  "gates_before": {
+    "staff_displaced_by_free_arm": 0,
+    "torso_core_displaced_by_lowerarm_or_hand": 0,
+    "rear_cape_displaced_by_lowerarm_or_hand": 6256,
+    "side_cape_displaced_by_upperarm": 2462,
+    "opposite_side_displaced": 0,
+    "all_finite": true
+  },
+  "gates_after": {
+    "staff_displaced_by_free_arm": 0,
+    "torso_core_displaced_by_lowerarm_or_hand": 0,
+    "rear_cape_displaced_by_lowerarm_or_hand": 0,
+    "side_cape_displaced_by_upperarm": 0,
+    "opposite_side_displaced": 0,
+    "all_finite": true
+  },
+  "failures_before": [
+    "REAR_CAPE_DISPLACED_BY_LOWERARM_OR_HAND"
+  ],
+  "failures_after": [],
+  "region_sizes": {
+    "torso_core": 88364,
+    "rear_cape": 142458,
+    "sleeve_l": 5550,
+    "hand_l_region": 1812,
+    "sleeve_r": 12415,
+    "hand_r_region": 6544,
+    "side_cape": 23300,
+    "hanging_accessories": 32937,
+    "staff": 9845,
+    "opposite_side": 243250
+  },
+  "sleeve_radius": 0.10995717210462318,
+  "comparison": {
+    "clavicle": {
+      "torso_core": {
+        "before": 9996,
+        "after": 0
+      },
+      "rear_cape": {
+        "before": 10987,
+        "after": 0
+      },
+      "side_cape": {
+        "before": 2462,
+        "after": 0
+      },
+      "sleeve_r": {
+        "before": 12415,
+        "after": 12260
+      },
+      "staff": {
+        "before": 0,
+        "after": 0
+      },
+      "opposite_side": {
+        "before": 0,
+        "after": 0
+      }
+    },
+    "upperarm": {
+      "torso_core": {
+        "before": 8494,
+        "after": 0
+      },
+      "rear_cape": {
+        "before": 10358,
+        "after": 0
+      },
+      "side_cape": {
+        "before": 2462,
+        "after": 0
+      },
+      "sleeve_r": {
+        "before": 12415,
+        "after": 12260
+      },
+      "staff": {
+        "before": 0,
+        "after": 0
+      },
+      "opposite_side": {
+        "before": 0,
+        "after": 0
+      }
+    },
+    "elbow": {
+      "torso_core": {
+        "before": 0,
+        "after": 0
+      },
+      "rear_cape": {
+        "before": 6256,
+        "after": 0
+      },
+      "side_cape": {
+        "before": 2442,
+        "after": 0
+      },
+      "sleeve_r": {
+        "before": 12249,
+        "after": 11921
+      },
+      "staff": {
+        "before": 0,
+        "after": 0
+      },
+      "opposite_side": {
+        "before": 0,
+        "after": 0
+      }
+    },
+    "wrist": {
+      "torso_core": {
+        "before": 0,
+        "after": 0
+      },
+      "rear_cape": {
+        "before": 757,
+        "after": 0
+      },
+      "side_cape": {
+        "before": 623,
+        "after": 0
+      },
+      "sleeve_r": {
+        "before": 4524,
+        "after": 2440
+      },
+      "staff": {
+        "before": 0,
+        "after": 0
+      },
+      "opposite_side": {
+        "before": 0,
+        "after": 0
+      }
+    }
+  },
+  "artifacts": {
+    "free_arm_weight_before": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair\\free_arm_weight_before.png",
+    "free_arm_weight_after": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair\\free_arm_weight_after.png",
+    "cape_exclusion_overlay": "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair\\cape_exclusion_overlay.png",
+    "isolated_tests": [
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair\\isolated_clavicle_test.gif",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair\\isolated_upperarm_test.gif",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair\\isolated_elbow_test.gif",
+      "C:\\AI\\LowVRAM3D-benchmarks\\shaman-rig-animation\\run-20260802-123123\\skin_repair\\isolated_wrist_test.gif"
+    ]
+  },
+  "classification": "WEIGHT_SEMANTIC_CORRECTNESS_PROVEN"
+}
