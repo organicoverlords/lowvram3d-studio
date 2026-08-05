@@ -1,26 +1,26 @@
 {
-  "active_run_count": 2,
+  "active_run_count": 3,
   "classification": "QUEUE_CENSUS_PROVEN",
-  "observed_at": "2026-08-04T20:36:24Z",
+  "observed_at": "2026-08-05T18:36:16Z",
   "runs": [
     {
       "conclusion": null,
-      "created_at": "2026-08-04T20:36:13Z",
+      "created_at": "2026-08-05T18:35:54Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "d8bc3688a373f8b7538f7747230ec222165f817d",
+      "head_sha": "0b763b6e824a3f6a94d2e90dda3d48763737e19a",
       "jobs": [
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 92124765545,
+          "id": 92406369473,
           "labels": [
             "ubuntu-latest"
           ],
           "name": "inspect-queue",
           "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000022008",
-          "started_at": "2026-08-04T20:36:17Z",
+          "runner_name": "GitHub Actions 1000023148",
+          "started_at": "2026-08-05T18:36:04Z",
           "status": "in_progress",
           "steps": [
             {
@@ -56,31 +56,31 @@
           ]
         }
       ],
-      "name": "Beggars runner queue probe 30948613644",
+      "name": "Beggars runner queue probe 31035478888",
       "path": ".github/workflows/beggars-runner-queue-probe.yml",
-      "run_id": 30948613644,
+      "run_id": 31035478888,
       "status": "in_progress",
-      "updated_at": "2026-08-04T20:36:18Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30948613644"
+      "updated_at": "2026-08-05T18:36:05Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/31035478888"
     },
     {
       "conclusion": null,
-      "created_at": "2026-08-04T20:35:35Z",
+      "created_at": "2026-08-05T18:34:04Z",
       "event": "push",
       "head_branch": "agent/blender-beggars-scene-20260804",
-      "head_sha": "e853a781ac3b043178fe9395609c64964b908692",
+      "head_sha": "9f91deee8ca8016002e80695530ee27915d4e8be",
       "jobs": [
         {
-          "completed_at": "2026-08-04T20:35:54Z",
+          "completed_at": "2026-08-05T18:34:15Z",
           "conclusion": "success",
-          "id": 92124600307,
+          "id": 92405874666,
           "labels": [
             "ubuntu-latest"
           ],
           "name": "register",
           "runner_group_name": "GitHub Actions",
-          "runner_name": "GitHub Actions 1000022007",
-          "started_at": "2026-08-04T20:35:46Z",
+          "runner_name": "GitHub Actions 1000023140",
+          "started_at": "2026-08-05T18:34:06Z",
           "status": "completed",
           "steps": [
             {
@@ -118,57 +118,57 @@
         {
           "completed_at": null,
           "conclusion": null,
-          "id": 92124684002,
+          "id": 92405923889,
           "labels": [
             "self-hosted",
             "Windows",
             "X64"
           ],
           "name": "build-and-render",
-          "runner_group_name": "Default",
-          "runner_name": "LOWVRAM3D-KONE",
-          "started_at": "2026-08-04T20:35:57Z",
-          "status": "in_progress",
-          "steps": [
-            {
-              "conclusion": "success",
-              "name": "Set up job",
-              "number": 1,
-              "status": "completed"
-            },
-            {
-              "conclusion": "success",
-              "name": "Checkout exact compositor-head v15 source",
-              "number": 2,
-              "status": "completed"
-            },
-            {
-              "conclusion": null,
-              "name": "Run Blender compositor v15 preflight",
-              "number": 3,
-              "status": "in_progress"
-            },
-            {
-              "conclusion": null,
-              "name": "Upload compositor-head v15 preflight",
-              "number": 4,
-              "status": "pending"
-            },
-            {
-              "conclusion": null,
-              "name": "Post Checkout exact compositor-head v15 source",
-              "number": 8,
-              "status": "pending"
-            }
-          ]
+          "runner_group_name": "",
+          "runner_name": "",
+          "started_at": "2026-08-05T18:34:15Z",
+          "status": "queued",
+          "steps": []
         }
       ],
-      "name": "Beggars Blender FaceVerse v15 preflight 30948565275",
-      "path": ".github/workflows/beggars-blender-faceverse-v15-preflight.yml",
-      "run_id": 30948565275,
-      "status": "in_progress",
-      "updated_at": "2026-08-04T20:35:58Z",
-      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/30948565275"
+      "name": "Beggars Blender FaceVerse v18 preflight 31035332767",
+      "path": ".github/workflows/beggars-blender-faceverse-v18-preflight.yml",
+      "run_id": 31035332767,
+      "status": "queued",
+      "updated_at": "2026-08-05T18:34:15Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/31035332767"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-08-05T18:32:41Z",
+      "event": "push",
+      "head_branch": "validation/gigstack-readonly-compatibility-20260805",
+      "head_sha": "63cec8513a86f0174f5a5281b67237768c39c4c2",
+      "jobs": [
+        {
+          "completed_at": null,
+          "conclusion": null,
+          "id": 92405511782,
+          "labels": [
+            "self-hosted",
+            "Windows",
+            "X64"
+          ],
+          "name": "validate-private-gigstack-commit",
+          "runner_group_name": "",
+          "runner_name": "",
+          "started_at": "2026-08-05T18:32:42Z",
+          "status": "queued",
+          "steps": []
+        }
+      ],
+      "name": "GigStack Capture Compatibility And Filesystem Validation",
+      "path": ".github/workflows/gigstack-readonly-compatibility-validation.yml",
+      "run_id": 31035223992,
+      "status": "queued",
+      "updated_at": "2026-08-05T18:32:42Z",
+      "url": "https://github.com/organicoverlords/lowvram3d-studio/actions/runs/31035223992"
     }
   ]
 }
