@@ -25,6 +25,13 @@ the left/front side of the hood instead of the hood opening's center axis.
 | `C:\AI\panda_support_local_2048\face_recenter_latest_diagnostic_only\face_recentered_latest_2048.glb` | exact 2048 baseline (`1c4bec...`) | **DIAGNOSTIC ONLY / UNACCEPTED** | Face remap preserves non-face texels, but three-quarter alignment still requires camera-aware verification. |
 | `C:\AI\panda_support_local_2048\camera_face_remap_diagnostic_only\camera_face_remap_2048_diagnostic_only.glb` | exact 2048 baseline (`1c4bec...`) | **REJECTED DIAGNOSTIC** | Camera-aware 35°/12° remap still leaves the face on the hood's left/front surface; translation is not the root fix. |
 
+Read-only ownership forensics are recorded at
+`C:\AI\panda_support_local_2048\face_forensics_diagnostic\face_uv_owner_forensics.json`
+(SHA256 `053fe4f697aa5ea096447ba0b6e6d8111ecd8cb75478306bc5a1cbe9608d8026`).
+They found muzzle/eye colors spread across 2,825 UV chart groups and many
+side/front hood triangles. This is the blocking evidence against further blind
+atlas shifts.
+
 The exact-baseline diagnostic GLB currently has SHA256
 `8e2d861bc47e7ec87cda31ee55e8b411f71a9626676198e06a41b93949e10bd3`.
 It is retained for review only and is not the baseline.
@@ -50,5 +57,6 @@ registration problem, not a production acceptance claim.
 - `PANDA_FACE_REGISTRATION`: **CONFIRMED DEFECT**
 - `PANDA_FACE_CORRECTION`: **NOT_ACCEPTED**
 - `PANDA_FACE_CHART_REGISTRATION`: **UNRESOLVED — translation and camera remaps rejected**
+- `PANDA_FACE_UV_OWNER_MANIFEST`: **MISSING — required before any new face edit**
 - `PANDA_LATEST_GOOD_BASELINE`: **PRESERVED**
 - `PANDA_PRODUCTION_READY`: **NO**
