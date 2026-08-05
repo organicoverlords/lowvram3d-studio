@@ -1,0 +1,7 @@
+{
+  "purpose": "Run the bounded true-3D FaceVerse v18 anatomical repair and visually compare it with v11.",
+  "source_baseline_run_id": 30880575363,
+  "source_frame_plane_used": false,
+  "source_head_overlay_used": false,
+  "requested_at": "2026-08-05T21:30:00+03:00"
+}
