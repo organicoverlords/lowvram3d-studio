@@ -42,3 +42,11 @@ prior evidence package is overwritten.
 The first worker run after this change is the source of truth for the measured
 1024 support counts, chart inventory, unresolved/collision counts, render
 matrix, ZIP hash, and visual verdict.
+
+## Candidate separation
+
+The current visual baseline and later face-registration diagnostics are tracked
+separately in [`panda_candidate_registry_20260806.md`](panda_candidate_registry_20260806.md).
+The baseline 2048 candidate remains the comparison source. The face-remap
+outputs are diagnostic-only and must not be mixed into atlas-support metrics or
+treated as replacements for the baseline.
