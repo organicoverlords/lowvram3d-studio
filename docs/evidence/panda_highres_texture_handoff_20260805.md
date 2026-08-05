@@ -387,3 +387,36 @@ The correction is visually localized, but white/gray patches from direct
 evidence and the underlying atlas pixelation remain. Status:
 `BOTTOM_SURFACE_CORRECTION_DIAGNOSTIC_ONLY`; not production-ready and no
 additional bottom loop is authorized.
+
+### Online target inventory and palette-reference rejection
+
+The downloaded 1.5M textured models were located and hashed. `besgu.glb` is
+the selected neutral/red-panda appearance target by mission role and its
+reddish-brown embedded base-color statistics. `20260730004905_ab3519e2.glb` is
+explicitly labeled in the target README as a fox-like scout, not a panda, and
+is not used as a panda target.
+
+- Besgu source: `C:\Users\Lauri\Downloads\Organized_Asset_Library\Models\Siistimättömät\03_3D_Models_Unpaired\besgu.glb`
+- Besgu preserved copy: `C:\AI\panda_online_model_targets_20260805\online_generated_target__besgu.glb`
+- Besgu SHA256: `3278170d79ba00f3e7cb59b153a896e1569250f8c7b3537ec181f873bced617a`
+- Besgu structure: 837,056 vertices, 1,500,000 triangles, embedded 4096 PBR textures
+- Fox source: `C:\Users\Lauri\Downloads\Organized_Asset_Library\Models\Siistimättömät\03_3D_Models_Unpaired\20260730004905_ab3519e2.glb`
+- Fox SHA256: `711187c88224cae3f64d0a284d8f4df5649bd587a5edc5571060d1a557830451`
+
+One CPU-only diagnostic used Besgu's embedded base color only as a coarse
+appearance reference. Target geometry was never used as output; the
+authoritative canonical mesh, UVs, indices, proof, and protected face were
+preserved. The bbox-normalized centroid-to-nearest-target-vertex transfer
+affected mutable triangles at 30% blend, but introduced broad gray/brown
+mottling without improving side/rear coherence, pixelation, or bottom white
+patches.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\besgu_palette_reference_diagnostic_only\besgu_palette_reference_canonical_mesh_diagnostic_only.glb`
+- GLB SHA256: `86e90fb74a692ce63cbfcc21326e678d70812c9f1a2e1d3bc9fe1f29545f0df2`
+- Atlas SHA256: `dbd6e9e0da3b835f196bf271fe7c34ff127bda0186ed825304437f5f11c3b4d1`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\besgu_palette_reference_diagnostic_only\renders\contact_sheet_besgu_palette_reference_9view.png`
+- Contact sheet SHA256: `ab92d368a7a8dc4c5f4bc8dffea061e7cca8a624d207927eecc6a442fc0ff709`
+- Receipt SHA256: `46f8fb90fce337126c6d6a0a99ae1b6da1bad1df65737b6328ab62b30c2a88e5`
+
+Status: `BESGU_PALETTE_REFERENCE_DIAGNOSTIC_ONLY_REJECTED`; target remains a
+visual reference, not provenance evidence or production texture input.
