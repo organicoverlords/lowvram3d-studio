@@ -230,9 +230,14 @@ jobs:
       - name: Fresh-render selected GLBs and build contact sheets
         shell: powershell
         run: |
-          $document = ConvertFrom-Json -InputObject (Get-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Raw)
           $candidates = [System.Collections.Generic.List[object]]::new()
-          foreach ($entry in $document) { [void]$candidates.Add($entry) }
+          $candidateManifest = Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json"
+          if (Test-Path -LiteralPath $candidateManifest -PathType Leaf) {
+            $document = ConvertFrom-Json -InputObject (Get-Content -LiteralPath $candidateManifest -Raw)
+            foreach ($entry in $document) { [void]$candidates.Add($entry) }
+          } else {
+            Write-Warning "Candidate manifest is unavailable; packaging partial evidence only"
+          }
           $renderRoot = Join-Path $env:PANDA_DIAG_ROOT "fresh_renders"
           New-Item -ItemType Directory -Path $renderRoot -Force | Out-Null
           $matrix = [System.Collections.Generic.List[object]]::new()
@@ -290,10 +295,11 @@ jobs:
             [ordered]@{ role = "authoritative_highres_source"; path = $env:PANDA_HIGHRES_SOURCE; sha256 = (Get-FileHash -LiteralPath $env:PANDA_HIGHRES_SOURCE -Algorithm SHA256).Hash.ToLower() }
           )
           foreach ($candidate in $candidates) {
+            $candidatePath = [string]$candidate.path
             $inputs += [ordered]@{
               role = [string]$candidate.label
-              path = [string]$candidate.path
-              sha256 = (Get-FileHash -LiteralPath ([string]$candidate.path) -Algorithm SHA256).Hash.ToLower()
+              path = $candidatePath
+              sha256 = if (Test-Path -LiteralPath $candidatePath -PathType Leaf) { (Get-FileHash -LiteralPath $candidatePath -Algorithm SHA256).Hash.ToLower() } else { $null }
             }
           }
           $inputs | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $package "input_hashes.json") -Encoding utf8
@@ -333,7 +339,7 @@ jobs:
           $zipHash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLower()
           "$zipHash  $([System.IO.Path]::GetFileName($zip))" | Set-Content -LiteralPath (Join-Path $upload "ZIP_SHA256SUMS.txt") -Encoding ascii
           Copy-Item -LiteralPath (Join-Path $package "worker_receipt.json") -Destination $upload -Force
-          Copy-Item -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "atlas_audit\diagnostic_bundle.json") -Destination $upload -Force
+          Copy-IfPresent (Join-Path $env:PANDA_DIAG_ROOT "atlas_audit\diagnostic_bundle.json") (Join-Path $upload "diagnostic_bundle.json")
           Write-Host "PANDA_SUPPORT_ZIP=$zip"
           Write-Host "PANDA_SUPPORT_ZIP_SHA256=$zipHash"
 
