@@ -326,3 +326,16 @@ because its vertex/normal/index hashes differ from the canonical asset.
 The reprojected atlas had 2,861,262 valid same-triangle samples and
 18,910,290 neutral fallback pixels (13.1422% sampled coverage). It is a useful
 structural comparison, but remains `ALT_MESH_REPROJECT_DIAGNOSTIC_ONLY`.
+
+An all-atlas comparison on the xatlas reprojected mesh then bound the
+transferred atlas to every primitive, removing explicit neutral-material
+fallback binding. It produced no visual improvement: the transferred native
+atlas itself contains 18,910,290 neutral/unsupported texels.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\alt_mesh_all_atlas_diagnostic_only\alt_mesh_all_atlas_diagnostic_only.glb`
+- GLB SHA256: `069af22aedef3c3e21452612dea26fdbd6cbc59d9399ae9095ffb38852c8f657`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\alt_mesh_all_atlas_diagnostic_only\renders\contact_sheet_alt_mesh_all_atlas_9view_diagnostic_only.png`
+- Contact sheet SHA256: `6470c154a670315b13c9cb516839cff4a7521a8e6a6d98f25681e414e299f40f`
+- Receipt SHA256: `5605c6f313d0eabe3dea071db9578bb572a227069dbf462481089816fbadd393`
+
+Status: `ALT_MESH_ALL_ATLAS_DIAGNOSTIC_ONLY`; no production promotion.
