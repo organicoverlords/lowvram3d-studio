@@ -206,28 +206,113 @@ hence per-shell budgets proportional to area.
 
 ---
 
-## 7. Complexity preflight — check before spending four minutes
+## 7. When a run fails — retry before you diagnose
 
-`workers/trellis_run.py` wraps `trellis-cli`, watches for the structured-latent
-size it prints at stage 4 of 7, and aborts before the decode if the subject is
-too complex for this machine.
+**Runs on this card fail stochastically. A single failure means almost
+nothing.** Use the seed-retry script for anything large, and read a failure as
+"try again" before reading it as a diagnosis:
 
 ```bash
-py workers/trellis_run.py --image matte.png --out asset.glb --receipt run.json
+bash workers/trellis_retry_seeds.sh matte.png out.glb 12345 777 4242 31337
 ```
 
-Measured, four subjects on 16 GB RAM:
+It stops at the first seed that completes and writes it to `winning_seed.txt`.
+Seed is not a quality lever — there is no reason to prefer one draw's geometry
+over another's — so taking the first survivor costs nothing.
 
-| subject | latent | result |
-|---|---:|---|
-| castle | 82,304 | decoded |
-| boat | 86,784 | decoded |
-| red panda (ghillie suit) | 140,480 | **died in FlexiDualGrid decode** |
-| blue tree (foliage) | 191,744 | **died in FlexiDualGrid decode** |
+Worked example, the 4K gothic castle. **Nine attempts, one asset.** Five of them
+were me changing parameters, and none of those parameters was the answer:
 
-The latent tracks how much of the volume the subject actually occupies. Rigid
-architecture activates few voxels; fur, webbing and foliage activate many. The
-failures are host RAM during decode, not VRAM.
+| attempt | what | outcome |
+|---:|---|---|
+| 1-5 | flag changes (`--tex-res`, `--f32`), disk cleanup | five *different* failures, no asset |
+| 6 | seed 12345 | `misaligned address`, stage 4 |
+| 7 | seed 777 | aborted by the latent threshold at 134,944 |
+| 8 | seed 20260806 | silent kill, stage 5 |
+| **9** | **seed 4242** | **success: 3,949,828 faces raw, 144,002 after decimation, 342 s** |
+
+`workers/trellis_run.py` still reports the structured-latent size at stage 4/7,
+which is worth having in the receipt. It **no longer aborts by default**, because
+the threshold did not survive a bigger sample — see below.
+
+### The latent band was wrong, and here is the sample that killed it
+
+Every latent observed, with what happened:
+
+| latent | subject | result |
+|---:|---|---|
+| 82,304 | castle 1 | decoded |
+| 86,784 | boat | decoded |
+| 94,528 | castle 2 | died stage 5 |
+| 96,448 | castle 2 | died stage 5 |
+| 106,496 | castle 2 | geometry decoded, died stage 6 |
+| **111,520** | castle 2 | **full success, 3,949,828 faces** |
+| 134,944 | castle 2 | aborted by the old threshold — never tested |
+| 140,480 | red panda | died stage 5 |
+| 191,744 | blue tree | died stage 5 |
+
+**96,448 fails and 111,520 succeeds**, so no threshold in that range separates
+them. The original four-sample band was four single draws from four images, read
+as four subject properties. One image alone draws **94,528 to 134,944** — a 43%
+spread — because the sparse-structure stage is nondeterministic. The latent is
+not a stable property of a subject, let alone a capacity limit.
+
+What survives: nothing at 140k+ has ever decoded, so a very large value is still
+a real warning. `--max-latent` now defaults to **off**; pass it explicitly for
+unattended batch work, where burning 260 s on a doomed run costs more than
+skipping one that might have worked.
+
+### The nondeterminism also causes the crashes
+
+This dominates everything else on this card. **Different draws hand the downstream stages differently
+shaped tensors, and TU116 has shape-dependent kernel faults.** The same image,
+same flags, failed in five different places on five consecutive attempts:
+
+| # | flags | died at | error |
+|---:|---|---|---|
+| 1 | plain | stage 6 | `cudaMalloc` OOM — but stage 5 **succeeded**: 1,514,675 voxels, 3,467,018 faces |
+| 2 | `--tex-res 512` | stage 5 | `cudaMalloc` OOM |
+| 3 | `--tex-res 512` | stage 3 | kernel launch, out of memory |
+| 4 | `--tex-res 512` | stage 3 | `cublasGemmStridedBatchedEx(... CUBLAS_GEMM_DEFAULT_TENSOR_OP)` failed to launch |
+| 5 | `--f32` | stage 4 | `misaligned address` |
+
+Attempt 4 is the informative one: `CUBLAS_GEMM_DEFAULT_TENSOR_OP` is an explicit
+request for a tensor-core kernel on a card that has none. `GGML_CUDA_FORCE_MMQ`
+and `--no-fa` redirect the MMQ and FlashAttention paths; **neither covers
+`mul_mat_batched_cublas`**, which reaches cuBLAS directly. `--f32` does avoid it
+— stage 3 went from failing at 28.9 s to completing in 83.2 s — at roughly 3x
+the time, and it then exposes the `misaligned address` fault one stage later.
+
+So: **do not read a single failure as a verdict on the subject.** Attempt 1
+proves this castle's geometry is within reach of this machine. Vary the seed and
+try again before touching a parameter.
+
+```bash
+bash workers/trellis_retry_seeds.sh matte.png out.glb 12345 777 4242 31337
+```
+
+Stops at the first seed that completes and writes it to `winning_seed.txt`, so
+the result stays reproducible. Seed is not a quality lever here — there is no
+reason to prefer one draw's geometry over another's — so taking the first
+survivor costs nothing.
+
+Levers, in the order worth trying:
+
+1. **Another seed.** Each attempt is an independent draw. Cheapest and most
+   often sufficient for a large subject.
+2. **Close other GPU consumers** if `nvidia-smi --query-gpu=memory.free` is low,
+   and check commit headroom (`Win32_OperatingSystem.FreeVirtualMemory`) — CUDA
+   pins host memory, so an exhausted commit limit surfaces as "out of memory"
+   with VRAM sitting idle.
+3. `--f32` if failures cluster at **stage 3** specifically. 3x slower.
+4. `--tex-res 512` only for a **stage 6** failure. It cannot affect any earlier
+   stage, and pretending otherwise wasted three attempts here.
+5. `--no-texture` to bank geometry once stage 5 is clearing reliably.
+6. Simplify or crop the subject. Last — it changes the deliverable.
+
+`trellis_run.py` records which stage died, the MiB requested, and whether
+geometry decoded, then exits **3** on a VRAM fault. A stage-6 failure means the
+mesh existed and only the texture was lost.
 
 Why the wrapper is worth having: five attempts at the panda produced **three
 different errors** — `CUDA error: out of memory`, a ggml host-allocation assert,

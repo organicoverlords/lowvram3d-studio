@@ -1,0 +1,75 @@
+[trellis] generating model with seed 12345
+[1/6] preprocess C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803\evidence\compare\castle2\castle2_512.png (512)
+[2/6] DINOv3 conditioning
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 6143 MiB):
+  Device 0: NVIDIA GeForce GTX 1660 SUPER, compute capability 7.5, VMM: yes, VRAM: 6143 MiB
+      cond tokens=1029
+      [stats] cond_512 (DINOv3@512) n=1053696 mean=-0.0000 std=1.0000 min=-29.336 max=24.921 nan/inf=0
+[3/6] sparse-structure flow + decode
+      [flow] [....................]  0/12    0.0s  starting    
+      [flow] [#...................]  1/12    7.5s  ~82s left   
+      [flow] [###.................]  2/12   14.8s  ~74s left   
+      [flow] [#####...............]  3/12   22.3s  ~67s left   
+      [flow] [######..............]  4/12   29.8s  ~60s left   
+      [flow] [########............]  5/12   37.3s  ~52s left   
+      [flow] [##########..........]  6/12   44.8s  ~45s left   
+      [flow] [###########.........]  7/12   52.2s  ~37s left   
+      [flow] [#############.......]  8/12   59.7s  ~30s left   
+      [flow] [###############.....]  9/12   67.2s  ~22s left   
+      [flow] [################....] 10/12   74.7s  ~15s left   
+      [flow] [##################..] 11/12   78.4s  ~7s left    
+      [flow] [####################] 12/12   82.2s  ~0s left    
+      [flow] 12 steps, 22 forwards, 82.2s
+      active voxels @res32 = 2970
+[4/7] shape SLAT flow (512)
+      [flow] [....................]  0/12    0.0s  starting    
+      [flow] [#...................]  1/12    5.5s  ~60s left   
+      [flow] [###.................]  2/12   11.0s  ~55s left   
+      [flow] [#####...............]  3/12   16.5s  ~49s left   
+CUDA error: misaligned address
+  current device: 0, in function ggml_cuda_kernel_launch at C:\AI\trellis-cpp\thirdparty\ggml\src\ggml-cuda\common.cuh:1641
+  cudaGetLastError()
+C:\AI\trellis-cpp\thirdparty\ggml\src\ggml-cuda\ggml-cuda.cu:103: CUDA error
+{
+  "schema_version": "trellis_run_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2_512.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2.glb",
+  "command": [
+    "C:\\AI\\trellis-cpp\\build-mmq\\Release\\trellis-cli.exe",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2_512.png",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2.glb",
+    "--models",
+    "C:\\AI\\trellis-cpp\\models",
+    "--res",
+    "512",
+    "--atlas",
+    "1024",
+    "--seed",
+    "12345",
+    "--no-fa",
+    "--require-gpu"
+  ],
+  "res": "512",
+  "atlas": 1024,
+  "seed": 12345,
+  "seconds": 111.3,
+  "latent_size": null,
+  "latent_band": "unknown",
+  "latent_warn": 100000,
+  "latent_abort": 130000,
+  "aborted_on_latent": false,
+  "decoded_voxels": null,
+  "decoded_faces": null,
+  "vram_oom_mib": null,
+  "geometry_decoded": false,
+  "tex_res": null,
+  "exit_code": 3221226505,
+  "success": false,
+  "output_bytes": 0,
+  "reference_latents": {
+    "castle": 82304,
+    "boat": 86784,
+    "red_panda": 140480,
+    "blue_tree": 191744
+  }
+}

@@ -40,15 +40,55 @@ from pathlib import Path
 CLI = r"C:\AI\trellis-cpp\build-mmq\Release\trellis-cli.exe"
 MODELS = r"C:\AI\trellis-cpp\models"
 
-#: Above this, the decode has failed every time on 16 GB. Below it, every run
-#: has succeeded. The gap between 87k and 140k is unsampled, so the default sits
-#: near the top of the known-good range rather than in the middle of the void.
-LATENT_WARN = 100_000
-LATENT_ABORT = 130_000
+#: Latent size is reported, and by default no longer aborts. It was worth a try
+#: and it did not survive contact with a bigger sample:
+#:
+#:      82,304  castle 1        decoded
+#:      86,784  boat            decoded
+#:      94,528  castle 2        died stage 5
+#:      96,448  castle 2        died stage 5
+#:     106,496  castle 2        decoded geometry, died stage 6
+#:     111,520  castle 2        FULL SUCCESS, 3,949,828 faces
+#:     134,944  castle 2        aborted by this threshold -- never tested
+#:     140,480  red panda       died stage 5
+#:     191,744  blue tree       died stage 5
+#:
+#: 96,448 fails and 111,520 succeeds, so there is no threshold in that range
+#: that separates them. The earlier four-sample "band" was four single draws
+#: from one image each, read as four subject properties. One image alone draws
+#: 94,528 to 134,944 -- a 43% spread -- because the sparse-structure stage is
+#: nondeterministic, so the latent is not even a stable property of a subject.
+#:
+#: What it is still good for: 140k+ has never decoded, so a very large value is
+#: a genuine warning. Pass --max-latent explicitly to re-enable the abort for
+#: unattended batch work, where burning 260 s on a doomed run costs more than
+#: skipping a run that might have worked.
+LATENT_WARN = 120_000
+LATENT_ABORT = 0
 
 #: Printed by trellis-cli at stage 4/7, e.g.
 #:     [stats] slat (res32) n=86336 mean=0.3836 ...
 LATENT_PATTERN = re.compile(r"slat \(res\d+\) n=(\d+)")
+
+#: Stage 5 reports what the geometry decode actually produced. Captured because
+#: the *second* failure mode is sized by this, not by the latent.
+VOXEL_PATTERN = re.compile(r"decoded voxels @res\d+ = (\d+)")
+MESH_PATTERN = re.compile(r"mesh V=(\d+) F=(\d+)")
+
+#: There are two distinct capacity walls and they are not the same wall.
+#:
+#:   host RAM, stage 5  -- FlexiDualGrid shape decode. Predicted by latent size:
+#:                         panda 140,480 and blue tree 191,744 both died here.
+#:   VRAM, stage 6      -- the PBR decode compute graph, whose size tracks the
+#:                         *decoded voxel count*, not the latent. A 4K gothic
+#:                         castle at latent 106,496 cleared stage 5 comfortably
+#:                         (3.47M faces) and then asked for a 2110.87 MiB CUDA
+#:                         buffer with roughly 4.3 GB free, and lost.
+#:
+#: So a "safe" latent does not imply the run will finish, and a run that reaches
+#: stage 6 has already banked a usable mesh. Both are reported.
+VRAM_OOM_PATTERN = re.compile(
+    r"allocating ([\d.]+) MiB on device \d+: cudaMalloc failed: out of memory")
 
 #: Flags that are not optional on this card, and why, are in
 #: docs/RUNBOOK-trellis-pipeline.md. Summarised: --no-fa avoids the
@@ -65,6 +105,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--atlas", type=int, default=1024)
     parser.add_argument("--seed", type=int, default=12345)
     parser.add_argument("--no-texture", action="store_true")
+    parser.add_argument("--tex-res", type=int, choices=(512, 1024), default=None,
+                        help="PBR decode volume resolution. The stage-6 CUDA "
+                             "graph is the second capacity wall; dropping this "
+                             "is the only lever that shrinks it without "
+                             "abandoning the texture.")
+    parser.add_argument("--extra", nargs=argparse.REMAINDER, default=[],
+                        help="Everything after this is passed to trellis-cli "
+                             "verbatim. Last argument.")
     parser.add_argument("--max-latent", type=int, default=LATENT_ABORT,
                         help="Abort once the latent exceeds this. 0 disables "
                              "the abort and only records the value.")
@@ -82,11 +130,17 @@ def main(argv: list[str] | None = None) -> int:
                *FIXED_FLAGS]
     if args.no_texture:
         command.append("--no-texture")
+    if args.tex_res:
+        command += ["--tex-res", str(args.tex_res)]
+    command += list(args.extra)
 
     started = time.time()
     lines: list[str] = []
     latent = None
     aborted = False
+    voxels = None
+    mesh_faces = None
+    vram_oom_mib = None
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, text=True,
@@ -95,6 +149,18 @@ def main(argv: list[str] | None = None) -> int:
         lines.append(line.rstrip("\n"))
         sys.stdout.write(line)
         sys.stdout.flush()
+        if voxels is None:
+            found = VOXEL_PATTERN.search(line)
+            if found:
+                voxels = int(found.group(1))
+        if mesh_faces is None:
+            found = MESH_PATTERN.search(line)
+            if found:
+                mesh_faces = int(found.group(2))
+        if vram_oom_mib is None:
+            found = VRAM_OOM_PATTERN.search(line)
+            if found:
+                vram_oom_mib = float(found.group(1))
         if latent is None:
             found = LATENT_PATTERN.search(line)
             if found:
@@ -115,9 +181,8 @@ def main(argv: list[str] | None = None) -> int:
         Path(args.log).write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     band = ("unknown" if latent is None
-            else "safe" if latent <= LATENT_WARN
-            else "marginal" if latent <= LATENT_ABORT
-            else "over")
+            else "typical" if latent <= LATENT_WARN
+            else "large")
 
     receipt = {
         "schema_version": "trellis_run_v1",
@@ -133,11 +198,29 @@ def main(argv: list[str] | None = None) -> int:
         "latent_warn": LATENT_WARN,
         "latent_abort": args.max_latent,
         "aborted_on_latent": aborted,
+        "decoded_voxels": voxels,
+        "decoded_faces": mesh_faces,
+        # Non-null means stage 5 finished and stage 6 ran out of VRAM. The
+        # geometry was real; only the texture was lost.
+        "vram_oom_mib": vram_oom_mib,
+        "geometry_decoded": voxels is not None,
+        "tex_res": args.tex_res,
         "exit_code": process.returncode,
         "success": bool(produced and not aborted),
         "output_bytes": output.stat().st_size if output.is_file() else 0,
-        "reference_latents": {"castle": 82304, "boat": 86784,
-                              "red_panda": 140480, "blue_tree": 191744},
+        # Every latent observed, with what happened. Kept as a list of
+        # observations rather than a threshold, because the threshold did not
+        # survive: 96,448 failed and 111,520 succeeded on the same image.
+        "reference_latents": [
+            [82304, "castle1", "decoded"],
+            [86784, "boat", "decoded"],
+            [94528, "castle2", "died stage 5"],
+            [96448, "castle2", "died stage 5"],
+            [106496, "castle2", "geometry decoded, died stage 6"],
+            [111520, "castle2", "full success, 3949828 faces"],
+            [140480, "red_panda", "died stage 5"],
+            [191744, "blue_tree", "died stage 5"],
+        ],
     }
     if args.receipt:
         Path(args.receipt).write_text(json.dumps(receipt, indent=2) + "\n",
@@ -149,16 +232,40 @@ def main(argv: list[str] | None = None) -> int:
         # set; whether this particular subject would have decoded is a separate
         # question, and saying otherwise turns a configurable limit into a
         # false claim about the hardware.
-        observed = ("above every latent that has decoded successfully here"
-                    if latent > LATENT_WARN else
-                    "inside the range that has decoded successfully here, so "
-                    "this abort reflects --max-latent rather than a known limit")
-        print(f"\nTRELLIS_ABORTED_ON_COMPLEXITY latent={latent} > "
-              f"--max-latent {args.max_latent}. That is {observed}. "
-              f"Known-good up to {LATENT_WARN}; both failures so far were "
-              f"{LATENT_ABORT}+. Options: simplify or crop the subject, or "
-              f"raise --max-latent to probe the boundary.", file=sys.stderr)
+        observed = ("larger than any latent that has decoded here (highest "
+                    "success: 111,520)" if latent > 111_520 else
+                    "inside the range that has decoded here, so this abort is "
+                    "your --max-latent policy and not a known limit")
+        print(f"\nTRELLIS_ABORTED_ON_COMPLEXITY latent={latent:,} > "
+              f"--max-latent {args.max_latent:,}. That is {observed}. Note "
+              f"96,448 has failed and 111,520 has succeeded on the same image, "
+              f"so latent is a weak predictor; a different seed changes it by "
+              f"tens of thousands. Prefer workers/trellis_retry_seeds.sh over "
+              f"raising this.", file=sys.stderr)
         return 2
+    if vram_oom_mib is not None:
+        # Which stage matters, and it is not fixed. The same subject at the same
+        # seed has failed at stage 6 with latent 106,496 and at stage 5 with
+        # latent 94,528, minutes apart -- so this is contention for the card
+        # with whatever else is running, not a property of the subject. Report
+        # what actually happened rather than inferring a wall from one sample.
+        if voxels is None:
+            where = ("stage 5 (FlexiDualGrid shape decode). No geometry was "
+                     "produced")
+            advice = ("close other GPU consumers and retry; --no-texture "
+                      "lowers peak but does not help this stage; simplify or "
+                      "crop the subject")
+        else:
+            where = (f"stage 6 (PBR decode). Geometry HAD decoded: "
+                     f"{voxels:,} voxels, {mesh_faces:,} faces")
+            advice = ("--tex-res 512; close other GPU consumers; --no-texture "
+                      "to bank the geometry and texture it separately")
+        print(f"\nTRELLIS_VRAM_OOM at {where}. Asked for {vram_oom_mib:.0f} MiB "
+              f"and failed; latent was "
+              f"{latent:,} ({band}). This is a VRAM failure, not the latent "
+              f"wall -- a smaller latent does not make it go away. Options: "
+              f"{advice}.", file=sys.stderr)
+        return 3
     return 0 if produced else 1
 
 
