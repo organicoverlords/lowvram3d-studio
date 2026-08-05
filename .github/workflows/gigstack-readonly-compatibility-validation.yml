@@ -1,4 +1,4 @@
-name: GigStack Readonly Compatibility Validation
+name: GigStack Capture And Compatibility Validation
 
 on:
   workflow_dispatch:
@@ -18,18 +18,20 @@ concurrency:
 jobs:
   validate-private-gigstack-commit:
     runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 40
+    timeout-minutes: 50
     env:
-      GIGSTACK_COMMIT: 35c2484af5d2c8d25e9517ab7eb407ea5784fc2b
+      GIGSTACK_COMMIT: b31a8e59993c70a08eabf3b49b1935df81af509e
       TRAYCER_COMMIT: 8f21d506f9945e409f4cd72f32c71e8810a4d236
       CUDA_VISIBLE_DEVICES: "-1"
       VITE_DESKTOP_LOCAL_STORAGE_KEY: gigstack-traycer-readonly-compatibility-v1
     steps:
       - uses: actions/checkout@v4
-
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.12
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
 
       - name: Prove machine and private-repository access
         shell: pwsh
@@ -39,9 +41,7 @@ jobs:
           gh auth status
           if ($LASTEXITCODE -ne 0) { throw "LOWVRAM3D-KONE has no usable GitHub CLI login" }
           $private = (& gh api repos/organicoverlords/gigstack --jq .private | Out-String).Trim()
-          if ($LASTEXITCODE -ne 0 -or $private -ne "true") {
-            throw "Runner cannot read the private GigStack repository"
-          }
+          if ($LASTEXITCODE -ne 0 -or $private -ne "true") { throw "Runner cannot read private GigStack" }
           "GIGSTACK_VALIDATION_RUNNER=$env:RUNNER_NAME"
           "GIGSTACK_VALIDATION_GPU_USAGE=DISABLED"
 
@@ -50,135 +50,136 @@ jobs:
         run: |
           Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
           Remove-Item Env:GITHUB_TOKEN -ErrorAction SilentlyContinue
-          $gigstack = Join-Path $env:RUNNER_TEMP "gigstack-readonly-$env:GITHUB_RUN_ID"
-          $traycer = Join-Path $env:RUNNER_TEMP "traycer-readonly-$env:GITHUB_RUN_ID"
+          $gigstack = Join-Path $env:RUNNER_TEMP "gigstack-validation-$env:GITHUB_RUN_ID"
+          $traycer = Join-Path $env:RUNNER_TEMP "traycer-validation-$env:GITHUB_RUN_ID"
           foreach ($candidate in @($gigstack, $traycer)) {
-            if (Test-Path -LiteralPath $candidate) {
-              Remove-Item -LiteralPath $candidate -Recurse -Force
-            }
+            if (Test-Path -LiteralPath $candidate) { Remove-Item -LiteralPath $candidate -Recurse -Force }
           }
           gh repo clone organicoverlords/gigstack $gigstack -- --filter=blob:none
           if ($LASTEXITCODE -ne 0) { throw "Private GigStack clone failed" }
           git -C $gigstack checkout --detach $env:GIGSTACK_COMMIT
-          if ($LASTEXITCODE -ne 0) { throw "Exact GigStack commit checkout failed" }
-          $gigstackHead = (git -C $gigstack rev-parse HEAD | Out-String).Trim()
-          if ($gigstackHead -ne $env:GIGSTACK_COMMIT) { throw "GigStack commit mismatch: $gigstackHead" }
+          if ($LASTEXITCODE -ne 0) { throw "Exact GigStack checkout failed" }
+          if (((git -C $gigstack rev-parse HEAD | Out-String).Trim()) -ne $env:GIGSTACK_COMMIT) { throw "GigStack commit mismatch" }
           git clone --filter=blob:none https://github.com/traycerai/traycer.git $traycer
           if ($LASTEXITCODE -ne 0) { throw "Traycer clone failed" }
           git -C $traycer checkout --detach $env:TRAYCER_COMMIT
-          if ($LASTEXITCODE -ne 0) { throw "Exact Traycer commit checkout failed" }
-          $traycerHead = (git -C $traycer rev-parse HEAD | Out-String).Trim()
-          if ($traycerHead -ne $env:TRAYCER_COMMIT) { throw "Traycer commit mismatch: $traycerHead" }
-          "GIGSTACK_VALIDATION_ROOT=$gigstack" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "TRAYCER_VALIDATION_ROOT=$traycer" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "GIGSTACK_VALIDATION_OUTPUT=$(Join-Path $env:RUNNER_TEMP "gigstack-readonly-evidence-$env:GITHUB_RUN_ID")" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "GIGSTACK_VALIDATION_USER_DATA=$(Join-Path $env:RUNNER_TEMP "gigstack-readonly-profile-$env:GITHUB_RUN_ID")" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { throw "Exact Traycer checkout failed" }
+          if (((git -C $traycer rev-parse HEAD | Out-String).Trim()) -ne $env:TRAYCER_COMMIT) { throw "Traycer commit mismatch" }
+          "GIGSTACK_VALIDATION_ROOT=$gigstack" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          "TRAYCER_VALIDATION_ROOT=$traycer" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          "GIGSTACK_VALIDATION_OUTPUT=$(Join-Path $env:RUNNER_TEMP "gigstack-validation-evidence-$env:GITHUB_RUN_ID")" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          "GIGSTACK_VALIDATION_USER_DATA=$(Join-Path $env:RUNNER_TEMP "gigstack-validation-profile-$env:GITHUB_RUN_ID")" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
 
-      - name: Apply exact fail-closed overlay
+      - name: Format and test capture integration crates
         shell: pwsh
         run: |
-          $apply = Join-Path $env:GIGSTACK_VALIDATION_ROOT "integrations\traycer-desktop\apply_overlay.py"
-          python $apply $env:TRAYCER_VALIDATION_ROOT
-          if ($LASTEXITCODE -ne 0) { throw "Overlay application failed" }
-          $manifestPath = Join-Path $env:TRAYCER_VALIDATION_ROOT "gigstack-orchestrator-overlay-manifest.json"
-          $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
-          if ($manifest.schema -ne "GIGSTACK_TRAYCER_OVERLAY_MANIFEST_V1") { throw "Overlay manifest schema mismatch" }
-          if ($manifest.traycer_commit -ne $env:TRAYCER_COMMIT) { throw "Overlay manifest pin mismatch" }
-          if (@($manifest.changed_paths).Count -ne 13) { throw "Overlay changed-path count mismatch" }
+          Push-Location $env:GIGSTACK_VALIDATION_ROOT
+          try {
+            $owned = @(
+              Get-ChildItem `
+                crates\traycer-capture-cli, `
+                crates\orchestrator-captured-runtime `
+                -Filter *.rs -File -Recurse |
+                Sort-Object FullName |
+                ForEach-Object FullName
+            )
+            if ($owned.Count -eq 0) { throw "No capture integration Rust files found" }
+            & rustfmt --edition 2024 --check @owned
+            if ($LASTEXITCODE -ne 0) { throw "Capture integration rustfmt failed" }
+            cargo test -p traycer-capture-cli -p orchestrator-captured-runtime
+            if ($LASTEXITCODE -ne 0) { throw "Capture integration tests failed" }
+          } finally {
+            Pop-Location
+          }
+          "GIGSTACK_CAPTURE_INTEGRATION_TESTS=PROVEN"
 
-      - name: Install frozen dependencies and compile pinned Traycer desktop
+      - name: Apply exact fail-closed Traycer overlay
+        shell: pwsh
+        run: |
+          python (Join-Path $env:GIGSTACK_VALIDATION_ROOT "integrations\traycer-desktop\apply_overlay.py") $env:TRAYCER_VALIDATION_ROOT
+          if ($LASTEXITCODE -ne 0) { throw "Overlay application failed" }
+          $manifest = Get-Content (Join-Path $env:TRAYCER_VALIDATION_ROOT "gigstack-orchestrator-overlay-manifest.json") -Raw | ConvertFrom-Json
+          if ($manifest.schema -ne "GIGSTACK_TRAYCER_OVERLAY_MANIFEST_V1") { throw "Overlay manifest schema mismatch" }
+          if ($manifest.traycer_commit -ne $env:TRAYCER_COMMIT) { throw "Overlay pin mismatch" }
+          if (@($manifest.changed_paths).Count -ne 13) { throw "Overlay path count mismatch" }
+
+      - name: Install and compile pinned Traycer desktop
         shell: pwsh
         run: |
           Push-Location $env:TRAYCER_VALIDATION_ROOT
           try {
             bun install --frozen-lockfile
             if ($LASTEXITCODE -ne 0) { throw "Frozen dependency installation failed" }
-          } finally {
-            Pop-Location
-          }
+          } finally { Pop-Location }
           $desktop = Join-Path $env:TRAYCER_VALIDATION_ROOT "clients\desktop"
           Push-Location $desktop
           try {
             bun run compile
-            if ($LASTEXITCODE -ne 0) { throw "Traycer Desktop TypeScript compile failed" }
+            if ($LASTEXITCODE -ne 0) { throw "Traycer TypeScript compile failed" }
             bun run build:main
-            if ($LASTEXITCODE -ne 0) { throw "Traycer Electron main/preload bundle failed" }
+            if ($LASTEXITCODE -ne 0) { throw "Traycer main/preload build failed" }
             bun run build:renderer
-            if ($LASTEXITCODE -ne 0) { throw "Traycer renderer production bundle failed" }
-          } finally {
-            Pop-Location
-          }
+            if ($LASTEXITCODE -ne 0) { throw "Traycer renderer build failed" }
+          } finally { Pop-Location }
 
-      - name: Bundle and exercise the actual read-only inspector
+      - name: Exercise all five read-only compatibility states
         shell: pwsh
         run: |
           $desktop = Join-Path $env:TRAYCER_VALIDATION_ROOT "clients\desktop"
-          $bundle = Join-Path $env:RUNNER_TEMP "gigstack-readonly-compatibility-$env:GITHUB_RUN_ID.cjs"
+          $bundle = Join-Path $env:RUNNER_TEMP "gigstack-compatibility-$env:GITHUB_RUN_ID.cjs"
           Push-Location $desktop
           try {
-            bun x esbuild `
-              src/electron-main/orchestrator-browser/chatgpt-dom-adapter.ts `
-              --bundle `
-              --platform=node `
-              --format=cjs `
-              --external:electron `
-              --outfile=$bundle
-            if ($LASTEXITCODE -ne 0) { throw "Compatibility inspector bundle failed" }
+            bun x esbuild src/electron-main/orchestrator-browser/chatgpt-dom-adapter.ts --bundle --platform=node --format=cjs --external:electron --outfile=$bundle
+            if ($LASTEXITCODE -ne 0) { throw "Inspector bundle failed" }
             $electronLines = @(& bun -e 'console.log(require("electron"))')
             if ($LASTEXITCODE -ne 0 -or $electronLines.Count -eq 0) { throw "Electron path resolution failed" }
             $electron = ([string]$electronLines[-1]).Trim()
-          } finally {
-            Pop-Location
-          }
-          if (-not (Test-Path -LiteralPath $electron -PathType Leaf)) { throw "Electron executable is missing: $electron" }
+          } finally { Pop-Location }
+          if (-not (Test-Path -LiteralPath $electron -PathType Leaf)) { throw "Electron executable is missing" }
           New-Item -ItemType Directory -Force -Path $env:GIGSTACK_VALIDATION_OUTPUT | Out-Null
           New-Item -ItemType Directory -Force -Path $env:GIGSTACK_VALIDATION_USER_DATA | Out-Null
           $env:GIGSTACK_COMPATIBILITY_ADAPTER_BUNDLE = $bundle
           $env:GIGSTACK_COMPATIBILITY_OUTPUT_DIR = $env:GIGSTACK_VALIDATION_OUTPUT
           $env:GIGSTACK_COMPATIBILITY_USER_DATA_DIR = $env:GIGSTACK_VALIDATION_USER_DATA
           Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
-          $probe = Join-Path $env:GIGSTACK_VALIDATION_ROOT "integrations\traycer-desktop\readonly_compatibility_probe.cjs"
-          & $electron --disable-gpu --disable-software-rasterizer $probe
+          & $electron --disable-gpu --disable-software-rasterizer (Join-Path $env:GIGSTACK_VALIDATION_ROOT "integrations\traycer-desktop\readonly_compatibility_probe.cjs")
           if ($LASTEXITCODE -ne 0) { throw "Read-only compatibility probe failed" }
 
-      - name: Independently validate proof receipt
+      - name: Independently validate and bind proof receipt
         shell: pwsh
         run: |
           $receiptPath = Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "readonly-compatibility-receipt.json"
           if (-not (Test-Path -LiteralPath $receiptPath -PathType Leaf)) { throw "Compatibility receipt is missing" }
-          $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
-          if ($receipt.schema -ne "GIGSTACK_CHATGPT_READONLY_COMPATIBILITY_PROOF_V1") { throw "Receipt schema mismatch" }
-          if ($receipt.traycerCommit -ne $env:TRAYCER_COMMIT) { throw "Traycer pin mismatch" }
+          $receipt = Get-Content $receiptPath -Raw | ConvertFrom-Json
           $expected = @("SAFE_CANARY", "SESSION_READY", "AUTH_REQUIRED", "BOT_CHALLENGE", "DOM_INCOMPATIBLE")
-          if ((@($receipt.observedStates) -join "|") -ne ($expected -join "|")) { throw "Compatibility state order mismatch" }
+          if ($receipt.schema -ne "GIGSTACK_CHATGPT_READONLY_COMPATIBILITY_PROOF_V1") { throw "Receipt schema mismatch" }
+          if ((@($receipt.observedStates) -join "|") -ne ($expected -join "|")) { throw "State order mismatch" }
           if ([int]$receipt.fixtureCount -ne 5) { throw "Fixture count mismatch" }
-          if ($receipt.realChatGptNetworkUsed -ne $false) { throw "Real ChatGPT network was used" }
-          if ($receipt.realChatGptSubmissionEnabled -ne $false) { throw "Real ChatGPT submission was enabled" }
-          if ([int]$receipt.totalDomMutations -ne 0) { throw "Inspector mutated the DOM" }
-          if ([int]$receipt.totalPromptSubmissions -ne 0) { throw "Inspector submitted a prompt" }
-          if ([int]$receipt.machineToolExecutions -ne 0 -or [int]$receipt.agentMessagesSent -ne 0) { throw "Prohibited side effects occurred" }
+          if ($receipt.realChatGptNetworkUsed -ne $false -or $receipt.realChatGptSubmissionEnabled -ne $false) { throw "Real ChatGPT boundary violated" }
+          if ([int]$receipt.totalDomMutations -ne 0 -or [int]$receipt.totalPromptSubmissions -ne 0) { throw "Read-only boundary violated" }
+          if ([int]$receipt.machineToolExecutions -ne 0 -or [int]$receipt.agentMessagesSent -ne 0) { throw "Side-effect boundary violated" }
           if ($receipt.verdict -ne "TRAYCER_CHATGPT_READONLY_COMPATIBILITY_SYNTHETIC_PROVEN") { throw "Verdict mismatch" }
-          $receiptHash = (Get-FileHash -LiteralPath $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
           [ordered]@{
-            schema = "GIGSTACK_CROSS_REPO_VALIDATION_RECEIPT_V1"
+            schema = "GIGSTACK_CROSS_REPO_VALIDATION_RECEIPT_V2"
             runner = $env:RUNNER_NAME
             gigstackCommit = $env:GIGSTACK_COMMIT
             traycerCommit = $env:TRAYCER_COMMIT
-            compatibilityReceiptSha256 = $receiptHash
+            compatibilityReceiptSha256 = (Get-FileHash $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            captureIntegrationTestsPassed = $true
             cpuOnly = $true
             realChatGptNetworkUsed = $false
             promptSubmissions = 0
             machineToolExecutions = 0
             agentMessagesSent = 0
-            verdict = "TRAYCER_CHATGPT_READONLY_COMPATIBILITY_SYNTHETIC_PROVEN"
-          } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "cross-repo-validation-receipt.json") -Encoding utf8NoBOM
-          "TRAYCER_CHATGPT_READONLY_COMPATIBILITY_SYNTHETIC_PROVEN=YES"
+            verdict = "CAPTURE_AND_READONLY_COMPATIBILITY_PROVEN"
+          } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "cross-repo-validation-receipt.json") -Encoding utf8NoBOM
+          "GIGSTACK_CAPTURE_AND_COMPATIBILITY_PROVEN=YES"
 
       - name: Upload bounded proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gigstack-readonly-compatibility-${{ github.run_id }}
+          name: gigstack-capture-compatibility-${{ github.run_id }}
           path: ${{ env.GIGSTACK_VALIDATION_OUTPUT }}
           if-no-files-found: warn
           retention-days: 14
@@ -187,12 +188,6 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          foreach ($candidate in @(
-            $env:GIGSTACK_VALIDATION_ROOT,
-            $env:TRAYCER_VALIDATION_ROOT,
-            $env:GIGSTACK_VALIDATION_USER_DATA
-          )) {
-            if ($candidate -and (Test-Path -LiteralPath $candidate)) {
-              Remove-Item -LiteralPath $candidate -Recurse -Force -ErrorAction SilentlyContinue
-            }
+          foreach ($candidate in @($env:GIGSTACK_VALIDATION_ROOT, $env:TRAYCER_VALIDATION_ROOT, $env:GIGSTACK_VALIDATION_USER_DATA)) {
+            if ($candidate -and (Test-Path -LiteralPath $candidate)) { Remove-Item $candidate -Recurse -Force -ErrorAction SilentlyContinue }
           }
