@@ -235,3 +235,22 @@ triangle partition all match the v4 source. The remaining bands correspond to
 the 86,489 zero-support triangles in the 2048 owner mask. Painting them or
 binding the atlas to every triangle would bypass the coverage gate, so no
 additional cleanup was promoted.
+
+### Final diagnostic cleanup variant
+
+One bounded CPU cleanup was applied to the sampler-corrected candidate: a 5x5
+median plus 0.35 low-frequency blend on 1,019,393 non-direct procedural or
+material-prior texels. The protected 396,216 texels and all 940,179 direct
+owners were untouched byte-for-byte; 14 provenance-invalid procedural white
+texels were replaced.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\cleanup_v3\panda_diag_neutral_cleanup_v3.glb`
+- GLB SHA256: `59ff5418146730e2741be70a6849b3d2c41df5c82c6b4718ec5b9a9e4d9caeb2`
+- Atlas SHA256: `8cc8d96335e89a44017f7d9842bb757d3d8323b162c839cb774cc010eb93218b`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\cleanup_v3\renders\contact_sheet_cleanup_v3.png`
+- Contact sheet SHA256: `2c45e1f8983fdbb4b5c7ce0ae7dfcf87282d93bd83da2fa4a1d6b942690b9de4`
+- Receipt SHA256: `2c16b3f6f5e949874402a410b0573f736632c05ca7ac69be13be3845a7a40dfa`
+
+Speckle is modestly reduced and the sampler stripes remain absent, but
+unsupported neutral areas and bottom gaps remain. Status stays
+`DIAGNOSTIC_ONLY_NOT_PRODUCTION_READY`; no further cleanup loop is authorized.
