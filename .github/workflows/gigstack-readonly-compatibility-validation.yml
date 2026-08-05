@@ -20,7 +20,7 @@ jobs:
     runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 60
     env:
-      GIGSTACK_COMMIT: 1a8ed0e0df1513e5d53a5f4d3dc79414e101d1ee
+      GIGSTACK_COMMIT: 2b2a9b5b638b4ccb320b908794f919dc4c53dfbf
       TRAYCER_COMMIT: 8f21d506f9945e409f4cd72f32c71e8810a4d236
       CUDA_VISIBLE_DEVICES: "-1"
       VITE_DESKTOP_LOCAL_STORAGE_KEY: gigstack-traycer-readonly-compatibility-v1
@@ -49,7 +49,7 @@ jobs:
         with:
           bun-version: 1.3.12
 
-      - name: Use installed Windows Rust toolchain without Bash or WSL
+      - name: Select an installed complete Rust toolchain without downloads
         shell: pwsh
         run: |
           $cargoBin = Join-Path $env:USERPROFILE ".cargo\bin"
@@ -57,35 +57,79 @@ jobs:
             throw "Installed Rust cargo directory is missing: $cargoBin"
           }
           $rustup = Join-Path $cargoBin "rustup.exe"
-          $rustc = Join-Path $cargoBin "rustc.exe"
-          $cargo = Join-Path $cargoBin "cargo.exe"
-          $rustfmt = Join-Path $cargoBin "rustfmt.exe"
-          foreach ($tool in @($rustup, $rustc, $cargo, $rustfmt)) {
-            if (-not (Test-Path -LiteralPath $tool -PathType Leaf)) {
-              throw "Required installed Rust tool is missing: $tool"
-            }
+          if (-not (Test-Path -LiteralPath $rustup -PathType Leaf)) {
+            throw "Installed rustup executable is missing: $rustup"
           }
           $cargoBin | Out-File $env:GITHUB_PATH -Append -Encoding utf8
-          "RUSTUP_TOOLCHAIN=stable" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
-          & $rustup toolchain install stable --profile minimal
-          if ($LASTEXITCODE -ne 0) { throw "rustup stable toolchain installation/update failed" }
-          & $rustup component add rustfmt --toolchain stable
-          if ($LASTEXITCODE -ne 0) { throw "rustfmt component installation failed" }
-          $env:RUSTUP_TOOLCHAIN = "stable"
-          & $rustc --version
-          if ($LASTEXITCODE -ne 0) { throw "rustc preflight failed" }
-          & $cargo --version
-          if ($LASTEXITCODE -ne 0) { throw "cargo preflight failed" }
-          & $rustfmt --version
-          if ($LASTEXITCODE -ne 0) { throw "rustfmt preflight failed" }
+
+          $toolchainOutput = @(& $rustup toolchain list 2>&1)
+          if ($LASTEXITCODE -ne 0) {
+            throw "rustup toolchain list failed: $($toolchainOutput -join ' | ')"
+          }
+          $candidates = @(
+            foreach ($line in $toolchainOutput) {
+              $trimmed = ([string]$line).Trim()
+              if ($trimmed) {
+                $name = ($trimmed -split '\s+')[0]
+                if ($name -match '^[A-Za-z0-9._-]+$') { $name }
+              }
+            }
+          ) | Select-Object -Unique
+          if ($candidates.Count -eq 0) {
+            throw "No installed Rust toolchains were reported"
+          }
+
+          $selected = $null
+          $attempts = @()
+          foreach ($candidate in $candidates) {
+            $rustcVersion = (& $rustup run $candidate rustc --version 2>&1 | Out-String).Trim()
+            $rustcExit = $LASTEXITCODE
+            $cargoVersion = (& $rustup run $candidate cargo --version 2>&1 | Out-String).Trim()
+            $cargoExit = $LASTEXITCODE
+            $rustfmtVersion = (& $rustup run $candidate rustfmt --version 2>&1 | Out-String).Trim()
+            $rustfmtExit = $LASTEXITCODE
+            $attempts += [ordered]@{
+              toolchain = $candidate
+              rustcExit = $rustcExit
+              cargoExit = $cargoExit
+              rustfmtExit = $rustfmtExit
+            }
+            if ($rustcExit -eq 0 -and $cargoExit -eq 0 -and $rustfmtExit -eq 0) {
+              $selected = $candidate
+              break
+            }
+          }
+          if (-not $selected) {
+            [ordered]@{
+              schema = "GIGSTACK_WINDOWS_RUST_PREFLIGHT_FAILURE_V1"
+              installedToolchains = $candidates
+              attempts = $attempts
+              downloadsAttempted = $false
+              bashUsed = $false
+              wslUsed = $false
+            } | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "rust-preflight-failure.json") -Encoding utf8NoBOM
+            throw "No installed Rust toolchain contains working rustc, cargo, and rustfmt"
+          }
+
+          "RUSTUP_TOOLCHAIN=$selected" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          $env:RUSTUP_TOOLCHAIN = $selected
+          $rustcVersion = (& rustc --version | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) { throw "selected rustc preflight failed" }
+          $cargoVersion = (& cargo --version | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) { throw "selected cargo preflight failed" }
+          $rustfmtVersion = (& rustfmt --version | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) { throw "selected rustfmt preflight failed" }
           [ordered]@{
-            schema = "GIGSTACK_WINDOWS_RUST_PREFLIGHT_V1"
-            rustc = (& $rustc --version | Out-String).Trim()
-            cargo = (& $cargo --version | Out-String).Trim()
-            rustfmt = (& $rustfmt --version | Out-String).Trim()
+            schema = "GIGSTACK_WINDOWS_RUST_PREFLIGHT_V2"
+            selectedToolchain = $selected
+            installedToolchains = $candidates
+            rustc = $rustcVersion
+            cargo = $cargoVersion
+            rustfmt = $rustfmtVersion
+            downloadsAttempted = $false
             bashUsed = $false
             wslUsed = $false
-          } | ConvertTo-Json | Set-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "rust-preflight.json") -Encoding utf8NoBOM
+          } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "rust-preflight.json") -Encoding utf8NoBOM
 
       - name: Prove machine and private-repository access
         shell: pwsh
@@ -231,7 +275,7 @@ jobs:
           if ($receipt.verdict -ne "TRAYCER_CHATGPT_READONLY_COMPATIBILITY_SYNTHETIC_PROVEN") { throw "Verdict mismatch" }
           $rustReceipt = Get-Content (Join-Path $env:GIGSTACK_VALIDATION_OUTPUT "rust-validation.json") -Raw | ConvertFrom-Json
           [ordered]@{
-            schema = "GIGSTACK_CROSS_REPO_VALIDATION_RECEIPT_V4"
+            schema = "GIGSTACK_CROSS_REPO_VALIDATION_RECEIPT_V5"
             runner = $env:RUNNER_NAME
             gigstackCommit = $env:GIGSTACK_COMMIT
             traycerCommit = $env:TRAYCER_COMMIT
@@ -241,6 +285,7 @@ jobs:
             nativeRuntimeTestsPassed = $true
             cargoLockChanged = [bool]$rustReceipt.cargoLockChanged
             cpuOnly = $true
+            rustToolchainDownloadsAttempted = $false
             bashUsed = $false
             wslUsed = $false
             realChatGptNetworkUsed = $false
