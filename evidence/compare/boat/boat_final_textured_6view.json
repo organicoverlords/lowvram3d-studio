@@ -1,0 +1,32 @@
+{
+  "schema_version": "textured_mesh_preview_v1",
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_final.glb",
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_final_textured_6view.png",
+  "geometries": [
+    {
+      "name": "GLTF",
+      "triangles": 145770,
+      "texture": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "geometry_1",
+      "triangles": 965,
+      "texture": [
+        476,
+        956
+      ]
+    }
+  ],
+  "view_coverage": {
+    "front": 0.3443,
+    "right": 0.2469,
+    "back": 0.3443,
+    "left": 0.2469,
+    "top": 0.2996,
+    "bottom": 0.2996,
+    "three_quarter": 0.3459
+  }
+}

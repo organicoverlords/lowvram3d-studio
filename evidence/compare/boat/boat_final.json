@@ -1,0 +1,22 @@
+{
+  "schema_version": "apply_decal_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\hyb_primary.glb",
+  "decal": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refsheet\\marquee_hero.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_final.glb",
+  "roi": [
+    0.3,
+    0.1,
+    0.7,
+    0.28
+  ],
+  "decal_pixels": [
+    956,
+    476
+  ],
+  "patch_triangles": 965,
+  "patch_vertices": 953,
+  "patch_fraction_of_mesh": 0.00662,
+  "offset_units": 0.001549,
+  "min_facing": 0.35,
+  "note": "decal reuses the mesh's own triangles, so it follows facade curvature instead of floating as a quad"
+}

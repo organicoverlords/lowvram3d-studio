@@ -545,3 +545,94 @@ that already peaks at 5.7 GB caused an illegal memory access mid-diffusion
 
 **Do not retry a third extractor.** The next question is not how the surface is
 extracted but what is being extracted from.
+
+## 10. The lane changed: TRELLIS.2 replaces Hunyuan for geometry and texture
+
+See `docs/RUNBOOK-trellis-pipeline.md` for the commands. This section records
+what was decided and why, so the runbook does not have to argue for itself.
+
+**Geometry.** Hunyuan3D is a VecSet model: shape as an unordered set of latent
+vectors with weak local spatial addressing. Seven levers inside that family were
+measured and eliminated (sections 6-9). TRELLIS.2 puts latents on sparse voxels
+that intersect the surface and decodes through a FlexiDualGrid VAE. One run
+produced what seven Hunyuan experiments could not: a paddle wheel with separated
+spokes, railings with gaps, windows as openings. 248.6 s against mini's ~7 min.
+
+Confirmed independently on vision: "B shows the strongest internal structure
+... a clearly articulated paddle wheel with spokes", closing an estimated
+40-60% of the gap to the online reference, and explicitly rejecting that this
+was pattern-matching on one feature.
+
+**Texture.** The MV-Adapter SD2.1 lane was built around Hunyuan geometry --
+watertight, thirteen bodies. TRELLIS output is non-watertight with 7,144 open
+shells, the topology projection baking handles worst. TRELLIS.2's own texture
+stage documents explicit support for open surfaces and non-manifold geometry,
+and produces UV-mapped PBR in the same pipeline that made the shape. Switching
+solved the unpainted roof and underside for free, and removed the UV-unwrap
+bottleneck (xatlas on 7,144 shells never completed).
+
+The MV-Adapter lane is **not** deleted. It still works, and its six-view
+generation may be useful for subjects with no reference elevations. It is no
+longer the default.
+
+**Hardware.** Four separate blockers had to be cleared, all environment rather
+than method: a hardcoded CUDA architecture in the upstream CMakeLists, CMake
+auto-selecting CUDA 13.2 (which dropped Pascal), the TU116 tensor-core kernel
+mismatch, and default decimation that would have made the comparison
+meaningless. Details in the runbook.
+
+## 11. Three mistakes worth not repeating
+
+All three were caught the same way: comparing what a tool *reported* against
+what it *actually did*. None would have been caught by reading the code.
+
+**The extractor that lied.** `--mc-algo dmc` reported success while running
+`mc`, because `enable_flashvdm()` swaps the VAE and resets the extractor.
+Detected only because two runs produced byte-identical face connectivity.
+Receipts now record the class in place, not the flag requested.
+
+**The teacher that was a cat.** The feature-edge metric ran with
+`online_generated_target__besgu.glb` as its reference. That file is an armoured
+cat with a rifle. The real online boat is
+`ornate_tower__20260729221745_18e55b4b.glb`, which the inventory JSON mislabels
+as `"identity": "architectural tower"` -- and which I had loaded as the negative
+control. Teacher and control were inverted, so every F1 number was noise. The
+trust gate correctly refused all four comparisons; the numbers were never
+quotable. **Do not trust the `identity` field in
+`online_15m_model_inventory.json`.**
+
+**The preview that could not see.** Most of this session judged a UV-textured
+asset through `preview_coloured_mesh.py`, which samples one colour per vertex.
+On 145k faces with a 1024 atlas that discards most of the texture. Verdicts of
+"muddy" and "smudged" -- mine and the review's, since it was fed the same images
+-- partly measured the preview. A 956x476 decal on 267 triangles is invisible
+that way, so the check for whether the decal worked returned the wrong answer.
+`workers/preview_textured_mesh.py` interpolates UVs per pixel. Earlier visual
+verdicts in this document were formed on degraded evidence and should be
+re-taken before being relied on.
+
+## 12. Open, in priority order
+
+1. **ARAP local-chart projection.** The remaining texturing item: replace the
+   global linear bbox mapping with cylindrical charts on the hull band and
+   tangent-plane charts elsewhere. A concrete minimal spec exists (cylindrical
+   for the lower hull on side views only, 8 longitudinal bins, blended into the
+   planar mapping across the deck line). Review's own caveat: if one A/B render
+   shows no improvement, remove it -- the defect is then not worth the mapping
+   work.
+2. **Four-view constrained geometry fitting.** Optimise low-frequency hull
+   vertices against all four elevation silhouettes, freezing rails and spokes.
+3. **Re-take the visual verdicts** with the correct renderer, including the
+   "background only" rating, which was given on vertex-colour images.
+4. **Re-run the feature-edge metric** with the correct teacher. The metric
+   itself is validated (self-test 1.0, registration finds yaw 0 and chamfer 0);
+   only its inputs were wrong.
+5. Paint3D on masked unpainted regions only -- the one external texture tool
+   that survived scrutiny. Needs disk headroom.
+
+Not worth doing: replacing the geometry model. A survey of TripoSG, TripoSF,
+Hunyuan3D-2.1, Hi3DGen, SPAR3D, SF3D, Direct3D-S2, Step1X-3D, CraftsMan3D,
+MeshAnythingV2 and Meshtron rejected every one on VRAM, custom-kernel or licence
+grounds for this card. Two worth revisiting only after a GPU upgrade:
+CraftsMan3D (has a real four-view-conditioned model) and TripoSF (open surfaces
+are a better topology match than watertight SDF).
