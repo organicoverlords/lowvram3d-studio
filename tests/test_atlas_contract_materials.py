@@ -99,6 +99,17 @@ def test_bind_texture_uses_dedicated_linear_clamped_opaque_atlas(tmp_path: Path)
     assert "alphaCutoff" not in atlas_material
 
 
+def test_bind_texture_accepts_explicit_neutral_fallback_factor(tmp_path: Path) -> None:
+    source = tmp_path / "source.glb"
+    output = tmp_path / "textured.glb"
+    _write_minimal_indexed_glb(source, {"magFilter": 9729, "minFilter": 9729})
+    bind_texture(source, output, b"atlas-png", np.asarray([True, False]),
+                 neutral_factor=(0.31, 0.27, 0.22, 1.0))
+    gltf, _blob = _read_glb(output)
+    neutral = next(m for m in gltf["materials"] if m.get("name") == "NeutralUnobservedSurface")
+    assert neutral["pbrMetallicRoughness"]["baseColorFactor"] == [0.31, 0.27, 0.22, 1.0]
+
+
 def test_triangle_coverage_mask_is_closed_over_invalid_owner_ids() -> None:
     owner = np.asarray([
         [-1, 0, 2, 99],

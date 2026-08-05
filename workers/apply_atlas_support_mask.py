@@ -30,6 +30,8 @@ def main() -> None:
     parser.add_argument("--resolution", type=int, required=True)
     parser.add_argument("--output-glb", type=Path, required=True)
     parser.add_argument("--receipt", type=Path, required=True)
+    parser.add_argument("--neutral-factor", type=float, nargs=4,
+                        default=(0.2, 0.22, 0.18, 1.0))
     args = parser.parse_args()
     positions, normals, uv, tris = read_glb(args.mesh)
     direct, _weights = rasterise(uv, tris, args.resolution)
@@ -44,7 +46,9 @@ def main() -> None:
     if ids.size:
         mask[np.unique(ids)] = True
     args.output_glb.parent.mkdir(parents=True, exist_ok=True)
-    bind_texture(args.input_glb, args.output_glb, args.atlas.read_bytes(), mask)
+    neutral_factor = tuple(float(value) for value in args.neutral_factor)
+    bind_texture(args.input_glb, args.output_glb, args.atlas.read_bytes(), mask,
+                 neutral_factor=neutral_factor)
     receipt = {
         "schema": "panda_atlas_support_fixed_candidate_v1",
         "classification": "DIAGNOSTIC_ONLY_NOT_PRODUCTION_READY",
@@ -61,6 +65,7 @@ def main() -> None:
         "conservative_support_texels": int((support >= 0).sum()),
         "geometry_source_unchanged": "texture binding only",
         "promotion_authorized": False,
+        "neutral_fallback_factor": list(neutral_factor),
     }
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     args.receipt.write_text(json.dumps(receipt, indent=2), encoding="utf-8")

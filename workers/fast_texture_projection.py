@@ -193,7 +193,8 @@ def triangle_coverage_mask(owner: np.ndarray, triangle_count: int) -> np.ndarray
 
 def bind_texture(input_glb: Path, output_glb: Path, png: bytes,
                  textured_triangles: np.ndarray | None = None,
-                 wrap: int = 10497) -> int:
+                 wrap: int = 10497,
+                 neutral_factor: tuple[float, float, float, float] = (0.2, 0.22, 0.18, 1.0)) -> int:
     """Bind an atlas only to active/provenance-valid geometry.
 
     Neutral synthesis materials must not receive the atlas globally: overlapping UV triangles
@@ -243,7 +244,7 @@ def bind_texture(input_glb: Path, output_glb: Path, png: bytes,
                           if not active(material)), None)
     if neutral_index is None:
         neutral_material = clean_pbr_material(
-            "NeutralUnobservedSurface", base_color_factor=(0.2, 0.22, 0.18, 1.0))
+            "NeutralUnobservedSurface", base_color_factor=neutral_factor)
         materials.append(neutral_material)
         neutral_index = len(materials) - 1
 
