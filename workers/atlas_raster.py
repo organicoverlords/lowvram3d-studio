@@ -103,6 +103,11 @@ def census(uv: np.ndarray, tris: np.ndarray, size: int, *, interior: float = 0.0
 def rasterise(uv: np.ndarray, tris: np.ndarray, size: int):
     """Return (owner, weights) exactly as ``fast_texture_projection.rasterise_atlas`` would."""
     texel, triangle, wa, wb = census(uv, tris, size, with_barycentric=True)
+    owner = np.full(size * size, -1, np.int32)
+    weights = np.zeros((size * size, 2), np.float32)
+    if texel.size == 0:
+        return owner.reshape(size, size), weights.reshape(size, size, 2)
+
     order = np.lexsort((triangle, texel))
     texel = texel[order]
     triangle = triangle[order]
@@ -110,8 +115,6 @@ def rasterise(uv: np.ndarray, tris: np.ndarray, size: int):
     wb = wb[order]
     first = np.flatnonzero(np.r_[True, texel[1:] != texel[:-1]])
 
-    owner = np.full(size * size, -1, np.int32)
-    weights = np.zeros((size * size, 2), np.float32)
     owner[texel[first]] = triangle[first].astype(np.int32)
     weights[texel[first], 0] = wa[first]
     weights[texel[first], 1] = wb[first]
@@ -121,13 +124,19 @@ def rasterise(uv: np.ndarray, tris: np.ndarray, size: int):
 def injectivity(uv: np.ndarray, tris: np.ndarray, size: int, *, interior: float = 0.05) -> dict:
     """Strict-interior double-claim census: the operative test for a usable single-owner atlas."""
     texel, triangle = census(uv, tris, size, interior=interior)
-    order = np.argsort(texel, kind="stable")
-    texel = texel[order]
-    triangle = triangle[order]
-    first = np.flatnonzero(np.r_[True, texel[1:] != texel[:-1]])
-    counts = np.diff(np.r_[first, texel.size])
-    shared = counts > 1
-    offenders = np.unique(triangle[np.repeat(shared, counts)])
+    if texel.size:
+        order = np.argsort(texel, kind="stable")
+        texel = texel[order]
+        triangle = triangle[order]
+        first = np.flatnonzero(np.r_[True, texel[1:] != texel[:-1]])
+        counts = np.diff(np.r_[first, texel.size])
+        shared = counts > 1
+        offenders = np.unique(triangle[np.repeat(shared, counts)])
+    else:
+        first = np.zeros(0, np.int64)
+        counts = np.zeros(0, np.int64)
+        shared = np.zeros(0, bool)
+        offenders = np.zeros(0, np.int64)
 
     corners = np.asarray(uv, np.float64)[np.asarray(tris, np.int64)] * float(size)
     area = 0.5 * np.abs(
@@ -144,10 +153,6 @@ def injectivity(uv: np.ndarray, tris: np.ndarray, size: int, *, interior: float 
         "degenerate_uv_triangles": int((area <= 0.0).sum()),
         "uv_out_of_unit_square": int(((np.asarray(uv) < -1e-6) | (np.asarray(uv) > 1 + 1e-6)).any(axis=1).sum()),
         "injective": bool(shared.sum() == 0),
-        # Restated in the vocabulary `visual_evaluator.check_uv` contracts on. That gate refuses to
-        # read a silent report as a clean atlas - a timed-out detector once returned zeroes that
-        # were taken as proof - so a route reporting injectivity a different way must still say how
-        # much it tested and what it found, or it is indistinguishable from a detector that gave up.
         "exact_overlap": {
             "tested_pair_count": int(first.size),
             "timed_out": False,
