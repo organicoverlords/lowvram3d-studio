@@ -1,0 +1,27 @@
+{
+  "schema_version": "emissive_from_atlas_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2_graded.glb",
+  "atlas_size": [
+    1024,
+    1024
+  ],
+  "painted_texels": 1048576,
+  "candidate_texels": 12561,
+  "components_found": 1598,
+  "components_kept": 359,
+  "accepted_texels": 9250,
+  "coverage_of_painted": 0.00882,
+  "thresholds": {
+    "min_luma": 0.42,
+    "min_warmth": 0.055,
+    "min_local_contrast": 0.1,
+    "component_fraction": [
+      8e-06,
+      0.0025
+    ],
+    "max_total_coverage": 0.045
+  },
+  "gain": 1.0,
+  "result": "written",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2_lit.glb"
+}

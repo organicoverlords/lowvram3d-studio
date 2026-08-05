@@ -43,6 +43,12 @@ DIFFUSE = 0.50
 #: paint over the boat or claim the depth buffer.
 ALPHA_CUT = 0.5
 
+#: How strongly an emissive texture is added into the previewed colour. This is
+#: a verification aid, not a render: it exists so that "are the emitters in the
+#: right places" is answerable from the sheet. A real engine would light the
+#: scene from them.
+EMISSIVE_PREVIEW_GAIN = 0.85
+
 
 def collect(scene):
     """Every geometry as (vertices, faces, uv, texture RGBA float)."""
@@ -60,6 +66,22 @@ def collect(scene):
             image = getattr(visual.material, "baseColorTexture", None)
             if image is not None:
                 texture = np.asarray(image.convert("RGBA"), dtype=np.float64) / 255.0
+            # Emission, added into the sampled colour. This preview has no
+            # lighting model, so there is nothing to add emission *to* -- but
+            # without it an emissive texture is invisible here, and a check for
+            # "did the lights land in the right places" would silently answer
+            # no. Additive is the crudest correct answer: an emitter reads
+            # brighter than its surroundings, which is the only property being
+            # verified.
+            glow = getattr(visual.material, "emissiveTexture", None)
+            if glow is not None and texture is not None:
+                emissive = np.asarray(glow.convert("RGB"),
+                                      dtype=np.float64) / 255.0
+                if emissive.shape[:2] == texture.shape[:2]:
+                    texture = texture.copy()
+                    texture[..., :3] = np.clip(
+                        texture[..., :3] + emissive * EMISSIVE_PREVIEW_GAIN,
+                        0.0, 1.0)
         if texture is None:
             continue
         parts.append((name,
