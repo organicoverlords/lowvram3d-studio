@@ -208,3 +208,23 @@ The follow-up native-packed diagnostic used the actual xatlas dimensions
 Native resolution reduces but does not eliminate unowned sampling. The UV
 redesign therefore remains `SYNTHETIC_GATE_BLOCKED`; no panda appearance or
 proof promotion was performed.
+
+### Sampler binding correction (diagnostic-only visual result)
+
+The neutral-fallback candidate's vertical stretching was traced to one
+deterministic difference: its atlas sampler used `minFilter=9729` (linear,
+no mipmaps), while the source v4 GLB used `minFilter=9987`
+(`LINEAR_MIPMAP_LINEAR`). TEXCOORD_0, atlas bytes, direct-V orientation, and
+geometry/UV values were identical.
+
+Restoring only that sampler field produced:
+
+- GLB: `C:\AI\panda_diag_neutral_v1\panda_diag_neutral_sampler_v2.glb`
+- GLB SHA256: `cab2357b6d8c46eb058de7589ac967efe247cb3347fe7a9dd12f1bac409c9f44`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\renders_sampler_v2\contact_sheet_sampler_v2.png`
+- Contact sheet SHA256: `a64a1f911e1e9aa01835feb88b8b3ed62099e35a5ab38def060a538b30ed5230`
+- Receipt SHA256: `c548ca2ce7621c25a42ec335cc8ad7ce85d6cb3d48f571bc78900e8c168ceab0`
+
+The stripes/stretching are materially reduced and the face is readable in all
+six views. Residual speckle, unsupported neutral areas, and bottom white
+patches remain, so this is still `DIAGNOSTIC_ONLY_NOT_PRODUCTION_READY`.
