@@ -300,7 +300,9 @@ geometry, UVs, sampler, proof, and provenance were unchanged.
 - GLB: `C:\AI\panda_diag_neutral_v1\bottom_patch_diagnostic_only\panda_bottom_patch_diagnostic_only.glb`
 - GLB SHA256: `a1001a8e4f2365ba2ec6629af27fb88d34653a73bbc15be17c196b180704f40b`
 - Atlas SHA256: `f7388b48c5d41bac22c2bbb1fc7f450e131dc201b2e0d967b75372c9f69a382d`
-- Receipt: `C:\AI\panda_diag_neutral_v1\bottom_patch_diagnostic_only\bottom_patch_receipt.json`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\bottom_patch_diagnostic_only\renders\contact_sheet_bottom_patch_9view_diagnostic_only.png`
+- Contact sheet SHA256: `f4fdc4cf34be1e9e146bdbe3e2731c7b90dc445bfa4b56df14729a42ecf980ed`
+- Receipt: `C:\AI\panda_diag_neutral_v1\bottom_patch_diagnostic_only\bottom_patch_receipt.json` (SHA256 `1a586d87ac5a1b4ba983aaf0794543b10908857852b0dc43766848875bba6210`)
 
 The visible underside white patches are largely direct/valid evidence and did
 not materially disappear. Status: `BOTTOM_PATCH_DIAGNOSTIC_ONLY`; no further
