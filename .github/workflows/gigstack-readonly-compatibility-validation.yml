@@ -20,7 +20,7 @@ jobs:
     runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 60
     env:
-      GIGSTACK_COMMIT: 8ab47566c0afc4e875abcca7b09ff18b1bad5ece
+      GIGSTACK_COMMIT: 1a8ed0e0df1513e5d53a5f4d3dc79414e101d1ee
       TRAYCER_COMMIT: 8f21d506f9945e409f4cd72f32c71e8810a4d236
       CUDA_VISIBLE_DEVICES: "-1"
       VITE_DESKTOP_LOCAL_STORAGE_KEY: gigstack-traycer-readonly-compatibility-v1
