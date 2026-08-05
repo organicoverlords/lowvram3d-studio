@@ -196,3 +196,15 @@ The synthetic gate then ran once against that candidate:
 Result: `SYNTHETIC_GATE_BLOCKED`. The UV rewrap improves strict injectivity but
 does not establish a reliable GPU sampling contract, and its raw mesh hashes
 are different from the canonical asset. No real panda bake was run from it.
+
+The follow-up native-packed diagnostic used the actual xatlas dimensions
+(4664x4668) rather than shrinking to 2048:
+
+- Report: `C:\AI\panda_xatlas_native_v1\native_synthetic_gate_report.json`
+- Report SHA256: `33722690a0479105e4734a91c9088a906a0a40b7a5f9f6aade5e7ddf95fc6dca`
+- Mip-linear magenta interiors: 10,052; no-mip/unlit 16,298; nearest 128,800; mip-nearest 150,943; black interiors 0.
+- Direct V orientation remained correct.
+
+Native resolution reduces but does not eliminate unowned sampling. The UV
+redesign therefore remains `SYNTHETIC_GATE_BLOCKED`; no panda appearance or
+proof promotion was performed.
