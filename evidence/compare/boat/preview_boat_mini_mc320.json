@@ -1,0 +1,25 @@
+{
+  "body_count": 13,
+  "classification": "PROVEN",
+  "euler_number": -714,
+  "extent": [
+    1.347,
+    1.5753,
+    1.9743
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_mini_mc320.glb",
+  "merged_vertices": 544285,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\preview_boat_mini_mc320.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 1089998,
+  "unwelded": false,
+  "vertex_split_ratio": 1.0,
+  "vertices": 544285,
+  "view_coverage": {
+    "front": 0.4825,
+    "side": 0.4038,
+    "three_quarter": 0.4724,
+    "top": 0.407
+  },
+  "watertight": true
+}

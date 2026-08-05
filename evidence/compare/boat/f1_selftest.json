@@ -1,0 +1,63 @@
+{
+  "aligned_views": 4,
+  "candidate": "C:\\AI\\LowVRAM3D-benchmarks\\production\\panda_online_model_targets_20260805\\online_generated_target__besgu.glb",
+  "label": "SELFTEST online vs itself",
+  "mean_f1": 1.0,
+  "mean_recall": 1.0,
+  "schema_version": "feature_edge_f1_v1",
+  "size": 384,
+  "teacher": "C:\\AI\\LowVRAM3D-benchmarks\\production\\panda_online_model_targets_20260805\\online_generated_target__besgu.glb",
+  "thresholds": {
+    "crease_degrees": 30.0,
+    "depth_step": 0.012,
+    "silhouette_guard_px": 2
+  },
+  "tolerance_px": 2.0,
+  "trustworthy": true,
+  "views": {
+    "front": {
+      "aligned": true,
+      "candidate_edge_density": 0.24787,
+      "candidate_edge_pixels": 13469,
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "silhouette_iou": 1.0,
+      "teacher_edge_density": 0.24787,
+      "teacher_edge_pixels": 13469
+    },
+    "side": {
+      "aligned": true,
+      "candidate_edge_density": 0.15999,
+      "candidate_edge_pixels": 8619,
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "silhouette_iou": 1.0,
+      "teacher_edge_density": 0.15999,
+      "teacher_edge_pixels": 8619
+    },
+    "three_quarter": {
+      "aligned": true,
+      "candidate_edge_density": 0.18051,
+      "candidate_edge_pixels": 9067,
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "silhouette_iou": 1.0,
+      "teacher_edge_density": 0.18051,
+      "teacher_edge_pixels": 9067
+    },
+    "top": {
+      "aligned": true,
+      "candidate_edge_density": 0.14286,
+      "candidate_edge_pixels": 5950,
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "silhouette_iou": 1.0,
+      "teacher_edge_density": 0.14286,
+      "teacher_edge_pixels": 5950
+    }
+  }
+}

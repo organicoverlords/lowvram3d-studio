@@ -28,3 +28,6 @@ jobs/
 
 # Local agent tool state, not project state.
 .opencode/
+
+# Raw point-cloud dumps alongside the GLB, same class as *.glb above.
+*.ply

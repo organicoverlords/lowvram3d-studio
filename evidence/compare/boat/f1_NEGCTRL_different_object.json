@@ -1,0 +1,63 @@
+{
+  "aligned_views": 1,
+  "candidate": "C:\\AI\\LowVRAM3D-benchmarks\\production\\panda_online_model_targets_20260805\\ornate_tower__20260729221745_18e55b4b.glb",
+  "label": "NEGCTRL_different_object",
+  "mean_f1": 0.3915,
+  "mean_recall": 0.5356,
+  "schema_version": "feature_edge_f1_v1",
+  "size": 384,
+  "teacher": "C:\\AI\\LowVRAM3D-benchmarks\\production\\panda_online_model_targets_20260805\\online_generated_target__besgu.glb",
+  "thresholds": {
+    "crease_degrees": 30.0,
+    "depth_step": 0.012,
+    "silhouette_guard_px": 2
+  },
+  "tolerance_px": 2.0,
+  "trustworthy": false,
+  "views": {
+    "front": {
+      "aligned": true,
+      "candidate_edge_density": 0.45353,
+      "candidate_edge_pixels": 21363,
+      "f1": 0.6068,
+      "precision": 0.5252,
+      "recall": 0.7183,
+      "silhouette_iou": 0.6806,
+      "teacher_edge_density": 0.24787,
+      "teacher_edge_pixels": 13469
+    },
+    "side": {
+      "aligned": false,
+      "candidate_edge_density": 0.54745,
+      "candidate_edge_pixels": 22627,
+      "f1": 0.3178,
+      "precision": 0.2524,
+      "recall": 0.4287,
+      "silhouette_iou": 0.4046,
+      "teacher_edge_density": 0.15999,
+      "teacher_edge_pixels": 8619
+    },
+    "three_quarter": {
+      "aligned": false,
+      "candidate_edge_density": 0.62773,
+      "candidate_edge_pixels": 33384,
+      "f1": 0.4557,
+      "precision": 0.321,
+      "recall": 0.7848,
+      "silhouette_iou": 0.5219,
+      "teacher_edge_density": 0.18051,
+      "teacher_edge_pixels": 9067
+    },
+    "top": {
+      "aligned": false,
+      "candidate_edge_density": 0.19763,
+      "candidate_edge_pixels": 9671,
+      "f1": 0.1858,
+      "precision": 0.1664,
+      "recall": 0.2104,
+      "silhouette_iou": 0.4935,
+      "teacher_edge_density": 0.14286,
+      "teacher_edge_pixels": 5950
+    }
+  }
+}

@@ -279,6 +279,28 @@ def load_conditioning_image(image_path: Path):
     return BackgroundRemover()(image.convert("RGB"))
 
 
+def _surface_extractor(name: str):
+    """Build a named surface extractor, failing loudly rather than silently.
+
+    `set_surface_extractor` on the pipeline is deprecated and logs a warning,
+    so the extractor is assigned onto the VAE directly, which is what that
+    warning tells callers to do. Import is deferred because the extractor
+    module pulls in the whole hy3dgen autoencoder package.
+    """
+    from hy3dgen.shapegen.models.autoencoders import SurfaceExtractors
+
+    if name not in SurfaceExtractors:
+        raise ValueError(
+            f"unknown extractor {name!r}, have {sorted(SurfaceExtractors)}")
+    extractor = SurfaceExtractors[name]()
+    if name == "dmc":
+        # diso is an optional dependency and DMCSurfaceExtractor only imports
+        # it on first run, deep inside volume decoding. Import it here so a
+        # missing package costs a second rather than a full diffusion pass.
+        import diso  # noqa: F401
+    return extractor
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", required=True)
@@ -303,6 +325,12 @@ def main() -> int:
     # Descending ladder of geometry settings. Only VRAM pressure moves us down it; the generator
     # never changes. Each entry is (octree_resolution, num_chunks).
     parser.add_argument("--octree-ladder", default="384:3000,320:2000,256:1500")
+    parser.add_argument(
+        "--mc-algo", choices=("mc", "dmc"), default="",
+        help="Surface extractor. Empty keeps the pipeline default ('mc', "
+             "Lewiner marching cubes). 'dmc' is diso's differentiable dual "
+             "marching cubes, which places one vertex per cell instead of one "
+             "per edge crossing and so can represent a crease.")
     args = parser.parse_args()
 
     image_path = Path(args.image).resolve()
@@ -443,6 +471,25 @@ def main() -> int:
             device="cuda",
         )
         _trace(trace_path, "pipeline_loaded", torch, diagnostic=args.diagnostic_telemetry, boundary_name="pipeline_loaded", model_root=str(model_root), subfolder=args.subfolder)
+        # Surface extraction. The pipeline default is 'mc' -- skimage's Lewiner
+        # marching cubes -- and every mesh this project has produced used it,
+        # including all four rows of the capacity comparison. Marching cubes
+        # places one vertex per grid edge crossing, so it cannot represent a
+        # crease: a sharp edge becomes a staircase, and the fix for a staircase
+        # is more grid, which is the octree lever already measured and
+        # eliminated.
+        #
+        # 'dmc' is dual marching cubes via diso's DiffDMC, which is already
+        # installed. It places one vertex per cell and is free to put it where
+        # the field says the feature is, so creases survive at a given
+        # resolution. That is the one untested thing in the extraction path.
+        #
+        # It is not a detail generator. If the decoded field is genuinely
+        # smooth where a window should be, no extractor recovers the window.
+        # The testable prediction is narrower: less tessellation noise and
+        # crisper existing edges at the same octree resolution, or no change --
+        # and 'no change' is itself the useful answer, because it moves the
+        # blame upstream of extraction to the field the VAE decodes.
         # FlashVDM keeps volume decoding inside a 6 GB budget without changing the generator.
         try:
             pipeline.enable_flashvdm(topk_mode="merge")
@@ -451,6 +498,42 @@ def main() -> int:
         except Exception as exc:  # pragma: no cover - depends on installed hy3dgen build
             payload["flashvdm"] = False
             payload["flashvdm_error"] = str(exc)
+
+        # Surface extraction. MUST come after enable_flashvdm: that call swaps
+        # in the turbo VAE (`replace_vae=True`) and then sets the extractor from
+        # its own `mc_algo='mc'` default, so an extractor assigned before it is
+        # discarded along with the VAE object it was attached to. Setting it
+        # first is silent -- the run completes and reports success with the
+        # wrong extractor, which is exactly what happened on the first attempt
+        # at this experiment.
+        #
+        # The pipeline default is 'mc', skimage's Lewiner marching cubes, and
+        # every mesh this project has produced used it, including all four rows
+        # of the capacity comparison. Marching cubes places one vertex per grid
+        # edge crossing, so it cannot represent a crease: a sharp edge becomes a
+        # staircase, and the fix for a staircase is more grid -- the octree
+        # lever already measured and eliminated.
+        #
+        # 'dmc' is diso's differentiable dual marching cubes. It places one
+        # vertex per cell and is free to put it where the field says the feature
+        # is, so creases survive at a given resolution.
+        #
+        # It is not a detail generator. If the decoded field is smooth where a
+        # window should be, no extractor recovers the window. The testable
+        # prediction is narrow: less tessellation noise and crisper existing
+        # edges at the same octree resolution, or no change at all -- and no
+        # change is itself worth knowing, because it moves the blame upstream of
+        # extraction to the field the VAE decodes.
+        if args.mc_algo:
+            try:
+                pipeline.vae.surface_extractor = _surface_extractor(args.mc_algo)
+            except Exception as exc:
+                raise SystemExit(f"MC_ALGO_UNAVAILABLE: {args.mc_algo}: {exc}")
+        # Record the class actually in place rather than the flag that was
+        # requested. The two disagreed once already, and a receipt that repeats
+        # the request back cannot detect that.
+        payload["mc_algo"] = args.mc_algo or "mc"
+        payload["surface_extractor"] = type(pipeline.vae.surface_extractor).__name__
 
         ladder = []
         for entry in args.octree_ladder.split(","):

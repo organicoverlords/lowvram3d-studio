@@ -1,0 +1,63 @@
+{
+  "aligned_views": 2,
+  "candidate": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_mv2_s5.glb",
+  "label": "mv2_s5",
+  "mean_f1": 0.3529,
+  "mean_recall": 0.4622,
+  "schema_version": "feature_edge_f1_v1",
+  "size": 384,
+  "teacher": "C:\\AI\\LowVRAM3D-benchmarks\\production\\panda_online_model_targets_20260805\\online_generated_target__besgu.glb",
+  "thresholds": {
+    "crease_degrees": 30.0,
+    "depth_step": 0.012,
+    "silhouette_guard_px": 2
+  },
+  "tolerance_px": 2.0,
+  "trustworthy": false,
+  "views": {
+    "front": {
+      "aligned": true,
+      "candidate_edge_density": 0.23746,
+      "candidate_edge_pixels": 10056,
+      "f1": 0.4859,
+      "precision": 0.5312,
+      "recall": 0.4476,
+      "silhouette_iou": 0.6595,
+      "teacher_edge_density": 0.24787,
+      "teacher_edge_pixels": 13469
+    },
+    "side": {
+      "aligned": false,
+      "candidate_edge_density": 0.30067,
+      "candidate_edge_pixels": 17618,
+      "f1": 0.3152,
+      "precision": 0.2433,
+      "recall": 0.4476,
+      "silhouette_iou": 0.4868,
+      "teacher_edge_density": 0.15999,
+      "teacher_edge_pixels": 8619
+    },
+    "three_quarter": {
+      "aligned": true,
+      "candidate_edge_density": 0.3179,
+      "candidate_edge_pixels": 19931,
+      "f1": 0.4076,
+      "precision": 0.3018,
+      "recall": 0.6277,
+      "silhouette_iou": 0.6328,
+      "teacher_edge_density": 0.18051,
+      "teacher_edge_pixels": 9067
+    },
+    "top": {
+      "aligned": false,
+      "candidate_edge_density": 0.33444,
+      "candidate_edge_pixels": 18775,
+      "f1": 0.203,
+      "precision": 0.1474,
+      "recall": 0.3259,
+      "silhouette_iou": 0.5417,
+      "teacher_edge_density": 0.14286,
+      "teacher_edge_pixels": 5950
+    }
+  }
+}

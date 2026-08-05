@@ -493,3 +493,55 @@ Do not re-open this by trying a larger checkpoint, a finer octree, or more
 triangles. Those are the three things that have already been falsified. A real
 re-open needs a *different pipeline* — SPAR3D, TRELLIS, TripoSG — not a bigger
 dial on this one.
+
+## 9. Surface extraction tested — also not the bottleneck
+
+**Question:** every mesh this project has made was extracted with Lewiner
+marching cubes (`mc_algo='mc'`). MC places one vertex per grid edge crossing and
+so cannot represent a crease -- a sharp edge becomes a staircase. Was the
+"melted" look an extraction artefact rather than a generation failure?
+
+**A bug first, because it nearly produced a false negative.** `--mc-algo` was
+added to `workers/mini_turbo_generate.py`, and the first run reported success
+with `dmc` while actually running `mc`. `pipeline.enable_flashvdm()` swaps in
+the turbo VAE (`replace_vae=True`) and then sets the extractor from its own
+`mc_algo='mc'` default, so an extractor assigned *before* that call is discarded
+along with the VAE object it was attached to. It is silent. It was caught only
+because both meshes came out with byte-identical face connectivity; the
+differing vertex hash was fp16 nondeterminism, not a real difference. The
+extractor assignment now happens after `enable_flashvdm`, and the receipt
+records `surface_extractor` -- the class actually in place -- rather than
+echoing the requested flag back.
+
+**Controlled comparison.** Same photo, seed 12345, octree 320, 5 steps, mini
+turbo; only the extractor differs.
+
+| extractor | tris | bodies | watertight | euler | front coverage |
+|---|---|---|---|---|---|
+| `mc`  | 1,089,998 | 13 | **yes** | -714 | 48.25% |
+| `dmc` | 1,088,546 | 13 | no | -630 | 48.17% |
+
+Previews: `evidence/compare/boat/preview_boat_mini_mc320.png` and
+`preview_boat_mini_dmc.png`.
+
+**Result: no meaningful difference.** The two render as near-identical. DMC is
+marginally tidier on the balcony rails and slightly less staircased, and it
+recovers no window, no railing gap, no architectural line. It also *loses*
+watertightness and emits at half scale (`DiffDMC(normalize=True)` +
+`center_vertices` puts the mesh in a unit box instead of applying the `bounds`
+transform), so adopting it would need a rescale.
+
+**Why this matters more than the result itself.** A better extractor cannot
+invent a feature the field does not contain. Getting the same mesh from a
+primal and a dual method says the decoded occupancy field is genuinely smooth
+where the windows should be. That moves the blame upstream of everything
+measured so far -- past steps, octree, views, smoothing, capacity, triangle
+count and now extraction -- and onto the **latent representation**.
+
+**Operational note:** `dmc` needs `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`
+and the `256:1500` fallback rung. Loading diso's CUDA module on top of a run
+that already peaks at 5.7 GB caused an illegal memory access mid-diffusion
+(step 2) on the first attempt. With the allocator flag it peaks at 5473 MB.
+
+**Do not retry a third extractor.** The next question is not how the surface is
+extracted but what is being extracted from.

@@ -1,0 +1,25 @@
+{
+  "body_count": 13,
+  "classification": "PROVEN",
+  "euler_number": -630,
+  "extent": [
+    0.6762,
+    0.7921,
+    0.9927
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_mini_dmc.glb",
+  "merged_vertices": 543650,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\preview_boat_mini_dmc.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 1088546,
+  "unwelded": false,
+  "vertex_split_ratio": 1.0,
+  "vertices": 543650,
+  "view_coverage": {
+    "front": 0.4817,
+    "side": 0.4028,
+    "three_quarter": 0.4716,
+    "top": 0.4067
+  },
+  "watertight": false
+}
