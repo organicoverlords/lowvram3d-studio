@@ -142,7 +142,7 @@ renderer sampling—not diffusion noise—are the dominant cause. The coverage
 candidate also carried `alphaMode=MASK`; that amplified transparent holes.
 
 The focused code repair is committed and pushed on
-`agent/panda-texture-artifact-root-fix-20260805` at `b86aa4d`:
+`agent/panda-texture-artifact-root-fix-20260805` at `f1452c5`:
 
 - projected atlas materials are rebuilt from scratch as opaque Base Color-only
   materials;
@@ -167,3 +167,20 @@ The user approved a minimum-support UV/atlas redesign and one explicitly
 diagnostic-only 1024 panda with neutral fallback materials. Neither may be
 promoted until the redesigned UV candidate passes the synthetic gate and fresh
 visual review. Existing golden and rejected candidates remain untouched.
+
+### Approved UV redesign result (diagnostic only)
+
+The one approved CPU xatlas rewrap completed with padding 8 at nominal 2048:
+
+- Candidate: `C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\panda_uv_2048_padding8_candidate_20260805\tactical_red_panda_scout_uv2048_p8_candidate.glb`
+- Candidate SHA256: `86955b43a47499d0d5d111e3195a741d80853c7bc21321270b34d88045851493`
+- Report: `...\panda_uv_2048_padding8_candidate_20260805\uv_rewrap_report.json`
+- xatlas: 0.0.11; 16,470 charts; packed 4664x4668; 644,348 triangles; 665,304 output vertices; 80,542 seam vertices added; strict interior overlap 0; injective true.
+- Coverage audit: 190,179 exact-center support-zero triangles; 451,140 triangles with 1–4 center texels; 3,020 with 5–16; 9 above 16; 1,424 degenerate UV triangles.
+
+This candidate preserves semantic triangle geometry/topology but does **not**
+preserve raw position, normal, or index accessor hashes because xatlas seam
+duplication/remapping changes the vertex/index buffers. It is therefore not an
+authoritative mesh replacement. Luna is running one synthetic unique-triangle
+gate against it as an isolated diagnostic; no panda texture or production
+promotion is authorized from this candidate yet.
