@@ -132,3 +132,38 @@ Output directory:
 3. Keep the original face/front texels immutable; use existing generated views only for complementary side/rear/top/bottom surfaces.
 4. Re-render front, rear, sides, and bottom from fresh import. Stop if any face-like rear artifact or front speckle returns.
 5. Only after manual visual acceptance, package and commit the causal mask/provenance fix; preserve all rejected diagnostics as evidence.
+
+## Atlas artifact-root repair update (2026-08-05)
+
+The latest black peppering was isolated from neural/source quality using a
+synthetic unique-triangle atlas. Clean Base Color-only and unlit probes still
+sampled the magenta unowned sentinel, proving sparse UV coverage and continuous
+renderer sampling—not diffusion noise—are the dominant cause. The coverage
+candidate also carried `alphaMode=MASK`; that amplified transparent holes.
+
+The focused code repair is committed and pushed on
+`agent/panda-texture-artifact-root-fix-20260805` at `b86aa4d`:
+
+- projected atlas materials are rebuilt from scratch as opaque Base Color-only
+  materials;
+- atlas sampling uses a dedicated linear, clamp-to-edge sampler;
+- owner-aware projection routes bind only triangles represented in the support
+  mask;
+- 18 focused tests pass.
+
+Synthetic evidence remains blocked under the fixed UV master. A common-lattice
+pass reduced sentinel hits from 7,902 to 1,581; area-weighted support did not
+improve that; fallback masking removed zero-support triangles from atlas binding
+but left 2,868 atlas-bound sentinel samples; the final strict safety mask left
+203. These are preserved at:
+
+- `C:\AI\panda_sampler_diag_v1\synthetic_sampler_isolation_report.json`
+- `C:\AI\panda_lattice_diag_v1\synthetic_conservative_lattice_report.json`
+- `C:\AI\panda_area_diag_v1\synthetic_area_weighted_sampler_report.json`
+- `C:\AI\panda_bound_diag_v1\synthetic_bound_support_gate_report.json`
+- `C:\AI\panda_safety_diag_v1\synthetic_safety_mask_gate_report.json`
+
+The user approved a minimum-support UV/atlas redesign and one explicitly
+diagnostic-only 1024 panda with neutral fallback materials. Neither may be
+promoted until the redesigned UV candidate passes the synthetic gate and fresh
+visual review. Existing golden and rejected candidates remain untouched.
