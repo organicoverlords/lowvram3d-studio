@@ -271,3 +271,20 @@ This removes the explicit neutral strips and gives the clearest front/side/
 rear diagnostic, but deliberately bypasses the 86,489-triangle support mask.
 Unsupported atlas samples, speckle, and bottom white patches remain. Status:
 `COVERAGE_BYPASS_DIAGNOSTIC_ONLY`, never production evidence.
+
+### Chart-local denoise diagnostic
+
+One final CPU-only pass smoothed mutable atlas texels using a same-triangle
+proxy for chart locality (no serialized chart-ID array was available). It used
+one 3x3 median plus 0.35 blend, changed 191,674 mutable pixels, and preserved
+the protected 396,216 and direct 940,179 texels byte-exactly.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\chart_local_denoise_diagnostic_only\panda_chart_local_denoise_diagnostic_only.glb`
+- GLB SHA256: `cbf1f77e5094bd55d05c49c0cf8c1bc870b97184d1fdf1976331efb259ebcc98`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\chart_local_denoise_diagnostic_only\renders\contact_sheet_chart_local_denoise_9view_diagnostic_only.png`
+- Contact sheet SHA256: `8f487f88b3b857dc17af248ea9aaa7d6d20dde5c18528c55f31e285783989bb9`
+- Receipt SHA256: `53e02a8acb9288aa3bd786e945a33a8bbc169dbb3d84467d63499716d82e98ae`
+
+The result modestly reduces mutable speckle while preserving the face, but
+the bottom white/support defects remain. Status:
+`CHART_LOCAL_DENOISE_DIAGNOSTIC_ONLY`; no further appearance loop is planned.
