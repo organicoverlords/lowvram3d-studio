@@ -198,6 +198,8 @@ def resolve_conservative_support(
             continue
         for texel, triangle_id in zip(texels[keep].tolist(), candidate_triangles[keep].tolist()):
             y, x = divmod(int(texel), size)
+            if collision[y, x]:
+                continue
             chart = int(charts[int(triangle_id)])
             point = np.array([x + 0.5, y + 0.5], dtype=np.float64)
             _closest, bary, distance = closest_point_on_uv_triangle(point, corners[int(triangle_id)])
