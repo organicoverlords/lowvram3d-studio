@@ -56,9 +56,10 @@ def foreground_mask(array: np.ndarray) -> np.ndarray:
                             axis=0).astype(np.float32)
     background = np.median(border, axis=0)
     distance = np.linalg.norm(array.astype(np.float32) - background, axis=2)
-    saturation = (array.max(axis=2).astype(np.float32)
-                  - array.min(axis=2).astype(np.float32)) / 255.0
-    return (distance > 12.0) | (saturation > 0.06)
+    # Saturation alone is not foreground evidence: compression noise in a white source
+    # canvas and coloured ground shadows can satisfy that test and later bleed into the
+    # atlas.  Require measurable separation from the sampled border matte instead.
+    return distance > 12.0
 
 
 def distance_from_boundary(mask: np.ndarray, rounds: int = 24) -> np.ndarray:

@@ -18,6 +18,7 @@ class SourceClass(IntEnum):
     COMPONENT_PRIOR = 7
     GLOBAL_PRIOR = 8
     FACE_REFINEMENT = 9
+    ORIGINAL_SOURCE = 10
 
 
 class EvidenceState(IntEnum):
@@ -25,8 +26,12 @@ class EvidenceState(IntEnum):
 
     UNKNOWN = 0
     DIRECT_OBSERVED = 1
-    ADJACENT_OBSERVED = 2
-    GENERATED_OBSERVED = 3
+    GENERATED_OBSERVED = 2
+    VISIBLE_SOURCE_GAP = 3
+    # Backwards-compatible name for older receipts. New production code must use
+    # VISIBLE_SOURCE_GAP so a visible-but-unsampled texel cannot look observed.
+    ADJACENT_OBSERVED = 3
+    UNOBSERVED_SURFACE = 4
     UNOBSERVED = 4
     PROCEDURAL_COMPLETION = 5
     MATERIAL_PRIOR = 6
@@ -53,6 +58,7 @@ class Lineage(IntFlag):
     COMPONENT_PRIOR = 1 << 6
     GLOBAL_PRIOR = 1 << 7
     FACE_REFINEMENT = 1 << 8
+    ORIGINAL_SOURCE = 1 << 9
 
 
 LINEAGE_FIELDS = tuple(item.name for item in Lineage if item is not Lineage.UNKNOWN)
@@ -77,6 +83,12 @@ def create_empty_triangle_provenance(triangle_count: int) -> dict[str, np.ndarra
         "frequency_authority": np.full(triangle_count, FrequencyAuthority.NONE, dtype=np.uint8),
         "completion_method": np.full(triangle_count, "unresolved", dtype="U32"),
         "primary_surface_region": np.full(triangle_count, -1, dtype=np.int32),
+        "source_pixel": np.full((triangle_count, 2), -1, dtype=np.int32),
+        "barycentric": np.zeros((triangle_count, 3), dtype=np.float32),
+        "visibility": np.zeros(triangle_count, dtype=bool),
+        "facing": np.zeros(triangle_count, dtype=np.float32),
+        "face_id_match": np.zeros(triangle_count, dtype=bool),
+        "source_mask_valid": np.zeros(triangle_count, dtype=bool),
     }
 
 
@@ -98,6 +110,28 @@ def create_empty_atlas_provenance(height: int, width: int | None = None) -> dict
         "frequency_authority": np.full((height, width), FrequencyAuthority.NONE, dtype=np.uint8),
         "completion_method": np.full((height, width), "unresolved", dtype="U32"),
         "primary_surface_region": np.full((height, width), -1, dtype=np.int32),
+        "barycentric": np.zeros((height, width, 3), dtype=np.float32),
+        "visibility": np.zeros((height, width), dtype=bool),
+        "facing": np.zeros((height, width), dtype=np.float32),
+        "face_id_match": np.zeros((height, width), dtype=bool),
+        "source_mask_valid": np.zeros((height, width), dtype=bool),
+        "uv_occupied": np.zeros((height, width), dtype=bool),
+        "direct_observed": np.zeros((height, width), dtype=bool),
+        "direct_observed_texel_mask": np.zeros((height, width), dtype=bool),
+        "protected": np.zeros((height, width), dtype=bool),
+        "protected_mask": np.zeros((height, width), dtype=bool),
+        "visible_source_gap": np.zeros((height, width), dtype=bool),
+        "visible_source_gap_mask": np.zeros((height, width), dtype=bool),
+        "unobserved_surface": np.zeros((height, width), dtype=bool),
+        "unobserved_surface_mask": np.zeros((height, width), dtype=bool),
+        "generated_observed": np.zeros((height, width), dtype=bool),
+        "generated_observed_mask": np.zeros((height, width), dtype=bool),
+        "procedural_completion": np.zeros((height, width), dtype=bool),
+        "procedural_completion_mask": np.zeros((height, width), dtype=bool),
+        "material_prior": np.zeros((height, width), dtype=bool),
+        "material_prior_mask": np.zeros((height, width), dtype=bool),
+        "unresolved": np.zeros((height, width), dtype=bool),
+        "unresolved_mask": np.zeros((height, width), dtype=bool),
     }
 
 
@@ -113,6 +147,7 @@ def _as_lineage(value: int | SourceClass | Lineage) -> np.uint16:
             SourceClass.COMPONENT_PRIOR: Lineage.COMPONENT_PRIOR,
             SourceClass.GLOBAL_PRIOR: Lineage.GLOBAL_PRIOR,
             SourceClass.FACE_REFINEMENT: Lineage.ORIGINAL_FACE | Lineage.FACE_REFINEMENT,
+            SourceClass.ORIGINAL_SOURCE: Lineage.ORIGINAL_SOURCE,
         }.get(value, Lineage.UNKNOWN))
     return np.uint16(int(value))
 
@@ -217,7 +252,7 @@ def validate_evidence_invariants(provenance: dict[str, np.ndarray]) -> dict:
     observed_states = np.isin(state, (EvidenceState.DIRECT_OBSERVED, EvidenceState.GENERATED_OBSERVED))
     unobserved_raw = (~observed_states) & (lineage & np.uint16(
         Lineage.ORIGINAL_FACE | Lineage.ORIGINAL_NONFACE | Lineage.GENERATED_FRONT |
-        Lineage.GENERATED_SIDE | Lineage.GENERATED_REAR
+        Lineage.GENERATED_SIDE | Lineage.GENERATED_REAR | Lineage.ORIGINAL_SOURCE
     ) != 0)
     unobserved_full = (~observed_states) & (authority == FrequencyAuthority.FULL)
     return {

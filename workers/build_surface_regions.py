@@ -13,7 +13,8 @@ from mesh_io import read_glb
 
 
 def build_regions(positions: np.ndarray, normals: np.ndarray, triangles: np.ndarray,
-                  *, weld: float = 4e-4, min_normal_dot: float = 0.45) -> tuple[np.ndarray, dict]:
+                  uv: np.ndarray | None = None, *, weld: float = 4e-4,
+                  min_normal_dot: float = 0.85, uv_barrier: float = 0.05) -> tuple[np.ndarray, dict]:
     positions = np.asarray(positions, np.float64)
     normals = np.asarray(normals, np.float64)
     triangles = np.asarray(triangles, np.int64)
@@ -33,24 +34,39 @@ def build_regions(positions: np.ndarray, normals: np.ndarray, triangles: np.ndar
 
     # Regions are connected through welded vertices but sharp normal breaks are barriers. This
     # is intentionally geometric; material and UV boundaries are supporting metadata only.
-    edge_map: dict[tuple[int, int], list[int]] = {}
+    edge_map: dict[tuple[int, int], list[tuple[int, int, int]]] = {}
     for tid, tri in enumerate(corners):
-        for a, b in ((tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])):
-            edge_map.setdefault(tuple(sorted((int(a), int(b)))), []).append(tid)
+        for local_a, local_b in ((0, 1), (1, 2), (2, 0)):
+            a, b = tri[local_a], tri[local_b]
+            edge_map.setdefault(tuple(sorted((int(a), int(b)))), []).append(
+                (tid, local_a, local_b))
     pair_rows, pair_cols = [], []
-    face_normals = normals[triangles].mean(axis=1)
+    edge_barriers = 0
+    face_normals = np.cross(positions[triangles[:, 1]] - positions[triangles[:, 0]],
+                            positions[triangles[:, 2]] - positions[triangles[:, 0]])
     face_normals /= np.maximum(np.linalg.norm(face_normals, axis=1, keepdims=True), 1e-12)
     for tids in edge_map.values():
         if len(tids) != 2:
             continue
-        a, b = tids
-        if float(face_normals[a] @ face_normals[b]) >= float(min_normal_dot):
+        (a, a0, a1), (b, b0, b1) = tids
+        uv_seam = False
+        if uv is not None:
+            ua = np.asarray(uv[triangles[a]], np.float64)
+            ub = np.asarray(uv[triangles[b]], np.float64)
+            # Compare the UV displacement along the same welded world edge. A discontinuity
+            # is a chart boundary even when the surface normal is smooth.
+            da = ua[a1] - ua[a0]
+            db = ub[b1] - ub[b0]
+            uv_seam = bool(np.linalg.norm(da - db) > float(uv_barrier))
+        if float(face_normals[a] @ face_normals[b]) >= float(min_normal_dot) and not uv_seam:
             pair_rows.extend((a, b)); pair_cols.extend((b, a))
+        edge_barriers += int(uv_seam)
     graph = coo_matrix((np.ones(len(pair_rows), np.uint8), (pair_rows, pair_cols)),
                        shape=(len(triangles), len(triangles))).tocsr()
     region_count, regions = connected_components(graph, directed=False)
     centroids = positions[triangles].mean(axis=1) if len(triangles) else np.zeros((0, 3))
     sizes = np.bincount(regions, minlength=region_count)
+    largest_percent = float((sizes.max() if sizes.size else 0) / max(len(triangles), 1) * 100.0)
     kind = np.full(region_count, "unknown_component", dtype="U32")
     kind[sizes >= 100] = "main_shell"
     kind[(sizes > 1) & (sizes < 100)] = "compact_solid_component"
@@ -62,6 +78,14 @@ def build_regions(positions: np.ndarray, normals: np.ndarray, triangles: np.ndar
         "connected_component_count": int(np.unique(base).size) if len(base) else 0,
         "surface_region_count": int(region_count),
         "minimum_normal_dot": float(min_normal_dot),
+        "uv_barrier": float(uv_barrier),
+        "uv_chart_barrier_count": int(edge_barriers),
+        "largest_region_surface_percent": round(largest_percent, 4),
+        "segmentation_quality_gate": {
+            "passed": bool(largest_percent <= 95.0),
+            "homogeneous_surface_proof": False,
+            "fallback_global_prior": bool(largest_percent > 95.0),
+        },
         "region_types": {str(i): str(kind[i]) for i in range(region_count)},
         "centroid_count": int(len(centroids)),
         "deterministic": True,
@@ -75,10 +99,10 @@ def main() -> int:
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--report", required=True)
     parser.add_argument("--weld", type=float, default=4e-4)
-    parser.add_argument("--min-normal-dot", type=float, default=0.45)
+    parser.add_argument("--min-normal-dot", type=float, default=0.85)
     args = parser.parse_args()
-    positions, normals, _uv, triangles = read_glb(Path(args.mesh))
-    regions, report = build_regions(positions, normals, triangles, weld=args.weld,
+    positions, normals, uv, triangles = read_glb(Path(args.mesh))
+    regions, report = build_regions(positions, normals, triangles, uv=uv, weld=args.weld,
                                     min_normal_dot=args.min_normal_dot)
     out = Path(args.output_dir); out.mkdir(parents=True, exist_ok=True)
     np.save(out / "surface_region_per_triangle.npy", regions)

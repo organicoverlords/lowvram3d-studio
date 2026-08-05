@@ -1,6 +1,28 @@
 # Codex: continue here
 
-Work only on branch `integration/unified-pipeline-v2-20260802`.
+## Latest visual checkpoint — 2026-08-05
+
+Do not spend the next turn only on contract debugging. A separate visual-only prototype
+lane now exists at:
+
+`C:\AI\LowVRAM3D-benchmarks\production\panda_visual_prototype_experimental_20260805`
+
+The latest candidate is:
+
+`fidelity_pass_1024_face_landmark_right\panda_face_landmark_right_1024_textured.glb`
+
+Its fresh front render is under the same folder at `renders_unlit\front.png`. The face is
+recognizable and the rear is face-free, but the muzzle landmark is still slightly offset
+and the body texture remains noisy. Continue with one bounded visual alignment/fidelity
+pass at a time. Do not open Blender automatically; write a native `.blend` only when the
+user asks to inspect it. Rendered PNGs may be shown directly and opened in Paint when
+requested.
+
+The visual candidates do not alter the strict proof lane. Current proof status remains:
+256 = two ordinary CONTRACT_ERROR rows; 384 = replay-clean; 512 production proof and
+downstream texture promotion remain blocked.
+
+Work only on branch `production/two-character-models-20260804`.
 
 Before editing, verify repository origin, branch, local HEAD, remote HEAD, and a clean worktree. Never work on `main`, merge, force-push, or overwrite preserved artifacts.
 

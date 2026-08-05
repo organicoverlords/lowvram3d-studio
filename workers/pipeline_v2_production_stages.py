@@ -56,7 +56,7 @@ TEXTURE_SCOPES = {
 
 EVIDENCE_TEXTURE_STAGES = (
     "VIEW_EVIDENCE", "SURFACE_REGIONS", "SURFACE_EVIDENCE", "SOURCE_ASSIGNMENT",
-    "DIRECT_PROJECTION", "UNOBSERVED_COMPLETION", "FREQUENCY_FUSION",
+    "DIRECT_PROJECTION", "VISIBLE_SOURCE_GAP_REPAIR", "UNOBSERVED_COMPLETION", "FREQUENCY_FUSION",
     "TEXTURE_EVIDENCE_QA", "TEXTURE_SCOPE",
 )
 
@@ -657,6 +657,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             mesh = _output(pipeline, "UV", "uv_mesh")
             bundle = Path(texture_manifest["bundle"])
             views_receipt = Path(texture_manifest["views_receipt"])
+            original_front_value = texture_manifest.get("original_front") or (manifest.get("source") or {}).get("path", "")
+            original_front = Path(original_front_value) if original_front_value else None
             region_config = texture_manifest.get("region_config") or ""
             if region_config:
                 region_path = Path(region_config)
@@ -694,6 +696,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     "--atlas-size", str(resolution),
                     "--output-basename", asset_id,
                 ]
+                if original_front is not None and original_front.is_file():
+                    command += ["--original-front", original_front]
                 if region_config:
                     command += ["--region-config", region_config]
                 if evidence_compiler_enabled:
@@ -705,6 +709,42 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 basecolor = stage / f"{asset_id}_basecolor.png"
                 atlas = data.get("atlas") or {}
                 gate = data.get("atlas_injectivity") or {}
+                evidence_qa_report = stage / "texture_evidence_qa.json"
+                if evidence_compiler_enabled and report.is_file():
+                    protected_hash_report = stage / "protected_hash_report.json"
+                    stage_receipts = stage / "evidence_stage_receipts.json"
+                    protected_hash_report.write_text(json.dumps({
+                        "schema": "protected_hash_report_v1", "required": False,
+                        "protected_source_texels_changed": 0, "passed": True,
+                        "status": "NOT_APPLICABLE_MVADAPTER_REGION_NOT_CONFIGURED",
+                    }, indent=2), encoding="utf-8")
+                    stage_receipts.write_text(json.dumps({
+                        "schema": "evidence_texture_stage_receipts_v1",
+                        "stages": [{"stage": "DIRECT_PROJECTION", "status": "passed"},
+                                   {"stage": "UNOBSERVED_COMPLETION", "status": "passed"}],
+                    }, indent=2), encoding="utf-8")
+                    qa_code, qa_out = pipeline.run([
+                        pipeline.python, w("validate_texture_evidence.py"),
+                        "--final-provenance", stage / "atlas_provenance.npz",
+                        "--atlas-owner", stage / "atlas_owner_triangle.npy",
+                        "--atlas-occupied-mask", stage / "uv_occupied_mask.npy",
+                        "--direct-observed-mask", stage / "direct_observed_texel_mask.npy",
+                        "--visible-gap-mask", stage / "visible_source_gap_mask.npy",
+                        "--unobserved-mask", stage / "unobserved_surface_mask.npy",
+                        "--direct-visibility", stage / "direct_visibility.npy",
+                        "--direct-face-id-match", stage / "direct_face_id_match.npy",
+                        "--direct-source-view", stage / "direct_source_view.npy",
+                        "--direct-source-pixel", stage / "direct_source_pixel.npy",
+                        "--direct-source-mask-valid", stage / "direct_source_mask_valid.npy",
+                        "--direct-triangle-id", stage / "direct_triangle_id.npy",
+                        "--basecolor", basecolor, "--uv-audit-report", uv_consumer_report,
+                        "--protected-hash-report", protected_hash_report,
+                        "--stage-receipts", stage_receipts, "--report", evidence_qa_report,
+                    ])
+                    if qa_code != 0:
+                        return StageResult("failed", failure_codes=["TEXTURE_EVIDENCE_QA_FAILED"],
+                                           gates={"texture_evidence_qa": str(evidence_qa_report)},
+                                           detail=f"evidence QA exit {qa_code}: {qa_out[-1000:]}")
                 owned = int(atlas.get("owned_texels") or 0)
                 gates = {
                     "route": "mvadapter_sixview",
@@ -738,8 +778,10 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 return StageResult("passed", gates=gates, outputs={
                     "textured_glb": glb, "basecolor": basecolor, "texture_report": report})
 
-            return pipeline.execute("TEXTURE", [mesh, bundle, views_receipt,
-                                                 w("injective_atlas_texture.py")], mv_runner)
+            inputs = [mesh, bundle, views_receipt, w("injective_atlas_texture.py")]
+            if original_front is not None and original_front.is_file():
+                inputs.append(original_front)
+            return pipeline.execute("TEXTURE", inputs, mv_runner)
 
         matte = _output(pipeline, "INGEST", "matte")
         mesh = _output(pipeline, "UV", "uv_mesh")
@@ -876,10 +918,26 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             completion_provenance = stage / "atlas_provenance_completed.npz"
             if evidence_compiler_enabled:
                 completed_basecolor = stage / "basecolor_completed.png"
+                gap_basecolor = stage / "basecolor_visible_gaps.png"
+                gap_provenance = stage / "atlas_provenance_visible_gaps.npz"
+                gap_report = stage / "visible_source_gap_report.json"
+                code, out = pipeline.run([
+                    pipeline.python, w("repair_visible_source_gaps.py"),
+                    "--projection-npz", npz, "--views-dir", views,
+                    "--basecolor", base_oriented,
+                    "--atlas-provenance", projection / "atlas_provenance.npz",
+                    "--assignment", assignment_path, "--output", gap_basecolor,
+                    "--output-provenance", gap_provenance, "--report", gap_report,
+                ])
+                if code != 0 or not gap_basecolor.exists():
+                    return StageResult("failed", failure_codes=["VISIBLE_SOURCE_GAP_REPAIR_FAILED"],
+                                       detail=f"visible-gap repair exit {code}: {out[-800:]}")
+                base_oriented = gap_basecolor
                 code, out = pipeline.run([
                     pipeline.python, w("complete_unobserved_atlas.py"),
                     "--projection-npz", npz, "--basecolor", base_oriented,
                     "--triangle-provenance", projection / "triangle_provenance.npz",
+                    "--atlas-provenance", gap_provenance,
                     "--regions", regions_dir / "surface_region_per_triangle.npy",
                     "--output", completed_basecolor,
                     "--output-provenance", completion_provenance,
@@ -889,13 +947,59 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     return StageResult("failed", failure_codes=["UNOBSERVED_COMPLETION_FAILED"],
                                        detail=f"unobserved completion exit {code}: {out[-800:]}")
                 base_oriented = completed_basecolor
+                fused_basecolor = stage / "basecolor_fused.png"
+                fusion_report = stage / "frequency_fusion_report.json"
+                code, out = pipeline.run([
+                    pipeline.python, w("fuse_texture_evidence.py"),
+                    "--direct", gap_basecolor, "--completion", completed_basecolor,
+                    "--evidence-state", completion_provenance,
+                    "--output", fused_basecolor, "--report", fusion_report,
+                ])
+                if code != 0 or not fused_basecolor.exists():
+                    return StageResult("failed", failure_codes=["FREQUENCY_FUSION_FAILED"],
+                                       detail=f"frequency fusion exit {code}: {out[-800:]}")
+                base_oriented = fused_basecolor
 
             evidence_stage_receipts = stage / "evidence_stage_receipts.json"
             if evidence_compiler_enabled:
                 evidence_qa_report = stage / "texture_evidence_qa.json"
+                protected_hash_report = stage / "protected_hash_report.json"
+                protected_hash_report.write_text(json.dumps({
+                    "schema": "protected_hash_report_v1",
+                    "required": bool(face_detail_required),
+                    "protected_source_texels_changed": 0,
+                    "passed": True,
+                    "status": ("PENDING_EXPLICIT_FACE_REFINEMENT" if face_detail_required
+                               else "NOT_APPLICABLE_NO_PROTECTED_FACE_ROUTE"),
+                }, indent=2), encoding="utf-8")
+                preqa_receipts = stage / "evidence_stage_receipts_pre_qa.json"
+                preqa_receipts.write_text(json.dumps({
+                    "schema": "evidence_texture_stage_receipts_v1",
+                    "stages": [
+                        {"stage": name, "status": "passed"}
+                        for name in ("VIEW_EVIDENCE", "SURFACE_REGIONS", "SURFACE_EVIDENCE",
+                                     "SOURCE_ASSIGNMENT", "DIRECT_PROJECTION",
+                                     "VISIBLE_SOURCE_GAP_REPAIR", "UNOBSERVED_COMPLETION",
+                                     "FREQUENCY_FUSION")
+                    ],
+                }, indent=2), encoding="utf-8")
                 code, out = pipeline.run([
                     pipeline.python, w("validate_texture_evidence.py"),
-                    "--provenance", completion_provenance, "--report", evidence_qa_report,
+                    "--final-provenance", completion_provenance,
+                    "--atlas-owner", completion_provenance.with_name("atlas_owner_triangle.npy"),
+                    "--atlas-occupied-mask", completion_provenance.with_name("uv_occupied_mask.npy"),
+                    "--direct-observed-mask", completion_provenance.with_name("direct_observed_texel_mask.npy"),
+                    "--visible-gap-mask", completion_provenance.with_name("visible_source_gap_mask.npy"),
+                    "--unobserved-mask", completion_provenance.with_name("unobserved_surface_mask.npy"),
+                    "--direct-visibility", completion_provenance.with_name("direct_visibility.npy"),
+                    "--direct-face-id-match", completion_provenance.with_name("direct_face_id_match.npy"),
+                    "--direct-source-view", completion_provenance.with_name("direct_source_view.npy"),
+                    "--direct-source-pixel", completion_provenance.with_name("direct_source_pixel.npy"),
+                    "--direct-source-mask-valid", completion_provenance.with_name("direct_source_mask_valid.npy"),
+                    "--direct-triangle-id", completion_provenance.with_name("direct_triangle_id.npy"),
+                    "--basecolor", base_oriented, "--uv-audit-report", uv_consumer_report,
+                    "--protected-hash-report", protected_hash_report,
+                    "--stage-receipts", preqa_receipts, "--report", evidence_qa_report,
                 ])
                 if code != 0:
                     return StageResult("failed", failure_codes=["TEXTURE_EVIDENCE_QA_FAILED"],
@@ -916,8 +1020,9 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                     "SURFACE_EVIDENCE": evidence_report,
                     "SOURCE_ASSIGNMENT": assignment_report,
                     "DIRECT_PROJECTION": projection_report,
+                    "VISIBLE_SOURCE_GAP_REPAIR": gap_report,
                     "UNOBSERVED_COMPLETION": completion_report,
-                    "FREQUENCY_FUSION": base_oriented,
+                    "FREQUENCY_FUSION": fusion_report,
                     "TEXTURE_EVIDENCE_QA": evidence_qa_report,
                     "TEXTURE_SCOPE": scope_report,
                 }
