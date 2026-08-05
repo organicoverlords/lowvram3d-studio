@@ -366,3 +366,24 @@ is readable, left/right/rear are coherent, and the former vertical fallback
 strips are absent. It is still visibly mottled and the underside has bright
 material patches, so the honest status remains
 `SURFACE_SPACE_COMPLETION_DIAGNOSTIC_ONLY`, not production-ready.
+
+### Bottom surface correction diagnostic
+
+One bounded follow-up targeted only bottom-facing, non-direct,
+non-protected provenance-invalid white/gray texels in the surface-completion
+candidate. All 1,390 targeted pixels fell back to a neutral material value;
+there was no valid same-triangle source color available. Direct evidence and
+protected/front RGB remained byte-exact, and geometry, UV, sampler, source,
+and proof inputs were unchanged.
+
+- GLB: `C:\AI\panda_diag_neutral_v1\bottom_surface_correction_diagnostic_only\bottom_surface_correction_diagnostic_only.glb`
+- GLB SHA256: `daff74a9cee6964dd8c39dbfd78a6334e4a0362c5b4f4565ff0d828322c3bbe`
+- Atlas SHA256: `f9ad6ddd0542c89cdb2c935c1b782b75f6ba412d193a5d974b44d9c2e364d817`
+- Contact sheet: `C:\AI\panda_diag_neutral_v1\bottom_surface_correction_diagnostic_only\renders\contact_sheet_bottom_surface_correction_9view_diagnostic_only.png`
+- Contact sheet SHA256: `c24d280c7ebff76ed89850baaa7bac219226e53228ffd11310c5576df6a2f348`
+- Receipt SHA256: `b7a88cc3e581f1d85dacf3dbd776e9e7e7f1e0d6aa62b419fe3f84806ae1b067`
+
+The correction is visually localized, but white/gray patches from direct
+evidence and the underlying atlas pixelation remain. Status:
+`BOTTOM_SURFACE_CORRECTION_DIAGNOSTIC_ONLY`; not production-ready and no
+additional bottom loop is authorized.
