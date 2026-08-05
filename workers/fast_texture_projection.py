@@ -150,6 +150,47 @@ def _append_index_accessor(gltf: dict, blob: bytearray, indices: np.ndarray) -> 
     return len(gltf["accessors"]) - 1
 
 
+def clean_pbr_material(name: str, *, texture_index: int | None = None,
+                       base_color_factor: tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0),
+                       metallic_factor: float = 0.0,
+                       roughness_factor: float = 0.85) -> dict:
+    """Build a deliberately self-contained glTF PBR material.
+
+    Projection materials must not inherit normal, occlusion, emissive, extension, or other
+    appearance slots from whichever source material happened to be selected as the atlas
+    template.  Keeping this constructor data-only also makes the material contract easy to
+    test without opening a renderer or changing geometry/UV buffers.
+    """
+    factor = tuple(float(value) for value in base_color_factor)
+    if len(factor) != 4:
+        raise ValueError("base_color_factor must have four components")
+    pbr = {
+        "baseColorFactor": list(factor),
+        "metallicFactor": float(metallic_factor),
+        "roughnessFactor": float(roughness_factor),
+    }
+    if texture_index is not None:
+        pbr["baseColorTexture"] = {"index": int(texture_index)}
+    return {"name": str(name), "pbrMetallicRoughness": pbr}
+
+
+def triangle_coverage_mask(owner: np.ndarray, triangle_count: int) -> np.ndarray:
+    """Return the triangle IDs that own at least one valid atlas texel.
+
+    The atlas owner buffer is allowed to contain ``-1`` for unowned texels.  Invalid positive
+    IDs are ignored rather than silently becoming a material binding, so callers can derive a
+    provenance mask instead of binding an atlas to every triangle.
+    """
+    if int(triangle_count) < 0:
+        raise ValueError("triangle_count must be non-negative")
+    values = np.asarray(owner)
+    valid = values[(values >= 0) & (values < int(triangle_count))]
+    mask = np.zeros(int(triangle_count), dtype=bool)
+    if valid.size:
+        mask[np.unique(valid.astype(np.int64, copy=False))] = True
+    return mask
+
+
 def bind_texture(input_glb: Path, output_glb: Path, png: bytes,
                  textured_triangles: np.ndarray | None = None,
                  wrap: int = 10497) -> int:
@@ -173,11 +214,14 @@ def bind_texture(input_glb: Path, output_glb: Path, png: bytes,
     images.append({"bufferView": view_index, "mimeType": "image/png", "name": "basecolor"})
     image_index = len(images) - 1
     samplers = gltf.setdefault("samplers", [])
-    if not samplers:
-        samplers.append({"magFilter": 9729, "minFilter": 9987,
-                         "wrapS": wrap, "wrapT": wrap})
+    # The projected atlas owns its sampler.  Never reuse sampler 0: it may belong to a
+    # source material and commonly carries repeat wrapping, mip filtering, or other
+    # appearance policy that must not leak into the provenance atlas.
+    atlas_sampler_index = len(samplers)
+    samplers.append({"magFilter": 9729, "minFilter": 9729,
+                     "wrapS": 33071, "wrapT": 33071})
     textures = gltf.setdefault("textures", [])
-    textures.append({"sampler": 0, "source": image_index})
+    textures.append({"sampler": atlas_sampler_index, "source": image_index})
     texture_index = len(textures) - 1
 
     materials = gltf.setdefault("materials", [])
@@ -190,24 +234,16 @@ def bind_texture(input_glb: Path, output_glb: Path, png: bytes,
     def active(material: dict) -> bool:
         return bool(material.get("pbrMetallicRoughness", {}).get("baseColorTexture"))
 
-    active_index = next((i for i, material in enumerate(materials) if active(material)), 0)
-    atlas_material = copy.deepcopy(materials[active_index])
-    pbr = atlas_material.setdefault("pbrMetallicRoughness", {})
-    pbr["baseColorTexture"] = {"index": texture_index}
-    pbr["baseColorFactor"] = [1.0, 1.0, 1.0, 1.0]
-    pbr.setdefault("metallicFactor", 0.0)
-    pbr.setdefault("roughnessFactor", 0.85)
-    atlas_material["name"] = "ProjectedAtlasProvenance"
+    atlas_material = clean_pbr_material(
+        "ProjectedAtlasProvenance", texture_index=texture_index)
+    atlas_material["alphaMode"] = "OPAQUE"
     materials.append(atlas_material)
     atlas_material_index = len(materials) - 1
     neutral_index = next((i for i, material in enumerate(materials[:atlas_material_index])
                           if not active(material)), None)
     if neutral_index is None:
-        neutral_material = copy.deepcopy(materials[active_index])
-        neutral_pbr = neutral_material.setdefault("pbrMetallicRoughness", {})
-        neutral_pbr.pop("baseColorTexture", None)
-        neutral_pbr["baseColorFactor"] = [0.2, 0.22, 0.18, 1.0]
-        neutral_material["name"] = "NeutralUnobservedSurface"
+        neutral_material = clean_pbr_material(
+            "NeutralUnobservedSurface", base_color_factor=(0.2, 0.22, 0.18, 1.0))
         materials.append(neutral_material)
         neutral_index = len(materials) - 1
 
@@ -660,7 +696,9 @@ def main() -> None:
     cv2.imwrite(str(root / "depth_consistency.png"), (depth_map * 255).astype(np.uint8))
 
     textured = root / "textured.glb"
-    bound = bind_texture(Path(args.mesh), textured, atlas_path.read_bytes())
+    textured_triangles = triangle_coverage_mask(owner, len(triangles))
+    bound = bind_texture(Path(args.mesh), textured, atlas_path.read_bytes(),
+                         textured_triangles=textured_triangles)
     after_hashes = immutable_buffer_hashes(textured)
     timings["write_and_bind"] = time.time() - started
     timings["total"] = time.time() - started_all

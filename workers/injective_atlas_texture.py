@@ -33,7 +33,7 @@ from PIL import Image
 
 from atlas_raster import injectivity, rasterise
 from build_mvadapter_cpu_controls import PROJECTION_SPAN
-from fast_texture_projection import bind_texture
+from fast_texture_projection import bind_texture, triangle_coverage_mask
 from mesh_io import read_glb, triangle_components
 from multiview_texture_fusion import box_blur, local_detail
 from multiview_texture_projection import (
@@ -913,8 +913,10 @@ def main() -> int:
     atlas_info = write_atlas(cache, fused, donor, basecolor, args.padding_px)
     per_texel = write_per_texel_evidence(cache, fused, Path(args.output_dir))
     textured = root / f"{basename}_textured.glb"
+    textured_triangles = triangle_coverage_mask(
+        cache["owner"], cache["triangle_count"])
     bound = bind_texture(mesh, textured, basecolor.read_bytes(),
-                         np.ones(cache["triangle_count"], bool), wrap=33071)
+                         textured_triangles, wrap=33071)
     timings["write"] = time.time() - started
 
     semantics = cache["semantics"]
