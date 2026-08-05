@@ -34,6 +34,20 @@ artifacts. The source online model targets remain appearance references only.
 Current contract status is unchanged: 256 has two hard opposing-normal pixel ownership
 errors; 384 is replay-clean; no production 512 proof or downstream promotion is claimed.
 
+## Fidelity pass update — generated residual attenuation
+
+`workers/injective_atlas_texture.py` now accepts `--generated-detail-scale` (default `0.45`).
+It attenuates only generated-view high-frequency residuals before fusion; the authoritative
+original-front detail path is not attenuated. This directly reduces diffusion speckle without
+blurring protected source detail.
+
+The bounded visual candidate used `--generated-detail-scale 0.35` at atlas size 1024:
+
+`C:\AI\LowVRAM3D-benchmarks\production\panda_visual_prototype_experimental_20260805\fidelity_pass_1024_residual_attenuated`
+
+Fresh renders show reduced body speckle, a recognizable centered front face, and no face on
+the rear. This remains an experimental visual candidate, not a production acceptance claim.
+
 ## Repository state
 
 - Repository: `C:\Users\Lauri\Desktop\lowvram3d-two-character-production-20260804`

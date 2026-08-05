@@ -22,6 +22,11 @@ The visual candidates do not alter the strict proof lane. Current proof status r
 256 = two ordinary CONTRACT_ERROR rows; 384 = replay-clean; 512 production proof and
 downstream texture promotion remain blocked.
 
+Latest visual pipeline improvement: `workers/injective_atlas_texture.py` now supports
+`--generated-detail-scale`. The 1024 visual candidate used `0.35` to suppress generated-view
+diffusion speckle while keeping the authoritative original front unattenuated. Do not use
+this as proof evidence; compare its fresh renders visually before selecting a later pass.
+
 Work only on branch `production/two-character-models-20260804`.
 
 Before editing, verify repository origin, branch, local HEAD, remote HEAD, and a clean worktree. Never work on `main`, merge, force-push, or overwrite preserved artifacts.

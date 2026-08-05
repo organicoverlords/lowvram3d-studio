@@ -125,7 +125,8 @@ def triangle_id_match_with_boundary(ids: np.ndarray, depth: np.ndarray,
 
 
 def observe(mesh: Path, bundle: Path, receipt: dict, atlas_size: int, depth_tolerance: float,
-            min_facing: float, detail_radius: int, direct_only: bool = False,
+            min_facing: float, detail_radius: int, generated_detail_scale: float = 1.0,
+            direct_only: bool = False,
             original_front: Path | None = None,
             original_front_transform: Path | None = None,
             original_front_camera: Path | None = None) -> dict:
@@ -219,6 +220,12 @@ def observe(mesh: Path, bundle: Path, receipt: dict, atlas_size: int, depth_tole
         aligned_low = box_blur(aligned, detail_radius)
         aligned_high = aligned - aligned_low
         aligned_detail = local_detail(aligned, detail_radius)
+        # Generated views are appearance references, not authoritative identity sources.
+        # Their high-frequency residuals are often diffusion speckle at 384px.  Attenuate
+        # that residual before surface fusion; the authoritative original-front path is
+        # applied later without this attenuation.
+        if generated_detail_scale < 1.0:
+            aligned_high *= float(generated_detail_scale)
 
         direction = np.asarray(view["camera_direction"], np.float64)
         right = np.asarray(view["camera_right"], np.float64)
@@ -849,6 +856,8 @@ def main() -> int:
     parser.add_argument("--depth-tolerance", type=float, default=0.010)
     parser.add_argument("--min-facing-cosine", type=float, default=0.20)
     parser.add_argument("--detail-radius", type=int, default=3)
+    parser.add_argument("--generated-detail-scale", type=float, default=0.45,
+                        help="scale generated-view high-frequency residuals before fusion")
     parser.add_argument("--padding-px", type=int, default=2)
     parser.add_argument("--donor-blur-radius", type=int, default=16)
     parser.add_argument("--donor-max-distance-fraction", type=float, default=0.030)
@@ -873,8 +882,11 @@ def main() -> int:
 
     started = time.time()
     original_front = Path(args.original_front) if args.original_front else None
+    if not 0.0 <= args.generated_detail_scale <= 1.0:
+        raise SystemExit("--generated-detail-scale must be between 0 and 1")
     cache = observe(mesh, Path(args.bundle), receipt, args.atlas_size, args.depth_tolerance,
-                    args.min_facing_cosine, args.detail_radius, args.direct_only, original_front,
+                    args.min_facing_cosine, args.detail_radius, args.generated_detail_scale,
+                    args.direct_only, original_front,
                     Path(args.original_front_transform) if args.original_front_transform else None,
                     Path(args.original_front_camera) if args.original_front_camera else None)
     timings["observe"] = time.time() - started
@@ -926,6 +938,7 @@ def main() -> int:
             "depth_tolerance": args.depth_tolerance,
             "min_facing_cosine": args.min_facing_cosine,
             "detail_radius": args.detail_radius,
+            "generated_detail_scale": args.generated_detail_scale,
             "regularisation": "none",
             "direct_projection_only": bool(args.direct_only),
         },
