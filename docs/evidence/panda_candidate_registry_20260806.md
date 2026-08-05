@@ -9,6 +9,7 @@ baseline.
 | Role | Path | SHA256 | Status |
 |---|---|---|---|
 | Latest-good 2048 GLB | `C:\AI\panda_support_local_2048\candidate_2048\panda_atlas_support_fixed_2048.glb` | `1c4bec32a31ce90766f12f095e2d3c9c7e57e0b34e4f8ffc79c9a29ea8e7a817` | **BASELINE — use for comparisons** |
+| Latest-good 2048 atlas | `C:\AI\panda_support_local_2048\candidate_2048\atlas_2048_nearest.png` | `88ee2bf03bfe27b6ee28720734c6abd94fc03242f27a2f33529bc3db0f08383e` | **BASELINE INPUT** |
 | Baseline contact sheet | `C:\AI\panda_support_local_2048\candidate_2048\renders\contact_sheet.png` | see local render manifest | **BASELINE VISUAL** |
 
 The baseline has the best current texture quality, but its face is visibly
@@ -22,6 +23,10 @@ the left/front side of the hood instead of the hood opening's center axis.
 | `C:\AI\panda_support_local_2048\face_recenter_diagnostic_only\face_recentered_2048_diagnostic_only.glb` | 1024 chart-harmonization GLB (`3d8747...`) | **SUPERSEDED / REJECTED** | Reintroduced white feet and blur; wrong source baseline. |
 | `C:\AI\panda_support_local_2048\candidate_2048\panda_face_axis_corrected_2048.glb` | mixed/older atlas route | **SUPERSEDED / REJECTED** | Visual quality regressed; do not use. |
 | `C:\AI\panda_support_local_2048\face_recenter_latest_diagnostic_only\face_recentered_latest_2048.glb` | exact 2048 baseline (`1c4bec...`) | **DIAGNOSTIC ONLY / UNACCEPTED** | Face remap preserves non-face texels, but three-quarter alignment still requires camera-aware verification. |
+
+The exact-baseline diagnostic GLB currently has SHA256
+`8e2d861bc47e7ec87cda31ee55e8b411f71a9626676198e06a41b93949e10bd3`.
+It is retained for review only and is not the baseline.
 
 The latest diagnostic receipt records the measured front-view offset as
 `(-20,-7)` render pixels (feature centroid `(111,66)`, hood/body axis
