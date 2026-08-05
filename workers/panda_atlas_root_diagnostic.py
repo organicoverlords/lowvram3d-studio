@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import io
 import json
 import platform
 import sys
@@ -19,7 +20,13 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from atlas_raster import rasterise
-from conservative_atlas import conservative_coverage
+from conservative_atlas import (
+    chart_local_gutter,
+    conservative_coverage,
+    derive_uv_chart_ids,
+    resolve_conservative_support,
+)
+from fast_texture_projection import bind_texture, triangle_coverage_mask
 from mesh_io import read_glb
 
 AREA_BINS = (
@@ -97,7 +104,7 @@ def save_histogram(path: Path, counts: list[tuple[str, int]]) -> None:
     canvas.save(path)
 
 
-def diagnose(mesh: Path, out_dir: Path, size: int) -> dict:
+def diagnose(mesh: Path, out_dir: Path, size: int, *, write_support_contract: bool = False) -> dict:
     size_dir = out_dir / f"atlas_{size}"
     size_dir.mkdir(parents=True, exist_ok=True)
     positions, normals, uv, tris = read_glb(mesh)
@@ -119,6 +126,65 @@ def diagnose(mesh: Path, out_dir: Path, size: int) -> dict:
     conservative_only = conservative_any & ~center_any
     collision = conservative.claim_count > 1
     touches_other_owner = conservative_any & center_any
+
+    support = None
+    chart_ids = None
+    chart_report = None
+    if write_support_contract:
+        chart_ids, chart_report = derive_uv_chart_ids(uv, tris)
+        support = resolve_conservative_support(uv, tris, size, owner, chart_ids, triangle_ids=zero_ids)
+        np.save(size_dir / "chart_id_per_triangle.npy", chart_ids)
+        np.save(size_dir / "chart_id_per_direct_texel.npy", np.where(owner >= 0, chart_ids[np.maximum(owner, 0)], -1))
+        np.save(size_dir / "conservative_owner.npy", support.owner)
+        np.save(size_dir / "conservative_barycentric.npy", support.barycentric)
+        np.save(size_dir / "conservative_chart_id.npy", support.chart_id)
+        np.save(size_dir / "conservative_collision.npy", support.collision)
+        np.save(size_dir / "conservative_same_chart_ambiguous.npy", support.same_chart_ambiguous)
+        source_owner = owner.copy()
+        source_chart = np.where(owner >= 0, chart_ids[np.maximum(owner, 0)], -1).astype(np.int32)
+        support_mask = support.owner >= 0
+        source_owner[support_mask] = support.owner[support_mask]
+        source_chart[support_mask] = support.chart_id[support_mask]
+        gutter_owner, gutter_chart, gutter_collision = chart_local_gutter(source_owner, source_chart, radius=8)
+        gutter_mask = (owner < 0) & (support.owner < 0) & (gutter_owner >= 0) & ~gutter_collision
+        np.save(size_dir / "chart_local_gutter_owner.npy", gutter_owner)
+        np.save(size_dir / "chart_local_gutter_chart_id.npy", gutter_chart)
+        np.save(size_dir / "chart_local_gutter_mask.npy", gutter_mask)
+        np.save(size_dir / "chart_local_gutter_collision.npy", gutter_collision)
+        (size_dir / "chart_inventory.json").write_text(json.dumps(chart_report, indent=2), encoding="utf-8")
+        support_image = np.zeros((size, size, 3), dtype=np.uint8)
+        support_image[owner >= 0] = (40, 200, 70)
+        support_image[(support.owner >= 0)] = (240, 150, 30)
+        support_image[support.collision] = (220, 40, 40)
+        support_image[gutter_mask] = (40, 100, 230)
+        support_image[(owner < 0) & (support.owner < 0) & ~support.collision] = (220, 0, 220)
+        Image.fromarray(support_image, mode="RGB").save(size_dir / "support_class_atlas.png")
+        # Bind the class atlas to the exact mesh for a clean-material synthetic proof.
+        png_buffer = io.BytesIO()
+        Image.fromarray(support_image, mode="RGB").save(png_buffer, format="PNG")
+        covered_triangles = np.zeros(len(tris), dtype=bool)
+        direct_triangles = owner[owner >= 0].astype(np.int64, copy=False)
+        support_triangles = support.owner[support.owner >= 0].astype(np.int64, copy=False)
+        if direct_triangles.size:
+            covered_triangles[np.unique(direct_triangles)] = True
+        if support_triangles.size:
+            covered_triangles[np.unique(support_triangles)] = True
+        bind_texture(mesh, size_dir / "support_class.glb", png_buffer.getvalue(), covered_triangles)
+        support_summary = {
+            "chart_count": int(chart_report["chart_count"]),
+            "direct_texels": int((owner >= 0).sum()),
+            "conservative_support_texels": int((support.owner >= 0).sum()),
+            "same_chart_ambiguous_texels": int(support.same_chart_ambiguous.sum()),
+            "cross_chart_collision_texels": int(support.collision.sum()),
+            "unresolved_texels": int(((owner < 0) & (support.owner < 0)).sum()),
+            "chart_local_gutter_texels": int(gutter_mask.sum()),
+            "cross_chart_gutter_collisions": int(gutter_collision.sum()),
+            "direct_owner_changed": 0,
+            "conservative_provenance_class": "CONSERVATIVE_SURFACE_SUPPORT",
+            "cross_chart_support_assignments": 0,
+            "visible_uninitialized_sampling": "synthetic render gate required",
+        }
+        (size_dir / "support_report.json").write_text(json.dumps(support_summary, indent=2), encoding="utf-8")
 
     histogram: list[tuple[str, int]] = []
     for label, lower, upper in AREA_BINS:
@@ -182,8 +248,21 @@ def diagnose(mesh: Path, out_dir: Path, size: int) -> dict:
         "conservative_provenance_class": "VISIBLE_SOURCE_GAP_CANDIDATE_NOT_DIRECT_EVIDENCE",
         "production_asset_written": False,
         "production_promotion_authorized": False,
+        "support_contract_written": bool(write_support_contract),
         "area_histogram": {label: count for label, count in histogram},
     }
+    if support is not None:
+        summary.update({
+            "uv_chart_count": int(chart_report["chart_count"]),
+            "conservative_support_texels": int((support.owner >= 0).sum()),
+            "same_chart_ambiguous_texels": int(support.same_chart_ambiguous.sum()),
+            "cross_chart_collision_texels": int(support.collision.sum()),
+            "unresolved_texels": int(((owner < 0) & (support.owner < 0)).sum()),
+            "chart_local_gutter_texels": int(gutter_mask.sum()),
+            "cross_chart_gutter_collisions": int(gutter_collision.sum()),
+            "direct_owner_changed_by_conservative_pass": 0,
+            "cross_chart_support_assignments": 0,
+        })
     (size_dir / "diagnostic_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     return summary
 
@@ -193,13 +272,14 @@ def main() -> None:
     parser.add_argument("--mesh", type=Path, required=True)
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--sizes", type=int, nargs="+", default=[512, 1024])
+    parser.add_argument("--write-support-contract", action="store_true")
     args = parser.parse_args()
     args.mesh = args.mesh.resolve()
     args.out_dir.mkdir(parents=True, exist_ok=True)
     if not args.mesh.is_file():
         raise FileNotFoundError(args.mesh)
 
-    summaries = [diagnose(args.mesh, args.out_dir, size) for size in args.sizes]
+    summaries = [diagnose(args.mesh, args.out_dir, size, write_support_contract=args.write_support_contract) for size in args.sizes]
     root = {
         "schema": "panda_atlas_root_diagnostic_bundle_v1",
         "mesh": str(args.mesh),
@@ -213,6 +293,7 @@ def main() -> None:
             "gap_detection": "use separate conservative occupancy only to identify atlas-owned unsampled cells",
             "gap_repair": "same-triangle or same-chart constrained completion; preserve provenance",
             "forbidden": "do not relabel conservative-only cells as ORIGINAL_DIRECT or GENERATED_OBSERVED",
+            "support_contract": "direct owner is immutable; conservative support is separate provenance; cross-chart collisions stay unresolved",
         },
     }
     (args.out_dir / "diagnostic_bundle.json").write_text(json.dumps(root, indent=2), encoding="utf-8")

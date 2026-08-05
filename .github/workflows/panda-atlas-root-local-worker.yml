@@ -25,7 +25,12 @@ concurrency:
 jobs:
   diagnose-and-render:
     if: github.repository_owner == 'organicoverlords'
-    runs-on: [self-hosted, Windows, X64]
+    runs-on:
+      - self-hosted
+      - Windows
+      - X64
+      - lowvram3d-pc
+      - blender52
     timeout-minutes: 120
 
     steps:
@@ -154,6 +159,34 @@ jobs:
             throw "Canonical panda atlas audit failed"
           }
 
+      - name: Build chart-safe conservative support contract
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\workers;$PWD"
+          $contractOut = Join-Path $env:PANDA_DIAG_ROOT "atlas_contract_1024"
+          & $env:PANDA_DIAG_PYTHON workers\panda_atlas_root_diagnostic.py `
+            --mesh $env:PANDA_CANONICAL_MESH `
+            --out-dir $contractOut `
+            --sizes 1024 `
+            --write-support-contract
+          if ($LASTEXITCODE -ne 0) {
+            throw "Conservative support contract failed"
+          }
+
+      - name: Render synthetic support-class contract
+        shell: powershell
+        run: |
+          $env:PYTHONPATH = "$PWD\workers;$PWD"
+          $contractGlb = Join-Path $env:PANDA_DIAG_ROOT "atlas_contract_1024\atlas_1024\support_class.glb"
+          $renderDir = Join-Path $env:PANDA_DIAG_ROOT "atlas_contract_1024\renders"
+          New-Item -ItemType Directory -Path $renderDir -Force | Out-Null
+          if (-not (Test-Path -LiteralPath $contractGlb -PathType Leaf)) { throw "Synthetic support GLB missing" }
+          & $env:PANDA_DIAG_BLENDER --background --factory-startup --python "$PWD\blender\render_glb_diagnostic_set.py" -- --input $contractGlb --out-dir $renderDir --label support_class --resolution 256 *> (Join-Path $renderDir "blender.log")
+          if ($LASTEXITCODE -ne 0) { throw "Synthetic support render failed" }
+          & $env:PANDA_DIAG_PYTHON workers\build_contact_sheet.py --render-dir $renderDir --output (Join-Path $renderDir "contact_sheet.png") *>> (Join-Path $renderDir "blender.log")
+          if ($LASTEXITCODE -ne 0) { throw "Synthetic support contact sheet failed" }
+          $env:PANDA_DIAG_PYTHON -c "from pathlib import Path; from PIL import Image; import json; root=Path(r'$renderDir'); files=sorted(root.glob('*.png')); result={'rendered_images':len(files),'visible_magenta_pixels':sum(int((__import__('numpy').asarray(Image.open(p).convert('RGB'))==[220,0,220]).all(2).sum()) for p in files if p.name!='contact_sheet.png'),'visible_black_default_pixels':sum(int((__import__('numpy').asarray(Image.open(p).convert('RGB'))==[0,0,0]).all(2).sum()) for p in files if p.name!='contact_sheet.png')}; (root/'render_manifest.json').write_text(json.dumps(result,indent=2)); print(json.dumps(result))"
+
       - name: Resolve selected existing visual candidates
         shell: powershell
         run: |
@@ -197,53 +230,70 @@ jobs:
       - name: Fresh-render selected GLBs and build contact sheets
         shell: powershell
         run: |
-          $candidates = @(Get-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Raw | ConvertFrom-Json)
+          $document = ConvertFrom-Json -InputObject (Get-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Raw)
+          $candidates = [System.Collections.Generic.List[object]]::new()
+          foreach ($entry in $document) { [void]$candidates.Add($entry) }
           $renderRoot = Join-Path $env:PANDA_DIAG_ROOT "fresh_renders"
           New-Item -ItemType Directory -Path $renderRoot -Force | Out-Null
+          $matrix = [System.Collections.Generic.List[object]]::new()
           foreach ($candidate in $candidates) {
-            $out = Join-Path $renderRoot $candidate.label
+            $label = [string]$candidate.label
+            $inputPath = [string]$candidate.path
+            if ([string]::IsNullOrWhiteSpace($label)) { throw "Candidate label is empty" }
+            if ([string]::IsNullOrWhiteSpace($inputPath)) { throw "Candidate path is empty for $label" }
+            $out = Join-Path -Path $renderRoot -ChildPath $label
             New-Item -ItemType Directory -Path $out -Force | Out-Null
-            & $env:PANDA_DIAG_BLENDER `
-              --background `
-              --factory-startup `
-              --python "$PWD\blender\render_glb_diagnostic_set.py" `
-              -- `
-              --input $candidate.path `
-              --out-dir $out `
-              --label $candidate.label `
-              --resolution 768
-            if ($LASTEXITCODE -ne 0) {
-              throw "Blender diagnostic render failed for $($candidate.label)"
+            $start = [ordered]@{ label = $label; input_path = $inputPath; started_at_utc = (Get-Date).ToUniversalTime().ToString("o") }
+            $start | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $out "candidate_start_receipt.json") -Encoding utf8
+            $status = "RENDER_FAILED"
+            $exitCode = 1
+            $renderLog = Join-Path $out "blender.log"
+            $contact = Join-Path $out "contact_sheet.png"
+            if (-not (Test-Path -LiteralPath $inputPath -PathType Leaf)) {
+              $status = "INPUT_MISSING"
+              "Missing candidate input: $inputPath" | Set-Content -LiteralPath $renderLog -Encoding utf8
+            } else {
+              & $env:PANDA_DIAG_BLENDER --background --factory-startup --python "$PWD\blender\render_glb_diagnostic_set.py" -- --input $inputPath --out-dir $out --label $label --resolution 768 *> $renderLog
+              $exitCode = $LASTEXITCODE
+              $expected = @("01_front.png","02_front_left.png","03_left.png","04_rear_left.png","05_rear.png","06_rear_right.png","07_right.png","08_front_right.png","09_bottom.png")
+              $produced = @($expected | Where-Object { Test-Path -LiteralPath (Join-Path $out $_) })
+              if ($exitCode -eq 0 -and $produced.Count -eq $expected.Count) {
+                & $env:PANDA_DIAG_PYTHON workers\build_contact_sheet.py --render-dir $out --output $contact *>> $renderLog
+                if ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $contact -PathType Leaf)) { $status = "RENDERED" } else { $status = "CONTACT_SHEET_FAILED" }
+              }
             }
-            & $env:PANDA_DIAG_PYTHON workers\build_contact_sheet.py `
-              --render-dir $out `
-              --output (Join-Path $out "contact_sheet.png")
-            if ($LASTEXITCODE -ne 0) {
-              throw "Contact sheet build failed for $($candidate.label)"
-            }
+            [ordered]@{ label = $label; input_path = $inputPath; input_sha256 = if (Test-Path -LiteralPath $inputPath) { (Get-FileHash -LiteralPath $inputPath -Algorithm SHA256).Hash.ToLower() } else { $null }; blender_exit_code = $exitCode; expected_image_count = 9; produced_image_count = @((Get-ChildItem -LiteralPath $out -Filter '*.png' -File -ErrorAction SilentlyContinue)).Count; contact_sheet_exists = (Test-Path -LiteralPath $contact -PathType Leaf); render_status = $status; error_summary = if ($status -eq "RENDERED") { $null } else { "See $renderLog" } } | ForEach-Object { [void]$matrix.Add($_) }
+            [ordered]@{ label = $label; render_status = $status; blender_exit_code = $exitCode; completed_at_utc = (Get-Date).ToUniversalTime().ToString("o") } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $out "candidate_render_receipt.json") -Encoding utf8
           }
+          $matrix | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "fresh_renders\render_matrix.json") -Encoding utf8
 
-      - name: Package immutable diagnostic ZIP
+      - name: Package panda atlas support ZIP
+        if: always()
         shell: powershell
         run: |
           $package = Join-Path $env:PANDA_DIAG_ROOT "package"
           New-Item -ItemType Directory -Path $package -Force | Out-Null
-          Copy-Item -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "atlas_audit") -Destination (Join-Path $package "atlas_audit") -Recurse -Force
-          Copy-Item -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "fresh_renders") -Destination (Join-Path $package "fresh_renders") -Recurse -Force
-          Copy-Item -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Destination $package -Force
-          Copy-Item -LiteralPath $env:PANDA_HIGHRES_SOURCE -Destination (Join-Path $package "authoritative_highres_source.png") -Force
-          Copy-Item -LiteralPath "docs\research\panda_atlas_raster_research_20260805.md" -Destination $package -Force
+          function Copy-IfPresent([string]$source, [string]$destination) { if (Test-Path -LiteralPath $source) { Copy-Item -LiteralPath $source -Destination $destination -Recurse -Force } }
+          foreach ($name in @("atlas_audit","atlas_contract_1024","fresh_renders","render_logs","tests")) { Copy-IfPresent (Join-Path $env:PANDA_DIAG_ROOT $name) (Join-Path $package $name) }
+          Copy-IfPresent (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") (Join-Path $package "visual_candidates.json")
+          Copy-IfPresent (Join-Path $env:PANDA_DIAG_ROOT "fresh_renders\render_matrix.json") (Join-Path $package "render_matrix.json")
+          Copy-IfPresent $env:PANDA_HIGHRES_SOURCE (Join-Path $package "authoritative_highres_source.png")
+          Copy-IfPresent $env:PANDA_CANONICAL_MESH (Join-Path $package "canonical_mesh.glb")
+          Copy-IfPresent "docs\research\panda_atlas_raster_research_20260805.md" (Join-Path $package "final_report.md")
+          Copy-IfPresent "docs\evidence\panda_atlas_support_fix_20260806.md" (Join-Path $package "support_fix_report.md")
 
-          $candidates = @(Get-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Raw | ConvertFrom-Json)
+          $document = ConvertFrom-Json -InputObject (Get-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Raw)
+          $candidates = [System.Collections.Generic.List[object]]::new()
+          foreach ($entry in $document) { [void]$candidates.Add($entry) }
           $inputs = @(
             [ordered]@{ role = "canonical_mesh"; path = $env:PANDA_CANONICAL_MESH; sha256 = (Get-FileHash -LiteralPath $env:PANDA_CANONICAL_MESH -Algorithm SHA256).Hash.ToLower() },
             [ordered]@{ role = "authoritative_highres_source"; path = $env:PANDA_HIGHRES_SOURCE; sha256 = (Get-FileHash -LiteralPath $env:PANDA_HIGHRES_SOURCE -Algorithm SHA256).Hash.ToLower() }
           )
           foreach ($candidate in $candidates) {
             $inputs += [ordered]@{
-              role = $candidate.label
-              path = $candidate.path
-              sha256 = (Get-FileHash -LiteralPath $candidate.path -Algorithm SHA256).Hash.ToLower()
+              role = [string]$candidate.label
+              path = [string]$candidate.path
+              sha256 = (Get-FileHash -LiteralPath ([string]$candidate.path) -Algorithm SHA256).Hash.ToLower()
             }
           }
           $inputs | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $package "input_hashes.json") -Encoding utf8
@@ -278,22 +328,34 @@ jobs:
           } | Sort-Object | Set-Content -LiteralPath (Join-Path $package "SHA256SUMS.txt") -Encoding ascii
 
           $upload = Join-Path $env:PANDA_DIAG_ROOT "upload"
-          $zip = Join-Path $upload "panda_atlas_root_diagnostic_${{ github.run_id }}.zip"
+          $zip = Join-Path $upload "panda_atlas_support_fix_${{ github.run_id }}.zip"
           Compress-Archive -LiteralPath $package -DestinationPath $zip -CompressionLevel Optimal -Force
           $zipHash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLower()
           "$zipHash  $([System.IO.Path]::GetFileName($zip))" | Set-Content -LiteralPath (Join-Path $upload "ZIP_SHA256SUMS.txt") -Encoding ascii
           Copy-Item -LiteralPath (Join-Path $package "worker_receipt.json") -Destination $upload -Force
           Copy-Item -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "atlas_audit\diagnostic_bundle.json") -Destination $upload -Force
-          Write-Host "PANDA_DIAGNOSTIC_ZIP=$zip"
-          Write-Host "PANDA_DIAGNOSTIC_ZIP_SHA256=$zipHash"
+          Write-Host "PANDA_SUPPORT_ZIP=$zip"
+          Write-Host "PANDA_SUPPORT_ZIP_SHA256=$zipHash"
+
+      - name: Verify package preparation
+        if: always()
+        shell: powershell
+        run: |
+          $upload = Join-Path $env:PANDA_DIAG_ROOT "upload"
+          $zip = Get-ChildItem -LiteralPath $upload -Filter "panda_atlas_support_fix_*.zip" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+          $sum = Join-Path $upload "ZIP_SHA256SUMS.txt"
+          if (-not $zip -or -not (Test-Path -LiteralPath $sum -PathType Leaf) -or $zip.Length -le 0) {
+            throw "Panda support ZIP preparation failed"
+          }
+          Write-Host "PANDA_SUPPORT_PACKAGE_READY=$($zip.FullName)"
 
       - name: Upload panda diagnostic ZIP
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: panda-atlas-root-diagnostic-${{ github.run_id }}
+          name: panda-atlas-support-fix-${{ github.run_id }}
           path: |
             C:\AI\LowVRAM3D-benchmarks\production\panda_atlas_root_local_worker\${{ github.run_id }}\upload\*
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14
           compression-level: 0
