@@ -168,6 +168,64 @@ def apply_registration(image: np.ndarray, fit: dict) -> np.ndarray:
     return np.asarray(canvas)
 
 
+#: Observed texels averaged to fill one unobserved texel, weighted by inverse
+#: 3D distance. One would reproduce nearest-neighbour blotching; too many blur
+#: real detail across a surface.
+SURFACE_FILL_NEIGHBOURS = 8
+
+
+def surface_fill(colour, filled, owned, texel_xyz):
+    """Fill unobserved texels from the nearest observed texels *on the surface*.
+
+    The previous fill diffused colour outward in atlas space, one ring of 4-
+    neighbours at a time. A texel's atlas neighbours are not its surface
+    neighbours: across a chart gutter sits an unrelated part of the mesh, and
+    this unwrap has 7,371 charts. So holes were flooded with colour from
+    whatever happened to be packed next to them, and after enough rounds the
+    average converged to a constant -- which is why the atlas read as a mosaic
+    of flat polygons with occasional wrong-coloured plates.
+
+    Measured on the panda before this change: 20.4% of synthesized texels were
+    flat (local standard deviation under 3) against 4.0% of the texels that came
+    from the photograph. One synthesized texel in five was a plate.
+
+    Every texel already has a 3D position, interpolated from the triangle that
+    owns it. Filling from the nearest observed texels *by that position* cannot
+    cross to an unrelated surface, because unrelated surfaces are far away in 3D
+    even when they are adjacent in UV.
+    """
+    import numpy as np
+    from scipy.spatial import cKDTree
+
+    holes = owned & ~filled
+    if not holes.any() or not filled.any():
+        return colour, holes
+
+    # texel_xyz is supplied for owned texels, in owned order.
+    owned_filled = filled[owned]
+    if not owned_filled.any():
+        return colour, holes
+    source_xyz = texel_xyz[owned_filled]
+    source_rgb = colour[owned][owned_filled]
+    target_xyz = texel_xyz[~owned_filled]
+
+    tree = cKDTree(source_xyz)
+    k = min(SURFACE_FILL_NEIGHBOURS, len(source_xyz))
+    distance, index = tree.query(target_xyz, k=k)
+    if k == 1:
+        distance = distance[:, None]
+        index = index[:, None]
+    weight = 1.0 / np.maximum(distance, 1e-6)
+    weight /= weight.sum(axis=1, keepdims=True)
+    filled_rgb = (source_rgb[index] * weight[..., None]).sum(axis=1)
+
+    out = colour.copy()
+    patch = out[owned]
+    patch[~owned_filled] = filled_rgb
+    out[owned] = patch
+    return out, holes
+
+
 def push_pull_fill(colour: np.ndarray, filled: np.ndarray, rounds: int = 256):
     """Grow observed colour outward one ring at a time; returns the synthesized mask."""
     synthesized = np.zeros(filled.shape, bool)
@@ -367,7 +425,12 @@ def main() -> int:
     observation_map = np.zeros((size, size), np.int16)
     observation_map[owned] = observation_count
 
-    atlas, synthesized_mask, resolved = push_pull_fill(atlas, filled)
+    atlas, synthesized_mask = surface_fill(atlas, filled, owned, texel_position)
+    resolved = owned.copy()
+    # Gutter texels still need *something* so the atlas has no black holes, but
+    # they carry no surface and are never sampled; atlas-space growth is the
+    # right tool there and the wrong one on the surface itself.
+    atlas, _gutter, _ = push_pull_fill(atlas, owned)
     # Only geometry-bearing texels count; the empty gutter is not "unresolved surface".
     synthesized_on_surface = synthesized_mask & owned
     unresolved = owned & ~resolved

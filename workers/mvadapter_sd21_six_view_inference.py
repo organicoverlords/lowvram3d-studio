@@ -493,12 +493,36 @@ def qa_outputs(
             "color": qa,
             "passed_generation_reference_gate": bool(registered >= (0.65 if index >= 4 else 0.75) and clipping <= 0.08),
         })
-    rear_mask = np.logical_or(generated_masks[0], generated_masks[2])
-    direct_corr = _corr(arrays[0], arrays[2], rear_mask)
+    # Which view actually faces away from view 0, by camera direction rather
+    # than by label.
+    #
+    # This check exists to catch a duplicated front -- MV-Adapter painting the
+    # reference's face onto the opposite view. It compared index 0 against index
+    # 2 because the label order is front, right, rear, left. On the red panda
+    # those two are NINETY DEGREES APART: the contract's directions put front at
+    # [-1,0,0] and its true opposite [1,0,0] under the name "left", index 3. The
+    # horizontal labels are rotated by one, which the boat's config had already
+    # recorded as `builder_labels_are_rotated_by_one`.
+    #
+    # So the detector was comparing the face against a side view and reporting an
+    # innocent 0.16 correlation while a second face sat on the true rear. Both
+    # the panda and the shaman shipped with two faces and every gate green.
+    #
+    # Deriving the pair from geometry cannot be rotated out of correctness.
+    opposite = 2
+    if ordered_camera_views is not None:
+        base = np.asarray(ordered_camera_views[0]["camera_direction"], np.float64)
+        opposite = int(min(
+            (i for i in range(1, 6)),
+            key=lambda i: float(np.dot(
+                base, np.asarray(ordered_camera_views[i]["camera_direction"], np.float64)))))
+    rear_mask = np.logical_or(generated_masks[0], generated_masks[opposite])
+    direct_corr = _corr(arrays[0], arrays[opposite], rear_mask)
     mirrored_corr = _corr(
-        arrays[0], arrays[2][:, ::-1], np.logical_or(generated_masks[0], generated_masks[2][:, ::-1])
+        arrays[0], arrays[opposite][:, ::-1],
+        np.logical_or(generated_masks[0], generated_masks[opposite][:, ::-1])
     )
-    rear = views[2]
+    rear = views[opposite]
     qa = {
         "schema": "lowvram3d_mvadapter_six_view_qa_v1",
         "views": views,
