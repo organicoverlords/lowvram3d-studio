@@ -79,6 +79,61 @@ from resolve_front_axis_dino import MODEL, RENDER, clay_render
 MIN_SEPARATION = 0.01
 
 
+#: Fraction of the canonical canvas left as margin around the subject. Fixed, not
+#: tuned: it exists so the subject does not touch the border, where the patch
+#: grid is least reliable.
+CANVAS_MARGIN = 0.06
+
+
+def canonicalise(image, mask):
+    """Crop to the subject and centre it on a square white canvas.
+
+    Registered patch comparison assumes token (i,j) of one image looks at the
+    same part of the subject as token (i,j) of the other. Nothing guarantees
+    that: the clay render is centred on the mesh centroid and framed by the
+    renderer, while the source is framed by whoever drew it. Different subject
+    scale or an off-centre subject silently degrades the comparison into a
+    plausible-looking number, which is this file's characteristic failure.
+
+    So both images are put in the same canonical frame first -- tight crop to
+    the subject, then centred on a square canvas at a fixed margin. This is
+    deterministic and introduces no tunable beyond the margin.
+    """
+    import numpy as np
+    from PIL import Image
+
+    rows = np.nonzero(mask.any(axis=1))[0]
+    columns = np.nonzero(mask.any(axis=0))[0]
+    if not len(rows) or not len(columns):
+        return image.convert("RGB")
+    box = (int(columns[0]), int(rows[0]), int(columns[-1]) + 1, int(rows[-1]) + 1)
+    crop = image.convert("RGB").crop(box)
+
+    side = max(crop.size)
+    canvas_side = int(round(side / (1.0 - 2.0 * CANVAS_MARGIN)))
+    canvas = Image.new("RGB", (canvas_side, canvas_side), (255, 255, 255))
+    canvas.paste(crop, ((canvas_side - crop.width) // 2,
+                        (canvas_side - crop.height) // 2))
+    return canvas
+
+
+def foreground_mask(image):
+    """Subject pixels: anything not the white field both frames are built on."""
+    import numpy as np
+
+    return np.asarray(image.convert("RGB")).min(axis=-1) < 244
+
+
+def patch_foreground(image, grid):
+    """`mask` reduced to the patch grid: a token counts if it sees any subject."""
+    import numpy as np
+    from PIL import Image
+
+    mask = foreground_mask(image).astype(np.uint8) * 255
+    small = Image.fromarray(mask).resize((grid, grid), Image.BILINEAR)
+    return np.asarray(small) > 32
+
+
 def embed_grid(images, model, processor, torch):
     """Spatially-registered DINOv2 patch-token grids, L2 normalised per token.
 
@@ -100,11 +155,23 @@ def embed_grid(images, model, processor, torch):
     return grids
 
 
-def registered_similarity(a, b):
-    """Mean cosine between patch tokens at the SAME grid position."""
+def registered_similarity(a, b, keep=None):
+    """Mean cosine between patch tokens at the SAME grid position.
+
+    `keep` restricts the mean to tokens that see subject in either image. Both
+    frames are composited onto white, so without it a large share of the grid is
+    white-against-white, which agrees perfectly and says nothing about
+    handedness. On a small subject that background agreement dominates the mean
+    and yields a stable, confident, wrong verdict.
+    """
     import numpy as np
 
-    return float(np.mean(np.sum(a * b, axis=-1)))
+    per_token = np.sum(a * b, axis=-1)
+    if keep is not None:
+        selected = per_token[keep.reshape(-1)]
+        if selected.size:
+            return float(np.mean(selected))
+    return float(np.mean(per_token))
 
 
 def resolve(mesh_path: Path, source_path: Path, yaw: float, sheet: Path | None):
@@ -127,15 +194,26 @@ def resolve(mesh_path: Path, source_path: Path, yaw: float, sheet: Path | None):
     source = Image.open(source_path).convert("RGBA")
     flat = Image.new("RGB", source.size, (255, 255, 255))
     flat.paste(source, mask=source.split()[3])
-    flipped = flat.transpose(Image.FLIP_LEFT_RIGHT)
 
-    render = clay_render(vertices, faces, normals, float(yaw), size=RENDER)
+    clay = Image.fromarray(clay_render(vertices, faces, normals, float(yaw),
+                                       size=RENDER)).convert("RGB")
+
+    # Both into the same canonical frame before anything is embedded, so that
+    # token (i,j) means the same thing in each. The source's own alpha defines
+    # its subject; the render's white field defines the render's.
+    render = canonicalise(clay, foreground_mask(clay))
+    upright = canonicalise(flat, np.asarray(source.split()[3]) > 16)
+    flipped = upright.transpose(Image.FLIP_LEFT_RIGHT)
 
     processor = AutoImageProcessor.from_pretrained(MODEL)
     model = AutoModel.from_pretrained(MODEL).eval()
-    grids = embed_grid([render, flat, flipped], model, processor, torch)
-    as_is = registered_similarity(grids[0], grids[1])
-    mirrored = registered_similarity(grids[0], grids[2])
+    grids = embed_grid([render, upright, flipped], model, processor, torch)
+
+    grid = int(round(grids.shape[1] ** 0.5))
+    keep = (patch_foreground(render, grid) | patch_foreground(upright, grid)
+            | patch_foreground(flipped, grid))
+    as_is = registered_similarity(grids[0], grids[1], keep)
+    mirrored = registered_similarity(grids[0], grids[2], keep)
 
     separation = abs(as_is - mirrored)
     if separation < MIN_SEPARATION:
@@ -155,6 +233,8 @@ def resolve(mesh_path: Path, source_path: Path, yaw: float, sheet: Path | None):
         "score_source_mirrored": round(mirrored, 6),
         "separation": round(separation, 6),
         "min_separation": MIN_SEPARATION,
+        "tokens_compared": int(keep.sum()),
+        "tokens_total": int(keep.size),
         "verdict": verdict,
         "note": ("bare geometry versus source and mirrored source; no texture, "
                  "no atlas, no colour model, no per-asset constant. See the "
@@ -171,8 +251,8 @@ def resolve(mesh_path: Path, source_path: Path, yaw: float, sheet: Path | None):
         draw.text((6, 6), f"{verdict}   as-is {as_is:.4f}   mirrored "
                           f"{mirrored:.4f}   sep {separation:.4f}",
                   fill=(255, 255, 120))
-        panels = [(Image.fromarray(render).convert("RGB"), "geometry"),
-                  (flat, "source"), (flipped, "source mirrored")]
+        panels = [(render, "geometry"), (upright, "source"),
+                  (flipped, "source mirrored")]
         for i, (image, label) in enumerate(panels):
             canvas.paste(image.resize((tile, tile), Image.LANCZOS), (i * tile, bar))
             draw.text((i * tile + 6, bar + 4), label, fill=(255, 255, 255))
@@ -186,13 +266,38 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mesh", required=True, type=Path)
     parser.add_argument("--source", required=True, type=Path)
-    parser.add_argument("--yaw", required=True, type=float,
-                        help="resolved front yaw, from resolve_front_axis_dino")
+    parser.add_argument("--yaw", type=float, default=None,
+                        help="resolved front yaw, in the RESOLVER's convention")
+    parser.add_argument("--front-axis", type=Path, default=None,
+                        help="front_axis json from resolve_front_axis_dino; "
+                             "preferred over --yaw, and checked")
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--sheet", type=Path, default=None)
     args = parser.parse_args(argv)
 
-    result = resolve(args.mesh, args.source, args.yaw, args.sheet)
+    # A chirality verdict is only as good as the yaw it was asked about. If the
+    # front axis itself was not resolved, a confident MIRRORED here is just the
+    # front-axis error wearing a different label -- so take the yaw from the
+    # resolver's own receipt and refuse when that receipt says it could not
+    # separate front from back.
+    yaw = args.yaw
+    if args.front_axis is not None:
+        axis = json.loads(args.front_axis.read_text(encoding="utf-8"))
+        if not axis.get("front_back_separated"):
+            print(json.dumps({
+                "schema": "lowvram3d_chirality_v3",
+                "verdict": "FRONT_AXIS_UNRESOLVED",
+                "front_axis": str(args.front_axis),
+                "antipode_margin": axis.get("antipode_margin"),
+                "note": ("the front axis was not separated from its antipode, "
+                         "so no chirality verdict is meaningful"),
+            }, indent=2))
+            return 2
+        yaw = float(axis["best_yaw_deg"])
+    if yaw is None:
+        parser.error("one of --yaw or --front-axis is required")
+
+    result = resolve(args.mesh, args.source, yaw, args.sheet)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2))
