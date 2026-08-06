@@ -1,0 +1,105 @@
+{
+  "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
+  "status": "EXECUTED_384_QA_REJECTED",
+  "asset": "antlered_bird_skull_shaman",
+  "purpose": "Six-view texture source for the shaman. Single-view projection reached only 16.5% observed coverage of the owned atlas; the other 83.5% was dilated invention, which is what the patchwork front view actually is. One photograph carries one side.",
+  "generator_family": "MVADAPTER_SD21",
+  "conditioning": "IMAGE_PLUS_GEOMETRY",
+  "text_conditioned_fallback": "FORBIDDEN",
+  "sdxl_route": "REJECTED",
+  "comfyui_generation_route": "REJECTED",
+  "pipeline_class": "LowVRAMMVAdapterI2MVSDPipeline",
+  "pipeline_module": "workers/lowvram_mvadapter_i2mv_sd21.py",
+  "mvadapter_source": "C:\\AI\\mvadapter-upstream-inspection",
+  "base_model": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--stabilityai--stable-diffusion-2-1-base",
+  "adapter": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--huanngzh--mv-adapter\\mvadapter_ig2mv_sd21.safetensors",
+  "adapter_sha256": "7940d6197be614fc6a3483ece1ed37cac850f94375d127ada6ae6464ce9252c3",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_mt_uv_zup.glb",
+  "immutable_mesh_sha256": "e77314b81d2ab6451a9558da588913c098064d3834e9ed83bdd8b4d79172b4cd",
+  "mesh_provenance": {
+    "canonical_input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_miniturbo.glb",
+    "generator": "hunyuan3d-dit-v2-mini-turbo, octree ladder 384:3000,320:2000,256:1500, 5 steps, seed 12345, conditioning 512x512",
+    "decimation": "open3d quadric 1,112,498 -> 400,000 faces, 12.6 s, still watertight, 21 shells",
+    "unwrap": "workers/unwrap_mesh_uv.py xatlas 2048; 4,611 charts, overlap 0.0, degenerate 0.019%, PROVEN",
+    "orientation": "rotated +151.67 deg about Y to put the painted face at +Z (derived from the projection camera, not the silhouette), then +90 deg about X into the controls builder's Z-up basis; world_up in build_mvadapter_cpu_controls.py is hardcoded [0,0,1] and the first control build laid the figure on its side",
+    "geometry_mutated": false
+  },
+  "camera_semantics": {
+    "classification": "PHOTOGRAPHED_VIEW_INDEX_0_AFTER_AUDIT_RELABEL",
+    "photographed_view_index": 0,
+    "audit_permutation": [
+      3,
+      0,
+      1,
+      2,
+      4,
+      5
+    ],
+    "front_selection_basis": "silhouette_iou_against_source",
+    "front_silhouette_iou": {
+      "raw_3": 0.6828,
+      "raw_1": 0.5175,
+      "margin": 0.1653
+    },
+    "note": "the tail-colour heuristic in audit_and_relabel_mvadapter_controls.py would have chosen raw 1 and put the skull face on the rear control; it counted 6448 vs 6559 orange pixels on a subject with no tail"
+  },
+  "primary": {
+    "model": "SD2.1",
+    "views": 6,
+    "resolution": 384,
+    "steps": 20,
+    "guidance_scale": 1.0,
+    "reference_conditioning_scale": 1.0,
+    "control_conditioning_scale": 1.0,
+    "seed": 12345,
+    "scheduler": "DDPM_WITH_SHIFT_SNR",
+    "shift_mode": "interpolated",
+    "shift_scale": 8.0,
+    "offload": "SEQUENTIAL",
+    "attention": "SDPA",
+    "attention_slicing": "DISABLED",
+    "vae_slicing": "ON",
+    "dtype": "float16",
+    "vae_dtype": "float32",
+    "condition_encoder_dtype": "float32",
+    "bf16": "DISABLED",
+    "flash_attention_2": "DISABLED",
+    "xformers_required": false,
+    "conditioning_reference": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman4k_512.png",
+    "conditioning_reference_sha256": "e9c995caa7fdefdaabf54a32e3edac8177db157b4d87f6f2f2e6f9b893361b90",
+    "control_tensor": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\controls_384_audited\\control_tensor.npy",
+    "control_tensor_sha256": "7d4b55d68ff338f1b8d8e3793c8274d68b81f6814c61662da9f00198fc05aab4",
+    "camera_contract": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\controls_384_audited\\camera_contract.json",
+    "camera_contract_sha256": "334839afb58c48344c1bc8495f6ae816d9372d1a616b5e36fa76a9b49e6ac389"
+  },
+  "oom_fallback": {
+    "authorized_only_after_genuine_cuda_oom": false,
+    "note": "No 256 controls were built for this asset. A fallback would need its own control tensor and camera contract, so there is nothing to fall back to; an OOM here is a hard stop, not a retry.",
+    "second_oom": "HARD_BLOCKER",
+    "adapter_switch": "FORBIDDEN",
+    "text_conditioned_fallback": "FORBIDDEN"
+  },
+  "prompt": "high quality clean albedo reference of the same antlered bird-skull shaman, layered weathered cloth robes, bone staff with hanging pendants and charms, consistent materials, consistent identity, flat neutral lighting",
+  "negative_prompt": null,
+  "classifier_free_guidance": false,
+  "attempts_authorized": 1,
+  "attempts_used": 0,
+  "gpu_sequence_consumed": true,
+  "fallback_eligible": false,
+  "next_action": "USER_REVIEW_REQUIRED",
+  "twenty_step_authorization": "INHERITED_FROM_PANDA_384X20_QA_PASSED",
+  "repair_proofs": {
+    "vae_fp32": "panda: proof/benchmarks/20260803-mvadapter-vae-fp16-nan-root-cause.json",
+    "cudnn_guard": "panda: proof/benchmarks/20260803-mvadapter-cudnn-convolution-guard.json",
+    "note": "Both are hardware defects of this GTX 1660 SUPER, not asset-specific, so they carry over unchanged."
+  },
+  "canonical_basis": "z_up_builder_basis",
+  "canonical_orientation": {
+    "up_axis_mesh_local": [
+      0,
+      0,
+      1
+    ],
+    "evidence": "build_mvadapter_cpu_controls.py hardcodes world_up=[0,0,1]. The Y-up glTF build produced four horizontal views of a figure lying down, with the standing views landing in the top/bottom slots. Pre-rotating into Z-up fixed it; verified on the normal contact sheet."
+  }
+}

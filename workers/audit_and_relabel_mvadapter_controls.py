@@ -100,7 +100,11 @@ def _source_front_evidence(path: Path) -> dict[str, Any]:
         "tail_orange_pixels_left": left,
         "tail_orange_pixels_right": right,
         "tail_side": "right" if right > left else "left",
-        "front_axis_evidence": "portrait_source_with_tail_on_right",
+        "tail_rule_status": ("FALLBACK_ONLY: red panda anatomy, kept only to "
+                             "break a silhouette tie"),
+        # The matte itself, for the silhouette comparison that now decides
+        # front-versus-rear. Not serialised: stripped before the report is written.
+        "alpha": alpha,
     }
 
 
@@ -124,6 +128,71 @@ def _mask_evidence(path: Path) -> dict[str, Any]:
         "lower_right_pixels": right,
         "lower_side_delta": int(right - left),
         "tail_side_candidate": "right" if right > left else "left",
+    }
+
+
+#: Below this IoU margin between the two opposed views, silhouette registration
+#: is not deciding anything and the tail rule is allowed to break the tie.
+FRONT_IOU_DECISIVE_MARGIN = 0.03
+
+
+def _normalised_silhouette(mask: np.ndarray, size: int = 256) -> np.ndarray:
+    """Crop to the subject and letterbox it, so only shape is compared."""
+    bbox = _bbox(mask)
+    if bbox is None:
+        return np.zeros((size, size), bool)
+    x0, y0, x1, y1 = bbox
+    crop = mask[y0:y1 + 1, x0:x1 + 1].astype(np.uint8)
+    height, width = crop.shape
+    scale = min(size / height, size / width)
+    resized = np.asarray(Image.fromarray(crop * 255).resize(
+        (max(1, int(width * scale)), max(1, int(height * scale))),
+        Image.NEAREST)) > 127
+    out = np.zeros((size, size), bool)
+    top = (size - resized.shape[0]) // 2
+    left = (size - resized.shape[1]) // 2
+    out[top:top + resized.shape[0], left:left + resized.shape[1]] = resized
+    return out
+
+
+def _front_by_silhouette(pair: list[int], masks: dict[int, dict[str, Any]],
+                         source_alpha: np.ndarray) -> dict[str, Any]:
+    """Which of two opposed views is the one that was photographed.
+
+    The rule this replaces asked which side an orange-brown "tail" sat on. That
+    is a red panda's anatomy, not a property of subjects in general, and it was
+    applied to every asset. On the bird-skull shaman it counted 6448 orange
+    pixels on the left against 6559 on the right -- a 1.7% difference in robe
+    pigment -- and staked front-versus-rear on it. It chose wrong: the resulting
+    "front" control showed the back of the hood and the "rear" control showed
+    the skull face, which would have had MV-Adapter paint a face onto the back
+    of the head.
+
+    The photographed view is the one whose silhouette matches the source, which
+    is measurable and needs no anatomy. Both are normalised to shape alone --
+    cropped to the subject and letterboxed -- because the control render and the
+    source photograph share no framing or scale.
+
+    Returned rather than decided here: a near-symmetric subject can leave the two
+    genuinely tied, and then the caller falls back to the old rule rather than
+    pretending a coin flip is a measurement.
+    """
+    reference = _normalised_silhouette(source_alpha)
+    scores = {}
+    for index in pair:
+        candidate = _normalised_silhouette(
+            np.asarray(Image.open(masks[index]["path"]).convert("L")) > 32)
+        union = np.count_nonzero(reference | candidate)
+        scores[index] = (float(np.count_nonzero(reference & candidate) / union)
+                         if union else 0.0)
+    ordered = sorted(scores, key=lambda i: scores[i], reverse=True)
+    margin = scores[ordered[0]] - scores[ordered[1]]
+    return {
+        "iou_per_raw_index": {str(k): round(v, 4) for k, v in scores.items()},
+        "front_raw_index": int(ordered[0]),
+        "margin": round(margin, 4),
+        "decisive": bool(margin >= FRONT_IOU_DECISIVE_MARGIN),
+        "margin_threshold": FRONT_IOU_DECISIVE_MARGIN,
     }
 
 
@@ -151,10 +220,18 @@ def _choose_permutation(views: list[dict[str, Any]], masks: dict[int, dict[str, 
         })
     selected_pair = min(pair_reports, key=lambda item: (item["source_aspect_error"], item["opposed_aspect_error"]))
     selected_pair["selected"] = True
-    front_raw = next(
-        index for index in selected_pair["raw_indices"]
-        if masks[index]["tail_side_candidate"] == source_tail_side
-    )
+    tail_front_raw = next(
+        (index for index in selected_pair["raw_indices"]
+         if masks[index]["tail_side_candidate"] == source_tail_side),
+        selected_pair["raw_indices"][0])
+    silhouette = _front_by_silhouette(
+        selected_pair["raw_indices"], masks, source["alpha"])
+    if silhouette["decisive"]:
+        front_raw = silhouette["front_raw_index"]
+        front_basis = "silhouette_iou_against_source"
+    else:
+        front_raw = tail_front_raw
+        front_basis = "tail_side_fallback_silhouette_tied"
     rear_raw = next(index for index in selected_pair["raw_indices"] if index != front_raw)
     remaining = [index for index in HORIZONTAL_RAW_INDICES if index not in {front_raw, rear_raw}]
     # With the front camera's screen-right vector, the source-facing tail proves
@@ -168,6 +245,9 @@ def _choose_permutation(views: list[dict[str, Any]], masks: dict[int, dict[str, 
     left_raw = next(index for index in remaining if index != right_raw)
     output_to_raw = [front_raw, right_raw, rear_raw, left_raw, 4, 5]
     return {
+        "front_basis": front_basis,
+        "silhouette_registration": silhouette,
+        "tail_front_raw_index": int(tail_front_raw),
         "source_tail_side": source_tail_side,
         "selected_horizontal_pair": selected_pair["raw_indices"],
         "pair_comparison": pair_reports,
@@ -307,7 +387,7 @@ def audit_and_relabel(mesh: Path, source_image: Path, source_dir: Path, output_d
         "mesh_triangles": int(triangles.shape[0]),
         "normal_source": normal_source,
         "gltf_scene_transform": scene_report,
-        "source_image": source_evidence,
+        "source_image": {k: v for k, v in source_evidence.items() if k != "alpha"},
         "raw_views": [
             {
                 "raw_index": int(view["index"]),
@@ -324,13 +404,20 @@ def audit_and_relabel(mesh: Path, source_image: Path, source_dir: Path, output_d
             for view in source_views
         ],
         "front_axis_determination": {
+            "basis": permutation["front_basis"],
+            "silhouette_registration": permutation["silhouette_registration"],
+            "tail_rule_would_have_chosen": permutation["tail_front_raw_index"],
             "source_tail_side": source_evidence["tail_side"],
             "selected_pair": permutation["selected_horizontal_pair"],
             "front_raw_index": permutation["front_raw_index"],
             "mesh_local_object_to_camera": mesh_local_object_to_camera.tolist(),
             "mesh_local_axis": new_contract["true_front_axis"]["mesh_local_axis"],
             "required_rotation_deg_z_to_legacy_front": round(rotation_deg_z, 6),
-            "evidence": "source image tail is right; the aspect-matched mesh pair is raw indices 1/3; raw 1 has the right-side tail lobe",
+            "evidence": (
+                "aspect selects the opposed pair; silhouette IoU against the "
+                "source matte then picks which of the two was photographed. "
+                "The tail-colour rule is a fallback for a genuine tie only -- "
+                "it is red panda anatomy and it chose wrong on the shaman."),
         },
         "index_permutation": permutation["output_index_to_raw_index"],
         "output_semantics": list(OUTPUT_SEMANTICS),

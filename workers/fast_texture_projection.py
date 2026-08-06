@@ -246,6 +246,26 @@ def depth_buffer(screen: np.ndarray, depth: np.ndarray, triangles: np.ndarray,
 
 
 # --------------------------------------------------------------------------- camera
+#: Model space has +Y up. Image space has row indices increasing DOWNWARD. Every
+#: consumer of `rotation()` maps the rotated (x, y) straight onto (col, row), so
+#: without this the silhouette is rasterised upside down and the camera search
+#: scores an inverted mesh against an upright matte.
+#:
+#: It did not fail loudly, which is why it survived. The search still returns a
+#: pose -- the least-bad tilt that hides the inversion -- so the symptom is a flat
+#: score landscape rather than an error. Measured on the Mini Turbo shaman, whose
+#: silhouette is strongly yaw-dependent:
+#:
+#:     as shipped   best IoU 0.585 at yaw 225   (facing away, and 0.475-0.585
+#:                                               across the whole 360 sweep)
+#:     Y negated    best IoU 0.748 at yaw 330   (near front, as it should be)
+#:
+#: Applied here rather than at the three call sites so the search, the vertex
+#: projection and the texel sampling cannot disagree. Only the y row changes, so
+#: `view_normal[:, 2]` and therefore the front-facing gate are untouched.
+IMAGE_SPACE = np.diag([1.0, -1.0, 1.0])
+
+
 def rotation(yaw: float, pitch: float, roll: float) -> np.ndarray:
     cy, sy = np.cos(np.radians(yaw)), np.sin(np.radians(yaw))
     cp, sp = np.cos(np.radians(pitch)), np.sin(np.radians(pitch))
@@ -253,7 +273,7 @@ def rotation(yaw: float, pitch: float, roll: float) -> np.ndarray:
     ry = np.array([[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]])
     rx = np.array([[1, 0, 0], [0, cp, -sp], [0, sp, cp]])
     rz = np.array([[cr, -sr, 0], [sr, cr, 0], [0, 0, 1]])
-    return rz @ rx @ ry
+    return IMAGE_SPACE @ rz @ rx @ ry
 
 
 def fit_to_mask(rotated: np.ndarray, mask: np.ndarray) -> tuple[float, np.ndarray]:
@@ -269,6 +289,40 @@ def fit_to_mask(rotated: np.ndarray, mask: np.ndarray) -> tuple[float, np.ndarra
     scale = float(np.min(target_size / span))
     centred = target + (target_size - span * scale) * 0.5
     return scale, centred - low * scale
+
+
+def canonical_orientation(matrix: np.ndarray) -> dict:
+    """Where the painted face ends up, and the spin that brings it to +Z.
+
+    A generator has no notion of "front": Mini Turbo returned this shaman facing
+    152 degrees away from +Z, so a viewer's front camera showed its unpainted
+    back and the good texture sat on the "back" thumbnail. Nothing is wrong with
+    the asset -- only with which way it happens to point.
+
+    Silhouette IoU cannot settle it. A figure's front and back silhouettes are
+    near mirrors, and on this shaman they scored 0.689 against 0.560 -- close
+    enough that the wrong one wins on a different subject.
+
+    The camera that painted the atlas already knows. A texel was accepted when
+    `-(n @ matrix.T)[2] > 0`, so the painted hemisphere is centred on `-matrix[2]`
+    in object space. That is a fact about where the paint went, not a guess about
+    shape, and it is the only orientation signal in the pipeline that cannot be
+    fooled by a symmetric outline.
+
+    Reported rather than applied: this worker guarantees `geometry_preserved`,
+    so rotating here would break its own contract.
+    """
+    front = -np.asarray(matrix)[2]
+    front = front / max(float(np.linalg.norm(front)), 1e-12)
+    # Yaw about +Y carrying `front` onto +Z, in the same convention as the ry
+    # block of `rotation()`: x' = x cos a + z sin a, z' = -x sin a + z cos a.
+    degrees = float(-np.degrees(np.arctan2(front[0], front[2])))
+    return {
+        "painted_face_direction": [round(float(v), 4) for v in front],
+        "rotate_about_y_degrees": round(degrees, 2),
+        "note": ("apply this Y rotation to put the painted face at +Z; "
+                 "derived from the projection camera, not from the silhouette"),
+    }
 
 
 def project(vertices: np.ndarray, matrix: np.ndarray, scale: float,
@@ -543,6 +597,7 @@ def main() -> None:
         "atlas_size": size,
         "padding_px": args.padding_px,
         "camera": {k: v for k, v in camera.items() if k != "matrix"},
+        "canonical_orientation": canonical_orientation(camera["matrix"]),
         "triangles": int(len(triangles)),
         "vertices": int(len(positions)),
         "atlas": {
