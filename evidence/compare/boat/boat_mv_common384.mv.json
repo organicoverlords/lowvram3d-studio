@@ -1,0 +1,25 @@
+{
+  "schema": "lowvram3d_hunyuan_mv_shape_v1",
+  "checkpoint": "hunyuan3d-dit-v2-mv-turbo",
+  "views": {
+    "front": "evidence\\compare\\boat\\refsheet\\panels_common\\front.png",
+    "left": "evidence\\compare\\boat\\refsheet\\panels_common\\left.png",
+    "back": "evidence\\compare\\boat\\refsheet\\panels_common\\back.png"
+  },
+  "mesh_out": "evidence\\compare\\boat\\boat_mv_common384.glb",
+  "steps": 5,
+  "guidance_scale": 5.0,
+  "octree_resolution": 384,
+  "num_chunks": 3000,
+  "seed": 2026,
+  "flashvdm": true,
+  "mc_algo": "dmc",
+  "topk_mode": "mean",
+  "model_cpu_offload": true,
+  "turbo_vae_subfolder": "hunyuan3d-vae-v2-0-turbo",
+  "geo_decoder_before": "CrossAttentionDecoder",
+  "geo_decoder_downsample_ratio": 2,
+  "faces": 1522912,
+  "load_seconds": 10.9,
+  "shape_seconds": 224.4
+}

@@ -1,0 +1,65 @@
+{
+  "schema": "lowvram3d_orthographic_panels_v1",
+  "sheet": "evidence\\compare\\boat\\refsheet\\sheet.png",
+  "canvas": 512,
+  "margin": 0.06,
+  "shared_ink_height_px": 376.15,
+  "baseline_row": 444,
+  "scale_spread": 1.1327,
+  "panels": {
+    "front": {
+      "path": "evidence\\compare\\boat\\refsheet\\panels_common\\front.png",
+      "sheet_box": [
+        661,
+        13,
+        941,
+        474
+      ],
+      "sheet_ink_size": [
+        280,
+        461
+      ],
+      "scale": 0.81594,
+      "placed_size": [
+        228,
+        376
+      ]
+    },
+    "left": {
+      "path": "evidence\\compare\\boat\\refsheet\\panels_common\\left.png",
+      "sheet_box": [
+        967,
+        13,
+        1518,
+        473
+      ],
+      "sheet_ink_size": [
+        551,
+        460
+      ],
+      "scale": 0.81771,
+      "placed_size": [
+        451,
+        376
+      ]
+    },
+    "back": {
+      "path": "evidence\\compare\\boat\\refsheet\\panels_common\\back.png",
+      "sheet_box": [
+        47,
+        479,
+        337,
+        886
+      ],
+      "sheet_ink_size": [
+        290,
+        407
+      ],
+      "scale": 0.9242,
+      "placed_size": [
+        268,
+        376
+      ]
+    }
+  }
+}
