@@ -26,8 +26,62 @@ from mesh_io import read_glb
 
 # Top and bottom see the character at a grazing angle over most of its body, so their
 # observations are kept but discounted relative to the four horizontal cameras.
+#
+# 0.85 was far too generous. On the sky whale, top and bottom each claimed about
+# 363,000 texels -- 60% of all observed coverage between them -- against the
+# front's 436,000. They are also the two views MV-Adapter invents most freely,
+# having the least conditioning support: the whale's bottom came back as a
+# chrome-and-copper banded underside that reads as planking and looks nothing
+# like the subject. A weight that close to 1.0 lets that win wherever it
+# overlaps a horizontal view.
+#
+# 0.45 keeps them as the only source for genuinely down-facing surfaces, where
+# the alternative is dilated invention, while any horizontal observation of the
+# same texel now outranks them.
 SEMANTIC_RELIABILITY = {"front": 1.0, "rear": 1.0, "left": 1.0, "right": 1.0,
-                        "top": 0.85, "bottom": 0.85}
+                        "top": 0.45, "bottom": 0.45}
+
+
+def bilinear_sample(image: "np.ndarray", xs: "np.ndarray", ys: "np.ndarray",
+                    mask: "np.ndarray") -> "np.ndarray":
+    """Sample a view image with bilinear interpolation, staying inside the mask.
+
+    The projection sampled with `np.rint`, i.e. nearest neighbour. The generated
+    views are 384 px and the atlas is 2048, and on the whale that worked out to
+    6.6 atlas texels per source pixel -- about a 2.6x linear upscale -- so every
+    source pixel became a visible 2-3 texel block. That is most of why the
+    result read as pixelated rather than merely soft.
+
+    Neighbours outside the control mask are excluded and the weights
+    renormalised, because a bilinear tap that reaches past the silhouette drags
+    the grey background inward and leaves a dark fringe along every edge, which
+    is the artefact nearest sampling was presumably avoiding. Where no neighbour
+    is inside the mask the nearest texel is used unchanged.
+    """
+    import numpy as np
+
+    height, width = mask.shape
+    x0 = np.floor(xs).astype(np.int64)
+    y0 = np.floor(ys).astype(np.int64)
+    fx = (xs - x0)[:, None]
+    fy = (ys - y0)[:, None]
+
+    total = np.zeros((xs.shape[0], image.shape[2]), np.float64)
+    weight = np.zeros((xs.shape[0], 1), np.float64)
+    for dy, wy in ((0, 1.0 - fy), (1, fy)):
+        for dx, wx in ((0, 1.0 - fx), (1, fx)):
+            cx = np.clip(x0 + dx, 0, width - 1)
+            cy = np.clip(y0 + dy, 0, height - 1)
+            w = (wx * wy) * mask[cy, cx][:, None]
+            total += image[cy, cx].astype(np.float64) * w
+            weight += w
+
+    nearest = image[np.clip(np.rint(ys).astype(np.int64), 0, height - 1),
+                    np.clip(np.rint(xs).astype(np.int64), 0, width - 1)]
+    usable = weight[:, 0] > 1e-6
+    out = nearest.astype(np.float64)
+    out[usable] = total[usable] / weight[usable]
+    return out
 
 
 def sha256_file(path: Path) -> str:
@@ -259,7 +313,8 @@ def main() -> int:
         )
         confidence = np.where(valid, confidence, 0.0)
 
-        samples.append(aligned[cy, cx].astype(np.float64))
+        samples.append(bilinear_sample(aligned, pixel[:, 0], pixel[:, 1],
+                                       control_mask))
         confidences.append(confidence)
         labels.append(semantic)
         diagnostics.append({
