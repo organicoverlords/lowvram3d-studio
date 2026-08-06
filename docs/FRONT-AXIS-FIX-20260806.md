@@ -1,3 +1,29 @@
+> # RETRACTED, 2026-08-06
+>
+> **The camera was never 180 degrees wrong. The original fit was correct.**
+>
+> Rendering both candidate poses in the projector's own `rotation()` convention
+> -- no translation between frames, which is what every earlier comparison got
+> wrong -- shows the fitted pose at yaw -1.667 carrying the muzzle, nose, eyes,
+> whiskers, ears, the rifle across the chest and the tail on the viewer's right,
+> matching the source. The 178.333 "fix" is the back of the hood.
+> See `evidence/compare/panda2/projector_poses.png`.
+>
+> The DINO resolver never disagreed either. It reported front at yaw 345 in its
+> own convention; 345 is -15, and the projector fitted -1.667. Those are the same
+> direction to within the 15 degree sweep grid. Its output was read as
+> contradicting the fit when it was confirming it.
+>
+> The rejected-texel counts were also honest all along: 16,194 at -1.667 against
+> 85,847 at 178.333, because 178.333 is the wrong pose. That number was treated
+> as a problem to be explained rather than as the answer.
+>
+> `front_texture_fixed` therefore took a correct camera and rotated it onto the
+> back of the head. What survives from this document: the chirality result (the
+> mesh is not mirrored, control-validated), the measurement below showing the
+> silhouette objective discriminates handedness rather than facing, and the
+> reviews. What does not survive is the premise -- the defect it sets out to fix.
+
 # The front axis, and why every criterion so far answered a different question
 
 The red panda's source photograph was projected onto the back of its head. This
@@ -170,6 +196,53 @@ The tell was the absolute score: 0.2249, against the 0.4224 the resolver already
 recorded at its own front. Mixing those two conventions is the specific mistake
 that produced the previous three wrong answers, and it very nearly produced a
 fourth inside the script written to stop it.
+
+## What the silhouette objective actually measures
+
+DeepSeek attacked the premise rather than the fix, and was half right in the half
+that mattered. The "convex body" framing above is wrong: under orthographic
+projection the silhouette from **u** and from **-u** is the same set for *any*
+body, convex or not. Convexity has nothing to do with it.
+
+But the two are not the same *image*. Looking from the far side reverses image x,
+so the two silhouettes are horizontal mirrors of each other. Rasterising both
+poses confirms it directly:
+
+```
+antipode vs fliplr(fitted)            0.9506   <- the antipode is the mirror
+source silhouette vs its own mirror   0.6655
+antipode vs source                    0.6569   <- essentially the same number
+```
+
+So IoU against a fixed source mask is 180-degree periodic **only for a laterally
+symmetric silhouette**. For everything else, the "fore-aft" comparison the fit
+appears to be making is really a handedness comparison: scoring the antipode
+against the source is almost exactly scoring the source against its own mirror.
+The confident 0.915-against-0.657 gap is the panda's tail, not its face.
+
+This is why the objective is not degenerate here in the way this document
+claimed, and why it picked correctly. It is also why it will fail on a
+laterally symmetric subject -- there the two numbers really do coincide, and
+nothing in the silhouette can separate front from back. `resolve_front_axis_dino`
+remains the right tool for that case; it just was not needed for this one.
+
+`workers/check_antipode_is_mirror.py` is the measurement, and it is worth keeping
+because it takes an unfalsifiable-looking claim -- "these two poses are
+antipodes" -- and turns it into one line that must come out near 1.0.
+
+## A sign error, and how it was caught
+
+The first run of that measurement reported the *opposite* of the recorded IoUs
+and looked like a contradiction in the evidence. It was not. The receipt says the
+fit was `yaw -1.667, pitch +13.333`; the test had been written with `-13.333`, so
+every pose it measured belonged to the mirrored family, and it read the source
+alpha from the 512 conditioning RGBA rather than the 2048 matte the fit actually
+consumed (`alpha_mask_sha256 e6ebfd86...`, verified by hashing).
+
+Both were found by going back to `projection_receipt.json` instead of arguing
+from the numbers. The receipts were right; the reasoning on top of them was not,
+four separate times today. **Read the receipt before theorising about what it
+means.**
 
 ## Still open
 
