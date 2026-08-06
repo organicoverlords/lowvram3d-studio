@@ -21,21 +21,28 @@ IMAGE="$1"; OUT="$2"; DIR="$(dirname "$OUT")"
 shift 2
 SEEDS="${*:-12345 777 20260806 4242 31337 8675309}"
 
+# Overridable so a setting listed as "does not work" can be re-tested under the
+# retry regime. Several such entries were written from single attempts, before
+# it was clear that a single failure here means almost nothing.
+ATLAS="${ATLAS:-1024}"
+RES="${RES:-512}"
+TAG="${TAG:-}"
+
 for seed in $SEEDS; do
   echo "=== seed $seed ==="
   "$PY" workers/trellis_run.py \
       --image "$IMAGE" --out "$OUT" \
-      --res 512 --atlas 1024 --seed "$seed" \
-      --receipt "$DIR/run_seed$seed.json" \
-      --log "$DIR/run_seed$seed.log" > "$DIR/stdout_seed$seed.txt" 2>&1
+      --res "$RES" --atlas "$ATLAS" --seed "$seed" \
+      --receipt "$DIR/run$TAG-seed$seed.json" \
+      --log "$DIR/run$TAG-seed$seed.log" > "$DIR/stdout$TAG-seed$seed.txt" 2>&1
   status=$?
-  faces=$(grep -oE 'mesh V=[0-9]+ F=[0-9]+' "$DIR/run_seed$seed.log" 2>/dev/null | tail -1)
+  faces=$(grep -oE 'mesh V=[0-9]+ F=[0-9]+' "$DIR/run$TAG-seed$seed.log" 2>/dev/null | tail -1)
   if [ $status -eq 0 ] && [ -s "$OUT" ]; then
-    echo "SUCCESS seed=$seed  $faces"
-    echo "$seed" > "$DIR/winning_seed.txt"
+    echo "SUCCESS seed=$seed res=$RES atlas=$ATLAS  $faces"
+    echo "$seed" > "$DIR/winning_seed$TAG.txt"
     exit 0
   fi
-  echo "failed seed=$seed status=$status  ${faces:-no geometry}  $(tail -3 "$DIR/run_seed$seed.log" | tr '\n' ' ')"
+  echo "failed seed=$seed status=$status  ${faces:-no geometry}  $(tail -3 "$DIR/run$TAG-seed$seed.log" | tr '\n' ' ')"
 done
 echo "ALL SEEDS FAILED"
 exit 1
