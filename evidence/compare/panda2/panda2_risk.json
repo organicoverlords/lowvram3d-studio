@@ -1,0 +1,119 @@
+{
+  "schema_version": "feature_risk_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda2_512.png",
+  "input_size": 512,
+  "structural_grid": 32,
+  "structural_cell_px": 16.0,
+  "regions_examined": 51,
+  "at_risk": 22,
+  "shape_lost": 27,
+  "strands": 2,
+  "findings": [
+    {
+      "bbox": [
+        181,
+        30,
+        196,
+        44
+      ],
+      "area_px": 102,
+      "thickness_px": 8.2,
+      "thickness_cells": 0.52,
+      "run_px": 26.8,
+      "run_cells": 1.68,
+      "verdict": "at_risk"
+    },
+    {
+      "bbox": [
+        121,
+        369,
+        130,
+        388
+      ],
+      "area_px": 98,
+      "thickness_px": 8.0,
+      "thickness_cells": 0.5,
+      "run_px": 25.0,
+      "run_cells": 1.57,
+      "verdict": "at_risk"
+    },
+    {
+      "bbox": [
+        204,
+        24,
+        217,
+        40
+      ],
+      "area_px": 97,
+      "thickness_px": 6.3,
+      "thickness_cells": 0.4,
+      "run_px": 28.7,
+      "run_cells": 1.79,
+      "verdict": "at_risk"
+    },
+    {
+      "bbox": [
+        361,
+        214,
+        370,
+        233
+      ],
+      "area_px": 97,
+      "thickness_px": 7.2,
+      "thickness_cells": 0.45,
+      "run_px": 26.6,
+      "run_cells": 1.66,
+      "verdict": "at_risk"
+    },
+    {
+      "bbox": [
+        95,
+        264,
+        102,
+        290
+      ],
+      "area_px": 83,
+      "thickness_px": 6.0,
+      "thickness_cells": 0.38,
+      "run_px": 29.3,
+      "run_cells": 1.83,
+      "verdict": "at_risk"
+    }
+  ],
+  "detail_passes": [
+    {
+      "crop_px": [
+        33,
+        80,
+        187,
+        352
+      ],
+      "crop_normalised": [
+        0.0645,
+        0.1562,
+        0.3652,
+        0.6875
+      ],
+      "lost_area_px": 823,
+      "magnification": 1.88,
+      "structural_cells_gained": 1.9
+    },
+    {
+      "crop_px": [
+        310,
+        180,
+        404,
+        334
+      ],
+      "crop_normalised": [
+        0.6055,
+        0.3516,
+        0.7891,
+        0.6523
+      ],
+      "lost_area_px": 348,
+      "magnification": 3.32,
+      "structural_cells_gained": 3.3
+    }
+  ]
+}
