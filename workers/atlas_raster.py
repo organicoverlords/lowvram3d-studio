@@ -25,7 +25,10 @@ import numpy as np
 #: Bounding-box extents, in texels, that each batch is padded up to.
 TIERS = (1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512, 1024, 2048, 4096)
 #: Candidate texel evaluations per batch, which is what bounds peak memory here.
-BUDGET = 8_000_000
+# Keep peak temporary arrays small enough for the full production GLB to remain
+# resident alongside the atlas and texture buffers.  The census is unchanged;
+# this only increases the number of deterministic batches.
+BUDGET = 1_000_000
 
 
 def census(uv: np.ndarray, tris: np.ndarray, size: int, *, interior: float = 0.0,
