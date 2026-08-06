@@ -33,12 +33,28 @@ function Hash-Lower([string]$Path) {
 function Resolve-Python {
     $candidates = @(
         "C:\AI\HY3D2\python_standalone\python.exe",
-        "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
-        (Get-Command python.exe -ErrorAction SilentlyContinue).Source
-    ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
+        "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe"
+    )
+    $pathPython = Get-Command python.exe -ErrorAction SilentlyContinue
+    if ($pathPython) {
+        $candidates += [string]$pathPython.Source
+    }
     foreach ($candidate in $candidates) {
-        & $candidate -c "import cv2, numpy, PIL, pytest" 2>$null
-        if ($LASTEXITCODE -eq 0) { return [string]$candidate }
+        if (-not $candidate -or -not (Test-Path -LiteralPath $candidate -PathType Leaf)) {
+            continue
+        }
+        $previousPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = "Continue"
+            & $candidate -c "import cv2, numpy, PIL, pytest" 2>$null
+            $exitCode = [int]$LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $previousPreference
+        }
+        if ($exitCode -eq 0) {
+            return [string]$candidate
+        }
     }
     throw "No suitable Python environment was found"
 }
@@ -47,12 +63,18 @@ function Resolve-Blender {
     $candidates = @(
         "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe",
         "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe",
-        "C:\Program Files\Blender Foundation\Blender 5.0\blender.exe",
-        (Get-Command blender.exe -ErrorAction SilentlyContinue).Source
-    ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
-    $resolved = [string]($candidates | Select-Object -First 1)
-    if (-not $resolved) { throw "Blender was not found" }
-    return $resolved
+        "C:\Program Files\Blender Foundation\Blender 5.0\blender.exe"
+    )
+    $pathBlender = Get-Command blender.exe -ErrorAction SilentlyContinue
+    if ($pathBlender) {
+        $candidates += [string]$pathBlender.Source
+    }
+    foreach ($candidate in $candidates) {
+        if ($candidate -and (Test-Path -LiteralPath $candidate -PathType Leaf)) {
+            return [string]$candidate
+        }
+    }
+    throw "Blender was not found"
 }
 
 function Run-Native(
@@ -61,8 +83,29 @@ function Run-Native(
     [string]$Stdout,
     [string]$Stderr
 ) {
-    & $Executable @Arguments 1> $Stdout 2> $Stderr
-    return [int]$LASTEXITCODE
+    $stdoutParent = Split-Path -Parent $Stdout
+    $stderrParent = Split-Path -Parent $Stderr
+    foreach ($directory in @($stdoutParent, $stderrParent)) {
+        if ($directory) {
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+        }
+    }
+
+    # Windows PowerShell 5.1 converts any native stderr output into a
+    # NativeCommandError when ErrorActionPreference is Stop. Blender writes
+    # harmless warnings to stderr even on exit code 0. Temporarily allow native
+    # stderr, then use the process exit code as the sole execution result.
+    $previousPreference = $ErrorActionPreference
+    $exitCode = -1
+    try {
+        $ErrorActionPreference = "Continue"
+        & $Executable @Arguments 1> $Stdout 2> $Stderr
+        $exitCode = [int]$LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousPreference
+    }
+    return $exitCode
 }
 
 if (Test-Path -LiteralPath $Root) {
