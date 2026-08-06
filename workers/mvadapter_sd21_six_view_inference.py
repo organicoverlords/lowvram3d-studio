@@ -234,7 +234,20 @@ def validate_preflight(config_path: Path, attempt: str, primary_receipt: Path | 
     if float(camera.get("top_bottom_direction_dot", 0.0)) > -0.999:
         raise RuntimeError("MVADAPTER_CAMERA_TOP_BOTTOM_NOT_OPPOSITE")
     semantic_names = validate_camera_semantics(camera)
-    if int(selected["views"]) != 6 or int(selected["resolution"]) not in (256, 384):
+    #: 384 was chosen as the ceiling this 6 GB card could be trusted with, and
+    #: 256 as the OOM fallback. 512 is admitted because the ceiling turned out to
+    #: be set well below the hardware: the whale's 384 run peaked at 2.36 GB
+    #: allocated and 2.40 GB reserved, against 6144 MiB total with ~5 GB free.
+    #:
+    #: It is admitted to be *tested*, not because it is known to fit. 512 is 1.78x
+    #: the pixels and attention cost grows faster than that, so an OOM here is a
+    #: real possibility -- and it stays a hard stop rather than silently falling
+    #: back, exactly as 384 does. The reason to try is that texture resolution is
+    #: the binding constraint on output quality: at 384 the six views supply
+    #: ~186,000 usable source pixels for ~1,218,000 observed atlas texels, a 2.6x
+    #: linear upscale, which no resampling can undo.
+    ALLOWED_RESOLUTIONS = (256, 384, 512)
+    if int(selected["views"]) != 6 or int(selected["resolution"]) not in ALLOWED_RESOLUTIONS:
         raise RuntimeError("MVADAPTER_EXECUTION_DIMENSIONS_INVALID")
     system = _system_snapshot()
     if system["ram_available_mb"] < MIN_RAM_MB or system["pagefile_free_mb"] < MIN_PAGEFILE_MB:
