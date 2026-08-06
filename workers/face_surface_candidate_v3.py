@@ -664,7 +664,10 @@ def build_face_surface_candidate(
     np.save(output_dir / "anchor_geodesic_core.npy", np.asarray(sorted(core), np.int64))
 
     # ---- atlas writable mask ------------------------------------------------
-    writable = writable_texel_mask(uv, triangles, selected_ids, baseline_rgb.shape[0])
+    texture_selected_ids = np.asarray(
+        sorted(set(selected_ids.tolist()) & set(candidate_ids.tolist())), np.int64
+    )
+    writable = writable_texel_mask(uv, triangles, texture_selected_ids, baseline_rgb.shape[0])
     np.save(output_dir / "writable_texel_mask.npy", writable)
     cv2.imwrite(str(output_dir / "writable_texel_mask.png"), writable.astype(np.uint8) * 255)
 
@@ -701,6 +704,12 @@ def build_face_surface_candidate(
     for triangle_id in selected_ids.tolist():
         if float(face_normals_array[triangle_id] @ (-camera.forward)) < -0.2:
             rear_visible += 1
+    candidate_membership = np.isin(selected_ids, candidate_ids)
+    bridge_triangle_count = int((~candidate_membership).sum())
+    bridge_rear_visible = int(sum(
+        (not bool(candidate_membership[index])) and float(face_normals_array[triangle_id] @ (-camera.forward)) < -0.2
+        for index, triangle_id in enumerate(selected_ids.tolist())
+    ))
 
     hard_gate_failures: list[str] = []
     if connected_components != 1:
@@ -717,11 +726,14 @@ def build_face_surface_candidate(
         "classification": "CANDIDATE_REQUIRES_VISUAL_REVIEW",
         "selected_triangle_count": int(len(selected_ids)),
         "writable_texel_count": int(writable.sum()),
+        "texture_selected_triangle_count": int(len(texture_selected_ids)),
         "anchor_count": int(len(anchors)),
         "anchor_triangle_ids": {anchor["name"]: anchor["triangle_id"] for anchor in anchors},
         "connected_components": connected_components,
-        "outside_face_selected": 0,
+        "outside_face_selected": bridge_triangle_count,
+        "bridge_triangle_count": bridge_triangle_count,
         "rear_visible_selected": rear_visible,
+        "rear_visible_bridge_triangles": bridge_rear_visible,
         "anchors_in_candidate_domain": bool(anchors_in_candidate),
         "anchors_in_selected": bool(anchor_domain),
         "geodesic_core_triangles": int(len(core)),
@@ -779,7 +791,7 @@ def build_face_surface_candidate(
             source_points.append(anchor["source_xy"])
         candidate_atlas, texture_report, texture_writable = build_face_patch_atlas(
             baseline_rgb, source_rgb, source_alpha, positions, uv, triangles,
-            selected_ids, camera, np.asarray(target_points), np.asarray(source_points),
+            texture_selected_ids, camera, np.asarray(target_points), np.asarray(source_points),
             minimum_alpha=minimum_alpha, tps_regularization=tps_regularization,
         )
         ok, encoded = cv2.imencode(".png", cv2.cvtColor(candidate_atlas, cv2.COLOR_RGB2BGR))
@@ -800,6 +812,7 @@ def build_face_surface_candidate(
             raise RuntimeError("FACE_CANDIDATE_NON_FACE_CHANGED")
         report.update({
             "texture": texture_report,
+            "texture_selected_triangle_count": int(len(texture_selected_ids)),
             "non_face_atlas_pixels_changed": non_face_changed,
             "immutable_hashes_before": before_hashes,
             "immutable_hashes_after": after_hashes,
