@@ -58,6 +58,17 @@ INK_THRESHOLD = 235
 #: registration marks and JPEG speckle, not part of the subject.
 MIN_COMPONENT_FRACTION = 0.02
 
+#: A row counts toward the subject's BODY only if it is at least this wide
+#: relative to the panel's widest row. Masts, flags, spires, antennae and raised
+#: staffs are a few pixels across and reach far above everything else, and no
+#: two elevations of one object draw them at the same proportion. Normalising on
+#: total ink height therefore matches flagpoles rather than hulls: on the Lucky
+#: Drown sheet it squashed the side elevation's length by about 45 percent and
+#: turned a long low riverboat into a wedding cake -- length:height 1.12 against
+#: the 1.74 the target has. Measuring the body instead is what makes the shared
+#: scale mean anything.
+BODY_WIDTH_FRACTION = 0.15
+
 DEFAULT_CANVAS = 512
 DEFAULT_MARGIN = 0.06
 
@@ -76,6 +87,15 @@ def clean_region(mask: np.ndarray) -> np.ndarray:
     sizes = np.asarray(ndi.sum(mask, labels, range(1, count + 1)))
     keep = np.nonzero(sizes >= sizes.max() * MIN_COMPONENT_FRACTION)[0] + 1
     return np.isin(labels, keep)
+
+
+def body_height(mask: np.ndarray) -> int:
+    """Vertical extent of the subject's body, ignoring thin protrusions."""
+    per_row = mask.sum(axis=1)
+    body = np.nonzero(per_row >= per_row.max() * BODY_WIDTH_FRACTION)[0]
+    if body.size < 2:
+        return int(mask.shape[0])
+    return int(body[-1] - body[0] + 1)
 
 
 def tight_box(mask: np.ndarray) -> tuple[int, int, int, int]:
@@ -104,7 +124,8 @@ def list_components(sheet: Path, limit: int) -> list[dict]:
 
 
 def run(sheet: Path, regions: dict, out_dir: Path,
-        canvas: int = DEFAULT_CANVAS, margin: float = DEFAULT_MARGIN) -> dict:
+        canvas: int = DEFAULT_CANVAS, margin: float = DEFAULT_MARGIN,
+        mirrors: dict | None = None) -> dict:
     rgb = np.asarray(Image.open(sheet).convert("RGB"))
 
     # Snap each supplied region to the drawing inside it, and record the true
@@ -123,18 +144,23 @@ def run(sheet: Path, regions: dict, out_dir: Path,
 
     available = canvas * (1.0 - 2.0 * margin)
 
-    # One shared height for every view, chosen so the widest panel still fits.
-    # This is the whole point of the file: the scale is a property of the SET,
-    # never of the individual panel.
-    widest = max(p["mask"].shape[1] / p["mask"].shape[0] for p in panels.values())
-    shared_height = min(available, available / widest)
-    baseline = int(round((canvas + shared_height) / 2.0))
+    # One shared BODY height for every view, chosen so that no panel -- masts
+    # and all -- overflows the canvas once that scale is applied. This is the
+    # whole point of the file: the scale is a property of the SET, never of the
+    # individual panel.
+    for panel in panels.values():
+        panel["body"] = body_height(panel["mask"])
+    shared_body = min(
+        min(available * p["body"] / p["mask"].shape[0],          # full height fits
+            available * p["body"] / p["mask"].shape[1])          # full width fits
+        for p in panels.values())
+    baseline = int(round(canvas - (canvas - available) / 2.0))
 
     receipt_panels = {}
     out_dir.mkdir(parents=True, exist_ok=True)
     for tag, panel in panels.items():
         height, width = panel["mask"].shape
-        scale = shared_height / height
+        scale = shared_body / panel["body"]
         target = (max(1, int(round(width * scale))), max(1, int(round(height * scale))))
 
         crop = Image.fromarray(panel["rgb"]).resize(target, Image.LANCZOS)
@@ -151,8 +177,26 @@ def run(sheet: Path, regions: dict, out_dir: Path,
             "path": str(path),
             "sheet_box": panel["box"],
             "sheet_ink_size": [int(width), int(height)],
+            "sheet_body_height": int(panel["body"]),
             "scale": round(float(scale), 5),
             "placed_size": list(target),
+        }
+
+    # A laterally symmetric subject has a right elevation that is exactly the
+    # mirror of its left, so for a hull, a fuselage or a facade the fourth view
+    # is free and costs no new authored art. It is opt-in because asserting
+    # that symmetry on a subject that lacks it is how a pipeline invents
+    # geometry: the mirror is a claim about the object, not about the image.
+    for target, source in (mirrors or {}).items():
+        if source not in receipt_panels:
+            raise SystemExit(f"cannot mirror '{source}' into '{target}': not extracted")
+        mirrored = Image.open(receipt_panels[source]["path"]).transpose(
+            Image.FLIP_LEFT_RIGHT)
+        path = out_dir / f"{target}.png"
+        mirrored.save(path)
+        receipt_panels[target] = {
+            **receipt_panels[source], "path": str(path),
+            "mirrored_from": source,
         }
 
     scales = [p["scale"] for p in receipt_panels.values()]
@@ -161,7 +205,7 @@ def run(sheet: Path, regions: dict, out_dir: Path,
         "sheet": str(sheet),
         "canvas": canvas,
         "margin": margin,
-        "shared_ink_height_px": round(float(shared_height), 2),
+        "shared_body_height_px": round(float(shared_body), 2),
         "baseline_row": baseline,
         # The number the previous run got wrong. At a common scale the panels
         # differ only by how far the sheet's own draughting drifted; the old
@@ -188,6 +232,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out-dir", type=Path, default=None)
     parser.add_argument("--panel", action="append", default=[],
                         help="tag=x0,y0,x1,y1 approximate region on the sheet")
+    parser.add_argument("--mirror", action="append", default=[],
+                        help="tag=source, e.g. right=left for a symmetric subject")
     parser.add_argument("--canvas", type=int, default=DEFAULT_CANVAS)
     parser.add_argument("--margin", type=float, default=DEFAULT_MARGIN)
     parser.add_argument("--list", action="store_true",
@@ -202,7 +248,15 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("need --out-dir and at least one --panel (or --list)")
 
     regions = dict(parse_panel(p) for p in args.panel)
-    result = run(args.sheet, regions, args.out_dir, args.canvas, args.margin)
+    mirrors = {}
+    for spec in args.mirror:
+        target, _, source = spec.partition("=")
+        target, source = target.strip().lower(), source.strip().lower()
+        if target not in VIEW_TAGS or source not in VIEW_TAGS:
+            raise SystemExit(f"--mirror needs two view tags from {VIEW_TAGS}")
+        mirrors[target] = source
+    result = run(args.sheet, regions, args.out_dir, args.canvas, args.margin,
+                 mirrors=mirrors)
     (args.out_dir / "panels.json").write_text(
         json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2))

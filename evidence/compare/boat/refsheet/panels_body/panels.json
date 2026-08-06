@@ -1,0 +1,88 @@
+{
+  "schema": "lowvram3d_orthographic_panels_v1",
+  "sheet": "evidence\\compare\\boat\\refsheet\\sheet.png",
+  "canvas": 512,
+  "margin": 0.06,
+  "shared_body_height_px": 285.38,
+  "baseline_row": 481,
+  "scale_spread": 1.1156,
+  "panels": {
+    "front": {
+      "path": "evidence\\compare\\boat\\refsheet\\panels_body\\front.png",
+      "sheet_box": [
+        661,
+        13,
+        941,
+        474
+      ],
+      "sheet_ink_size": [
+        280,
+        461
+      ],
+      "sheet_body_height": 386,
+      "scale": 0.73933,
+      "placed_size": [
+        207,
+        341
+      ]
+    },
+    "left": {
+      "path": "evidence\\compare\\boat\\refsheet\\panels_body\\left.png",
+      "sheet_box": [
+        967,
+        13,
+        1518,
+        473
+      ],
+      "sheet_ink_size": [
+        551,
+        460
+      ],
+      "sheet_body_height": 349,
+      "scale": 0.81771,
+      "placed_size": [
+        451,
+        376
+      ]
+    },
+    "back": {
+      "path": "evidence\\compare\\boat\\refsheet\\panels_body\\back.png",
+      "sheet_box": [
+        47,
+        479,
+        337,
+        886
+      ],
+      "sheet_ink_size": [
+        290,
+        407
+      ],
+      "sheet_body_height": 346,
+      "scale": 0.8248,
+      "placed_size": [
+        239,
+        336
+      ]
+    },
+    "right": {
+      "path": "evidence\\compare\\boat\\refsheet\\panels_body\\right.png",
+      "sheet_box": [
+        967,
+        13,
+        1518,
+        473
+      ],
+      "sheet_ink_size": [
+        551,
+        460
+      ],
+      "sheet_body_height": 349,
+      "scale": 0.81771,
+      "placed_size": [
+        451,
+        376
+      ],
+      "mirrored_from": "left"
+    }
+  }
+}
