@@ -1,0 +1,23 @@
+{
+  "schema": "lowvram3d_photo_landed_on_detail_v1",
+  "controls": "evidence\\compare\\whale\\controls_512_audited",
+  "true_opposite_index": 2,
+  "views": [
+    {
+      "index": 0,
+      "name": "front",
+      "render": "evidence\\compare\\whale\\_photo_through_front.png",
+      "detail_correlation": 0.124
+    },
+    {
+      "index": 2,
+      "name": "rear",
+      "render": "evidence\\compare\\whale\\_photo_through_rear.png",
+      "detail_correlation": 0.3027
+    }
+  ],
+  "sheet": "evidence\\compare\\whale\\photo_vs_geometry.png",
+  "suspect_front_axis_180_degrees_wrong": true,
+  "threshold": 0.15,
+  "note": "The sheet is the evidence; this number only decides whether to look at it. Calibrated on two assets."
+}

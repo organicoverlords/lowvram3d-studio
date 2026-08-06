@@ -1,0 +1,22 @@
+{
+  "schema": "lowvram3d_photo_landed_on_detail_v2",
+  "controls": "evidence\\compare\\panda2\\controls_512_audited",
+  "true_opposite_index": 3,
+  "views": [
+    {
+      "index": 0,
+      "name": "front",
+      "render": "evidence\\compare\\panda2\\_photo_through_front.png",
+      "detail_correlation": 0.0809
+    },
+    {
+      "index": 3,
+      "name": "left",
+      "render": "evidence\\compare\\panda2\\_photo_through_left.png",
+      "detail_correlation": 0.2788
+    }
+  ],
+  "sheet": "evidence\\compare\\panda2\\photo_vs_geometry.png",
+  "verdict": "HUMAN_REVIEW_REQUIRED",
+  "note": "detail_correlation is DIAGNOSTIC ONLY and does not separate a correct front axis from a 180-degree-wrong one: panda(wrong)=0.081 vs whale(right)=0.124. Read the sheet. If the photographic detail sits on featureless geometry, the axis is wrong."
+}

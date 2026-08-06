@@ -1,5 +1,57 @@
 # The duplicated face in the six-view texture route
 
+> ## RETRACTED, 2026-08-06 — there is no duplicated face
+>
+> Everything below the line was written before the review sheet existed. The
+> sheet disproved it within the hour. **Keep reading only for the QA history;
+> the diagnosis is wrong.**
+>
+> On the panda, the source photograph was projected onto **the back of the
+> head**. Index 0's geometry is featureless ghillie fur, and the photographic
+> face sits on it as a decal. The mesh's actual sculpted face — eyes, muzzle,
+> whiskers, the rifle across the chest — is at index 3, and it received
+> camouflage invention. `evidence/compare/panda2/photo_vs_geometry.png` shows
+> both hemispheres, photo atlas beside geometry, same camera.
+>
+> So what I called "a second face on the true rear" was MV-Adapter correctly
+> painting the model's **real** face, and what I called "the sharp front" was a
+> photograph pasted on the back of its head. **MV-Adapter behaved correctly
+> throughout.** The defect is a 180° error in the front-axis solve, upstream of
+> generation entirely.
+>
+> The paint-based front audit then confirmed the error rather than catching it,
+> exactly as designed: it reports *where paint landed*, which is a fact about
+> the projection, not about the shape. When the projection is 180° off, the
+> audit agrees with it. That is a fifth check that could not see what it was
+> named for — and this one I built.
+>
+> This also explains both user reports precisely. "The front is all pixelated
+> and glitchy": the real front got invented camouflage. "There are faces at back
+> and the front has 2 faces": the photo decal on the back plus the real
+> geometric face.
+>
+> **Corrections to specific claims below:**
+> - *"The labels are rotated by one"* — panda only. Whale and shaman have their
+>   true opposite at index 2, as labelled. Measured, not assumed.
+> - *"The generated-to-control assignment is identity (0.91–0.99)"* — not
+>   supported. It cannot be reconciled with the sheet, and I have not re-derived
+>   it.
+> - *"`reference_conditioning_scale` is the knob"* — it is a real, untuned knob,
+>   but it is not the fix for this. The ablation was **not** run.
+> - *The whale is fine.* Its photo landed on the profile its geometry actually
+>   has; the mirror flank is invented, which is expected.
+>
+> **What is still true and worth keeping:** the QA repair. Grayscale correlation
+> cannot see a face (0.162 on a rear that has one), `semantic_gate_passed` was
+> hardcoded `True`, and promotion now requires a human verdict that fails closed.
+> That work stands regardless of the diagnosis.
+>
+> Next: re-solve the panda's front axis geometrically rather than by paint, and
+> add a gate that compares where the photograph landed against where the mesh's
+> detail actually is.
+
+---
+
 **Status 2026-08-06.** Four assets have been through the six-view route. The
 geometry is good, the fronts are sharp, the coverage numbers are the best this
 pipeline has produced — and every one of them has a second face on the true

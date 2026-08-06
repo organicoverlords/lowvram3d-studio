@@ -545,12 +545,12 @@ different repo owned by a different agent. An edit made to this repo's
 resolution gate — has no effect at all unless `--worker` points at it. The
 symptom is a preflight rejection that names a value you have already changed.
 
-**The labels are rotated by one; the images are not.** The builder emits
-`front, right, rear, left`, but the true geometric opposite of index 0 is
-**index 3**, not index 2 — read the camera directions from `camera_contract.json`
-rather than trusting the names. Any check that pairs views by label order is
-comparing things 90° apart and will pass on anything. See
-`docs/JANUS-six-view-defect-20260806.md`.
+**The labels can be rotated, per asset.** The builder emits
+`front, right, rear, left`, and on the panda the true geometric opposite of
+index 0 is **index 3**, not index 2. On the whale and the shaman it is index 2,
+as labelled. So this is not a fixed off-by-one to hardcode — read the camera
+directions from `camera_contract.json` every time. Any check that pairs views by
+label order may be comparing things 90° apart and will pass on anything.
 
 **512 is admitted and is better than 384.** It fits in 6 GB. The gate lives in
 `ALLOWED_RESOLUTIONS` in the worker — and see the `--worker` trap above, because
@@ -565,13 +565,26 @@ Two heuristics were tried and both chose wrong:
 | tail-colour | shaman (6448 vs 6559), and the red panda itself | a near-tie decided by noise |
 | silhouette IoU | whale (0.881 vs 0.618, chose the mirror profile) | front and back silhouettes of a symmetric subject are near-identical |
 
-The decisive signal is **painted-texel coverage**: sample the observed mask
-through each candidate view's stored `triangle_ids`/`barycentric` and count texels
-that actually received paint. On the whale the two candidates scored **5 texels
-vs 25,107**. Silhouette IoU cannot separate a mirror-symmetric subject; where
-paint landed can. `audit_and_relabel_mvadapter_controls.py --observed-mask` does
-this, and its report records `basis`, `painted_texel_coverage`, and
-`tail_rule_would_have_chosen` so a wrong answer is visible rather than silent.
+The strongest signal available *among those three* is **painted-texel
+coverage**: sample the observed mask through each candidate view's stored
+`triangle_ids`/`barycentric` and count texels that received paint. On the whale
+the two candidates scored **5 texels vs 25,107**.
+`audit_and_relabel_mvadapter_controls.py --observed-mask` does this and records
+`basis`, `painted_texel_coverage` and `tail_rule_would_have_chosen`.
+
+**It is not a front-axis detector, and on the panda it confirmed a 180° error
+instead of catching it.** Painted-texel coverage answers "which camera did the
+projection paint from", which is a fact about the projection. If the projection
+solved the front 180° wrong, the paint is on the back and this audit agrees with
+it — confidently, at 0.8364 against 0.0016. Circular by construction.
+
+The check that actually separates them compares **where the photograph landed
+against where the mesh's detail is**: render the photo-textured mesh through a
+candidate camera's own `triangle_ids` and put it beside that camera's normal
+render. If the photographic face sits on featureless geometry, the axis is
+wrong. `evidence/compare/panda2/photo_vs_geometry.png` is that comparison for
+both hemispheres, and it is the only artefact in this route that has ever caught
+this class of error.
 
 ### The interpreter
 
@@ -614,8 +627,13 @@ depends on it. Use `preview_textured_mesh.py` instead.
 | boat | 384 | 64.94% | 19.50% |
 | bird-skull shaman | 512 | 53.85% | 26.18% |
 
-Against 16.5% for a single projection. **Every one of these has a duplicated
-face on the true rear** — MV-Adapter paints the reference's frontal appearance
-onto the view facing away from it. It is a property of the model, reachable
-through `reference_conditioning_scale`, and it is not yet fixed. Read
+Against 16.5% for a single projection.
+
+**The panda's front axis is 180° wrong**: its photograph was projected onto the
+back of its head, so its real sculpted face received invented camouflage. That
+is a projection bug, not an MV-Adapter bug — the generator painted a face where
+the geometry has one. The whale's axis is correct. The shaman and boat have not
+been checked with `photo_vs_geometry`. Do that before trusting any of these
+numbers as texture quality: coverage counts texels painted, not texels painted
+*correctly*. Read the retraction at the top of
 `docs/JANUS-six-view-defect-20260806.md` before running another sequence.
