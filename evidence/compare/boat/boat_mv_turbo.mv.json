@@ -1,0 +1,19 @@
+{
+  "schema": "lowvram3d_hunyuan_mv_shape_v1",
+  "checkpoint": "hunyuan3d-dit-v2-mv-turbo",
+  "views": {
+    "front": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refsheet\\boat_front_512.png",
+    "left": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refsheet\\boat_side_512.png",
+    "back": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\refsheet\\boat_back_512.png"
+  },
+  "mesh_out": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_mv_turbo.glb",
+  "steps": 5,
+  "guidance_scale": 5.0,
+  "octree_resolution": 256,
+  "num_chunks": 1500,
+  "seed": 2026,
+  "flashvdm": false,
+  "faces": 800758,
+  "load_seconds": 6.9,
+  "shape_seconds": 1554.6
+}
