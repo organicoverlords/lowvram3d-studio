@@ -29,3 +29,18 @@ is external evidence, never production logic.
    generic classifier.
 
 The focused generic regression suite passes (`2 passed`).
+
+## External fixture run
+
+The utility was exercised against the current 2048 mesh as an external
+fixture, not as production logic:
+
+- mesh SHA256: `1c4bec32a31ce90766f12f095e2d3c9c7e57e0b34e4f8ffc79c9a29ea8e7a817`
+- selected fixture triangles: `42,509`
+- derived UV charts across the mesh: `112,971`
+- manifest: `C:\AI\panda_support_local_2048\face_chart_manifest_fixture\surface_registration_manifest.json`
+
+The fixture confirms that the visible face error is a depth/parallax mismatch
+between the front registration and an oblique camera. It does not authorize a
+texture shift. A future correction must provide explicit landmark-to-surface
+correspondences for the relevant camera set.
