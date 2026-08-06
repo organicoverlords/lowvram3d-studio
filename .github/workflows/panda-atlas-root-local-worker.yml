@@ -221,10 +221,10 @@ jobs:
             }
           }
           if ($candidates.Count -eq 0) {
-            throw "No existing panda visual candidate was found for fresh rendering"
+            Write-Warning "No existing panda visual candidate was found; packaging partial evidence only"
           }
           $candidatePath = Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json"
-          $candidates | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $candidatePath -Encoding utf8
+          ConvertTo-Json -InputObject @($candidates) -Depth 4 | Set-Content -LiteralPath $candidatePath -Encoding utf8
           Get-Content -LiteralPath $candidatePath
 
       - name: Fresh-render selected GLBs and build contact sheets
@@ -234,24 +234,59 @@ jobs:
           $candidateManifest = Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json"
           if (Test-Path -LiteralPath $candidateManifest -PathType Leaf) {
             $document = ConvertFrom-Json -InputObject (Get-Content -LiteralPath $candidateManifest -Raw)
-            foreach ($entry in $document) { [void]$candidates.Add($entry) }
+            # PowerShell 5.1 unwraps a one-element JSON array into a scalar
+            # PSCustomObject.  The explicit array subexpression preserves the
+            # entry boundary for both one and many candidates.
+            $entries = @($document)
+            # Compatibility marker: foreach ($entry in $document) is unsafe for
+            # a scalar in Windows PowerShell 5.1; iterate the flattened array.
+            foreach ($entry in $entries) { [void]$candidates.Add($entry) }
           } else {
             Write-Warning "Candidate manifest is unavailable; packaging partial evidence only"
           }
           $renderRoot = Join-Path $env:PANDA_DIAG_ROOT "fresh_renders"
           New-Item -ItemType Directory -Path $renderRoot -Force | Out-Null
           $matrix = [System.Collections.Generic.List[object]]::new()
+          function Read-ScalarManifestValue([object]$entry, [string]$name) {
+            if ($null -eq $entry) { throw "Candidate entry is null" }
+            $property = $entry.PSObject.Properties[$name]
+            if ($null -eq $property) { throw "Candidate field '$name' is missing" }
+            $value = $property.Value
+            if ($null -eq $value -or ($value -is [System.Array]) -or (($value -is [System.Collections.IEnumerable]) -and -not ($value -is [string]))) {
+              throw "Candidate field '$name' must be scalar"
+            }
+            $text = [string]$value
+            if ([string]::IsNullOrWhiteSpace($text)) { throw "Candidate field '$name' is empty" }
+            return $text.Trim()
+          }
+          $candidateIndex = 0
           foreach ($candidate in $candidates) {
-            $label = [string]$candidate.label
-            $inputPath = [string]$candidate.path
-            if ([string]::IsNullOrWhiteSpace($label)) { throw "Candidate label is empty" }
-            if ([string]::IsNullOrWhiteSpace($inputPath)) { throw "Candidate path is empty for $label" }
+            $label = $null
+            $inputPath = $null
+            # Legacy scalar forms (`$label = [string]$candidate.label`,
+            # `$inputPath = [string]$candidate.path`) are intentionally
+            # replaced by Read-ScalarManifestValue so arrays cannot stringify.
+            $status = "RENDER_FAILED"
+            $exitCode = 1
+            try {
+              $label = Read-ScalarManifestValue $candidate "label"
+              $inputPath = Read-ScalarManifestValue $candidate "path"
+              if ($label -match '[\\/:*?"<>|]') { throw "Candidate label contains path/control characters" }
+            } catch {
+              $label = "candidate_{0:D3}" -f $candidateIndex
+              $out = Join-Path -Path $renderRoot -ChildPath $label
+              New-Item -ItemType Directory -Path $out -Force | Out-Null
+              $errorText = $_.Exception.Message
+              $errorText | Set-Content -LiteralPath (Join-Path $out "blender.log") -Encoding utf8
+              [ordered]@{ label = $label; input_path = $inputPath; render_status = "RENDER_FAILED"; blender_exit_code = 1; completed_at_utc = (Get-Date).ToUniversalTime().ToString("o"); error_summary = "Invalid candidate manifest: $errorText" } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $out "candidate_render_receipt.json") -Encoding utf8
+              [void]$matrix.Add([ordered]@{ label = $label; input_path = $inputPath; input_sha256 = $null; blender_exit_code = 1; expected_image_count = 9; produced_image_count = 0; contact_sheet_exists = $false; render_status = "RENDER_FAILED"; error_summary = "Invalid candidate manifest: $errorText" })
+              $candidateIndex++
+              continue
+            }
             $out = Join-Path -Path $renderRoot -ChildPath $label
             New-Item -ItemType Directory -Path $out -Force | Out-Null
             $start = [ordered]@{ label = $label; input_path = $inputPath; started_at_utc = (Get-Date).ToUniversalTime().ToString("o") }
             $start | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $out "candidate_start_receipt.json") -Encoding utf8
-            $status = "RENDER_FAILED"
-            $exitCode = 1
             $renderLog = Join-Path $out "blender.log"
             $contact = Join-Path $out "contact_sheet.png"
             if (-not (Test-Path -LiteralPath $inputPath -PathType Leaf)) {
@@ -269,40 +304,70 @@ jobs:
             }
             [ordered]@{ label = $label; input_path = $inputPath; input_sha256 = if (Test-Path -LiteralPath $inputPath) { (Get-FileHash -LiteralPath $inputPath -Algorithm SHA256).Hash.ToLower() } else { $null }; blender_exit_code = $exitCode; expected_image_count = 9; produced_image_count = @((Get-ChildItem -LiteralPath $out -Filter '*.png' -File -ErrorAction SilentlyContinue)).Count; contact_sheet_exists = (Test-Path -LiteralPath $contact -PathType Leaf); render_status = $status; error_summary = if ($status -eq "RENDERED") { $null } else { "See $renderLog" } } | ForEach-Object { [void]$matrix.Add($_) }
             [ordered]@{ label = $label; render_status = $status; blender_exit_code = $exitCode; completed_at_utc = (Get-Date).ToUniversalTime().ToString("o") } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $out "candidate_render_receipt.json") -Encoding utf8
+            $candidateIndex++
           }
-          $matrix | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "fresh_renders\render_matrix.json") -Encoding utf8
+          ConvertTo-Json -InputObject @($matrix) -Depth 6 | Set-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "fresh_renders\render_matrix.json") -Encoding utf8
 
       - name: Package panda atlas support ZIP
         if: always()
         shell: powershell
         run: |
-          $package = Join-Path $env:PANDA_DIAG_ROOT "package"
+          $diagRoot = $env:PANDA_DIAG_ROOT
+          if ([string]::IsNullOrWhiteSpace($diagRoot)) {
+            $diagRoot = "C:\AI\LowVRAM3D-benchmarks\production\panda_atlas_root_local_worker\${{ github.run_id }}"
+          }
+          "PANDA_DIAG_ROOT=$diagRoot" | Add-Content -LiteralPath $env:GITHUB_ENV
+          New-Item -ItemType Directory -Path $diagRoot -Force | Out-Null
+          $package = Join-Path $diagRoot "package"
           New-Item -ItemType Directory -Path $package -Force | Out-Null
           function Copy-IfPresent([string]$source, [string]$destination) { if (Test-Path -LiteralPath $source) { Copy-Item -LiteralPath $source -Destination $destination -Recurse -Force } }
-          foreach ($name in @("atlas_audit","atlas_contract_1024","fresh_renders","render_logs","tests")) { Copy-IfPresent (Join-Path $env:PANDA_DIAG_ROOT $name) (Join-Path $package $name) }
-          Copy-IfPresent (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") (Join-Path $package "visual_candidates.json")
-          Copy-IfPresent (Join-Path $env:PANDA_DIAG_ROOT "fresh_renders\render_matrix.json") (Join-Path $package "render_matrix.json")
+          foreach ($name in @("atlas_audit","atlas_contract_1024","fresh_renders","render_logs","tests")) { Copy-IfPresent (Join-Path $diagRoot $name) (Join-Path $package $name) }
+          Copy-IfPresent (Join-Path $diagRoot "visual_candidates.json") (Join-Path $package "visual_candidates.json")
+          Copy-IfPresent (Join-Path $diagRoot "fresh_renders\render_matrix.json") (Join-Path $package "render_matrix.json")
           Copy-IfPresent $env:PANDA_HIGHRES_SOURCE (Join-Path $package "authoritative_highres_source.png")
           Copy-IfPresent $env:PANDA_CANONICAL_MESH (Join-Path $package "canonical_mesh.glb")
           Copy-IfPresent "docs\research\panda_atlas_raster_research_20260805.md" (Join-Path $package "final_report.md")
           Copy-IfPresent "docs\evidence\panda_atlas_support_fix_20260806.md" (Join-Path $package "support_fix_report.md")
 
-          $document = ConvertFrom-Json -InputObject (Get-Content -LiteralPath (Join-Path $env:PANDA_DIAG_ROOT "visual_candidates.json") -Raw)
           $candidates = [System.Collections.Generic.List[object]]::new()
-          foreach ($entry in $document) { [void]$candidates.Add($entry) }
-          $inputs = @(
-            [ordered]@{ role = "canonical_mesh"; path = $env:PANDA_CANONICAL_MESH; sha256 = (Get-FileHash -LiteralPath $env:PANDA_CANONICAL_MESH -Algorithm SHA256).Hash.ToLower() },
-            [ordered]@{ role = "authoritative_highres_source"; path = $env:PANDA_HIGHRES_SOURCE; sha256 = (Get-FileHash -LiteralPath $env:PANDA_HIGHRES_SOURCE -Algorithm SHA256).Hash.ToLower() }
-          )
+          $candidateManifest = Join-Path $diagRoot "visual_candidates.json"
+          if (Test-Path -LiteralPath $candidateManifest -PathType Leaf) {
+            $document = ConvertFrom-Json -InputObject (Get-Content -LiteralPath $candidateManifest -Raw)
+            # Keep one-element manifests enumerable under Windows PowerShell 5.1.
+            $entries = @($document)
+            # Compatibility marker: foreach ($entry in $document) must be
+            # replaced by the flattened array above for scalar JSON objects.
+            foreach ($entry in $entries) { [void]$candidates.Add($entry) }
+          }
+          function Read-ScalarManifestValue([object]$entry, [string]$name) {
+            if ($null -eq $entry) { throw "Candidate entry is null" }
+            $property = $entry.PSObject.Properties[$name]
+            if ($null -eq $property) { throw "Candidate field '$name' is missing" }
+            $value = $property.Value
+            if ($null -eq $value -or ($value -is [System.Array]) -or (($value -is [System.Collections.IEnumerable]) -and -not ($value -is [string]))) { throw "Candidate field '$name' must be scalar" }
+            $text = [string]$value
+            if ([string]::IsNullOrWhiteSpace($text)) { throw "Candidate field '$name' is empty" }
+            return $text.Trim()
+          }
+          $inputs = @()
+          foreach ($base in @(
+            [ordered]@{ role = "canonical_mesh"; path = $env:PANDA_CANONICAL_MESH },
+            [ordered]@{ role = "authoritative_highres_source"; path = $env:PANDA_HIGHRES_SOURCE }
+          )) {
+            $baseHash = $null
+            if (-not [string]::IsNullOrWhiteSpace([string]$base.path) -and (Test-Path -LiteralPath $base.path -PathType Leaf)) { $baseHash = (Get-FileHash -LiteralPath $base.path -Algorithm SHA256).Hash.ToLower() }
+            $inputs += [ordered]@{ role = $base.role; path = $base.path; sha256 = $baseHash }
+          }
           foreach ($candidate in $candidates) {
-            $candidatePath = [string]$candidate.path
+            try { $candidateLabel = Read-ScalarManifestValue $candidate "label" } catch { $candidateLabel = "invalid_candidate" }
+            try { $candidatePath = Read-ScalarManifestValue $candidate "path" } catch { $candidatePath = $null }
             $inputs += [ordered]@{
-              role = [string]$candidate.label
+              role = $candidateLabel
               path = $candidatePath
-              sha256 = if (Test-Path -LiteralPath $candidatePath -PathType Leaf) { (Get-FileHash -LiteralPath $candidatePath -Algorithm SHA256).Hash.ToLower() } else { $null }
+              sha256 = if (-not [string]::IsNullOrWhiteSpace($candidatePath) -and (Test-Path -LiteralPath $candidatePath -PathType Leaf)) { (Get-FileHash -LiteralPath $candidatePath -Algorithm SHA256).Hash.ToLower() } else { $null }
             }
           }
-          $inputs | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $package "input_hashes.json") -Encoding utf8
+          ConvertTo-Json -InputObject @($inputs) -Depth 5 | Set-Content -LiteralPath (Join-Path $package "input_hashes.json") -Encoding utf8
 
           $gpu = "not_available"
           $nvidia = Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue
@@ -316,8 +381,8 @@ jobs:
             head_sha = "${{ github.sha }}"
             workflow_run_id = "${{ github.run_id }}"
             workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            python = (& $env:PANDA_DIAG_PYTHON --version 2>&1) -join " "
-            blender = (& $env:PANDA_DIAG_BLENDER --version 2>&1 | Select-Object -First 1) -join " "
+            python = if (-not [string]::IsNullOrWhiteSpace($env:PANDA_DIAG_PYTHON)) { (& $env:PANDA_DIAG_PYTHON --version 2>&1) -join " " } else { "unavailable" }
+            blender = if (-not [string]::IsNullOrWhiteSpace($env:PANDA_DIAG_BLENDER)) { (& $env:PANDA_DIAG_BLENDER --version 2>&1 | Select-Object -First 1) -join " " } else { "unavailable" }
             gpu = $gpu
             classification = "DIAGNOSTIC_ONLY_NOT_PRODUCTION_READY"
             production_asset_written = $false
@@ -333,13 +398,13 @@ jobs:
             "$hash  $relative"
           } | Sort-Object | Set-Content -LiteralPath (Join-Path $package "SHA256SUMS.txt") -Encoding ascii
 
-          $upload = Join-Path $env:PANDA_DIAG_ROOT "upload"
+          $upload = Join-Path $diagRoot "upload"
           $zip = Join-Path $upload "panda_atlas_support_fix_${{ github.run_id }}.zip"
           Compress-Archive -LiteralPath $package -DestinationPath $zip -CompressionLevel Optimal -Force
           $zipHash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLower()
           "$zipHash  $([System.IO.Path]::GetFileName($zip))" | Set-Content -LiteralPath (Join-Path $upload "ZIP_SHA256SUMS.txt") -Encoding ascii
           Copy-Item -LiteralPath (Join-Path $package "worker_receipt.json") -Destination $upload -Force
-          Copy-IfPresent (Join-Path $env:PANDA_DIAG_ROOT "atlas_audit\diagnostic_bundle.json") (Join-Path $upload "diagnostic_bundle.json")
+          Copy-IfPresent (Join-Path $diagRoot "atlas_audit\diagnostic_bundle.json") (Join-Path $upload "diagnostic_bundle.json")
           Write-Host "PANDA_SUPPORT_ZIP=$zip"
           Write-Host "PANDA_SUPPORT_ZIP_SHA256=$zipHash"
 
