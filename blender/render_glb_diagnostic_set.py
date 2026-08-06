@@ -18,6 +18,7 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--label", required=True)
     parser.add_argument("--resolution", type=int, default=768)
+    parser.add_argument("--engine", choices=("auto", "BLENDER_EEVEE", "CYCLES"), default="auto")
     return parser.parse_args(argv)
 
 
@@ -69,7 +70,14 @@ def main() -> None:
 
     scene = bpy.context.scene
     engines = {item.identifier for item in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items}
-    scene.render.engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in engines else "BLENDER_EEVEE"
+    requested_engine = args.engine
+    if requested_engine == "auto":
+        requested_engine = "BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in engines else "BLENDER_EEVEE"
+    scene.render.engine = requested_engine
+    if requested_engine == "CYCLES":
+        scene.cycles.device = "CPU"
+        scene.cycles.samples = 8
+        scene.cycles.use_denoising = False
     scene.render.resolution_x = args.resolution
     scene.render.resolution_y = args.resolution
     scene.render.resolution_percentage = 100

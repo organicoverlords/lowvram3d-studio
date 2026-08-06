@@ -198,7 +198,7 @@ jobs:
           $renderDir = Join-Path $env:PANDA_DIAG_ROOT "atlas_contract_1024\renders"
           New-Item -ItemType Directory -Path $renderDir -Force | Out-Null
           if (-not (Test-Path -LiteralPath $contractGlb -PathType Leaf)) { throw "Synthetic support GLB missing" }
-          & $env:PANDA_DIAG_BLENDER --background --factory-startup --gpu-backend opengl --python "$PWD\blender\render_glb_diagnostic_set.py" -- --input $contractGlb --out-dir $renderDir --label support_class --resolution 128 *> (Join-Path $renderDir "blender.log")
+          & $env:PANDA_DIAG_BLENDER --background --factory-startup --threads 2 --python "$PWD\blender\render_glb_diagnostic_set.py" -- --input $contractGlb --out-dir $renderDir --label support_class --resolution 128 --engine CYCLES *> (Join-Path $renderDir "blender.log")
           if ($LASTEXITCODE -ne 0) { throw "Synthetic support render failed" }
           & $env:PANDA_DIAG_PYTHON workers\build_contact_sheet.py --render-dir $renderDir --output (Join-Path $renderDir "contact_sheet.png") *>> (Join-Path $renderDir "blender.log")
           if ($LASTEXITCODE -ne 0) { throw "Synthetic support contact sheet failed" }
