@@ -1,0 +1,14 @@
+{
+  "schema": "lowvram3d_hunyuan_paint_v1",
+  "mesh_in": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda_mt_uv.glb",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda2_512.png",
+  "mesh_out": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda_hypaint.glb",
+  "paint_checkpoint": "hunyuan3d-paint-v2-0-turbo",
+  "model_cpu_offload": true,
+  "render_size": 1024,
+  "texture_size": 1024,
+  "cudnn_enabled": false,
+  "load_seconds": 178.6,
+  "paint_seconds": 557.2,
+  "note": "vendor texture stage; no fitted camera, no silhouette objective, no hand-rolled projection"
+}

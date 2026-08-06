@@ -43,9 +43,21 @@ DEFAULT_MODEL_ROOT = Path(
 )
 PAINT_SUBFOLDER = "hunyuan3d-paint-v2-0-turbo"
 
+#: The vendor defaults are 2048 for both. Multiview diffusion survives them on
+#: 6 GB; the bake does not. `back_project` scatters every view into the atlas
+#: through `scatter_add_nd_with_count`, so the transient is driven by
+#: views * render_size^2 alongside a live texture_size^2 accumulator, and at
+#: 2048/2048 it dies with "fatal: Memory allocation failure" followed by an
+#: opaque CUDA unknown error -- after the expensive part has already succeeded.
+#: Halving both quarters that transient.
+DEFAULT_RENDER_SIZE = 1024
+DEFAULT_TEXTURE_SIZE = 1024
+
 
 def run(mesh_path: Path, image_path: Path, out_path: Path,
-        model_root: Path, offload: bool) -> dict:
+        model_root: Path, offload: bool,
+        render_size: int = DEFAULT_RENDER_SIZE,
+        texture_size: int = DEFAULT_TEXTURE_SIZE) -> dict:
     # torch must be imported before custom_rasterizer_kernel: the extension links
     # against torch's CUDA DLLs and cannot find them until torch has put its own
     # directory on the DLL search path. Importing it the other way round fails
@@ -63,6 +75,11 @@ def run(mesh_path: Path, image_path: Path, out_path: Path,
         str(model_root), subfolder=PAINT_SUBFOLDER)
     if offload:
         pipeline.enable_model_cpu_offload()
+
+    # Set after construction: the sizes are read at bake time, and the renderer
+    # is built from the config when __call__ runs.
+    pipeline.config.render_size = int(render_size)
+    pipeline.config.texture_size = int(texture_size)
     loaded = time.time()
 
     scene = trimesh.load(mesh_path, process=False)
@@ -83,6 +100,8 @@ def run(mesh_path: Path, image_path: Path, out_path: Path,
         "mesh_out": str(out_path),
         "paint_checkpoint": PAINT_SUBFOLDER,
         "model_cpu_offload": bool(offload),
+        "render_size": int(render_size),
+        "texture_size": int(texture_size),
         "cudnn_enabled": False,
         "load_seconds": round(loaded - started, 1),
         "paint_seconds": round(finished - loaded, 1),
@@ -99,11 +118,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--model-root", type=Path, default=DEFAULT_MODEL_ROOT)
     parser.add_argument("--no-offload", action="store_true",
                         help="keep everything resident; needs far more than 6 GB")
+    parser.add_argument("--render-size", type=int, default=DEFAULT_RENDER_SIZE)
+    parser.add_argument("--texture-size", type=int, default=DEFAULT_TEXTURE_SIZE)
     parser.add_argument("--receipt", type=Path, default=None)
     args = parser.parse_args(argv)
 
     result = run(args.mesh, args.image, args.out, args.model_root,
-                 offload=not args.no_offload)
+                 offload=not args.no_offload,
+                 render_size=args.render_size, texture_size=args.texture_size)
     receipt = args.receipt or args.out.with_suffix(".paint.json")
     receipt.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2))
