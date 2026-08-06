@@ -167,7 +167,8 @@ def luma_preserving_grade(atlas: np.ndarray, reference: np.ndarray, mask: np.nda
 def build_candidate(atlas: np.ndarray, source_face: np.ndarray, reference: np.ndarray,
                     source_points: np.ndarray, target_points: np.ndarray, face_mask: np.ndarray,
                     direct_owner: np.ndarray, conservative_owner: np.ndarray, chart_id: np.ndarray,
-                    *, radius: int = 1, limits: dict[str, float] | None = None) -> tuple[np.ndarray, dict[str, Any]]:
+                    *, radius: int = 1, limits: dict[str, float] | None = None,
+                    max_luma_gain: float = 0.10) -> tuple[np.ndarray, dict[str, Any]]:
     limits = limits or {}
     matrix, lock_report = estimate_bounded_similarity(source_points, target_points, **limits)
     warped = _warp_source(source_face, matrix, atlas.shape[:2])
@@ -178,7 +179,7 @@ def build_candidate(atlas: np.ndarray, source_face: np.ndarray, reference: np.nd
     writable = face_mask & ~direct
     out[writable] = warped[writable]
     out, gutter = chart_local_support(out, direct_owner, conservative_owner, chart_id, radius=radius)
-    out, grade_report = luma_preserving_grade(out, reference, face_mask)
+    out, grade_report = luma_preserving_grade(out, reference, face_mask, max_gain=max_luma_gain)
     report = {"schema": "panda_front_face_registration_lock_v1", "classification": "DIAGNOSTIC_ONLY",
               "lock": lock_report, "direct_texels_preserved": True,
               "face_writable_texels": int(writable.sum()), "gutter_texels": int(gutter.sum()),
@@ -201,6 +202,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--gutter-radius", type=int, default=1)
+    parser.add_argument("--max-luma-gain", type=float, default=0.10)
     args = parser.parse_args()
     read = lambda p: cv2.cvtColor(cv2.imread(str(p), cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
     atlas, source, reference = read(args.atlas), read(args.source_face), read(args.reference)
@@ -212,7 +214,7 @@ def main() -> int:
     target_points = np.asarray(json.loads(args.target_landmarks.read_text(encoding="utf-8")), dtype=np.float64)
     result, report = build_candidate(atlas, source, reference, source_points, target_points, face_mask,
                                      direct_owner, conservative_owner, chart_id,
-                                     radius=args.gutter_radius)
+                                     radius=args.gutter_radius, max_luma_gain=args.max_luma_gain)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(str(args.output), cv2.cvtColor(result, cv2.COLOR_RGB2BGR))
     report.update({"output": str(args.output), "output_sha256": _sha256(args.output),
