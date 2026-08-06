@@ -1,14 +1,14 @@
 {
   "schema": "lowvram3d_chirality_v3",
-  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda_mt_uv.glb",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda_mt_uv_mirrored.glb",
   "source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda2_512.png",
-  "front_yaw_deg": 345.0,
+  "front_yaw_deg": 0.0,
   "model": "facebook/dinov2-large",
-  "score_source_as_is": 0.513547,
-  "score_source_mirrored": 0.366352,
-  "separation": 0.147195,
+  "score_source_as_is": 0.389757,
+  "score_source_mirrored": 0.461447,
+  "separation": 0.07169,
   "min_separation": 0.01,
-  "verdict": "MATCHES_SOURCE",
+  "verdict": "MIRRORED",
   "note": "bare geometry versus source and mirrored source; no texture, no atlas, no colour model, no per-asset constant. See the docstring for why a tail-colour test was rejected.",
-  "sheet": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\chirality.png"
+  "sheet": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\chirality_mirrored_control.png"
 }

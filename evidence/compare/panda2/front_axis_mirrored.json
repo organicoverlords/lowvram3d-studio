@@ -1,0 +1,114 @@
+{
+  "schema": "lowvram3d_front_axis_dino_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda_mt_uv_mirrored.glb",
+  "source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda2_512.png",
+  "model": "facebook/dinov2-large",
+  "best_yaw_deg": 0.0,
+  "best_score": 0.434758,
+  "runner_up_yaw_deg": 15.0,
+  "runner_up_score": 0.416685,
+  "neighbour_margin": 0.018073,
+  "antipode_yaw_deg": 180.0,
+  "antipode_score": 0.211789,
+  "antipode_margin": 0.222969,
+  "front_back_separated": true,
+  "scores": [
+    {
+      "yaw": 0.0,
+      "score": 0.434758
+    },
+    {
+      "yaw": 15.0,
+      "score": 0.416685
+    },
+    {
+      "yaw": 30.0,
+      "score": 0.398513
+    },
+    {
+      "yaw": 45.0,
+      "score": 0.392934
+    },
+    {
+      "yaw": 60.0,
+      "score": 0.353667
+    },
+    {
+      "yaw": 75.0,
+      "score": 0.318158
+    },
+    {
+      "yaw": 90.0,
+      "score": 0.32178
+    },
+    {
+      "yaw": 105.0,
+      "score": 0.308066
+    },
+    {
+      "yaw": 120.0,
+      "score": 0.208402
+    },
+    {
+      "yaw": 135.0,
+      "score": 0.248447
+    },
+    {
+      "yaw": 150.0,
+      "score": 0.190448
+    },
+    {
+      "yaw": 165.0,
+      "score": 0.180162
+    },
+    {
+      "yaw": 180.0,
+      "score": 0.211789
+    },
+    {
+      "yaw": 195.0,
+      "score": 0.254468
+    },
+    {
+      "yaw": 210.0,
+      "score": 0.222859
+    },
+    {
+      "yaw": 225.0,
+      "score": 0.23266
+    },
+    {
+      "yaw": 240.0,
+      "score": 0.22073
+    },
+    {
+      "yaw": 255.0,
+      "score": 0.299869
+    },
+    {
+      "yaw": 270.0,
+      "score": 0.311582
+    },
+    {
+      "yaw": 285.0,
+      "score": 0.317549
+    },
+    {
+      "yaw": 300.0,
+      "score": 0.363
+    },
+    {
+      "yaw": 315.0,
+      "score": 0.38477
+    },
+    {
+      "yaw": 330.0,
+      "score": 0.35028
+    },
+    {
+      "yaw": 345.0,
+      "score": 0.373871
+    }
+  ],
+  "note": "geometry-vs-source similarity; no atlas, no paint, no silhouette. See docstring for why those three cannot answer this."
+}

@@ -114,14 +114,39 @@ or the **mirrored source** matches better in DINOv2 space. No texture is
 involved, so the projection under suspicion contributes nothing to the verdict.
 
 ```
-score vs source           0.4224
-score vs mirrored source  0.4080   -> MATCHES_SOURCE
+                          vs source   vs mirrored source   verdict
+real mesh                    0.5136        0.3664          MATCHES_SOURCE
+deliberately mirrored copy   0.3898        0.4614          MIRRORED
 ```
 
-Three signals agree: this measurement, a human read of the clay render against
-the source (the tail is on the viewer's right in both), and two vision models
-independently reporting that the *mirrored* mesh's contact sheet is reversed
-relative to the source. **Do not mirror.**
+The second row is the control, and it is the only reason the first row means
+anything. Three signals agree: this measurement, a human read of the clay render
+against the source (the tail is on the viewer's right in both), and two vision
+models independently reporting that the *mirrored* mesh's contact sheet is
+reversed relative to the source. **Do not mirror.**
+
+### The version that passed and was wrong anyway
+
+The first working version compared pooled DINOv2 **CLS** vectors and reported
+MATCHES_SOURCE for the real mesh at separation 0.0144. That looked like a
+result. The control demolished it: the deliberately mirrored mesh also returned
+MATCHES_SOURCE, at a *larger* separation of 0.0155. The criterion was not
+detecting mirroring at all, and both numbers were noise.
+
+The cause is that **DINOv2 trains with random horizontal flip as an
+augmentation**, so its pooled features are deliberately invariant to handedness.
+Asking a flip-invariant embedding which way round something is cannot work, and
+no threshold would have rescued it.
+
+The patch tokens are position-indexed, so flipping the image permutes the grid.
+Comparing token (i,j) of the render against token (i,j) of the source restores
+the sensitivity, and the separations rise by an order of magnitude -- 0.147 and
+0.072 against a 0.0144 that meant nothing. Same model, same renders; only the
+pooling changed.
+
+This is the second criterion in this file to survive its subject and die to its
+control. That is now the standard: **a chirality or axis criterion ships only
+with a deliberately-wrong control that it correctly rejects.**
 
 ### The colour test that was written and thrown away
 

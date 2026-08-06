@@ -30,6 +30,23 @@ resolver does -- a self-supervised ViT is dominated by shape and part layout,
 which is what survives the gap between a painted illustration and grey clay.
 Raw pixels do not survive it; that was measured, not assumed.
 
+BUT NOT THE CLS VECTOR. The first working version of this file compared pooled
+CLS embeddings and returned MATCHES_SOURCE for the real mesh at separation
+0.0144, which looked like a result. Run as a control against a deliberately
+mirrored copy of the same mesh, it returned MATCHES_SOURCE again, at a *larger*
+separation of 0.0155. The criterion does not detect mirroring at all.
+
+The reason is not subtle in hindsight: DINOv2's self-supervised training uses
+random horizontal flip as an augmentation, so its pooled features are trained to
+be invariant to precisely the thing being measured here. Asking a flip-invariant
+embedding about handedness cannot work.
+
+The spatial tokens are not flip-invariant, because they are position-indexed: a
+horizontal flip permutes the patch grid. So this compares the PATCH TOKEN GRIDS
+with spatial correspondence -- token (i,j) of the render against token (i,j) of
+the source -- rather than two pooled summaries. The invariance that defeats the
+CLS comparison is exactly what the registration removes.
+
     py workers/measure_chirality.py --mesh uv.glb --source crop.png \
        --yaw 178.333 --out chirality.json --sheet chirality.png
 
@@ -46,14 +63,48 @@ import argparse
 import json
 from pathlib import Path
 
-from resolve_front_axis_dino import MODEL, RENDER, clay_render, embed
+from resolve_front_axis_dino import MODEL, RENDER, clay_render
 
 #: A source and its mirror are the same picture to any shape-blind statistic, so
 #: the two scores are close by construction and the threshold has to be modest.
 #: But it cannot be zero: a subject that really is bilaterally symmetric from the
 #: front will produce a coin flip, and calling that a verdict is how the earlier
 #: wrong answers were reached. Below this, say UNRESOLVED.
+#:
+#: Class-level tuning belongs here. A character or a hand-held item has sculpted
+#: handedness and should clear this comfortably; a building or a landscape is
+#: often genuinely symmetric from the front, and for those UNRESOLVED is the
+#: correct answer rather than a failure. Per-asset tuning does not belong here
+#: and never will.
 MIN_SEPARATION = 0.01
+
+
+def embed_grid(images, model, processor, torch):
+    """Spatially-registered DINOv2 patch-token grids, L2 normalised per token.
+
+    The CLS token is dropped deliberately. See the module docstring: pooled
+    DINOv2 features are trained to be horizontal-flip invariant, so they cannot
+    answer a handedness question. The patch grid can, because flipping the image
+    permutes it.
+    """
+    import numpy as np
+    from PIL import Image
+
+    batch = [image.convert("RGB") if isinstance(image, Image.Image)
+             else Image.fromarray(image).convert("RGB") for image in images]
+    inputs = processor(images=batch, return_tensors="pt")
+    with torch.no_grad():
+        tokens = model(**inputs).last_hidden_state[:, 1:]
+    grids = tokens.cpu().numpy().astype(np.float64)
+    grids /= np.maximum(np.linalg.norm(grids, axis=-1, keepdims=True), 1e-12)
+    return grids
+
+
+def registered_similarity(a, b):
+    """Mean cosine between patch tokens at the SAME grid position."""
+    import numpy as np
+
+    return float(np.mean(np.sum(a * b, axis=-1)))
 
 
 def resolve(mesh_path: Path, source_path: Path, yaw: float, sheet: Path | None):
@@ -82,9 +133,9 @@ def resolve(mesh_path: Path, source_path: Path, yaw: float, sheet: Path | None):
 
     processor = AutoImageProcessor.from_pretrained(MODEL)
     model = AutoModel.from_pretrained(MODEL).eval()
-    vectors = embed([render, flat, flipped], model, processor, torch)
-    as_is = float(vectors[0] @ vectors[1])
-    mirrored = float(vectors[0] @ vectors[2])
+    grids = embed_grid([render, flat, flipped], model, processor, torch)
+    as_is = registered_similarity(grids[0], grids[1])
+    mirrored = registered_similarity(grids[0], grids[2])
 
     separation = abs(as_is - mirrored)
     if separation < MIN_SEPARATION:
@@ -95,7 +146,7 @@ def resolve(mesh_path: Path, source_path: Path, yaw: float, sheet: Path | None):
         verdict = "MATCHES_SOURCE"
 
     result = {
-        "schema": "lowvram3d_chirality_v2",
+        "schema": "lowvram3d_chirality_v3",
         "mesh": str(mesh_path),
         "source": str(source_path),
         "front_yaw_deg": float(yaw),
