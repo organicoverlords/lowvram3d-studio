@@ -1,0 +1,98 @@
+{
+  "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
+  "status": "PREPARED_NOT_EXECUTED",
+  "asset": "sky_whale_courier",
+  "purpose": "Six-view texture source for the sky whale. Conditioned on a RENDER of the already-textured mesh rather than on the source photograph, so the conditioning silhouette is the mesh's silhouette exactly.",
+  "generator_family": "MVADAPTER_SD21",
+  "conditioning": "IMAGE_PLUS_GEOMETRY",
+  "text_conditioned_fallback": "FORBIDDEN",
+  "sdxl_route": "REJECTED",
+  "comfyui_generation_route": "REJECTED",
+  "pipeline_class": "LowVRAMMVAdapterI2MVSDPipeline",
+  "pipeline_module": "workers/lowvram_mvadapter_i2mv_sd21.py",
+  "mvadapter_source": "C:\\AI\\mvadapter-upstream-inspection",
+  "base_model": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--stabilityai--stable-diffusion-2-1-base",
+  "adapter": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--huanngzh--mv-adapter\\mvadapter_ig2mv_sd21.safetensors",
+  "adapter_sha256": "7940d6197be614fc6a3483ece1ed37cac850f94375d127ada6ae6464ce9252c3",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\whale_front_zup.glb",
+  "immutable_mesh_sha256": "e8edbeb9bb42901ac1789f39c8500907369890964030e718b88fa703156229d8",
+  "mesh_provenance": {
+    "generator": "hunyuan3d-dit-v2-mini-turbo, octree ladder 384:3000,320:2000,256:1500, 5 steps, seed 12345",
+    "raw": "609,038 faces, watertight, 33 shells",
+    "decimation": "open3d quadric -> 400,000 faces, 6.3 s, watertight, 29 shells",
+    "unwrap": "xatlas 2048; 7,743 charts, overlap 6.4e-07, PROVEN",
+    "front_texture": "fast_texture_projection at 2048 from the original 4K transparent PNG; camera IoU 0.876, 400,659 observed texels (22.7% of owned)",
+    "orientation": "Y 178.33 deg from the projection camera, then X +90 into the builder's Z-up basis",
+    "geometry_mutated": false
+  },
+  "camera_semantics": {
+    "classification": "PHOTOGRAPHED_VIEW_INDEX_0_BY_PAINTED_TEXEL_COVERAGE",
+    "photographed_view_index": 0,
+    "front_selection_basis": "painted_texel_coverage",
+    "painted_fraction": {
+      "front": 0.796,
+      "rear": 0.0
+    },
+    "note": "silhouette IoU chose the MIRROR profile here (0.881 vs 0.618) because a whale in profile looks nearly the same from port and starboard. The chosen front control saw 5 painted texels of 31,537; the opposite view saw 25,107."
+  },
+  "primary": {
+    "model": "SD2.1",
+    "views": 6,
+    "resolution": 384,
+    "steps": 20,
+    "guidance_scale": 1.0,
+    "reference_conditioning_scale": 1.0,
+    "control_conditioning_scale": 1.0,
+    "seed": 12345,
+    "scheduler": "DDPM_WITH_SHIFT_SNR",
+    "shift_mode": "interpolated",
+    "shift_scale": 8.0,
+    "offload": "SEQUENTIAL",
+    "attention": "SDPA",
+    "attention_slicing": "DISABLED",
+    "vae_slicing": "ON",
+    "dtype": "float16",
+    "vae_dtype": "float32",
+    "condition_encoder_dtype": "float32",
+    "bf16": "DISABLED",
+    "flash_attention_2": "DISABLED",
+    "xformers_required": false,
+    "conditioning_reference": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\front_conditioning_512.png",
+    "conditioning_reference_sha256": "1c7d90430caaafe34508a2956cdc8809358f9b7f639cd8b645b6ceefdee7cca7",
+    "control_tensor": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\controls_384_audited\\control_tensor.npy",
+    "control_tensor_sha256": "f5f435e18208bf8fb1d68697a81fede457742def337154cfa07e20d27f1b948c",
+    "camera_contract": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\controls_384_audited\\camera_contract.json",
+    "camera_contract_sha256": "620298ea87b1311365133da37abdff0099ecafcbfd326092197f01014beb0589",
+    "conditioning_note": "a render of the textured mesh through the front control camera, not the source photo"
+  },
+  "oom_fallback": {
+    "authorized_only_after_genuine_cuda_oom": false,
+    "note": "No 256 controls were built for this asset. A fallback would need its own control tensor and camera contract, so there is nothing to fall back to; an OOM here is a hard stop, not a retry.",
+    "second_oom": "HARD_BLOCKER",
+    "adapter_switch": "FORBIDDEN",
+    "text_conditioned_fallback": "FORBIDDEN"
+  },
+  "prompt": "high quality clean albedo reference of the same sky whale courier airship, weathered blue-grey hide, cream canvas fins, rigged cargo gondola and floats beneath, consistent materials, consistent identity, flat neutral lighting",
+  "negative_prompt": null,
+  "classifier_free_guidance": false,
+  "attempts_authorized": 1,
+  "attempts_used": 0,
+  "gpu_sequence_consumed": false,
+  "fallback_eligible": false,
+  "next_action": "USER_REVIEW_REQUIRED",
+  "twenty_step_authorization": "INHERITED_FROM_PANDA_384X20_QA_PASSED",
+  "repair_proofs": {
+    "vae_fp32": "panda: proof/benchmarks/20260803-mvadapter-vae-fp16-nan-root-cause.json",
+    "cudnn_guard": "panda: proof/benchmarks/20260803-mvadapter-cudnn-convolution-guard.json",
+    "note": "Both are hardware defects of this GTX 1660 SUPER, not asset-specific, so they carry over unchanged."
+  },
+  "canonical_basis": "z_up_builder_basis",
+  "canonical_orientation": {
+    "up_axis_mesh_local": [
+      0,
+      0,
+      1
+    ],
+    "evidence": "build_mvadapter_cpu_controls.py hardcodes world_up=[0,0,1]. The Y-up glTF build produced four horizontal views of a figure lying down, with the standing views landing in the top/bottom slots. Pre-rotating into Z-up fixed it; verified on the normal contact sheet."
+  }
+}

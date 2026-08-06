@@ -196,6 +196,66 @@ def _front_by_silhouette(pair: list[int], masks: dict[int, dict[str, Any]],
     }
 
 
+def _front_by_paint(pair: list[int], views: list[dict[str, Any]], bundle: Path,
+                    mesh_path: Path, observed_mask: Path) -> dict[str, Any] | None:
+    """Which of two opposed views looks at the surface the photograph painted.
+
+    Needs a mesh that has already been through `fast_texture_projection`, whose
+    `observed_mask.png` marks the atlas texels that came from real pixels rather
+    than from dilation. Each control view stores its visible triangle per pixel
+    and the barycentric weights, so interpolating UVs and sampling that mask
+    counts, exactly, how much paint the view can see.
+    """
+    import trimesh
+    from PIL import Image
+
+    observed = np.asarray(Image.open(observed_mask).convert("L")) > 127
+    height, width = observed.shape
+    scene = trimesh.load(mesh_path, process=False)
+    mesh = scene.to_geometry() if hasattr(scene, "geometry") else scene
+    uv = getattr(mesh.visual, "uv", None)
+    if uv is None:
+        return None
+    uv = np.asarray(uv)
+    faces = np.asarray(mesh.faces)
+
+    scores = {}
+    for index in pair:
+        view = next(v for v in views if int(v["index"]) == index)
+        prefix = view.get("semantic_name") or view.get("axis_label")
+        ids_path = bundle / f"{prefix}_triangle_ids.npy"
+        bary_path = bundle / f"{prefix}_barycentric.npy"
+        if not ids_path.is_file() or not bary_path.is_file():
+            return None
+        triangle_ids = np.load(ids_path)
+        barycentric = np.load(bary_path)
+        visible = triangle_ids >= 0
+        if not visible.any() or triangle_ids.max() >= len(faces):
+            return None
+        corners = faces[triangle_ids[visible]]
+        wa = barycentric[visible][:, 0][:, None]
+        wb = barycentric[visible][:, 1][:, None]
+        texel = (uv[corners[:, 0]] * (1.0 - wa - wb) + uv[corners[:, 1]] * wa
+                 + uv[corners[:, 2]] * wb)
+        xs = np.clip((texel[:, 0] * (width - 1)).astype(np.int32), 0, width - 1)
+        ys = np.clip(((1.0 - texel[:, 1]) * (height - 1)).astype(np.int32),
+                     0, height - 1)
+        painted = observed[ys, xs]
+        scores[index] = {"visible_pixels": int(visible.sum()),
+                         "painted_pixels": int(painted.sum()),
+                         "painted_fraction": round(float(painted.mean()), 4)}
+
+    ordered = sorted(scores, key=lambda i: scores[i]["painted_fraction"],
+                     reverse=True)
+    best, other = scores[ordered[0]], scores[ordered[1]]
+    if best["painted_fraction"] < 0.05:
+        # Nothing was painted on either side; this is not evidence.
+        return None
+    return {"per_raw_index": {str(k): v for k, v in scores.items()},
+            "front_raw_index": int(ordered[0]),
+            "margin": round(best["painted_fraction"] - other["painted_fraction"], 4)}
+
+
 def _signed_z_angle(source: np.ndarray, target: np.ndarray) -> float:
     source = _unit(source)
     target = _unit(target)
@@ -226,7 +286,25 @@ def _choose_permutation(views: list[dict[str, Any]], masks: dict[int, dict[str, 
         selected_pair["raw_indices"][0])
     silhouette = _front_by_silhouette(
         selected_pair["raw_indices"], masks, source["alpha"])
-    if silhouette["decisive"]:
+    paint = source.get("paint")
+    if paint is not None:
+        # Strictly better evidence when it exists, because it is not an
+        # inference about shape at all.
+        #
+        # Silhouette registration cannot separate a subject from its own mirror.
+        # A whale in profile presents nearly the same outline from port and
+        # starboard, so IoU picked one at 0.881 against 0.618 and picked the
+        # wrong one: the chosen "front" control saw 5 painted texels out of
+        # 31,537 while the opposite view saw 25,107 of the same 31,537. Front
+        # and rear were swapped, and conditioning would have been a render of
+        # the blank side.
+        #
+        # Where the single-view pass actually landed paint is a direct
+        # observation of which way the photographed side faces, so it wins
+        # outright rather than being blended with the silhouette score.
+        front_raw = int(paint["front_raw_index"])
+        front_basis = "painted_texel_coverage"
+    elif silhouette["decisive"]:
         front_raw = silhouette["front_raw_index"]
         front_basis = "silhouette_iou_against_source"
     else:
@@ -246,6 +324,7 @@ def _choose_permutation(views: list[dict[str, Any]], masks: dict[int, dict[str, 
     output_to_raw = [front_raw, right_raw, rear_raw, left_raw, 4, 5]
     return {
         "front_basis": front_basis,
+        "painted_texel_coverage": paint,
         "silhouette_registration": silhouette,
         "tail_front_raw_index": int(tail_front_raw),
         "source_tail_side": source_tail_side,
@@ -285,7 +364,8 @@ def _contact_sheet(source_dir: Path, output: Path, views: list[dict[str, Any]], 
     sheet.save(output)
 
 
-def audit_and_relabel(mesh: Path, source_image: Path, source_dir: Path, output_dir: Path) -> dict[str, Any]:
+def audit_and_relabel(mesh: Path, source_image: Path, source_dir: Path, output_dir: Path,
+                      observed_mask: Path | None = None) -> dict[str, Any]:
     source_contract = _json(source_dir / "camera_contract.json")
     source_views = sorted(source_contract["views"], key=lambda item: int(item["index"]))
     if [int(view["index"]) for view in source_views] != list(range(6)):
@@ -298,6 +378,11 @@ def audit_and_relabel(mesh: Path, source_image: Path, source_dir: Path, output_d
         int(view["index"]): _mask_evidence(source_dir / f"{view['semantic_name']}_mask.png")
         for view in source_views
     }
+    if observed_mask is not None and Path(observed_mask).is_file():
+        pair = [int(v["index"]) for v in source_views
+                if abs(float(v["elevation_deg"])) < 45.0]
+        source_evidence["paint"] = _front_by_paint(
+            pair, source_views, source_dir, mesh, Path(observed_mask))
     permutation = _choose_permutation(source_views, mask_evidence, source_evidence)
     transform = np.asarray(source_contract["control_space_transform"], dtype=np.float64)
     inverse = np.linalg.inv(transform)
@@ -456,8 +541,14 @@ def main() -> int:
     parser.add_argument("--source-image", type=Path, required=True)
     parser.add_argument("--source-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--observed-mask", type=Path, default=None,
+                        help="observed_mask.png from a prior fast_texture_projection "
+                             "run on this mesh. When given, front-versus-rear is "
+                             "decided by which view sees the painted texels, which "
+                             "silhouette IoU cannot do on a mirror-symmetric subject.")
     args = parser.parse_args()
-    print(json.dumps(audit_and_relabel(args.mesh, args.source_image, args.source_dir, args.output_dir), indent=2), flush=True)
+    print(json.dumps(audit_and_relabel(args.mesh, args.source_image, args.source_dir, args.output_dir,
+                                    args.observed_mask), indent=2), flush=True)
     return 0
 
 

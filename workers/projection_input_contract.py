@@ -72,6 +72,10 @@ def validate(source_image: Path, alpha_mask: Path, conditioning: Path,
              crop_transform: dict | None = None) -> dict:
     """Build the contract record and decide whether the projection may run."""
     failures: list[str] = []
+    #: Checks that could not be computed on these inputs, with the reason.
+    #: Recorded rather than dropped: a check that silently did not run is
+    #: indistinguishable in the receipt from one that ran and passed.
+    skipped: list[str] = []
 
     rgba = cv2.imread(str(source_image), cv2.IMREAD_UNCHANGED)
     if rgba is None:
@@ -132,6 +136,32 @@ def validate(source_image: Path, alpha_mask: Path, conditioning: Path,
     border = np.concatenate((rgb[:3].reshape(-1, 3), rgb[-3:].reshape(-1, 3),
                              rgb[:, :3].reshape(-1, 3), rgb[:, -3:].reshape(-1, 3)))
     plate_rgb = np.median(border, axis=0)
+
+    # The test needs a background colour to compare against, and it reads one off
+    # the plate's border. That assumes the plate is the original opaque
+    # photograph. An asset delivered as a transparent PNG has no background at
+    # all: its border decodes to RGB (0,0,0) under an alpha of 0, and the test
+    # then measures "distance from black", so every dark pixel near the
+    # silhouette is scored as leaked background.
+    #
+    # Measured on the sky whale, supplied as a 4K transparent PNG: border median
+    # (0,0,0) against a subject median of (115,107,89), 3.6% of the subject
+    # within 18 of "plate colour", and a boundary-band fraction of 0.0097 that
+    # failed a 0.0090 tolerance. Nothing had leaked -- the whale is simply dark.
+    #
+    # So the check is skipped when the plate has no opaque border to read a
+    # colour from, and says so, rather than either failing a clean input or
+    # being quietly disabled for everyone.
+    plate_alpha_border = None
+    plate_rgba = cv2.imread(str(original_plate), cv2.IMREAD_UNCHANGED)
+    if plate_rgba is not None and plate_rgba.ndim == 3 and plate_rgba.shape[2] == 4:
+        pa = plate_rgba[..., 3]
+        plate_alpha_border = float(np.concatenate(
+            (pa[:3].ravel(), pa[-3:].ravel(),
+             pa[:, :3].ravel(), pa[:, -3:].ravel())).mean())
+    plate_background_readable = (plate_alpha_border is None
+                                 or plate_alpha_border > 8.0)
+
     distance = np.linalg.norm(rgb.astype(np.float32) - plate_rgb[None, None, :], axis=2)
     # Leaked background shows up as a halo hugging the matte boundary. Bright highlights deep
     # inside the subject -- this ship has a lit sign and lamp glows -- are legitimate content and
@@ -141,7 +171,13 @@ def validate(source_image: Path, alpha_mask: Path, conditioning: Path,
     plate_like_inside = boundary_band & (distance < 18.0)
     plate_fraction = float(plate_like_inside.sum()) / max(int(foreground.sum()), 1)
     interior_plate_like = float((foreground & ~boundary_band & (distance < 12.0)).sum()) / max(int(foreground.sum()), 1)
-    if plate_fraction > BACKGROUND_OUTSIDE_TOLERANCE:
+    if not plate_background_readable:
+        skipped.append(
+            f"PLATE_BACKGROUND_HALO_AT_MATTE_BOUNDARY: plate has a fully "
+            f"transparent border (mean alpha {plate_alpha_border:.1f}), so it "
+            f"carries no background colour to compare against. Measured "
+            f"fraction would have been {plate_fraction:.4f}.")
+    elif plate_fraction > BACKGROUND_OUTSIDE_TOLERANCE:
         failures.append(f"PLATE_BACKGROUND_HALO_AT_MATTE_BOUNDARY:{plate_fraction:.4f}")
 
     hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
@@ -215,6 +251,7 @@ def validate(source_image: Path, alpha_mask: Path, conditioning: Path,
         "image_mask_agreement_iou": round(agreement, 6),
         "transforms_match": bool(transforms_match),
         "failures": failures,
+        "skipped_checks": skipped,
         "contract_satisfied": not failures,
         "classification": "PROJECTION_INPUT_ACCEPTED" if not failures else "PROJECTION_INPUT_REJECTED",
     }
