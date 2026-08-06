@@ -202,7 +202,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Synthetic support render failed" }
           & $env:PANDA_DIAG_PYTHON workers\build_contact_sheet.py --render-dir $renderDir --output (Join-Path $renderDir "contact_sheet.png") *>> (Join-Path $renderDir "blender.log")
           if ($LASTEXITCODE -ne 0) { throw "Synthetic support contact sheet failed" }
-          $env:PANDA_DIAG_PYTHON -c "from pathlib import Path; from PIL import Image; import json; root=Path(r'$renderDir'); files=sorted(root.glob('*.png')); result={'rendered_images':len(files),'visible_magenta_pixels':sum(int((__import__('numpy').asarray(Image.open(p).convert('RGB'))==[220,0,220]).all(2).sum()) for p in files if p.name!='contact_sheet.png'),'visible_black_default_pixels':sum(int((__import__('numpy').asarray(Image.open(p).convert('RGB'))==[0,0,0]).all(2).sum()) for p in files if p.name!='contact_sheet.png')}; (root/'render_manifest.json').write_text(json.dumps(result,indent=2)); print(json.dumps(result))"
+          & $env:PANDA_DIAG_PYTHON -c "from pathlib import Path; from PIL import Image; import json; root=Path(r'$renderDir'); files=sorted(root.glob('*.png')); result={'rendered_images':len(files),'visible_magenta_pixels':sum(int((__import__('numpy').asarray(Image.open(p).convert('RGB'))==[220,0,220]).all(2).sum()) for p in files if p.name!='contact_sheet.png'),'visible_black_default_pixels':sum(int((__import__('numpy').asarray(Image.open(p).convert('RGB'))==[0,0,0]).all(2).sum()) for p in files if p.name!='contact_sheet.png')}; (root/'render_manifest.json').write_text(json.dumps(result,indent=2)); print(json.dumps(result))"
 
       - name: Resolve selected existing visual candidates
         shell: powershell
