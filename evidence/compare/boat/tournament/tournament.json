@@ -1,0 +1,90 @@
+{
+  "schema": "lowvram3d_trellis_seed_tournament_v1",
+  "image": "evidence\\compare\\boat\\matte.png",
+  "resolution": "512",
+  "target_length_height": 1.74,
+  "target_length_beam": 2.79,
+  "seeds_run": 8,
+  "seeds_completed": 4,
+  "ranked": [
+    {
+      "faces": 2035434,
+      "length_height": 1.6944,
+      "length_beam": 2.0899,
+      "bbox_length_height": 1.5067,
+      "bbox_length_beam": 2.0716,
+      "winding_consistent": false,
+      "volume": 0.005782,
+      "seed": 1006,
+      "seconds": 170.2,
+      "proportion_error": 0.3155
+    },
+    {
+      "faces": 2374420,
+      "length_height": 1.8258,
+      "length_beam": 2.0691,
+      "bbox_length_height": 1.5074,
+      "bbox_length_beam": 1.8063,
+      "winding_consistent": false,
+      "volume": 0.007884,
+      "seed": 1002,
+      "seconds": 178.3,
+      "proportion_error": 0.3471
+    },
+    {
+      "faces": 3006446,
+      "length_height": 1.6403,
+      "length_beam": 2.0669,
+      "bbox_length_height": 1.3936,
+      "bbox_length_beam": 1.9092,
+      "winding_consistent": false,
+      "volume": 0.033012,
+      "seed": 1003,
+      "seconds": 205.2,
+      "proportion_error": 0.359
+    },
+    {
+      "faces": 2633248,
+      "length_height": 1.5899,
+      "length_beam": 1.8278,
+      "bbox_length_height": 1.4345,
+      "bbox_length_beam": 1.7737,
+      "winding_consistent": false,
+      "volume": 0.006827,
+      "seed": 1004,
+      "seconds": 193.1,
+      "proportion_error": 0.5131
+    }
+  ],
+  "failed": [
+    {
+      "seed": 1000,
+      "seconds": 12.7,
+      "returncode": 1,
+      "mesh": "evidence\\compare\\boat\\tournament\\seed1000.glb",
+      "error": "le2\",\n      \"died stage 5\"\n    ],\n    [\n      96448,\n      \"castle2\",\n      \"died stage 5\"\n    ],\n    [\n      106496,\n      \"castle2\",\n      \"geometry decoded, died stage 6\"\n    ],\n    [\n      111520,\n      \"castle2\",\n      \"full success, 3949828 faces\"\n    ],\n    [\n      140480,\n      \"red_panda\",\n      \"died stage 5\"\n    ],\n    [\n      191744,\n      \"blue_tree\",\n      \"died stage 5\"\n    ]\n  ]\n}\n"
+    },
+    {
+      "seed": 1001,
+      "seconds": 6.5,
+      "returncode": 1,
+      "mesh": "evidence\\compare\\boat\\tournament\\seed1001.glb",
+      "error": "le2\",\n      \"died stage 5\"\n    ],\n    [\n      96448,\n      \"castle2\",\n      \"died stage 5\"\n    ],\n    [\n      106496,\n      \"castle2\",\n      \"geometry decoded, died stage 6\"\n    ],\n    [\n      111520,\n      \"castle2\",\n      \"full success, 3949828 faces\"\n    ],\n    [\n      140480,\n      \"red_panda\",\n      \"died stage 5\"\n    ],\n    [\n      191744,\n      \"blue_tree\",\n      \"died stage 5\"\n    ]\n  ]\n}\n"
+    },
+    {
+      "seed": 1005,
+      "seconds": 26.8,
+      "returncode": 1,
+      "mesh": "evidence\\compare\\boat\\tournament\\seed1005.glb",
+      "error": "le2\",\n      \"died stage 5\"\n    ],\n    [\n      96448,\n      \"castle2\",\n      \"died stage 5\"\n    ],\n    [\n      106496,\n      \"castle2\",\n      \"geometry decoded, died stage 6\"\n    ],\n    [\n      111520,\n      \"castle2\",\n      \"full success, 3949828 faces\"\n    ],\n    [\n      140480,\n      \"red_panda\",\n      \"died stage 5\"\n    ],\n    [\n      191744,\n      \"blue_tree\",\n      \"died stage 5\"\n    ]\n  ]\n}\n"
+    },
+    {
+      "seed": 1007,
+      "seconds": 118.8,
+      "returncode": 1,
+      "mesh": "evidence\\compare\\boat\\tournament\\seed1007.glb",
+      "error": "le2\",\n      \"died stage 5\"\n    ],\n    [\n      96448,\n      \"castle2\",\n      \"died stage 5\"\n    ],\n    [\n      106496,\n      \"castle2\",\n      \"geometry decoded, died stage 6\"\n    ],\n    [\n      111520,\n      \"castle2\",\n      \"full success, 3949828 faces\"\n    ],\n    [\n      140480,\n      \"red_panda\",\n      \"died stage 5\"\n    ],\n    [\n      191744,\n      \"blue_tree\",\n      \"died stage 5\"\n    ]\n  ]\n}\n"
+    }
+  ],
+  "scored_on": "robust extents, 0.5 percentile trim"
+}
