@@ -97,7 +97,15 @@ jobs:
           $canonicalMeshCandidates = @(
             $canonicalMeshPrimary,
             "C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\panda_injective_rewrap_20260804\tactical_red_panda_scout_rewrapped.glb"
-          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
+          )
+          $benchmarkRoot = "C:\AI\LowVRAM3D-benchmarks"
+          if (Test-Path -LiteralPath $benchmarkRoot -PathType Container) {
+            $canonicalMeshCandidates += @(
+              Get-ChildItem -LiteralPath $benchmarkRoot -Recurse -File -Filter "tactical_red_panda_scout_rewrapped.glb" -ErrorAction SilentlyContinue |
+                Select-Object -ExpandProperty FullName
+            )
+          }
+          $canonicalMeshCandidates = @($canonicalMeshCandidates | Select-Object -Unique) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
           $canonicalMesh = $canonicalMeshCandidates | Where-Object {
             (Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash -eq "950343DD7FF76877CE6ADB83D6D4A80A8D123E7AAFB397B566A762D454A9A5F1"
           } | Select-Object -First 1
