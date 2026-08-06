@@ -1,0 +1,14 @@
+{
+  "schema": "lowvram3d_chirality_v2",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda_mt_uv.glb",
+  "source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda2_512.png",
+  "front_yaw_deg": 345.0,
+  "model": "facebook/dinov2-large",
+  "score_source_as_is": 0.422383,
+  "score_source_mirrored": 0.408009,
+  "separation": 0.014373,
+  "min_separation": 0.01,
+  "verdict": "MATCHES_SOURCE",
+  "note": "bare geometry versus source and mirrored source; no texture, no atlas, no colour model, no per-asset constant. See the docstring for why a tail-colour test was rejected.",
+  "sheet": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\chirality.png"
+}

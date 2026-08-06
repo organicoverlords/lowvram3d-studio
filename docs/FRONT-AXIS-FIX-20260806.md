@@ -100,6 +100,52 @@ DeepSeek also killed the metric I was about to report:
 4. **Cross-view disagreement** in overlapping atlas regions.
 5. **The human verdict**, which is already wired and fails closed.
 
+## Chirality: settled, and the mirror was a confound
+
+A mirrored copy of the mesh fitted at IoU 0.9151 and produced by far the best
+looking texture, which suggested the reconstruction was left-right reversed. It
+is not. The mirror only looked better because its **camera fit** was better, and
+fit quality and handedness were being read off the same picture.
+
+`workers/measure_chirality.py` separates them. Chirality is carried by the
+geometry -- a rifle sculpted across the chest, a tail sculpted to one side -- so
+it clay-renders the bare mesh at the resolved front and asks whether the source
+or the **mirrored source** matches better in DINOv2 space. No texture is
+involved, so the projection under suspicion contributes nothing to the verdict.
+
+```
+score vs source           0.4224
+score vs mirrored source  0.4080   -> MATCHES_SOURCE
+```
+
+Three signals agree: this measurement, a human read of the clay render against
+the source (the tail is on the viewer's right in both), and two vision models
+independently reporting that the *mirrored* mesh's contact sheet is reversed
+relative to the source. **Do not mirror.**
+
+### The colour test that was written and thrown away
+
+The first version of this script found the subject's one saturated lateral
+feature -- the rust tail -- and reported which side it fell on. It worked on the
+panda. It was deleted anyway, because it needs a hue window per subject and this
+pipeline also has to handle a whale, a boat, a shaman and a castle. A criterion
+that must be re-tuned for every asset is not a criterion. Tuning per asset
+*class* is legitimate; tuning per asset is how a pipeline becomes a demo.
+
+Its one useful contribution was negative: with a wide window it called 15 percent
+of the subject "tail" and returned AMBIGUOUS rather than a verdict, which is the
+behaviour every criterion in this file should have and most did not.
+
+### A frame error, caught by its own symptom
+
+The first run of the finished script returned UNRESOLVED at separation 0.0045. It
+had been handed yaw 178.333 -- the **projector's** convention -- while
+`clay_render` speaks the **resolver's**, where this subject's front is yaw 345.
+The tell was the absolute score: 0.2249, against the 0.4224 the resolver already
+recorded at its own front. Mixing those two conventions is the specific mistake
+that produced the previous three wrong answers, and it very nearly produced a
+fourth inside the script written to stop it.
+
 ## Still open
 
 - Both reviewers warn a second invented face can still appear after the fix: the
