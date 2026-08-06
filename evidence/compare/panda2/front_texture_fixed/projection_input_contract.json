@@ -1,0 +1,57 @@
+{
+  "schema": "projection_input_contract_v1",
+  "mask_method": "BIREFNET_HARD_MASK",
+  "mask_method_accepted": true,
+  "source_image": "evidence\\compare\\panda2\\panda2_2048.png",
+  "source_image_sha256": "fd352c93f0b28d6a7064cb9083ca7aa9c380f015dec411fe7e8fa69131848435",
+  "alpha_mask": "evidence\\compare\\panda2\\panda2_2048_alpha.png",
+  "alpha_mask_sha256": "e6ebfd86d3befee0980e262b07beeddf47aa7bd22c5e44b72c7e1aa0fcc42607",
+  "normalized_conditioning_image": null,
+  "normalized_conditioning_sha256": null,
+  "original_plate": "evidence\\compare\\panda2\\panda2_matte.png",
+  "original_plate_sha256": "6d4ce7e8b51fac914fd1c04c5a5d8659af909240df9db710615df6f2de8188c2",
+  "source_equals_original_plate": false,
+  "source_dimensions": [
+    2048,
+    2048
+  ],
+  "alpha_coverage": 0.416507,
+  "foreground_components": 2,
+  "crop_bounds_x0y0x1y1": [
+    342,
+    75,
+    1704,
+    1971
+  ],
+  "crop_transform": null,
+  "background_treatment": {
+    "estimated_plate_rgb": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "plate_like_halo_fraction_at_boundary": 0.005619,
+    "plate_like_fraction_deep_interior": 0.158382,
+    "interior_note": "interior plate-coloured pixels are the lit sign and lamps, not leakage",
+    "tolerance": 0.005
+  },
+  "ground_shadow_remains": false,
+  "ground_shadow_fraction": 0.0,
+  "checkerboard": {
+    "method": "two-tone plate-tile fraction, calibrated against the plate's own background and foreground",
+    "plate_tile_tones": [],
+    "positive_reference_plate_background": 0.0,
+    "negative_reference_plate_foreground": 0.0,
+    "observed_in_sampled_region": 0.0,
+    "decision_midpoint": 0.0,
+    "detected_in_sampled_region": false
+  },
+  "image_mask_agreement_iou": 1.0,
+  "transforms_match": true,
+  "failures": [],
+  "skipped_checks": [
+    "PLATE_BACKGROUND_HALO_AT_MATTE_BOUNDARY: plate has a fully transparent border (mean alpha 0.0), so it carries no background colour to compare against. Measured fraction would have been 0.0056."
+  ],
+  "contract_satisfied": true,
+  "classification": "PROJECTION_INPUT_ACCEPTED"
+}

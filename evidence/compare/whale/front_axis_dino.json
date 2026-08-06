@@ -1,115 +1,115 @@
 {
   "schema": "lowvram3d_front_axis_dino_v1",
-  "mesh": "evidence\\compare\\panda2\\panda_mt_uv.glb",
-  "source": "evidence\\compare\\panda2\\panda2_512.png",
+  "mesh": "evidence\\compare\\whale\\whale_mt_uv.glb",
+  "source": "evidence\\compare\\whale\\front_cond_512.png",
   "model": "facebook/dinov2-large",
-  "best_yaw_deg": 345.0,
-  "best_score": 0.422383,
-  "runner_up_yaw_deg": 0.0,
-  "runner_up_score": 0.417847,
-  "neighbour_margin": 0.004536,
-  "antipode_yaw_deg": 165.0,
-  "antipode_score": 0.264878,
-  "antipode_margin": 0.157505,
+  "best_yaw_deg": 135.0,
+  "best_score": 0.79904,
+  "runner_up_yaw_deg": 45.0,
+  "runner_up_score": 0.785723,
+  "neighbour_margin": 0.013317,
+  "antipode_yaw_deg": 315.0,
+  "antipode_score": 0.735308,
+  "antipode_margin": 0.063732,
   "front_back_separated": true,
   "scores": [
     {
       "yaw": 0.0,
-      "score": 0.417847
+      "score": 0.73834
     },
     {
       "yaw": 15.0,
-      "score": 0.369636
+      "score": 0.784849
     },
     {
       "yaw": 30.0,
-      "score": 0.354468
+      "score": 0.779091
     },
     {
       "yaw": 45.0,
-      "score": 0.389049
+      "score": 0.785723
     },
     {
       "yaw": 60.0,
-      "score": 0.370075
+      "score": 0.775947
     },
     {
       "yaw": 75.0,
-      "score": 0.319879
+      "score": 0.641571
     },
     {
       "yaw": 90.0,
-      "score": 0.308344
+      "score": 0.29666
     },
     {
       "yaw": 105.0,
-      "score": 0.278121
+      "score": 0.630509
     },
     {
       "yaw": 120.0,
-      "score": 0.225321
+      "score": 0.769405
     },
     {
       "yaw": 135.0,
-      "score": 0.238282
+      "score": 0.79904
     },
     {
       "yaw": 150.0,
-      "score": 0.225765
+      "score": 0.785266
     },
     {
       "yaw": 165.0,
-      "score": 0.264878
+      "score": 0.775773
     },
     {
       "yaw": 180.0,
-      "score": 0.228817
+      "score": 0.767741
     },
     {
       "yaw": 195.0,
-      "score": 0.185296
+      "score": 0.70731
     },
     {
       "yaw": 210.0,
-      "score": 0.183962
+      "score": 0.750534
     },
     {
       "yaw": 225.0,
-      "score": 0.21264
+      "score": 0.719111
     },
     {
       "yaw": 240.0,
-      "score": 0.197592
+      "score": 0.590696
     },
     {
       "yaw": 255.0,
-      "score": 0.317728
+      "score": 0.505206
     },
     {
       "yaw": 270.0,
-      "score": 0.323814
+      "score": 0.216414
     },
     {
       "yaw": 285.0,
-      "score": 0.320217
+      "score": 0.561384
     },
     {
       "yaw": 300.0,
-      "score": 0.351917
+      "score": 0.646037
     },
     {
       "yaw": 315.0,
-      "score": 0.404453
+      "score": 0.735308
     },
     {
       "yaw": 330.0,
-      "score": 0.389212
+      "score": 0.71289
     },
     {
       "yaw": 345.0,
-      "score": 0.422383
+      "score": 0.768588
     }
   ],
   "note": "geometry-vs-source similarity; no atlas, no paint, no silhouette. See docstring for why those three cannot answer this.",
-  "sheet": "evidence\\compare\\panda2\\front_axis_dino.png"
+  "sheet": "evidence\\compare\\whale\\front_axis_dino.png"
 }

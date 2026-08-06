@@ -367,8 +367,13 @@ def _break_fore_aft_tie(centred: np.ndarray, triangles: np.ndarray,
         return yaw
 
     size = 384
-    stride = max(1, triangles.shape[0] // 120000)
-    faces = triangles[::stride]
+    # Every triangle. Decimating here produced a speckled render full of holes --
+    # at 400k triangles the stride was 3, so two thirds of the surface was
+    # missing -- and DINOv2 scored the two candidates 0.223 and 0.232, a
+    # separation of 0.009 that would have declined to break any tie. The same
+    # comparison on a complete render separates them by 0.157. Two renders cost
+    # about a minute; a tie-breaker that cannot see the geometry costs an asset.
+    faces = triangles
 
     def clay(candidate: float) -> "Image.Image":
         matrix = rotation(candidate, pitch, roll)
@@ -391,7 +396,12 @@ def _break_fore_aft_tie(centred: np.ndarray, triangles: np.ndarray,
         face_normals = np.cross(edge1, edge2)
         lengths = np.linalg.norm(face_normals, axis=1, keepdims=True)
         face_normals /= np.maximum(lengths, 1e-12)
-        shade = np.abs(face_normals[:, 2]) * 0.65 + 0.35
+        # Dark enough to separate from the white field. The obvious ramp,
+        # 0.65 * |n| + 0.35, sends camera-facing surfaces to 1.0 -- exactly the
+        # background -- so the subject dissolves into it and only the grazing rim
+        # survives. The background is white because the source is composited onto
+        # white; the object must not be.
+        shade = np.abs(face_normals[:, 2]) * 0.55 + 0.18
         for index in np.argsort(-depth.mean(axis=1)):
             t = tri[index]
             x0, y0 = np.floor(t.min(axis=0)).astype(int)
@@ -486,6 +496,20 @@ def fit_camera(vertices: np.ndarray, triangles: np.ndarray, mask: np.ndarray,
         union = np.count_nonzero(hit | small)
         return float(np.count_nonzero(hit & small) / union) if union else 0.0
 
+    def refine(seed, step):
+        """Local silhouette refinement around `seed`, returned as (iou, y, p, r)."""
+        best_local = (score(*seed), *seed)
+        for _pass in range(2):
+            _iou, y, p, r = best_local
+            for dy in (-step, 0.0, step):
+                for dp in (-step, 0.0, step):
+                    for dr in (-step, 0.0, step):
+                        value = score(y + dy, p + dp, r + dr)
+                        if value > best_local[0]:
+                            best_local = (value, y + dy, p + dp, r + dr)
+            step /= 3.0
+        return best_local
+
     best = (-1.0, 0.0, 0.0, 0.0)
     for yaw in np.arange(0.0, 360.0, coarse_step):
         for pitch in (-30.0, -15.0, 0.0, 15.0, 30.0):
@@ -493,17 +517,8 @@ def fit_camera(vertices: np.ndarray, triangles: np.ndarray, mask: np.ndarray,
                 value = score(yaw, pitch, roll)
                 if value > best[0]:
                     best = (value, yaw, pitch, roll)
+    best = refine(best[1:], coarse_step / 3.0)
     _iou, yaw, pitch, roll = best
-    for _refine in range(2):
-        step = coarse_step / 3.0
-        for dy in (-step, 0.0, step):
-            for dp in (-step, 0.0, step):
-                for dr in (-step, 0.0, step):
-                    value = score(yaw + dy, pitch + dp, roll + dr)
-                    if value > best[0]:
-                        best = (value, yaw + dy, pitch + dp, roll + dr)
-        _iou, yaw, pitch, roll = best
-        coarse_step = step
 
     # The silhouette objective cannot tell front from back, and its confidence is
     # not a warning. An orthographic silhouette from direction u and from -u is
@@ -523,8 +538,44 @@ def fit_camera(vertices: np.ndarray, triangles: np.ndarray, mask: np.ndarray,
     # yaw+180, and keep the better. Both candidates are expressed in this
     # module's own rotation convention, so nothing has to be translated between
     # frames -- which is itself a class of bug this file has already had.
-    yaw = _break_fore_aft_tie(centred, triangles, mask, yaw, pitch, roll,
-                              source_rgb=source_rgb)
+    chosen = _break_fore_aft_tie(centred, triangles, mask, yaw, pitch, roll,
+                                 source_rgb=source_rgb)
+    flipped = abs(((chosen - yaw) + 180.0) % 360.0 - 180.0) > 1.0
+    if flipped:
+        # Yaw is not the only thing that reverses. A tilt of +13.3 degrees seen
+        # from the front is -13.3 seen from behind, and the same goes for roll,
+        # so carrying the fitted pitch across the flip tips the model the wrong
+        # way and the photograph lands on the right hemisphere but misregistered
+        # -- which looked, on the panda's first corrected run, like a smeared
+        # double exposure rather than a face.
+        #
+        # So DINOv2 chooses the hemisphere and the silhouette refines inside it.
+        # That division is the point: the silhouette objective is degenerate
+        # ONLY across the fore-aft flip. Within one hemisphere it is exactly the
+        # right tool, and it is far cheaper and more precise than the feature
+        # model for the last few degrees.
+        # A fresh coarse search inside the chosen hemisphere, not a refinement
+        # seeded from the mirrored pose. Negating pitch and roll is the right
+        # first guess but only a guess, and refining from it landed the panda at
+        # IoU 0.712 with a visibly smeared face -- a local optimum, because the
+        # reconstruction is not exactly symmetric and the true front's best tilt
+        # is not exactly the front's tilt negated. Re-searching the hemisphere
+        # costs one more sweep over a 150 degree arc.
+        hemisphere = (-1.0, 0.0, 0.0, 0.0)
+        # A NARROW yaw window. Opening it to +/-75 let the silhouette objective
+        # pull the panda 63 degrees off the direction DINOv2 chose, to yaw 115 at
+        # IoU 0.843 -- a better score on the criterion that is untrustworthy in
+        # exactly this situation. The flip is a half turn by construction, so the
+        # yaw is already known to within the original fit's precision; what
+        # genuinely has to be re-searched is the tilt, which reverses.
+        for dy in np.arange(-20.0, 20.1, coarse_step / 2.0):
+            for p_candidate in (-30.0, -15.0, 0.0, 15.0, 30.0):
+                for r_candidate in (-15.0, 0.0, 15.0):
+                    value = score(chosen + dy, p_candidate, r_candidate)
+                    if value > hemisphere[0]:
+                        hemisphere = (value, chosen + dy, p_candidate, r_candidate)
+        best = refine(hemisphere[1:], coarse_step / 3.0)
+        _iou, yaw, pitch, roll = best
 
     matrix = rotation(yaw, pitch, roll)
     rotated = centred @ matrix.T
@@ -533,7 +584,8 @@ def fit_camera(vertices: np.ndarray, triangles: np.ndarray, mask: np.ndarray,
             "silhouette_iou": round(best[0], 4), "scale": float(scale),
             "offset": [float(v) for v in offset], "centre": [float(v) for v in centre],
             "matrix": matrix, "image_size": [int(width), int(height)],
-            "fore_aft_tie_broken_by": "dinov2_geometry_vs_source"}
+            "fore_aft_tie_broken_by": "dinov2_geometry_vs_source",
+            "fore_aft_flipped": bool(flipped)}
 
 
 # --------------------------------------------------------------------------- main
