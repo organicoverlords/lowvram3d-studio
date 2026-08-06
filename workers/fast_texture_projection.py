@@ -332,8 +332,125 @@ def project(vertices: np.ndarray, matrix: np.ndarray, scale: float,
     return screen, rotated[:, 2]
 
 
+#: Below this the two candidates are genuinely indistinguishable to the feature
+#: model and the tie is NOT broken -- the fitted yaw is kept and the receipt says
+#: so, rather than a coin flip being dressed up as a decision. Measured
+#: separation on the assets whose answer is known independently: red panda 0.194
+#: (wrong yaw rejected), sky whale see receipt. A threshold this far below those
+#: only fires on a real tie.
+FORE_AFT_MIN_SEPARATION = 0.05
+
+#: Source of the tie-break. DINOv2 is self-supervised and its features are
+#: dominated by shape and part layout rather than colour, which is the invariance
+#: needed to match a painted illustration to a grey clay render. The weights are
+#: in the local HF cache and this runs on CPU.
+FORE_AFT_MODEL = "facebook/dinov2-large"
+
+
+def _break_fore_aft_tie(centred: np.ndarray, triangles: np.ndarray,
+                        mask: np.ndarray, yaw: float, pitch: float,
+                        roll: float, source_rgb: np.ndarray | None = None) -> float:
+    """Return whichever of `yaw` and `yaw + 180` actually faces the source.
+
+    Renders the bare geometry from both, embeds both plus the source with
+    DINOv2, and keeps the higher cosine similarity. Touches no atlas, no
+    projection and no silhouette, so it cannot inherit the error it exists to
+    catch. If anything is unavailable or the two candidates are within
+    FORE_AFT_MIN_SEPARATION, the fitted yaw is returned unchanged: this is a
+    tie-breaker, not a second opinion that overrides a clear fit.
+    """
+    try:
+        import torch
+        from PIL import Image
+        from transformers import AutoImageProcessor, AutoModel
+    except Exception:  # pragma: no cover - environment without transformers
+        return yaw
+
+    size = 384
+    stride = max(1, triangles.shape[0] // 120000)
+    faces = triangles[::stride]
+
+    def clay(candidate: float) -> "Image.Image":
+        matrix = rotation(candidate, pitch, roll)
+        rotated = centred @ matrix.T
+        span = float(np.abs(rotated[:, :2]).max()) or 1.0
+        scale = (size * 0.44) / span
+        # No Y flip here. `rotation()` already returns an image-space matrix --
+        # that is what IMAGE_SPACE is for -- so the projector's own screen path
+        # does `rotated[:, :2] * scale + offset` and nothing more. Adding a flip
+        # would render the clay upside down and hand DINOv2 two inverted
+        # candidates, which is the same class of bug as the fit_to_mask Y
+        # negation that this file was already fixed for once.
+        xy = rotated[:, :2] * scale + size * 0.5
+        image = np.ones((size, size), np.float64)
+        zbuffer = np.full((size, size), np.inf)
+        tri = xy[faces]
+        depth = rotated[faces][:, :, 2]
+        edge1 = rotated[faces[:, 1]] - rotated[faces[:, 0]]
+        edge2 = rotated[faces[:, 2]] - rotated[faces[:, 0]]
+        face_normals = np.cross(edge1, edge2)
+        lengths = np.linalg.norm(face_normals, axis=1, keepdims=True)
+        face_normals /= np.maximum(lengths, 1e-12)
+        shade = np.abs(face_normals[:, 2]) * 0.65 + 0.35
+        for index in np.argsort(-depth.mean(axis=1)):
+            t = tri[index]
+            x0, y0 = np.floor(t.min(axis=0)).astype(int)
+            x1, y1 = np.ceil(t.max(axis=0)).astype(int) + 1
+            x0, y0 = max(x0, 0), max(y0, 0)
+            x1, y1 = min(x1, size), min(y1, size)
+            if x1 <= x0 or y1 <= y0:
+                continue
+            ys, xs = np.mgrid[y0:y1, x0:x1]
+            px, py = xs + 0.5, ys + 0.5
+            ax, ay = t[0]
+            bx, by = t[1]
+            cx, cy = t[2]
+            area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax)
+            if abs(area) < 1e-12:
+                continue
+            w0 = ((bx - px) * (cy - py) - (by - py) * (cx - px)) / area
+            w1 = ((cx - px) * (ay - py) - (cy - py) * (ax - px)) / area
+            inside = (w0 >= 0) & (w1 >= 0) & ((1.0 - w0 - w1) >= 0)
+            if not inside.any():
+                continue
+            z = w0 * depth[index, 0] + w1 * depth[index, 1] + (1.0 - w0 - w1) * depth[index, 2]
+            window = zbuffer[y0:y1, x0:x1]
+            write = inside & (z < window)
+            if not write.any():
+                continue
+            window[write] = z[write]
+            image[y0:y1, x0:x1][write] = shade[index]
+        return Image.fromarray((np.clip(image, 0, 1) * 255).astype(np.uint8)).convert("RGB")
+
+    try:
+        processor = AutoImageProcessor.from_pretrained(FORE_AFT_MODEL)
+        model = AutoModel.from_pretrained(FORE_AFT_MODEL).eval()
+        # The SOURCE IMAGE, not its silhouette. A binary mask throws away the
+        # only evidence that separates a front from a back -- a silhouette is
+        # what the fit already used, and reusing it here would rebuild the tie
+        # rather than break it. Composited onto white because the clay renders
+        # are on white, so the background cannot be what gets matched.
+        if source_rgb is None:
+            return yaw
+        rgb = np.clip(source_rgb, 0, 255).astype(np.uint8)
+        flat = np.where(mask[..., None], rgb, 255).astype(np.uint8)
+        source = Image.fromarray(flat).convert("RGB")
+        batch = [source, clay(yaw), clay(yaw + 180.0)]
+        inputs = processor(images=batch, return_tensors="pt")
+        with torch.no_grad():
+            vectors = model(**inputs).last_hidden_state[:, 0].cpu().numpy()
+        vectors /= np.maximum(np.linalg.norm(vectors, axis=1, keepdims=True), 1e-12)
+        kept, flipped = float(vectors[1] @ vectors[0]), float(vectors[2] @ vectors[0])
+    except Exception:  # pragma: no cover - model unavailable at runtime
+        return yaw
+
+    if abs(kept - flipped) < FORE_AFT_MIN_SEPARATION:
+        return yaw
+    return yaw if kept >= flipped else (yaw + 180.0) % 360.0
+
+
 def fit_camera(vertices: np.ndarray, triangles: np.ndarray, mask: np.ndarray,
-               coarse_step: float = 15.0) -> dict:
+               coarse_step: float = 15.0, source_rgb: np.ndarray | None = None) -> dict:
     """Search yaw/pitch/roll for the pose whose silhouette best matches the conditioning matte."""
     height, width = mask.shape
     probe = 192
@@ -388,13 +505,35 @@ def fit_camera(vertices: np.ndarray, triangles: np.ndarray, mask: np.ndarray,
         _iou, yaw, pitch, roll = best
         coarse_step = step
 
+    # The silhouette objective cannot tell front from back, and its confidence is
+    # not a warning. An orthographic silhouette from direction u and from -u is
+    # the same set for a convex body, and a hooded character in a ghillie suit is
+    # very nearly convex: the muzzle protrudes too little to break the tie. So
+    # the search sees two near-equal optima and initialisation picks one.
+    #
+    # The red panda lost that coin flip at IoU 0.915 -- a number that reads as
+    # certainty and means nothing -- and its photograph was projected onto the
+    # back of its head. Every check downstream then agreed, including the
+    # paint-coverage audit, which reports where paint landed and so confirms a
+    # backwards projection instead of catching it.
+    #
+    # Breaking the tie needs evidence the silhouette does not contain, and the
+    # only such evidence is shape: a face protrudes, a hood does not. So compare
+    # the SOURCE IMAGE against a shaded render of the bare geometry at yaw and at
+    # yaw+180, and keep the better. Both candidates are expressed in this
+    # module's own rotation convention, so nothing has to be translated between
+    # frames -- which is itself a class of bug this file has already had.
+    yaw = _break_fore_aft_tie(centred, triangles, mask, yaw, pitch, roll,
+                              source_rgb=source_rgb)
+
     matrix = rotation(yaw, pitch, roll)
     rotated = centred @ matrix.T
     scale, offset = fit_to_mask(rotated, mask)
     return {"yaw": round(yaw, 3), "pitch": round(pitch, 3), "roll": round(roll, 3),
             "silhouette_iou": round(best[0], 4), "scale": float(scale),
             "offset": [float(v) for v in offset], "centre": [float(v) for v in centre],
-            "matrix": matrix, "image_size": [int(width), int(height)]}
+            "matrix": matrix, "image_size": [int(width), int(height)],
+            "fore_aft_tie_broken_by": "dinov2_geometry_vs_source"}
 
 
 # --------------------------------------------------------------------------- main
@@ -451,7 +590,7 @@ def main() -> None:
 
     # ---- camera ---------------------------------------------------------------------
     started = time.time()
-    camera = fit_camera(positions, triangles, source_mask)
+    camera = fit_camera(positions, triangles, source_mask, source_rgb=source_rgb)
     timings["camera_fit"] = time.time() - started
     print(f"PROJECTION_CAMERA yaw={camera['yaw']} pitch={camera['pitch']} "
           f"roll={camera['roll']} iou={camera['silhouette_iou']}", flush=True)
