@@ -429,3 +429,135 @@ Predicted, not yet measured:
 - **Rock formations**: succeed at mid-ground range, generic erosion detail.
 - **Furry creatures**: high failure risk on both capacity and quality.
 - **Trees with real foliage**: likely to exceed the latent budget outright.
+
+## 11. Texturing a geometry-only generator — the six-view route
+
+TRELLIS bakes its own atlas, so §2 covers it. **Hunyuan3D Mini Turbo emits
+geometry only**, and the whole texture path below exists for that case. It is
+also the better route for any subject the generator router (§`choose_generator`)
+sends to Hunyuan, i.e. anything built of cords and hanging props.
+
+Measured on the bird-skull shaman, which is the asset this route was proven on.
+
+### Why a single projection is not enough
+
+`fast_texture_projection` paints from one camera. That is one side:
+
+| | texels | share |
+|---|---:|---:|
+| observed from the source photo | 336,737 | **16.5%** |
+| dilated invention | 1,707,626 | 83.5% |
+
+The 83.5% reads as camouflage patchwork on every view except the photographed
+one, and **no grade or reorientation fixes it** — one photograph carries one
+side. The six-view route takes the same asset to **53.4% observed**, a quarter
+of it seen by two or more views.
+
+### The route
+
+```bash
+# 1. decimate — Hunyuan returns ~1.1M faces, watertight.
+#    workers/decimate_mesh.py is the sanctioned worker and drives Blender
+#    headless. The shaman and panda were done with open3d inline instead,
+#    which is far faster. open3d lives ONLY in the standalone runtime -- it is
+#    absent from both the 3.12 and 3.11 system interpreters, so this line must
+#    use the same python.exe as the GPU stages:
+C:/AI/HY3D2/python_standalone/python.exe -c "import trimesh,open3d as o3d,numpy as np; \
+m=trimesh.load('shaman_miniturbo.glb',process=False).to_geometry(); \
+d=o3d.geometry.TriangleMesh(o3d.utility.Vector3dVector(m.vertices), \
+o3d.utility.Vector3iVector(m.faces)).simplify_quadric_decimation(400000); \
+trimesh.Trimesh(np.asarray(d.vertices),np.asarray(d.triangles)).export('lod.glb')"
+#    1,112,498 -> 400,000 in 12.6 s, still watertight, 21 shells
+
+# 2. unwrap — this is why shell count matters. xatlas has never completed on
+#    a TRELLIS mesh here (71,043 shells); on 21 shells it takes minutes.
+py workers/unwrap_mesh_uv.py --input lod.glb --output uv.glb \
+   --report uv.json --resolution 2048 --padding 4
+#    4,611 charts, overlap 0.0, degenerate 0.019%, PROVEN
+
+# 3. orient — see "Two axis traps" below
+# 4. controls
+py workers/build_mvadapter_cpu_controls.py --mesh uv_zup.glb \
+   --output-dir controls_384 --size 384
+
+# 5. audit + relabel
+py workers/audit_and_relabel_mvadapter_controls.py --mesh uv_zup.glb \
+   --source-image crop512.png --source-dir controls_384 \
+   --output-dir controls_384_audited
+
+# 6. six-view inference — NOTE the interpreter, see below
+PYTHONPATH=C:/AI/HY3D2/Hunyuan3D-2 \
+C:/AI/HY3D2/python_standalone/python.exe workers/run_sixview_no_cudnn.py \
+   --config configs/<asset>_mvadapter_ig2mv_sd21_384x20.json \
+   --output-dir evidence/compare/<asset>_sixview_384
+#    20/20 steps, 302 s
+
+# 7. project all six
+py workers/multiview_texture_projection.py --mesh uv_zup.glb \
+   --bundle controls_384_audited --views-receipt <views>.json \
+   --output-dir mv --output-glb textured.glb --report mv.json --atlas-size 2048
+```
+
+### Substitute the photograph for the generated front
+
+The front is the one direction where real data exists, and it is also where
+MV-Adapter is weakest. On the shaman the generated front failed **both** QA
+gates that the run failed overall:
+
+| front view | structural IoU | foreground saturation |
+|---|---:|---:|
+| MV-Adapter generated | 0.677 | 0.070 |
+| the photograph, bbox-registered | **0.689** | **0.413** |
+
+Six times the colour, and a better silhouette match. Register the matte into the
+front control's bbox, write it over `view_0_front.png` in a copy of the
+inference receipt, and re-run step 7 against that copy. The result is visibly
+warmer and carries real photographic detail in the face and robes.
+
+### Two axis traps, both silent
+
+**`build_mvadapter_cpu_controls.py` hardcodes `world_up = [0,0,1]`** while glTF
+is Y-up. The first build put the shaman **lying on its side** in all four
+horizontal views, with the standing views in the top/bottom slots. Nothing
+failed; `passed: true`. Pre-rotate +90° about X into Z-up, and **always look at
+the normal contact sheet** before spending a GPU sequence:
+
+```bash
+py -c "import numpy as np;from PIL import Image;\
+n=['front','right','rear','left','top','bottom'];\
+Image.fromarray(np.concatenate([np.asarray(Image.open(f'DIR/{x}_normal.png').convert('RGB')) for x in n],1)).save('DIR/sheet.png')"
+```
+
+**A generator has no notion of front.** Mini Turbo returned this shaman facing
+152° off +Z. Silhouette IoU cannot settle it — front and back silhouettes are
+near mirrors, scoring 0.689 vs 0.560. `fast_texture_projection` now reports
+`canonical_orientation.rotate_about_y_degrees`, derived from the camera that
+painted the atlas: the painted hemisphere is centred on `-matrix[2]`, which is
+a fact about where paint landed rather than a guess about shape.
+
+### The interpreter
+
+GPU work needs **`C:\AI\HY3D2\python_standalone\python.exe`** with
+`PYTHONPATH=C:/AI/HY3D2/Hunyuan3D-2`. The system Python 3.12 carries a phantom
+`torch` whose `torch.backends` attribute does not exist, and Python 3.11 has no
+scipy. Symptom of the wrong one: `AttributeError: module 'torch' has no
+attribute 'backends'`, or `No module named 'hy3dgen'`.
+
+### Config preflight
+
+The inference worker only accepts `status: PREPARED_NOT_EXECUTED` and refuses
+if `gpu_sequence_consumed` is truthy. Copying a *finished* config from another
+asset carries both fields in the wrong state. The gate catches it without
+spending the sequence, but it costs a round trip.
+
+### Reviewing the result
+
+```bash
+py workers/turntable.py --glb textured.glb --out evidence/turntables/asset.webp
+py workers/turntable.py --index evidence/turntables --out evidence/turntables/index.html
+```
+
+A rotating view exposes what a contact sheet hides: seams where two projected
+views disagree, and surfaces that change character as they turn. WebP, not GIF —
+256-colour quantisation posterises weathered cloth into flat plates that look
+exactly like the projection artefact you are checking for.

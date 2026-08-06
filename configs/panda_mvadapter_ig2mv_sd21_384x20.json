@@ -1,0 +1,97 @@
+{
+  "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
+  "status": "EXECUTED_384_QA_PASSED",
+  "asset": "red_panda_scout",
+  "purpose": "Six-view texture source for the red panda scout. TRELLIS failed this subject 5/5 at stage 4; Mini Turbo returned a watertight mesh first try.",
+  "generator_family": "MVADAPTER_SD21",
+  "conditioning": "IMAGE_PLUS_GEOMETRY",
+  "text_conditioned_fallback": "FORBIDDEN",
+  "sdxl_route": "REJECTED",
+  "comfyui_generation_route": "REJECTED",
+  "pipeline_class": "LowVRAMMVAdapterI2MVSDPipeline",
+  "pipeline_module": "workers/lowvram_mvadapter_i2mv_sd21.py",
+  "mvadapter_source": "C:\\AI\\mvadapter-upstream-inspection",
+  "base_model": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--stabilityai--stable-diffusion-2-1-base",
+  "adapter": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--huanngzh--mv-adapter\\mvadapter_ig2mv_sd21.safetensors",
+  "adapter_sha256": "7940d6197be614fc6a3483ece1ed37cac850f94375d127ada6ae6464ce9252c3",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda_mt_uv_zup.glb",
+  "immutable_mesh_sha256": "4746d6e182ea3bd6552628928c337b2e5f4f8911e9a249b5f49c762b28fdd116",
+  "mesh_provenance": {
+    "generator": "hunyuan3d-dit-v2-mini-turbo, octree ladder 384:3000,320:2000,256:1500, 5 steps, seed 12345",
+    "raw": "1,590,206 faces, watertight",
+    "decimation": "open3d quadric -> 400,000 faces, 38.9 s, watertight, 195 shells",
+    "unwrap": "xatlas 2048; 7,371 charts, overlap 6.5e-07, 11 degenerate of 400,000, PROVEN",
+    "orientation": "yaw 325 deg to +Z (silhouette IoU 0.9069), then +90 deg about X into the builder's Z-up basis",
+    "geometry_mutated": false
+  },
+  "camera_semantics": {
+    "classification": "PHOTOGRAPHED_VIEW_INDEX_0_AFTER_AUDIT_RELABEL",
+    "photographed_view_index": 0,
+    "front_selection_basis": "silhouette_iou_against_source",
+    "front_silhouette_iou": {
+      "raw_1": 0.8831,
+      "raw_3": 0.6562,
+      "margin": 0.2269
+    },
+    "note": "the tail-colour heuristic would have chosen raw 3 -- wrong on the very subject it was written for"
+  },
+  "primary": {
+    "model": "SD2.1",
+    "views": 6,
+    "resolution": 384,
+    "steps": 20,
+    "guidance_scale": 1.0,
+    "reference_conditioning_scale": 1.0,
+    "control_conditioning_scale": 1.0,
+    "seed": 12345,
+    "scheduler": "DDPM_WITH_SHIFT_SNR",
+    "shift_mode": "interpolated",
+    "shift_scale": 8.0,
+    "offload": "SEQUENTIAL",
+    "attention": "SDPA",
+    "attention_slicing": "DISABLED",
+    "vae_slicing": "ON",
+    "dtype": "float16",
+    "vae_dtype": "float32",
+    "condition_encoder_dtype": "float32",
+    "bf16": "DISABLED",
+    "flash_attention_2": "DISABLED",
+    "xformers_required": false,
+    "conditioning_reference": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda2_512.png",
+    "conditioning_reference_sha256": "d4ef4b63b1509d51dcf01505a68dd45a5ff2ab422d8713d56e30565ad15f3ef0",
+    "control_tensor": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\controls_384_audited\\control_tensor.npy",
+    "control_tensor_sha256": "ddfe5798dcea70fbc1c1d4eacefe6309a558529cf445c1447d437be71bf1e8a8",
+    "camera_contract": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\controls_384_audited\\camera_contract.json",
+    "camera_contract_sha256": "971e57c86027f07101ee825186fd0a251075ce068943d4375ed9874ac832ca9b"
+  },
+  "oom_fallback": {
+    "authorized_only_after_genuine_cuda_oom": false,
+    "note": "No 256 controls were built for this asset. A fallback would need its own control tensor and camera contract, so there is nothing to fall back to; an OOM here is a hard stop, not a retry.",
+    "second_oom": "HARD_BLOCKER",
+    "adapter_switch": "FORBIDDEN",
+    "text_conditioned_fallback": "FORBIDDEN"
+  },
+  "prompt": "high quality clean albedo reference of the same red panda scout character in a layered ghillie-style scout outfit, consistent fur markings, consistent identity, flat neutral lighting",
+  "negative_prompt": null,
+  "classifier_free_guidance": false,
+  "attempts_authorized": 1,
+  "attempts_used": 0,
+  "gpu_sequence_consumed": true,
+  "fallback_eligible": false,
+  "next_action": "USER_REVIEW_REQUIRED",
+  "twenty_step_authorization": "INHERITED_FROM_PANDA_384X20_QA_PASSED",
+  "repair_proofs": {
+    "vae_fp32": "panda: proof/benchmarks/20260803-mvadapter-vae-fp16-nan-root-cause.json",
+    "cudnn_guard": "panda: proof/benchmarks/20260803-mvadapter-cudnn-convolution-guard.json",
+    "note": "Both are hardware defects of this GTX 1660 SUPER, not asset-specific, so they carry over unchanged."
+  },
+  "canonical_basis": "z_up_builder_basis",
+  "canonical_orientation": {
+    "up_axis_mesh_local": [
+      0,
+      0,
+      1
+    ],
+    "evidence": "build_mvadapter_cpu_controls.py hardcodes world_up=[0,0,1]. The Y-up glTF build produced four horizontal views of a figure lying down, with the standing views landing in the top/bottom slots. Pre-rotating into Z-up fixed it; verified on the normal contact sheet."
+  }
+}
