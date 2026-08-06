@@ -52,11 +52,43 @@ The generator needs a background-free subject, and the input must carry alpha or
 stage 2 will fall back to a keyer that cuts specular highlights into holes.
 
 ```bash
-py workers/pipeline_matte.py --image source.png --out crop512.png
+py workers/pipeline_matte.py --image source.png --output matte.png
 ```
 
-Verify alpha exists and covers roughly half the frame. An opaque image here is
-the single most common cause of a bad generation.
+Verify alpha exists. An opaque image here is the single most common cause of a
+bad generation. Coverage of roughly half the frame is ideal, but a tall or wide
+subject padded to square will legitimately sit near 30% — the boat and both
+castles land between 29% and 47%.
+
+**Contact shadows must be removed, and the option for it is off by default.**
+A studio render of a character usually sits on a soft ground shadow. Left in,
+that shadow is opaque to the generator and becomes a floor slab fused to the
+feet.
+
+```bash
+py workers/pipeline_matte.py --image source.png --output matte.png \
+  --shadow-tolerance 180 --shadow-from 0.78
+```
+
+`--shadow-from` is the height fraction below which the stronger tolerance
+applies. **Sweep it and look at the crops.** On the shaman, 130 left the
+shadow, 180 removed it cleanly with feet and claws intact, and 240 destroyed
+the feet.
+
+And do not trust a coverage number to pick the setting. "Alpha remaining in the
+bottom 14% of frame" reads:
+
+| tolerance | bottom-14% alpha | actual result |
+|---:|---:|---|
+| 130 | 10.82% | shadow still present |
+| **180** | **7.69%** | **correct — shadow gone, subject intact** |
+| 240 | 1.12% | feet destroyed |
+| 300 | 0.00% | everything below the hem deleted |
+
+The metric ranks total destruction as the best outcome, because the feet are
+*in* the region it measures. Render the crops over a magenta background and
+judge by eye. A number that scores catastrophe above correctness is worse than
+no number at all.
 
 ---
 

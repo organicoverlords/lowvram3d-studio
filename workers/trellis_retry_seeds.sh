@@ -28,6 +28,25 @@ ATLAS="${ATLAS:-1024}"
 RES="${RES:-512}"
 TAG="${TAG:-}"
 
+# Refuse to start if another trellis-cli already holds the card.
+#
+# This has cost real work twice. TaskStop and Ctrl-C kill the shell, not the
+# process tree, so a "stopped" sweep keeps looping and launches its next seed
+# seconds after you verify that nothing is running. Two runs then share 6 GB,
+# and the resulting `illegal memory access` / `unknown error` at stage 3 looks
+# exactly like a hardware fault attributable to the subject. Three shaman seeds
+# were written off that way before anyone looked at the process list.
+if command -v tasklist >/dev/null 2>&1; then
+  running=$(tasklist //FI "IMAGENAME eq trellis-cli.exe" //NH 2>/dev/null \
+            | grep -ci trellis-cli || true)
+  if [ "${running:-0}" -gt 0 ]; then
+    echo "REFUSING TO START: $running trellis-cli process(es) already running." >&2
+    echo "A concurrent run on a 6 GB card produces failures that look like" >&2
+    echo "subject-specific hardware faults. Kill them, or wait." >&2
+    exit 4
+  fi
+fi
+
 for seed in $SEEDS; do
   echo "=== seed $seed ==="
   "$PY" workers/trellis_run.py \
