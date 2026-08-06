@@ -263,7 +263,7 @@ def select_patch_union(records: list[dict[str, Any]], landmark_count: int) -> tu
     primary = records[0]
     required_landmarks = max(4, int(np.ceil(landmark_count * 0.57)))
     selected_records = [primary]
-    depth_window = max(0.025, 4.0 * float(primary["depth_mad"]) + 0.015)
+    depth_window = max(0.35, 4.0 * float(primary["depth_mad"]) + 0.015)
     for record in records[1:]:
         if record["landmark_support_count"] <= 0:
             continue
