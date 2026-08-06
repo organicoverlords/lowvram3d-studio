@@ -69,14 +69,14 @@
   "atlas_size": 2048,
   "padding_px": 1,
   "camera": {
-    "yaw": 178.333,
-    "pitch": -13.333,
-    "roll": -0.0,
-    "silhouette_iou": 0.6569,
-    "scale": 899.1788626237576,
+    "yaw": 202.5,
+    "pitch": -11.667,
+    "roll": 11.667,
+    "silhouette_iou": 0.7794,
+    "scale": 907.1244672578958,
     "offset": [
-      1103.2835333006583,
-      1046.4050339320265
+      1040.4824276779236,
+      1018.6817178671373
     ],
     "centre": [
       -0.10486855678470776,
@@ -92,11 +92,11 @@
   },
   "canonical_orientation": {
     "painted_face_direction": [
-      0.0283,
-      0.2306,
-      0.9726
+      -0.3748,
+      0.2022,
+      0.9048
     ],
-    "rotate_about_y_degrees": -1.67,
+    "rotate_about_y_degrees": 22.5,
     "note": "apply this Y rotation to put the painted face at +Z; derived from the projection camera, not from the silhouette"
   },
   "triangles": 400000,
@@ -104,31 +104,31 @@
   "atlas": {
     "owned_texels": 1719086,
     "owned_fraction": 0.409862,
-    "observed_texels": 313758,
-    "observed_fraction_of_owned": 0.182514,
-    "synthesized_texels": 1405328,
-    "rejected_background_texels": 85847
+    "observed_texels": 325958,
+    "observed_fraction_of_owned": 0.189611,
+    "synthesized_texels": 1393128,
+    "rejected_background_texels": 45038
   },
   "gates": {
     "in_bounds": 1719086,
-    "matte_foreground": 1361317,
-    "front_facing": 773837,
-    "depth_consistent": 461361,
-    "accepted": 313758,
-    "rejected_as_background": 85847,
+    "matte_foreground": 1501784,
+    "front_facing": 771729,
+    "depth_consistent": 436547,
+    "accepted": 325958,
+    "rejected_as_background": 45038,
     "depth_tolerance": 0.01158655,
     "front_facing_min": 0.1
   },
   "artifacts": {
-    "basecolor": "evidence\\compare\\panda2\\front_texture_fixed\\basecolor.png",
-    "basecolor_sha256": "f5473cf7823a73322c3c4dc8f8732fa0d6c0df325cd679c4a0998daa472d9707",
-    "observed_mask": "evidence\\compare\\panda2\\front_texture_fixed\\observed_mask.png",
-    "synthesized_mask": "evidence\\compare\\panda2\\front_texture_fixed\\synthesized_mask.png",
-    "rejected_background_mask": "evidence\\compare\\panda2\\front_texture_fixed\\rejected_background_mask.png",
-    "confidence": "evidence\\compare\\panda2\\front_texture_fixed\\confidence.png",
-    "depth_consistency": "evidence\\compare\\panda2\\front_texture_fixed\\depth_consistency.png",
-    "textured_glb": "evidence\\compare\\panda2\\front_texture_fixed\\textured.glb",
-    "textured_glb_sha256": "d6200658916b9f16e5546ecd411dc6f4310e827bb898bba8be7b801eaac1428d"
+    "basecolor": "evidence\\compare\\panda2\\front_texture_roll0\\basecolor.png",
+    "basecolor_sha256": "23f97ba0e1b5cb80a95c0deeb78ef38d1258fb382d5ac5d228bb1935df1b87ca",
+    "observed_mask": "evidence\\compare\\panda2\\front_texture_roll0\\observed_mask.png",
+    "synthesized_mask": "evidence\\compare\\panda2\\front_texture_roll0\\synthesized_mask.png",
+    "rejected_background_mask": "evidence\\compare\\panda2\\front_texture_roll0\\rejected_background_mask.png",
+    "confidence": "evidence\\compare\\panda2\\front_texture_roll0\\confidence.png",
+    "depth_consistency": "evidence\\compare\\panda2\\front_texture_roll0\\depth_consistency.png",
+    "textured_glb": "evidence\\compare\\panda2\\front_texture_roll0\\textured.glb",
+    "textured_glb_sha256": "2ef3debf3e7b13f6aa0d5c9f9e55ca7881a13bb2ebf60a996aad0a5978882f2d"
   },
   "materials_bound": 1,
   "immutable_buffers_before": {
@@ -147,13 +147,13 @@
   },
   "geometry_uv_index_preserved": true,
   "timings_seconds": {
-    "load": 0.295,
-    "camera_fit": 88.054,
-    "depth_buffer": 2.853,
-    "atlas_raster": 1.107,
-    "sampling": 1.138,
-    "fill": 0.317,
-    "write_and_bind": 0.249,
-    "total": 94.871
+    "load": 0.268,
+    "camera_fit": 94.162,
+    "depth_buffer": 2.49,
+    "atlas_raster": 1.006,
+    "sampling": 1.0,
+    "fill": 0.276,
+    "write_and_bind": 0.233,
+    "total": 100.259
   }
 }

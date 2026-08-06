@@ -554,28 +554,30 @@ def fit_camera(vertices: np.ndarray, triangles: np.ndarray, mask: np.ndarray,
         # ONLY across the fore-aft flip. Within one hemisphere it is exactly the
         # right tool, and it is far cheaper and more precise than the feature
         # model for the last few degrees.
-        # A fresh coarse search inside the chosen hemisphere, not a refinement
-        # seeded from the mirrored pose. Negating pitch and roll is the right
-        # first guess but only a guess, and refining from it landed the panda at
-        # IoU 0.712 with a visibly smeared face -- a local optimum, because the
-        # reconstruction is not exactly symmetric and the true front's best tilt
-        # is not exactly the front's tilt negated. Re-searching the hemisphere
-        # costs one more sweep over a 150 degree arc.
-        hemisphere = (-1.0, 0.0, 0.0, 0.0)
-        # A NARROW yaw window. Opening it to +/-75 let the silhouette objective
-        # pull the panda 63 degrees off the direction DINOv2 chose, to yaw 115 at
-        # IoU 0.843 -- a better score on the criterion that is untrustworthy in
-        # exactly this situation. The flip is a half turn by construction, so the
-        # yaw is already known to within the original fit's precision; what
-        # genuinely has to be re-searched is the tilt, which reverses.
-        for dy in np.arange(-20.0, 20.1, coarse_step / 2.0):
-            for p_candidate in (-30.0, -15.0, 0.0, 15.0, 30.0):
-                for r_candidate in (-15.0, 0.0, 15.0):
-                    value = score(chosen + dy, p_candidate, r_candidate)
-                    if value > hemisphere[0]:
-                        hemisphere = (value, chosen + dy, p_candidate, r_candidate)
-        best = refine(hemisphere[1:], coarse_step / 3.0)
-        _iou, yaw, pitch, roll = best
+        # The EXACT antipode of the fitted pose, derived rather than searched.
+        #
+        #   rotation(y, p, r) = IMAGE_SPACE @ rz(r) @ rx(p) @ ry(y)
+        #
+        # Reversing the view direction while keeping up is left-multiplication by
+        # ry(180) = diag(-1, 1, -1). That is diagonal, so it commutes with
+        # IMAGE_SPACE; conjugating it through rz and rx flips their signs, since
+        # ry(180) negates both the x and z axes. What comes out is
+        #
+        #   IMAGE_SPACE @ rz(-r) @ rx(-p) @ ry(y + 180)
+        #
+        # so the antipode is exactly (yaw + 180, -pitch, -roll).
+        #
+        # Re-searching instead of deriving was a mistake worth recording. In the
+        # CORRECT hemisphere the silhouette optimum is broad and shallow -- 0.78
+        # to 0.84 against a sharp 0.915 on the back -- so refinement wandered to a
+        # different pose on every run: 151.7, 183.3, 202.5, and once to 115 when
+        # the window was wide. A flat objective does not become trustworthy
+        # because it is being optimised locally. The fitted pose is
+        # well-determined; its antipode is therefore well-determined too, and is
+        # the answer.
+        yaw, pitch, roll = (chosen, -pitch, -roll)
+        best = (score(yaw, pitch, roll), yaw, pitch, roll)
+        _iou = best[0]
 
     matrix = rotation(yaw, pitch, roll)
     rotated = centred @ matrix.T
