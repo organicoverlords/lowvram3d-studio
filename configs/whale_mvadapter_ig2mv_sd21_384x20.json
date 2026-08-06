@@ -1,6 +1,6 @@
 {
   "schema": "lowvram3d_mvadapter_ig2mv_sd21_inference_v1",
-  "status": "PREPARED_NOT_EXECUTED",
+  "status": "EXECUTED_384_QA_PASSED",
   "asset": "sky_whale_courier",
   "purpose": "Six-view texture source for the sky whale. Conditioned on a RENDER of the already-textured mesh rather than on the source photograph, so the conditioning silhouette is the mesh's silhouette exactly.",
   "generator_family": "MVADAPTER_SD21",
@@ -77,7 +77,7 @@
   "classifier_free_guidance": false,
   "attempts_authorized": 1,
   "attempts_used": 0,
-  "gpu_sequence_consumed": false,
+  "gpu_sequence_consumed": true,
   "fallback_eligible": false,
   "next_action": "USER_REVIEW_REQUIRED",
   "twenty_step_authorization": "INHERITED_FROM_PANDA_384X20_QA_PASSED",

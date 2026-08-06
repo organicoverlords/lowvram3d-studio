@@ -51,12 +51,32 @@ EMISSIVE_PREVIEW_GAIN = 0.85
 
 
 def collect(scene):
-    """Every geometry as (vertices, faces, uv, texture RGBA float)."""
+    """Every geometry as (vertices, faces, uv, texture RGBA float).
+
+    Scene node transforms are applied. They were previously ignored, which made
+    this preview quietly disagree with every other reader in the pipeline:
+    `trimesh.Scene.apply_transform` records a rotation on the node rather than in
+    the vertex buffer, so a mesh rotated and re-exported looked unchanged here
+    while `to_geometry()` -- and the control builder, and the audit -- all saw it
+    rotated. Two orientation fixes were checked against this tool and read as
+    "the rotation did not take" when it had; one was reported to the user as
+    such. A verification tool that cannot see the thing being verified answers
+    no to every question.
+    """
     import numpy as np
     import trimesh
 
-    geometries = (scene.geometry.items() if hasattr(scene, "geometry")
-                  else [("mesh", scene)])
+    if hasattr(scene, "geometry"):
+        # to_geometry() bakes node transforms into the vertices and concatenates.
+        # Falling back to the raw graph on failure keeps a multi-material scene
+        # renderable, just without transforms, which is the old behaviour.
+        try:
+            baked = scene.to_geometry()
+            geometries = [("scene", baked)] if baked is not None else scene.geometry.items()
+        except Exception:
+            geometries = scene.geometry.items()
+    else:
+        geometries = [("mesh", scene)]
     parts = []
     for name, geometry in geometries:
         visual = geometry.visual
