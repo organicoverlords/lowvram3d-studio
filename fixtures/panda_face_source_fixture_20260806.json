@@ -1,0 +1,29 @@
+{
+  "schema": "panda_face_source_fixture_v1",
+  "source_image_sha256": "fbda3719b42366477f77e94d87cb1d32a5bf6adc4b6f29782194cc154471159b",
+  "image_size": [1117, 1409],
+  "face_polygon": [
+    [300, 300],
+    [340, 280],
+    [405, 285],
+    [470, 280],
+    [510, 305],
+    [520, 360],
+    [505, 415],
+    [460, 455],
+    [405, 475],
+    [350, 455],
+    [305, 415],
+    [285, 360]
+  ],
+  "landmarks": [
+    {"name": "left_eye", "source_xy": [345, 328]},
+    {"name": "right_eye", "source_xy": [463, 328]},
+    {"name": "nose", "source_xy": [405, 413]},
+    {"name": "muzzle_left", "source_xy": [365, 430]},
+    {"name": "muzzle_right", "source_xy": [447, 430]},
+    {"name": "chin", "source_xy": [405, 458]},
+    {"name": "forehead", "source_xy": [405, 292]}
+  ],
+  "classification": "EXTERNAL_PANDA_FIXTURE_NOT_GENERIC_PRODUCTION_LOGIC"
+}
