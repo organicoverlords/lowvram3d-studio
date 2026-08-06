@@ -1,0 +1,345 @@
+name: Panda face surface ownership on local worker
+run-name: Panda face surface ownership ${{ github.run_id }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/panda-face-registration-update-20260806
+    paths:
+      - .github/workflows/panda-face-surface-local-worker.yml
+      - workers/face_surface_ownership.py
+      - workers/face_patch_texture.py
+      - workers/face_surface_candidate.py
+      - workers/build_render_comparison.py
+      - tests/test_face_surface_ownership_core.py
+      - tests/test_face_surface_candidate.py
+      - tests/test_face_patch_texture_contract.py
+      - blender/render_glb_diagnostic_set.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: panda-face-surface-local-worker
+  cancel-in-progress: true
+
+jobs:
+  build-render-package:
+    if: github.repository_owner == 'organicoverlords'
+    runs-on: [self-hosted, Windows, X64, lowvram3d-pc, blender52]
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout exact face branch
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify trusted ref and resolve tools
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          if ("${{ github.ref }}" -ne "refs/heads/agent/panda-face-registration-update-20260806") {
+            throw "Unexpected ref: ${{ github.ref }}"
+          }
+          if (@(git status --short).Count -gt 0) {
+            throw "Checkout is dirty before panda face work"
+          }
+          $pythonCandidates = @(
+            "C:\AI\HY3D2\python_standalone\python.exe",
+            "$env:LOCALAPPDATA\LowVRAM3DStudio\envs\control\Scripts\python.exe",
+            (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
+          $python = $null
+          foreach ($candidate in $pythonCandidates) {
+            & $candidate -c "import cv2, numpy, PIL, pytest; print('FACE_WORKER_PYTHON_OK')" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              $python = [string]$candidate
+              break
+            }
+          }
+          if (-not $python) {
+            throw "No Python environment with cv2, numpy, Pillow and pytest was found"
+          }
+          $blenderCandidates = @(
+            "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe",
+            "C:\Program Files\Blender Foundation\Blender 5.0\blender.exe",
+            (Get-Command blender.exe -ErrorAction SilentlyContinue).Source
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
+          $blender = [string]($blenderCandidates | Select-Object -First 1)
+          if (-not $blender) {
+            throw "Blender was not found"
+          }
+          $root = "C:\AI\LowVRAM3D-benchmarks\production\panda_face_surface_ownership\${{ github.run_id }}"
+          if (Test-Path -LiteralPath $root) {
+            Remove-Item -LiteralPath $root -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $root -Force | Out-Null
+          New-Item -ItemType Directory -Path (Join-Path $root "logs") -Force | Out-Null
+          New-Item -ItemType Directory -Path (Join-Path $root "upload") -Force | Out-Null
+          "FACE_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "FACE_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "FACE_ROOT=$root" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "FACE_BASELINE_GLB=C:\AI\panda_support_local_2048\candidate_2048\panda_atlas_support_fixed_2048.glb" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "FACE_BASELINE_ATLAS=C:\AI\panda_support_local_2048\candidate_2048\atlas_2048_nearest.png" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "FACE_SOURCE=C:\AI\LowVRAM3D-benchmarks\images\red_panda_character.png" | Add-Content -LiteralPath $env:GITHUB_ENV
+          Write-Host "HEAD=$(git rev-parse HEAD)"
+          Write-Host "PYTHON=$python"
+          Write-Host "BLENDER=$blender"
+          & $python --version
+          & $blender --version | Select-Object -First 2
+
+      - name: Verify immutable baseline inputs
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $expected = @{
+            $env:FACE_BASELINE_GLB = "1C4BEC32A31CE90766F12F095E2D3C9C7E57E0B34E4F8FFC79C9A29EA8E7A817"
+            $env:FACE_BASELINE_ATLAS = "88EE2BF03BFE27B6EE28720734C6ABD94FC03242F27A2F33529BC3DB0F08383E"
+            $env:FACE_SOURCE = "FBDA3719B42366477F77E94D87CB1D32A5BF6ADC4B6F29782194CC154471159B"
+          }
+          $records = @()
+          foreach ($path in $expected.Keys) {
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+              throw "Required immutable input is missing: $path"
+            }
+            $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+            if ($hash -ne $expected[$path]) {
+              throw "Immutable input hash mismatch: $path = $hash"
+            }
+            $records += [ordered]@{ path = $path; sha256 = $hash.ToLower() }
+          }
+          $records | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $env:FACE_ROOT "input_hashes.json") -Encoding utf8
+          Write-Host "FACE_IMMUTABLE_INPUTS=PROVEN"
+
+      - name: Run focused implementation tests
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $env:PYTHONPATH = "$PWD\workers;$PWD"
+          $log = Join-Path $env:FACE_ROOT "logs\focused_tests.log"
+          & $env:FACE_PYTHON -m py_compile `
+            workers\face_surface_ownership.py `
+            workers\face_patch_texture.py `
+            workers\face_surface_candidate.py `
+            workers\build_render_comparison.py 2>&1 | Tee-Object -FilePath $log
+          if ($LASTEXITCODE -ne 0) {
+            throw "Face ownership Python compilation failed"
+          }
+          & $env:FACE_PYTHON -m pytest `
+            tests\test_face_surface_ownership_core.py `
+            tests\test_face_surface_candidate.py `
+            tests\test_face_patch_texture_contract.py `
+            -q 2>&1 | Tee-Object -FilePath $log -Append
+          if ($LASTEXITCODE -ne 0) {
+            throw "Focused face ownership tests failed"
+          }
+
+      - name: Build automatic face surface candidate
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Continue"
+          $env:PYTHONPATH = "$PWD\workers;$PWD"
+          $candidate = Join-Path $env:FACE_ROOT "candidate_a"
+          New-Item -ItemType Directory -Path $candidate -Force | Out-Null
+          $stdout = Join-Path $env:FACE_ROOT "logs\candidate.stdout.log"
+          $stderr = Join-Path $env:FACE_ROOT "logs\candidate.stderr.log"
+          & $env:FACE_PYTHON workers\face_surface_candidate.py `
+            --baseline-glb $env:FACE_BASELINE_GLB `
+            --baseline-atlas $env:FACE_BASELINE_ATLAS `
+            --source-image $env:FACE_SOURCE `
+            --output-dir $candidate `
+            --ray-stride 4 `
+            --minimum-alpha 0.35 1> $stdout 2> $stderr
+          $exitCode = $LASTEXITCODE
+          $glb = Join-Path $candidate "panda_face_surface_owned_2048.glb"
+          $atlas = Join-Path $candidate "atlas_face_surface_owned_2048.png"
+          $report = Join-Path $candidate "report.json"
+          [ordered]@{
+            schema = "face_candidate_execution_v1"
+            exit_code = $exitCode
+            glb_exists = (Test-Path -LiteralPath $glb -PathType Leaf)
+            atlas_exists = (Test-Path -LiteralPath $atlas -PathType Leaf)
+            report_exists = (Test-Path -LiteralPath $report -PathType Leaf)
+            stdout = $stdout
+            stderr = $stderr
+            completed_at_utc = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $env:FACE_ROOT "candidate_execution.json") -Encoding utf8
+          Write-Host "FACE_CANDIDATE_EXIT_CODE=$exitCode"
+          if (Test-Path -LiteralPath $stderr) {
+            Get-Content -LiteralPath $stderr -Tail 120
+          }
+          exit 0
+
+      - name: Fresh-render baseline and candidate
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Continue"
+          $renderRoot = Join-Path $env:FACE_ROOT "renders"
+          $baselineRender = Join-Path $renderRoot "baseline"
+          $candidateRender = Join-Path $renderRoot "candidate_a"
+          New-Item -ItemType Directory -Path $baselineRender -Force | Out-Null
+          New-Item -ItemType Directory -Path $candidateRender -Force | Out-Null
+          $baselineLog = Join-Path $env:FACE_ROOT "logs\baseline_blender.log"
+          & $env:FACE_BLENDER --background --factory-startup `
+            --python "$PWD\blender\render_glb_diagnostic_set.py" -- `
+            --input $env:FACE_BASELINE_GLB `
+            --out-dir $baselineRender `
+            --label "baseline_2048" `
+            --resolution 768 *> $baselineLog
+          $baselineExit = $LASTEXITCODE
+          if ($baselineExit -eq 0) {
+            & $env:FACE_PYTHON workers\build_contact_sheet.py `
+              --render-dir $baselineRender `
+              --output (Join-Path $baselineRender "contact_sheet.png")
+            $baselineSheetExit = $LASTEXITCODE
+          } else {
+            $baselineSheetExit = -1
+          }
+
+          $candidateGlb = Join-Path $env:FACE_ROOT "candidate_a\panda_face_surface_owned_2048.glb"
+          $candidateExit = -1
+          $candidateSheetExit = -1
+          $comparisonExit = -1
+          if (Test-Path -LiteralPath $candidateGlb -PathType Leaf) {
+            $candidateLog = Join-Path $env:FACE_ROOT "logs\candidate_blender.log"
+            & $env:FACE_BLENDER --background --factory-startup `
+              --python "$PWD\blender\render_glb_diagnostic_set.py" -- `
+              --input $candidateGlb `
+              --out-dir $candidateRender `
+              --label "face_surface_owned_2048" `
+              --resolution 768 *> $candidateLog
+            $candidateExit = $LASTEXITCODE
+            if ($candidateExit -eq 0) {
+              & $env:FACE_PYTHON workers\build_contact_sheet.py `
+                --render-dir $candidateRender `
+                --output (Join-Path $candidateRender "contact_sheet.png")
+              $candidateSheetExit = $LASTEXITCODE
+              if ($candidateSheetExit -eq 0 -and $baselineExit -eq 0 -and $baselineSheetExit -eq 0) {
+                & $env:FACE_PYTHON workers\build_render_comparison.py `
+                  --baseline-dir $baselineRender `
+                  --candidate-dir $candidateRender `
+                  --output (Join-Path $renderRoot "baseline_vs_candidate.png")
+                $comparisonExit = $LASTEXITCODE
+              }
+            }
+          }
+          [ordered]@{
+            schema = "face_render_execution_v1"
+            baseline_blender_exit = $baselineExit
+            baseline_contact_sheet_exit = $baselineSheetExit
+            candidate_blender_exit = $candidateExit
+            candidate_contact_sheet_exit = $candidateSheetExit
+            comparison_exit = $comparisonExit
+            baseline_contact_sheet_exists = (Test-Path -LiteralPath (Join-Path $baselineRender "contact_sheet.png"))
+            candidate_contact_sheet_exists = (Test-Path -LiteralPath (Join-Path $candidateRender "contact_sheet.png"))
+            comparison_exists = (Test-Path -LiteralPath (Join-Path $renderRoot "baseline_vs_candidate.png"))
+          } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $env:FACE_ROOT "render_execution.json") -Encoding utf8
+          exit 0
+
+      - name: Package immutable face evidence ZIP
+        if: always()
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $package = Join-Path $env:FACE_ROOT "package"
+          if (Test-Path -LiteralPath $package) {
+            Remove-Item -LiteralPath $package -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $package -Force | Out-Null
+          foreach ($name in @("candidate_a", "renders", "logs")) {
+            $source = Join-Path $env:FACE_ROOT $name
+            if (Test-Path -LiteralPath $source) {
+              Copy-Item -LiteralPath $source -Destination (Join-Path $package $name) -Recurse -Force
+            }
+          }
+          foreach ($name in @("input_hashes.json", "candidate_execution.json", "render_execution.json")) {
+            $source = Join-Path $env:FACE_ROOT $name
+            if (Test-Path -LiteralPath $source -PathType Leaf) {
+              Copy-Item -LiteralPath $source -Destination $package -Force
+            }
+          }
+          Copy-Item -LiteralPath $env:FACE_SOURCE -Destination (Join-Path $package "authoritative_source.png") -Force
+          Copy-Item -LiteralPath $env:FACE_BASELINE_ATLAS -Destination (Join-Path $package "baseline_atlas_2048.png") -Force
+          $candidateStatus = if (Test-Path -LiteralPath (Join-Path $env:FACE_ROOT "candidate_execution.json")) {
+            Get-Content -LiteralPath (Join-Path $env:FACE_ROOT "candidate_execution.json") -Raw | ConvertFrom-Json
+          } else { $null }
+          $renderStatus = if (Test-Path -LiteralPath (Join-Path $env:FACE_ROOT "render_execution.json")) {
+            Get-Content -LiteralPath (Join-Path $env:FACE_ROOT "render_execution.json") -Raw | ConvertFrom-Json
+          } else { $null }
+          $gpu = "not_available"
+          $nvidia = Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue
+          if ($nvidia) {
+            $gpu = (& $nvidia.Source --query-gpu=name,driver_version,memory.total --format=csv,noheader 2>&1) -join "`n"
+          }
+          [ordered]@{
+            schema = "panda_face_surface_worker_receipt_v1"
+            repository = "${{ github.repository }}"
+            branch = "${{ github.ref_name }}"
+            head_sha = "${{ github.sha }}"
+            workflow_run_id = "${{ github.run_id }}"
+            workflow_run_url = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            runner_name = "$env:RUNNER_NAME"
+            python = (& $env:FACE_PYTHON --version 2>&1) -join " "
+            blender = (& $env:FACE_BLENDER --version 2>&1 | Select-Object -First 1) -join " "
+            gpu = $gpu
+            candidate = $candidateStatus
+            renders = $renderStatus
+            baseline_overwritten = $false
+            neural_views_regenerated = $false
+            geometry_regenerated = $false
+            promotion_authorized = $false
+            classification = "CANDIDATE_REQUIRES_VISUAL_REVIEW"
+            recorded_at_utc = (Get-Date).ToUniversalTime().ToString("o")
+          } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $package "worker_receipt.json") -Encoding utf8
+          Get-ChildItem -LiteralPath $package -File -Recurse | ForEach-Object {
+            $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLower()
+            $relative = $_.FullName.Substring($package.Length).TrimStart("\", "/").Replace("\", "/")
+            "$hash  $relative"
+          } | Sort-Object | Set-Content -LiteralPath (Join-Path $package "SHA256SUMS.txt") -Encoding ascii
+          $upload = Join-Path $env:FACE_ROOT "upload"
+          $zip = Join-Path $upload "panda_face_surface_ownership_${{ github.run_id }}.zip"
+          Compress-Archive -LiteralPath $package -DestinationPath $zip -CompressionLevel Optimal -Force
+          $zipHash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLower()
+          "$zipHash  $([IO.Path]::GetFileName($zip))" | Set-Content -LiteralPath (Join-Path $upload "ZIP_SHA256SUMS.txt") -Encoding ascii
+          Copy-Item -LiteralPath (Join-Path $package "worker_receipt.json") -Destination $upload -Force
+          Copy-Item -LiteralPath (Join-Path $package "SHA256SUMS.txt") -Destination $upload -Force
+          Write-Host "FACE_EVIDENCE_ZIP=$zip"
+          Write-Host "FACE_EVIDENCE_ZIP_SHA256=$zipHash"
+
+      - name: Upload face evidence ZIP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: panda-face-surface-ownership-${{ github.run_id }}
+          path: |
+            C:\AI\LowVRAM3D-benchmarks\production\panda_face_surface_ownership\${{ github.run_id }}\upload\*
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+      - name: Enforce candidate and visual gates
+        if: always()
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          $zip = Join-Path $env:FACE_ROOT "upload\panda_face_surface_ownership_${{ github.run_id }}.zip"
+          if (-not (Test-Path -LiteralPath $zip -PathType Leaf)) {
+            throw "Evidence ZIP is missing"
+          }
+          $candidate = Get-Content -LiteralPath (Join-Path $env:FACE_ROOT "candidate_execution.json") -Raw | ConvertFrom-Json
+          $renders = Get-Content -LiteralPath (Join-Path $env:FACE_ROOT "render_execution.json") -Raw | ConvertFrom-Json
+          if ([int]$candidate.exit_code -ne 0 -or -not [bool]$candidate.glb_exists -or -not [bool]$candidate.report_exists) {
+            throw "Automatic surface-owned candidate failed; inspect the uploaded ZIP"
+          }
+          if ([int]$renders.baseline_blender_exit -ne 0 -or [int]$renders.candidate_blender_exit -ne 0 -or
+              -not [bool]$renders.baseline_contact_sheet_exists -or
+              -not [bool]$renders.candidate_contact_sheet_exists -or
+              -not [bool]$renders.comparison_exists) {
+            throw "Fresh visual proof failed; inspect the uploaded ZIP"
+          }
+          Write-Host "PANDA_FACE_SURFACE_CANDIDATE=BUILT_AND_RENDERED"
+          Write-Host "PANDA_FACE_VISUAL_ACCEPTANCE=USER_REVIEW_REQUIRED"

@@ -153,14 +153,21 @@ def build_face_patch_atlas(baseline_atlas: np.ndarray, source_image: np.ndarray,
     if baseline.ndim != 3 or baseline.shape[2] != 3 or baseline.shape[0] != baseline.shape[1]:
         raise ValueError("BASELINE_ATLAS_MUST_BE_SQUARE_RGB")
     size = baseline.shape[0]
-    owner, barycentric = rasterise(uv, triangles, size)
+    owner, barycentric_ab = rasterise(uv, triangles, size)
+    if barycentric_ab.shape != (size, size, 2):
+        raise ValueError("ATLAS_RASTER_BARYCENTRIC_CONTRACT_INVALID")
     selected_mask = np.zeros(len(triangles), bool)
     selected_ids = np.unique(np.asarray(selected_triangles, np.int64))
+    if selected_ids.size and (selected_ids.min() < 0 or selected_ids.max() >= len(triangles)):
+        raise ValueError("SELECTED_FACE_TRIANGLE_OUT_OF_RANGE")
     selected_mask[selected_ids] = True
     writable = (owner >= 0) & selected_mask[np.maximum(owner, 0)]
     rows, cols = np.nonzero(writable)
     triangle_ids = owner[writable].astype(np.int64)
-    weights = barycentric[writable]
+    weights_ab = barycentric_ab[writable].astype(np.float64)
+    weights = np.column_stack((1.0 - weights_ab[:, 0] - weights_ab[:, 1], weights_ab))
+    if np.any(weights < -1e-5) or not np.allclose(weights.sum(axis=1), 1.0, atol=1e-5):
+        raise RuntimeError("ATLAS_RASTER_BARYCENTRIC_RECONSTRUCTION_FAILED")
     points_3d = np.einsum("ij,ijk->ik", weights, positions[triangles[triangle_ids]])
     projected, depth = camera.project(points_3d)
     model = fit_tps(target_xy, source_xy, regularization=tps_regularization)
@@ -174,8 +181,9 @@ def build_face_patch_atlas(baseline_atlas: np.ndarray, source_image: np.ndarray,
     if np.any(out[non_face] != baseline[non_face]):
         raise RuntimeError("NON_FACE_ATLAS_BYTES_CHANGED")
     report = {
-        "schema": "face_patch_texture_v1",
+        "schema": "face_patch_texture_v2",
         "atlas_size": size,
+        "atlas_raster_barycentric_components": 2,
         "selected_triangle_count": int(len(selected_ids)),
         "writable_face_texels": int(writable.sum()),
         "accepted_face_texels": int(accepted.sum()),
