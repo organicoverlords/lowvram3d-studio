@@ -1,0 +1,6 @@
+{
+  "verdict": "FACE_PRESENT",
+  "reviewer": "claude+lauri",
+  "note": "Full frontal face on the true opposite of index 0 (index 3). Recorded 2026-08-06 from workers/build_true_rear_review_sheet.py. See docs/JANUS-six-view-defect-20260806.md.",
+  "sheet": "evidence/compare/panda2/true_rear_review_sheet.png"
+}

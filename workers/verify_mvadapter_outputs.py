@@ -213,11 +213,22 @@ def main() -> int:
         "finite_gate_passed": finite,
         "structural_gate_passed": bool(qa.get("structural_gate_passed")),
         "colour_gate_passed": bool(qa.get("colour_gate_passed")),
-        "semantic_gate_passed": bool(qa.get("semantic_gate_passed")),
-        "rear_numeric_gate_passed": bool(qa.get("rear_numeric_gate_passed")),
+        # The true-opposite verdict is a human decision recorded beside the run.
+        # It is carried here rather than recomputed, and this worker cannot
+        # promote without it: label correctness and structural scores say nothing
+        # about whether a second face was painted on the rear, and this route has
+        # now shipped two assets where every automatic gate was green and a face
+        # was plainly there. See docs/JANUS-six-view-defect-20260806.md.
+        "true_rear_visual_verdict": str(qa.get("true_rear_visual_verdict", "AMBIGUOUS")),
+        "true_rear_gate_passed": bool(qa.get("true_rear_gate_passed")),
     }
     if not (finite and report["gates"]["all_passed"]):
         report["classification"] = "PANDA_REPAIRED_CONTROLS_VALIDATION_REJECTED"
+    elif not report["receipt_gates"]["true_rear_gate_passed"]:
+        report["classification"] = "PANDA_REPAIRED_CONTROLS_AWAITING_TRUE_REAR_VERDICT"
+        report["blocked_reason"] = (
+            "true_rear_visual_verdict is "
+            f"{report['receipt_gates']['true_rear_visual_verdict']}; only FACE_FREE promotes")
     elif report["receipt_gates"]["structural_gate_passed"]:
         report["classification"] = "PANDA_REPAIRED_CONTROLS_384X2_PROVEN"
     else:

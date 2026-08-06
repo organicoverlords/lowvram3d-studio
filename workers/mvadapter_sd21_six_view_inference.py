@@ -435,12 +435,62 @@ def _decoded_image_gate(images: list[Image.Image]) -> dict[str, Any]:
     return gate
 
 
+#: The three verdicts a human may return after looking at the true-opposite
+#: tile. Only FACE_FREE permits an overall pass; AMBIGUOUS fails closed, because
+#: "I could not tell" is the state this project has repeatedly shipped as green.
+TRUE_REAR_VERDICTS = ("FACE_FREE", "FACE_PRESENT", "AMBIGUOUS")
+
+#: Written by a reviewer next to the run output, after reading the sheet that
+#: `workers/build_true_rear_review_sheet.py` produces.
+REAR_VERDICT_FILENAME = "true_rear_verdict.json"
+
+
+def read_true_rear_verdict(run_dir: Path | None) -> dict[str, Any]:
+    """The human verdict on the true-opposite tile, or AMBIGUOUS if absent.
+
+    Absent means absent. There is no default-pass: a run that nobody looked at
+    is indistinguishable, from here, from a run somebody looked at and could not
+    call, and both must block promotion.
+    """
+    record: dict[str, Any] = {
+        "verdict": "AMBIGUOUS",
+        "source": "MISSING",
+        "reviewer": None,
+        "note": "no verdict file; run has not been visually reviewed",
+    }
+    if run_dir is None:
+        return record
+    path = Path(run_dir) / REAR_VERDICT_FILENAME
+    if not path.is_file():
+        record["path"] = str(path)
+        return record
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        record["note"] = f"verdict file unreadable: {error}"
+        record["path"] = str(path)
+        return record
+    verdict = str(loaded.get("verdict", "")).strip().upper()
+    if verdict not in TRUE_REAR_VERDICTS:
+        record["note"] = f"verdict {verdict!r} is not one of {TRUE_REAR_VERDICTS}"
+        record["path"] = str(path)
+        return record
+    return {
+        "verdict": verdict,
+        "source": "FILE",
+        "reviewer": loaded.get("reviewer"),
+        "note": loaded.get("note"),
+        "path": str(path),
+    }
+
+
 def qa_outputs(
     images: list[Image.Image],
     controls_dir: Path,
     resolution: int,
     semantic_names: list[str],
     camera_views: list[dict[str, Any]] | None = None,
+    run_dir: Path | None = None,
 ) -> dict[str, Any]:
     if len(images) != 6:
         raise RuntimeError(f"MVADAPTER_OUTPUT_COUNT_INVALID:{len(images)}")
@@ -523,12 +573,36 @@ def qa_outputs(
         np.logical_or(generated_masks[0], generated_masks[opposite][:, ::-1])
     )
     rear = views[opposite]
+    # Whole-image grayscale correlation cannot see a face, and this is the second
+    # time that has cost the project a green run on a two-faced asset.
+    #
+    # Deriving the opposite view from camera directions fixed WHICH images get
+    # compared. It did not make the comparison capable of the judgement it is
+    # named after. On the known-bad panda the true rear carries a full frontal
+    # face and still scores 0.162 direct / 0.113 mirrored, because silhouette,
+    # pose, props and lighting all differ between a front and a rear view of the
+    # same character. A threshold of 0.82 over those numbers is not a face
+    # detector; it is a duplicate-image detector, and the rear is not a duplicate
+    # image.
+    #
+    # So the correlation is recorded as DIAGNOSTIC and is deliberately absent
+    # from `passed`. Promotion requires a human verdict on the true-opposite
+    # tile. Inventing a cleverer automatic metric here would repeat the pattern
+    # this route has hit four times: a check that cannot see the thing it checks
+    # returns pass.
+    verdict = read_true_rear_verdict(run_dir)
     qa = {
-        "schema": "lowvram3d_mvadapter_six_view_qa_v1",
+        "schema": "lowvram3d_mvadapter_six_view_qa_v2",
         "views": views,
+        "true_opposite_index": int(opposite),
+        "true_opposite_label": semantic_names[opposite],
         "front_rear_direct_correlation": round(direct_corr, 6),
         "front_rear_mirrored_correlation": round(mirrored_corr, 6),
-        "rear_numeric_gate_passed": bool(direct_corr < 0.82 and mirrored_corr < 0.82),
+        "rear_correlation_is_diagnostic_only": True,
+        "rear_correlation_note": (
+            "recorded for comparison across runs; NOT a gate. A verified "
+            "two-faced panda scores 0.162/0.113 here."
+        ),
         "structural_gate_passed": all(view["passed_generation_reference_gate"] for view in views),
         "colour_gate_passed": all(
             view["color"]["foreground_saturation"] >= 0.08
@@ -536,14 +610,21 @@ def qa_outputs(
             and view["color"]["white_clipping_fraction"] < 0.05
             for view in views
         ),
-        "semantic_gate": "PROVEN",
-        "semantic_gate_passed": True,
-        "rear_semantic_visual_review_required": True,
+        "true_rear_visual_verdict": verdict["verdict"],
+        "true_rear_visual_verdict_source": verdict["source"],
+        "true_rear_visual_verdict_detail": verdict,
+        "true_rear_gate_passed": verdict["verdict"] == "FACE_FREE",
     }
     qa["passed"] = bool(
-        qa["semantic_gate_passed"] and qa["structural_gate_passed"]
-        and qa["colour_gate_passed"] and qa["rear_numeric_gate_passed"]
+        qa["structural_gate_passed"] and qa["colour_gate_passed"]
+        and qa["true_rear_gate_passed"]
     )
+    if not qa["true_rear_gate_passed"]:
+        qa["blocked_reason"] = (
+            "TRUE_REAR_VISUAL_VERDICT_" + verdict["verdict"]
+            + "; build the sheet with workers/build_true_rear_review_sheet.py, "
+              "then write " + REAR_VERDICT_FILENAME + " beside the run output"
+        )
     return qa
 
 
@@ -948,8 +1029,16 @@ def execute(config_path: Path, output_dir: Path, attempt: str, primary_receipt: 
             int(selected["resolution"]),
             semantic_names,
             preflight["camera"]["views"],
+            run_dir=output_dir,
         )
-        receipt["status"] = "PROVEN" if receipt["qa"]["passed"] else "QA_REJECTED"
+        receipt["status"] = (
+            "PROVEN" if receipt["qa"]["passed"]
+            else "AWAITING_TRUE_REAR_VISUAL_VERDICT"
+            if not receipt["qa"]["true_rear_gate_passed"]
+            and receipt["qa"]["structural_gate_passed"]
+            and receipt["qa"]["colour_gate_passed"]
+            else "QA_REJECTED"
+        )
         if attempt == "primary":
             # The resolution comes from the config, not from the label: a primary attempt is not
             # necessarily 384, and a consumed 256 config that claims "EXECUTED_384" is a false

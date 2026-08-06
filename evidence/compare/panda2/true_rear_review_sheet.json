@@ -1,0 +1,29 @@
+{
+  "schema": "lowvram3d_true_rear_review_sheet_v1",
+  "run_dir": "evidence\\compare\\panda_sixview_512",
+  "sheet": "evidence\\compare\\panda2\\true_rear_review_sheet.png",
+  "true_opposite_index": 3,
+  "camera_direction_dot": -1.0,
+  "camera_directions": [
+    [
+      -1.0,
+      -0.0,
+      -0.0
+    ],
+    [
+      1.0,
+      -1.2246467991473532e-16,
+      -0.0
+    ]
+  ],
+  "correlation_diagnostic": {
+    "direct": 0.162397,
+    "mirrored": 0.112522
+  },
+  "verdict_file_expected": "evidence\\compare\\panda_sixview_512\\true_rear_verdict.json",
+  "permitted_verdicts": [
+    "FACE_FREE",
+    "FACE_PRESENT",
+    "AMBIGUOUS"
+  ]
+}
