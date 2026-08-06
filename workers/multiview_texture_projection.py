@@ -169,11 +169,27 @@ def main() -> int:
     if uv is None:
         raise RuntimeError("MULTIVIEW_PROJECTION_UV_MISSING")
 
-    # Reproduce the control builder's normalisation exactly.
-    canonical = positions.astype(np.float64) @ CANONICAL_TRANSFORM.T
+    # Reproduce the control builder's normalisation exactly -- as *this bundle*
+    # recorded it, not as the current module constant happens to define it.
+    #
+    # CANONICAL_TRANSFORM has changed since some bundles were built. The boat's
+    # controls carry [[0,0,1],[1,0,0],[0,1,0]] while the constant is now
+    # [[0,-1,0],[1,0,0],[0,0,1]], so reading the constant put the boat's
+    # vertices in a different space from the depths its controls were rendered
+    # in. Nothing raised: every texel simply landed behind the depth buffer and
+    # was discarded as occluded. 1.0-1.2 million rejections per view, 5.5%
+    # observed coverage against the whale's 69.1%, and a plausible-looking
+    # mostly-synthesized atlas at the end of it.
+    #
+    # The contract exists to record exactly this, so use it and fall back to the
+    # constant only when a bundle predates the field.
+    recorded = contract.get("control_space_transform")
+    canonical_transform = (np.asarray(recorded, np.float64) if recorded is not None
+                           else CANONICAL_TRANSFORM)
+    canonical = positions.astype(np.float64) @ canonical_transform.T
     scale = 0.5 / float(np.max(np.abs(canonical)))
     vertices = canonical * scale
-    vertex_normals = np.asarray(normals, np.float64) @ CANONICAL_TRANSFORM.T
+    vertex_normals = np.asarray(normals, np.float64) @ canonical_transform.T
     vertex_normals /= np.maximum(np.linalg.norm(vertex_normals, axis=1, keepdims=True), 1e-12)
 
     size = int(args.atlas_size)
