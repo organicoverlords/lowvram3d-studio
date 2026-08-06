@@ -93,10 +93,19 @@ jobs:
           New-Item -ItemType Directory -Path $root -Force | Out-Null
           New-Item -ItemType Directory -Path (Join-Path $root "upload") -Force | Out-Null
 
+          $canonicalMeshPrimary = "C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\pipeline_v2_injective_20260804\state\UV\proven\tactical_red_panda_scout_rewrapped.glb"
+          $canonicalMeshCandidates = @(
+            $canonicalMeshPrimary,
+            "C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\panda_injective_rewrap_20260804\tactical_red_panda_scout_rewrapped.glb"
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
+          $canonicalMesh = $canonicalMeshCandidates | Where-Object {
+            (Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash -eq "950343DD7FF76877CE6ADB83D6D4A80A8D123E7AAFB397B566A762D454A9A5F1"
+          } | Select-Object -First 1
+          if (-not $canonicalMesh) { $canonicalMesh = $canonicalMeshPrimary }
           "PANDA_DIAG_PYTHON=$python" | Add-Content -LiteralPath $env:GITHUB_ENV
           "PANDA_DIAG_BLENDER=$blender" | Add-Content -LiteralPath $env:GITHUB_ENV
           "PANDA_DIAG_ROOT=$root" | Add-Content -LiteralPath $env:GITHUB_ENV
-          "PANDA_CANONICAL_MESH=C:\AI\LowVRAM3D-benchmarks\miniturbo-3step-experiment-20260803\tactical_red_panda_scout\pipeline_v2_injective_20260804\state\UV\proven\tactical_red_panda_scout_rewrapped.glb" | Add-Content -LiteralPath $env:GITHUB_ENV
+          "PANDA_CANONICAL_MESH=$canonicalMesh" | Add-Content -LiteralPath $env:GITHUB_ENV
           "PANDA_HIGHRES_SOURCE=C:\AI\LowVRAM3D-benchmarks\images\red_panda_character.png" | Add-Content -LiteralPath $env:GITHUB_ENV
 
           Write-Host "Python: $python"
