@@ -1,0 +1,125 @@
+[trellis] generating model with seed 31337
+[1/6] preprocess C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803\evidence\compare\shaman\shaman4k_512.png (1024 cascade)
+[2/6] DINOv3 conditioning
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 6143 MiB):
+  Device 0: NVIDIA GeForce GTX 1660 SUPER, compute capability 7.5, VMM: yes, VRAM: 6143 MiB
+      cond tokens=1029 / 1024-cond tokens=4101
+      [stats] cond_512 (DINOv3@512) n=1053696 mean=0.0000 std=1.0000 min=-29.337 max=24.976 nan/inf=0
+      [stats] cond_1024 (DINOv3@1024) n=4199424 mean=0.0000 std=1.0000 min=-29.332 max=25.005 nan/inf=0
+[3/6] sparse-structure flow + decode
+      [flow] [....................]  0/12    0.0s  starting    
+      [flow] [#...................]  1/12    7.7s  ~84s left   
+      [flow] [###.................]  2/12   15.1s  ~75s left   
+      [flow] [#####...............]  3/12   22.5s  ~68s left   
+      [flow] [######..............]  4/12   30.1s  ~60s left   
+      [flow] [########............]  5/12   37.8s  ~53s left   
+      [flow] [##########..........]  6/12   45.5s  ~46s left   
+      [flow] [###########.........]  7/12   53.3s  ~38s left   
+      [flow] [#############.......]  8/12   61.0s  ~31s left   
+      [flow] [###############.....]  9/12   68.8s  ~23s left   
+      [flow] [################....] 10/12   76.5s  ~15s left   
+      [flow] [##################..] 11/12   80.4s  ~7s left    
+      [flow] [####################] 12/12   84.3s  ~0s left    
+      [flow] 12 steps, 22 forwards, 84.3s
+      active voxels @res32 = 1838
+[4/7] shape SLAT flow (LR 512 -> upsample -> HR 1024 cascade, max_tok=49152)
+      [flow] [....................]  0/12    0.0s  starting    
+      [flow] [#...................]  1/12    3.0s  ~33s left   
+      [flow] [###.................]  2/12    5.9s  ~29s left   
+      [flow] [#####...............]  3/12    8.8s  ~26s left   
+      [flow] [######..............]  4/12   11.7s  ~23s left   
+      [flow] [########............]  5/12   14.7s  ~21s left   
+      [flow] [##########..........]  6/12   17.6s  ~18s left   
+      [flow] [###########.........]  7/12   20.5s  ~15s left   
+      [flow] [#############.......]  8/12   23.5s  ~12s left   
+      [flow] [###############.....]  9/12   24.9s  ~8s left    
+      [flow] [################....] 10/12   26.4s  ~5s left    
+      [flow] [##################..] 11/12   27.9s  ~3s left    
+      [flow] [####################] 12/12   29.4s  ~0s left    
+      [flow] 12 steps, 20 forwards, 29.4s
+      [stats] LR slat (res32, decodes OK via upsample) n=58816 mean=0.2070 std=5.8164 min=-23.202 max=28.587 nan/inf=0
+      upsampled coords @res512=732837 -> quantized @res1024 (grid 64) = 8019 tokens
+      [flow] [....................]  0/12    0.0s  starting    
+CUDA error: misaligned address
+  current device: 0, in function ggml_cuda_kernel_launch at C:\AI\trellis-cpp\thirdparty\ggml\src\ggml-cuda\common.cuh:1641
+  cudaGetLastError()
+C:\AI\trellis-cpp\thirdparty\ggml\src\ggml-cuda\ggml-cuda.cu:103: CUDA error
+{
+  "schema_version": "trellis_run_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman4k_512.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_r1024.glb",
+  "command": [
+    "C:\\AI\\trellis-cpp\\build-mmq\\Release\\trellis-cli.exe",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman4k_512.png",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_r1024.glb",
+    "--models",
+    "C:\\AI\\trellis-cpp\\models",
+    "--res",
+    "1024",
+    "--atlas",
+    "1024",
+    "--seed",
+    "31337",
+    "--no-fa",
+    "--require-gpu"
+  ],
+  "res": "1024",
+  "atlas": 1024,
+  "seed": 31337,
+  "seconds": 153.1,
+  "latent_size": null,
+  "latent_band": "unknown",
+  "latent_warn": 120000,
+  "latent_abort": 0,
+  "aborted_on_latent": false,
+  "decoded_voxels": null,
+  "decoded_faces": null,
+  "vram_oom_mib": null,
+  "geometry_decoded": false,
+  "tex_res": null,
+  "exit_code": 3221226505,
+  "success": false,
+  "output_bytes": 0,
+  "reference_latents": [
+    [
+      82304,
+      "castle1",
+      "decoded"
+    ],
+    [
+      86784,
+      "boat",
+      "decoded"
+    ],
+    [
+      94528,
+      "castle2",
+      "died stage 5"
+    ],
+    [
+      96448,
+      "castle2",
+      "died stage 5"
+    ],
+    [
+      106496,
+      "castle2",
+      "geometry decoded, died stage 6"
+    ],
+    [
+      111520,
+      "castle2",
+      "full success, 3949828 faces"
+    ],
+    [
+      140480,
+      "red_panda",
+      "died stage 5"
+    ],
+    [
+      191744,
+      "blue_tree",
+      "died stage 5"
+    ]
+  ]
+}

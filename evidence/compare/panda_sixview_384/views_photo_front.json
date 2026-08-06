@@ -1,0 +1,5887 @@
+{
+  "schema": "lowvram3d_mvadapter_sd21_six_view_inference_v1",
+  "config": "configs\\panda_mvadapter_ig2mv_sd21_384x20.json",
+  "attempt": "primary",
+  "attempt_resolution": 384,
+  "pipeline_class": "LowVRAMMVAdapterI2MVSDPipeline",
+  "prompt": "high quality clean albedo reference of the same red panda scout character in a layered ghillie-style scout outfit, consistent fur markings, consistent identity, flat neutral lighting",
+  "negative_prompt": null,
+  "classifier_free_guidance": false,
+  "parameters": {
+    "model": "SD2.1",
+    "views": 6,
+    "resolution": 384,
+    "steps": 20,
+    "guidance_scale": 1.0,
+    "reference_conditioning_scale": 1.0,
+    "control_conditioning_scale": 1.0,
+    "seed": 12345,
+    "scheduler": "DDPM_WITH_SHIFT_SNR",
+    "shift_mode": "interpolated",
+    "shift_scale": 8.0,
+    "offload": "SEQUENTIAL",
+    "attention": "SDPA",
+    "attention_slicing": "DISABLED",
+    "vae_slicing": "ON",
+    "dtype": "float16",
+    "vae_dtype": "float32",
+    "condition_encoder_dtype": "float32",
+    "bf16": "DISABLED",
+    "flash_attention_2": "DISABLED",
+    "xformers_required": false,
+    "conditioning_reference": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda2_512.png",
+    "conditioning_reference_sha256": "d4ef4b63b1509d51dcf01505a68dd45a5ff2ab422d8713d56e30565ad15f3ef0",
+    "control_tensor": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\controls_384_audited\\control_tensor.npy",
+    "control_tensor_sha256": "ddfe5798dcea70fbc1c1d4eacefe6309a558529cf445c1447d437be71bf1e8a8",
+    "camera_contract": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\controls_384_audited\\camera_contract.json",
+    "camera_contract_sha256": "971e57c86027f07101ee825186fd0a251075ce068943d4375ed9874ac832ca9b"
+  },
+  "preflight": {
+    "attempt": "primary",
+    "adapter": "C:\\AI\\HY3D2\\HuggingFaceHub\\models--huanngzh--mv-adapter\\mvadapter_ig2mv_sd21.safetensors",
+    "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda_mt_uv_zup.glb",
+    "conditioning": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\panda2_512.png",
+    "controls": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\controls_384_audited\\control_tensor.npy",
+    "contract": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\panda2\\controls_384_audited\\camera_contract.json",
+    "adapter_sha256": "7940d6197be614fc6a3483ece1ed37cac850f94375d127ada6ae6464ce9252c3",
+    "mesh_sha256": "4746d6e182ea3bd6552628928c337b2e5f4f8911e9a249b5f49c762b28fdd116",
+    "conditioning_sha256": "d4ef4b63b1509d51dcf01505a68dd45a5ff2ab422d8713d56e30565ad15f3ef0",
+    "control_sha256": "ddfe5798dcea70fbc1c1d4eacefe6309a558529cf445c1447d437be71bf1e8a8",
+    "camera_contract_sha256": "971e57c86027f07101ee825186fd0a251075ce068943d4375ed9874ac832ca9b",
+    "semantic_names": [
+      "front",
+      "right",
+      "rear",
+      "left",
+      "top",
+      "bottom"
+    ],
+    "system_before": {
+      "ram_total_mb": 15709.707,
+      "ram_available_mb": 5672.215,
+      "pagefile_total_mb": 32768.0,
+      "pagefile_free_mb": 30691.812,
+      "pid": 13036
+    },
+    "gpu_before": {
+      "available": true,
+      "total_mb": 6144,
+      "free_mb": 4974,
+      "active_processes": [],
+      "name": "NVIDIA GeForce GTX 1660 SUPER",
+      "ignored_graphics_processes": [
+        {
+          "pid": "26924",
+          "name": "C:\\Windows\\System32\\ShellHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "6836",
+          "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "27180",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "25240",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "15376",
+          "name": "C:\\Users\\Lauri\\AppData\\Roaming\\uv\\python\\cpython-3.11.15-windows-x86_64-none\\python.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "12372",
+          "name": "[Insufficient Permissions]",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "33768",
+          "name": "C:\\Windows\\explorer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "28656",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "16236",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "32624",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "48004",
+          "name": "C:\\Windows\\explorer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "8336",
+          "name": "C:\\Windows\\explorer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "32140",
+          "name": "C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "47888",
+          "name": "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "11760",
+          "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "4740",
+          "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "47680",
+          "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "48800",
+          "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "49040",
+          "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "54656",
+          "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "33416",
+          "name": "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.730.8199.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "38388",
+          "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "26984",
+          "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "27712",
+          "name": "C:\\Program Files\\Traycer\\Traycer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "3456",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "35200",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "51988",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "36092",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "37352",
+          "name": "[Insufficient Permissions]",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "39736",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        }
+      ]
+    },
+    "resolution": 384
+  },
+  "reference_unet_pass_started": true,
+  "cond_encoder_executed": true,
+  "denoising_started": true,
+  "denoising_steps_completed": 20,
+  "vae_decode_completed": true,
+  "output_images": [
+    {
+      "index": 0,
+      "name": "view_0_front.png",
+      "path": "evidence/compare/panda2/front_photo_384.png",
+      "sha256": "eb6cc4988851daa7c64fa2d4b2ed35af08489fb1e8205d17cef71787556a4c7b",
+      "substitution": "photographed front, bbox-registered into the front control framing"
+    },
+    {
+      "index": 1,
+      "name": "view_1_right.png",
+      "path": "evidence\\compare\\panda_sixview_384\\view_1_right.png",
+      "sha256": "a659ae6945349ff774437551c25d17723276543d35334c7d86b6aaa337ea0a73"
+    },
+    {
+      "index": 2,
+      "name": "view_2_rear.png",
+      "path": "evidence\\compare\\panda_sixview_384\\view_2_rear.png",
+      "sha256": "4e18f33f5c5c81753ce71d29a8b7121991736007a0d160b3b199b19046ddb94e"
+    },
+    {
+      "index": 3,
+      "name": "view_3_left.png",
+      "path": "evidence\\compare\\panda_sixview_384\\view_3_left.png",
+      "sha256": "8acac4a32f00738f05edcb1d610e9ec63706d281f45db5586c2b19ca8ab450eb"
+    },
+    {
+      "index": 4,
+      "name": "view_4_top.png",
+      "path": "evidence\\compare\\panda_sixview_384\\view_4_top.png",
+      "sha256": "bfd9222bb49d371b8538e39cf10f8dec8a60139435e6082d171e2b2f40ab5042"
+    },
+    {
+      "index": 5,
+      "name": "view_5_bottom.png",
+      "path": "evidence\\compare\\panda_sixview_384\\view_5_bottom.png",
+      "sha256": "50cb173a62c387f8b4edaacd553c52798f1d000c929ba50f2820071c4825abcc"
+    }
+  ],
+  "gpu_sequence_consumed": true,
+  "fallback_eligible": false,
+  "reference_unet_call_count": 1,
+  "denoising_unet_call_count": 20,
+  "denoising_steps_requested": 20,
+  "cuda_oom": "NO",
+  "fallback_to_256": "FORBIDDEN",
+  "heartbeats": [
+    {
+      "timestamp": 1785998718.1034002,
+      "pid": 13036,
+      "phase": "preflight_passed",
+      "resolution": 384
+    },
+    {
+      "timestamp": 1785998718.1760738,
+      "pid": 13036,
+      "phase": "model_construction_started",
+      "available": true,
+      "total_mb": 6144,
+      "free_mb": 4974,
+      "active_processes": [],
+      "name": "NVIDIA GeForce GTX 1660 SUPER",
+      "ignored_graphics_processes": [
+        {
+          "pid": "26924",
+          "name": "C:\\Windows\\System32\\ShellHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "6836",
+          "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "27180",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "25240",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "15376",
+          "name": "C:\\Users\\Lauri\\AppData\\Roaming\\uv\\python\\cpython-3.11.15-windows-x86_64-none\\python.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "12372",
+          "name": "[Insufficient Permissions]",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "33768",
+          "name": "C:\\Windows\\explorer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "28656",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "16236",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "32624",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "48004",
+          "name": "C:\\Windows\\explorer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "8336",
+          "name": "C:\\Windows\\explorer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "32140",
+          "name": "C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "47888",
+          "name": "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "11760",
+          "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "4740",
+          "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "47680",
+          "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "48800",
+          "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "49040",
+          "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "54656",
+          "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "33416",
+          "name": "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.730.8199.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "38388",
+          "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "26984",
+          "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "27712",
+          "name": "C:\\Program Files\\Traycer\\Traycer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "3456",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "35200",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "51988",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "36092",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "37352",
+          "name": "[Insufficient Permissions]",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "39736",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        }
+      ],
+      "allocated_mb": 0.0,
+      "reserved_mb": 0.0,
+      "max_memory_allocated_mb": 0.0,
+      "max_memory_reserved_mb": 0.0
+    },
+    {
+      "timestamp": 1785998779.778215,
+      "pid": 13036,
+      "phase": "convolution_self_test_completed",
+      "gpu_name": "NVIDIA GeForce GTX 1660 SUPER",
+      "compute_capability": "7.5",
+      "torch_version": "2.8.0+cu126",
+      "cuda_version": "12.6",
+      "cudnn_version": 91002,
+      "fp16_cudnn_finite_fraction": 0.7507233,
+      "fp16_no_cudnn_finite_fraction": 1.0,
+      "fp32_cudnn_finite_fraction": 1.0,
+      "max_error_fp16_no_cudnn_vs_fp32": 0.0011682510375976562,
+      "unet_cudnn_disabled": true
+    },
+    {
+      "timestamp": 1785998779.8263435,
+      "pid": 13036,
+      "phase": "pipeline_constructed",
+      "processor": "DecoupledMVRowColSelfAttnProcessor2_0"
+    },
+    {
+      "timestamp": 1785998790.4883218,
+      "pid": 13036,
+      "phase": "reference_unet_fp32_cache_completed",
+      "cache_entries": 32
+    },
+    {
+      "timestamp": 1785998790.4898298,
+      "pid": 13036,
+      "phase": "reference_latents_fp32_validated",
+      "tensor": {
+        "name": "reference_latents",
+        "shape": [
+          1,
+          4,
+          64,
+          64
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 16384
+      }
+    },
+    {
+      "timestamp": 1785998790.7912607,
+      "pid": 13036,
+      "phase": "sequential_offload_installed"
+    },
+    {
+      "timestamp": 1785998790.7912607,
+      "pid": 13036,
+      "phase": "controls_loaded",
+      "shape": [
+        6,
+        6,
+        384,
+        384
+      ],
+      "dtype": "torch.float32"
+    },
+    {
+      "timestamp": 1785998790.7937787,
+      "pid": 13036,
+      "phase": "cond_encoder_dtype_smoke_passed"
+    },
+    {
+      "timestamp": 1785998792.369381,
+      "pid": 13036,
+      "phase": "reference_unet_dtype_smoke_passed"
+    },
+    {
+      "timestamp": 1785998792.3703966,
+      "pid": 13036,
+      "phase": "conditioning_loaded",
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "timestamp": 1785998794.9301245,
+      "pid": 13036,
+      "phase": "reference_telemetry_recorded",
+      "cache_entries": 32
+    },
+    {
+      "timestamp": 1785998795.5828857,
+      "pid": 13036,
+      "phase": "reference_unet_started",
+      "call_count": 1
+    },
+    {
+      "timestamp": 1785998795.583883,
+      "pid": 13036,
+      "phase": "reference_cache_injected_explicit_owner",
+      "cache_entries": 32
+    },
+    {
+      "timestamp": 1785998795.601941,
+      "pid": 13036,
+      "phase": "cond_encoder_executed"
+    },
+    {
+      "timestamp": 1785998805.3445067,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 1,
+      "requested": 20,
+      "unet_call_count": 1
+    },
+    {
+      "timestamp": 1785998814.951979,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 2,
+      "requested": 20,
+      "unet_call_count": 2
+    },
+    {
+      "timestamp": 1785998823.8468602,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 3,
+      "requested": 20,
+      "unet_call_count": 3
+    },
+    {
+      "timestamp": 1785998832.296758,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 4,
+      "requested": 20,
+      "unet_call_count": 4
+    },
+    {
+      "timestamp": 1785998842.2527275,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 5,
+      "requested": 20,
+      "unet_call_count": 5
+    },
+    {
+      "timestamp": 1785998853.225391,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 6,
+      "requested": 20,
+      "unet_call_count": 6
+    },
+    {
+      "timestamp": 1785998863.6197038,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 7,
+      "requested": 20,
+      "unet_call_count": 7
+    },
+    {
+      "timestamp": 1785998874.7289646,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 8,
+      "requested": 20,
+      "unet_call_count": 8
+    },
+    {
+      "timestamp": 1785998884.487781,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 9,
+      "requested": 20,
+      "unet_call_count": 9
+    },
+    {
+      "timestamp": 1785998893.4020915,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 10,
+      "requested": 20,
+      "unet_call_count": 10
+    },
+    {
+      "timestamp": 1785998902.7783751,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 11,
+      "requested": 20,
+      "unet_call_count": 11
+    },
+    {
+      "timestamp": 1785998912.0551941,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 12,
+      "requested": 20,
+      "unet_call_count": 12
+    },
+    {
+      "timestamp": 1785998921.3214142,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 13,
+      "requested": 20,
+      "unet_call_count": 13
+    },
+    {
+      "timestamp": 1785998931.1390495,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 14,
+      "requested": 20,
+      "unet_call_count": 14
+    },
+    {
+      "timestamp": 1785998941.0144243,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 15,
+      "requested": 20,
+      "unet_call_count": 15
+    },
+    {
+      "timestamp": 1785998950.960734,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 16,
+      "requested": 20,
+      "unet_call_count": 16
+    },
+    {
+      "timestamp": 1785998960.8448906,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 17,
+      "requested": 20,
+      "unet_call_count": 17
+    },
+    {
+      "timestamp": 1785998970.9611204,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 18,
+      "requested": 20,
+      "unet_call_count": 18
+    },
+    {
+      "timestamp": 1785998980.906831,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 19,
+      "requested": 20,
+      "unet_call_count": 19
+    },
+    {
+      "timestamp": 1785998990.9953713,
+      "pid": 13036,
+      "phase": "denoising_step_completed",
+      "step": 20,
+      "requested": 20,
+      "unet_call_count": 20
+    },
+    {
+      "timestamp": 1785999001.932092,
+      "pid": 13036,
+      "phase": "decoded_image_gate_recorded",
+      "passed": true
+    },
+    {
+      "timestamp": 1785999001.9436388,
+      "pid": 13036,
+      "phase": "vae_decode_completed"
+    },
+    {
+      "timestamp": 1785999002.1705658,
+      "pid": 13036,
+      "phase": "outputs_written",
+      "output_count": 6
+    },
+    {
+      "timestamp": 1785999004.447203,
+      "pid": 13036,
+      "phase": "cleanup_complete",
+      "available": true,
+      "total_mb": 6144,
+      "free_mb": 4459,
+      "active_processes": [],
+      "name": "NVIDIA GeForce GTX 1660 SUPER",
+      "ignored_graphics_processes": [
+        {
+          "pid": "26924",
+          "name": "C:\\Windows\\System32\\ShellHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "6836",
+          "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "27180",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "25240",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "15376",
+          "name": "C:\\Users\\Lauri\\AppData\\Roaming\\uv\\python\\cpython-3.11.15-windows-x86_64-none\\python.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "12372",
+          "name": "[Insufficient Permissions]",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "33768",
+          "name": "C:\\Windows\\explorer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "28656",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "16236",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "32624",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "48004",
+          "name": "C:\\Windows\\explorer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "8336",
+          "name": "C:\\Windows\\explorer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "32140",
+          "name": "C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "47888",
+          "name": "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "11760",
+          "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "4740",
+          "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "47680",
+          "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "48800",
+          "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "49040",
+          "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "54656",
+          "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "33416",
+          "name": "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.730.8199.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "38388",
+          "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "26984",
+          "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "27712",
+          "name": "C:\\Program Files\\Traycer\\Traycer.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "3456",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "35200",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "51988",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "36092",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "37352",
+          "name": "[Insufficient Permissions]",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "39736",
+          "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+          "used_mb": "[N/A]"
+        },
+        {
+          "pid": "13036",
+          "name": "C:\\AI\\HY3D2\\python_standalone\\python.exe",
+          "used_mb": "[N/A]"
+        }
+      ],
+      "allocated_mb": 80.358,
+      "reserved_mb": 390.0,
+      "max_memory_allocated_mb": 2359.235,
+      "max_memory_reserved_mb": 2404.0
+    }
+  ],
+  "memory_before_model": {
+    "available": true,
+    "total_mb": 6144,
+    "free_mb": 4974,
+    "active_processes": [],
+    "name": "NVIDIA GeForce GTX 1660 SUPER",
+    "ignored_graphics_processes": [
+      {
+        "pid": "26924",
+        "name": "C:\\Windows\\System32\\ShellHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "6836",
+        "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "27180",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "25240",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "15376",
+        "name": "C:\\Users\\Lauri\\AppData\\Roaming\\uv\\python\\cpython-3.11.15-windows-x86_64-none\\python.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "12372",
+        "name": "[Insufficient Permissions]",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "33768",
+        "name": "C:\\Windows\\explorer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "28656",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "16236",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "32624",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "48004",
+        "name": "C:\\Windows\\explorer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "8336",
+        "name": "C:\\Windows\\explorer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "32140",
+        "name": "C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "47888",
+        "name": "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "11760",
+        "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "4740",
+        "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "47680",
+        "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "48800",
+        "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "49040",
+        "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "54656",
+        "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "33416",
+        "name": "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.730.8199.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "38388",
+        "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "26984",
+        "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "27712",
+        "name": "C:\\Program Files\\Traycer\\Traycer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "3456",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "35200",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "51988",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "36092",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "37352",
+        "name": "[Insufficient Permissions]",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "39736",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      }
+    ],
+    "allocated_mb": 0.0,
+    "reserved_mb": 0.0,
+    "max_memory_allocated_mb": 0.0,
+    "max_memory_reserved_mb": 0.0
+  },
+  "vae_dtype": "float32",
+  "vae_dtype_reason": "float16 VAE is all-NaN on this GPU; proven by decode-boundary diagnostic",
+  "adapter_report": {
+    "adapter_total_keys": 198,
+    "adapter_loaded_key_count": 198,
+    "unet_adapter_keys_loaded": 160,
+    "cond_encoder_keys_loaded": 38,
+    "adapter_missing_keys": [],
+    "adapter_unexpected_keys": [],
+    "unet_unexpected_keys": [],
+    "cond_encoder_missing_keys": [],
+    "cond_encoder_unexpected_keys": [],
+    "cond_encoder_fingerprint_before": "bc12c7637dea161841cf70d0e6099e5ea8bf2fe400a59ef84eb1a0e210efe321",
+    "cond_encoder_fingerprint_after": "bca07d922b118013d644022c5877698af617ff60760d96fde2d09fbd1a9233b1",
+    "cond_encoder_weights_changed": true,
+    "unet_cudnn_guard": {
+      "installed": true,
+      "scope": "unet.forward",
+      "covers": [
+        "reference_unet_pass",
+        "denoising_unet_pass"
+      ],
+      "cudnn_left_enabled_for": [
+        "vae",
+        "cond_encoder",
+        "text_encoder"
+      ],
+      "reason": "FP16_CUDNN_NON_FINITE",
+      "self_test": {
+        "schema": "mvadapter_convolution_self_test_v1",
+        "probe": {
+          "module": "down_blocks.0.resnets.0.conv1",
+          "channels": 320,
+          "spatial": 32,
+          "kernel": 3,
+          "padding": 1,
+          "input_abs_max_target": 3.82,
+          "seed": 12345
+        },
+        "torch_version": "2.8.0+cu126",
+        "cuda_version": "12.6",
+        "cudnn_version": 91002,
+        "cudnn_available": true,
+        "gpu_name": "NVIDIA GeForce GTX 1660 SUPER",
+        "compute_capability": "7.5",
+        "cuda_available": true,
+        "fp16_cudnn_finite_fraction": 0.7507233,
+        "fp16_no_cudnn_finite_fraction": 1.0,
+        "fp32_cudnn_finite_fraction": 1.0,
+        "max_error_fp16_no_cudnn_vs_fp32": 0.0011682510375976562,
+        "max_error_fp16_cudnn_vs_fp32": 2.4612789154052734,
+        "executed": true,
+        "cudnn_fp16_convolution_safe": false,
+        "unet_cudnn_disabled": true,
+        "verdict_reason": "FP16_CUDNN_NON_FINITE"
+      }
+    },
+    "vae_dtype_override": "float32"
+  },
+  "unet_cudnn_guard": {
+    "installed": true,
+    "scope": "unet.forward",
+    "covers": [
+      "reference_unet_pass",
+      "denoising_unet_pass"
+    ],
+    "cudnn_left_enabled_for": [
+      "vae",
+      "cond_encoder",
+      "text_encoder"
+    ],
+    "reason": "FP16_CUDNN_NON_FINITE",
+    "self_test": {
+      "schema": "mvadapter_convolution_self_test_v1",
+      "probe": {
+        "module": "down_blocks.0.resnets.0.conv1",
+        "channels": 320,
+        "spatial": 32,
+        "kernel": 3,
+        "padding": 1,
+        "input_abs_max_target": 3.82,
+        "seed": 12345
+      },
+      "torch_version": "2.8.0+cu126",
+      "cuda_version": "12.6",
+      "cudnn_version": 91002,
+      "cudnn_available": true,
+      "gpu_name": "NVIDIA GeForce GTX 1660 SUPER",
+      "compute_capability": "7.5",
+      "cuda_available": true,
+      "fp16_cudnn_finite_fraction": 0.7507233,
+      "fp16_no_cudnn_finite_fraction": 1.0,
+      "fp32_cudnn_finite_fraction": 1.0,
+      "max_error_fp16_no_cudnn_vs_fp32": 0.0011682510375976562,
+      "max_error_fp16_cudnn_vs_fp32": 2.4612789154052734,
+      "executed": true,
+      "cudnn_fp16_convolution_safe": false,
+      "unet_cudnn_disabled": true,
+      "verdict_reason": "FP16_CUDNN_NON_FINITE"
+    }
+  },
+  "convolution_self_test": {
+    "schema": "mvadapter_convolution_self_test_v1",
+    "probe": {
+      "module": "down_blocks.0.resnets.0.conv1",
+      "channels": 320,
+      "spatial": 32,
+      "kernel": 3,
+      "padding": 1,
+      "input_abs_max_target": 3.82,
+      "seed": 12345
+    },
+    "torch_version": "2.8.0+cu126",
+    "cuda_version": "12.6",
+    "cudnn_version": 91002,
+    "cudnn_available": true,
+    "gpu_name": "NVIDIA GeForce GTX 1660 SUPER",
+    "compute_capability": "7.5",
+    "cuda_available": true,
+    "fp16_cudnn_finite_fraction": 0.7507233,
+    "fp16_no_cudnn_finite_fraction": 1.0,
+    "fp32_cudnn_finite_fraction": 1.0,
+    "max_error_fp16_no_cudnn_vs_fp32": 0.0011682510375976562,
+    "max_error_fp16_cudnn_vs_fp32": 2.4612789154052734,
+    "executed": true,
+    "cudnn_fp16_convolution_safe": false,
+    "unet_cudnn_disabled": true,
+    "verdict_reason": "FP16_CUDNN_NON_FINITE"
+  },
+  "component_inventory": {
+    "vae": {
+      "is_torch_module": true,
+      "type": "AutoencoderKL",
+      "parameter_count": 83653863,
+      "cpu_footprint_mb": 319.114,
+      "dtypes": [
+        "float32"
+      ],
+      "devices": [
+        "cpu"
+      ]
+    },
+    "text_encoder": {
+      "is_torch_module": true,
+      "type": "CLIPTextModel",
+      "parameter_count": 340387840,
+      "cpu_footprint_mb": 649.238,
+      "dtypes": [
+        "float16"
+      ],
+      "devices": [
+        "cpu"
+      ]
+    },
+    "tokenizer": {
+      "is_torch_module": false,
+      "type": "CLIPTokenizer"
+    },
+    "unet": {
+      "is_torch_module": true,
+      "type": "UNet2DConditionModel",
+      "parameter_count": 965058884,
+      "cpu_footprint_mb": 1840.704,
+      "dtypes": [
+        "float16"
+      ],
+      "devices": [
+        "cpu"
+      ]
+    },
+    "scheduler": {
+      "is_torch_module": false,
+      "type": "DDPMScheduler"
+    },
+    "safety_checker": {
+      "is_torch_module": false,
+      "type": null
+    },
+    "feature_extractor": {
+      "is_torch_module": false,
+      "type": "CLIPImageProcessor"
+    },
+    "image_encoder": {
+      "is_torch_module": false,
+      "type": null
+    },
+    "cond_encoder": {
+      "is_torch_module": true,
+      "type": "T2IAdapter",
+      "parameter_count": 77922240,
+      "cpu_footprint_mb": 148.625,
+      "dtypes": [
+        "float16"
+      ],
+      "devices": [
+        "cpu"
+      ]
+    }
+  },
+  "attention": {
+    "attention_backend": "PYTORCH_SDPA",
+    "attention_slicing": "DISABLED",
+    "processor_classes": [
+      "DecoupledMVRowColSelfAttnProcessor2_0"
+    ],
+    "sliced_processor_classes": [],
+    "non_sdpa_processor_classes": [],
+    "processor_count": 32,
+    "expected_processor": "DecoupledMVRowColSelfAttnProcessor2_0",
+    "rowcol_processor_count": 32,
+    "row_only_processor_count": 0,
+    "rowcol_processor_proven": true
+  },
+  "dtype_inventory": {
+    "model_components": {
+      "text_encoder": {
+        "parameter_count": 340387840,
+        "total_bytes": 680775680,
+        "dtypes": {
+          "float16": 372
+        }
+      },
+      "vae": {
+        "parameter_count": 83653863,
+        "total_bytes": 334615452,
+        "dtypes": {
+          "float32": 248
+        }
+      },
+      "unet_base_parameters": {
+        "parameter_count": 865910724,
+        "total_bytes": 1731821448,
+        "dtypes": {
+          "float16": 686
+        }
+      },
+      "rowcol_processor_parameters": {
+        "processor_class": "DecoupledMVRowColSelfAttnProcessor2_0",
+        "processor_count": 32,
+        "parameter_count": 99148160,
+        "total_bytes": 198296320,
+        "dtypes": {
+          "float16": 160
+        },
+        "processors": [
+          {
+            "name": "down_blocks.0.attentions.0.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 819840,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "down_blocks.0.attentions.0.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "down_blocks.0.attentions.1.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 819840,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "down_blocks.0.attentions.1.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "down_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 3278080,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "down_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "down_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 3278080,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "down_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "down_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 13109760,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "down_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "down_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 13109760,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "down_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "mid_block.attentions.0.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 13109760,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "mid_block.attentions.0.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "up_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 13109760,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "up_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "up_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 13109760,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "up_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "up_blocks.1.attentions.2.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 13109760,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "up_blocks.1.attentions.2.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "up_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 3278080,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "up_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "up_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 3278080,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "up_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "up_blocks.2.attentions.2.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 3278080,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "up_blocks.2.attentions.2.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "up_blocks.3.attentions.0.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 819840,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "up_blocks.3.attentions.0.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "up_blocks.3.attentions.1.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 819840,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "up_blocks.3.attentions.1.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          },
+          {
+            "name": "up_blocks.3.attentions.2.transformer_blocks.0.attn1.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 819840,
+            "dtypes": {
+              "float16": 10
+            }
+          },
+          {
+            "name": "up_blocks.3.attentions.2.transformer_blocks.0.attn2.processor",
+            "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+            "parameter_count": 0,
+            "dtypes": {}
+          }
+        ],
+        "required_dtype": "float16",
+        "passed": true
+      },
+      "cond_encoder": {
+        "parameter_count": 77922240,
+        "total_bytes": 155844480,
+        "dtypes": {
+          "float16": 38
+        }
+      }
+    },
+    "rowcol_processors": {
+      "processor_class": "DecoupledMVRowColSelfAttnProcessor2_0",
+      "processor_count": 32,
+      "parameter_count": 99148160,
+      "total_bytes": 198296320,
+      "dtypes": {
+        "float16": 160
+      },
+      "processors": [
+        {
+          "name": "down_blocks.0.attentions.0.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 819840,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "down_blocks.0.attentions.0.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "down_blocks.0.attentions.1.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 819840,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "down_blocks.0.attentions.1.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "down_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 3278080,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "down_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "down_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 3278080,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "down_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "down_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 13109760,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "down_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "down_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 13109760,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "down_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "mid_block.attentions.0.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 13109760,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "mid_block.attentions.0.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "up_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 13109760,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "up_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "up_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 13109760,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "up_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "up_blocks.1.attentions.2.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 13109760,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "up_blocks.1.attentions.2.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "up_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 3278080,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "up_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "up_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 3278080,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "up_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "up_blocks.2.attentions.2.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 3278080,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "up_blocks.2.attentions.2.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "up_blocks.3.attentions.0.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 819840,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "up_blocks.3.attentions.0.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "up_blocks.3.attentions.1.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 819840,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "up_blocks.3.attentions.1.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        },
+        {
+          "name": "up_blocks.3.attentions.2.transformer_blocks.0.attn1.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 819840,
+          "dtypes": {
+            "float16": 10
+          }
+        },
+        {
+          "name": "up_blocks.3.attentions.2.transformer_blocks.0.attn2.processor",
+          "class": "DecoupledMVRowColSelfAttnProcessor2_0",
+          "parameter_count": 0,
+          "dtypes": {}
+        }
+      ],
+      "required_dtype": "float16",
+      "passed": true
+    },
+    "cond_encoder_smoke": {
+      "condition_encoder_fp32": {
+        "mode": "FP32_COND_ENCODER_RESIDUALS_CAST_TO_FP16",
+        "requested_residual_dtype": "float16",
+        "control_feature": {
+          "name": "control_feature",
+          "shape": [
+            6,
+            6,
+            384,
+            384
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 5308416,
+          "finite": true,
+          "finite_count": 5308416,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": 0.0,
+          "maximum_finite_value": 1.0,
+          "absolute_maximum": 1.0
+        },
+        "entries": [
+          {
+            "index": 0,
+            "fp32": {
+              "name": "condition_residual_fp32_0",
+              "shape": [
+                6,
+                320,
+                48,
+                48
+              ],
+              "dtype": "float32",
+              "device": "cuda:0",
+              "numel": 4423680,
+              "finite": true,
+              "finite_count": 4423680,
+              "nan_count": 0,
+              "positive_inf_count": 0,
+              "negative_inf_count": 0,
+              "minimum_finite_value": -7.057712078094482,
+              "maximum_finite_value": 5.926326751708984,
+              "absolute_maximum": 7.057712078094482
+            },
+            "fp16": {
+              "name": "condition_residual_fp16_0",
+              "shape": [
+                6,
+                320,
+                48,
+                48
+              ],
+              "dtype": "float16",
+              "device": "cuda:0",
+              "numel": 4423680,
+              "finite": true,
+              "finite_count": 4423680,
+              "nan_count": 0,
+              "positive_inf_count": 0,
+              "negative_inf_count": 0,
+              "minimum_finite_value": -7.05859375,
+              "maximum_finite_value": 5.92578125,
+              "absolute_maximum": 7.05859375
+            }
+          },
+          {
+            "index": 1,
+            "fp32": {
+              "name": "condition_residual_fp32_1",
+              "shape": [
+                6,
+                640,
+                24,
+                24
+              ],
+              "dtype": "float32",
+              "device": "cuda:0",
+              "numel": 2211840,
+              "finite": true,
+              "finite_count": 2211840,
+              "nan_count": 0,
+              "positive_inf_count": 0,
+              "negative_inf_count": 0,
+              "minimum_finite_value": -7.126107692718506,
+              "maximum_finite_value": 7.608847141265869,
+              "absolute_maximum": 7.608847141265869
+            },
+            "fp16": {
+              "name": "condition_residual_fp16_1",
+              "shape": [
+                6,
+                640,
+                24,
+                24
+              ],
+              "dtype": "float16",
+              "device": "cuda:0",
+              "numel": 2211840,
+              "finite": true,
+              "finite_count": 2211840,
+              "nan_count": 0,
+              "positive_inf_count": 0,
+              "negative_inf_count": 0,
+              "minimum_finite_value": -7.125,
+              "maximum_finite_value": 7.609375,
+              "absolute_maximum": 7.609375
+            }
+          },
+          {
+            "index": 2,
+            "fp32": {
+              "name": "condition_residual_fp32_2",
+              "shape": [
+                6,
+                1280,
+                12,
+                12
+              ],
+              "dtype": "float32",
+              "device": "cuda:0",
+              "numel": 1105920,
+              "finite": true,
+              "finite_count": 1105920,
+              "nan_count": 0,
+              "positive_inf_count": 0,
+              "negative_inf_count": 0,
+              "minimum_finite_value": -11.374488830566406,
+              "maximum_finite_value": 10.82889461517334,
+              "absolute_maximum": 11.374488830566406
+            },
+            "fp16": {
+              "name": "condition_residual_fp16_2",
+              "shape": [
+                6,
+                1280,
+                12,
+                12
+              ],
+              "dtype": "float16",
+              "device": "cuda:0",
+              "numel": 1105920,
+              "finite": true,
+              "finite_count": 1105920,
+              "nan_count": 0,
+              "positive_inf_count": 0,
+              "negative_inf_count": 0,
+              "minimum_finite_value": -11.375,
+              "maximum_finite_value": 10.828125,
+              "absolute_maximum": 11.375
+            }
+          },
+          {
+            "index": 3,
+            "fp32": {
+              "name": "condition_residual_fp32_3",
+              "shape": [
+                6,
+                1280,
+                6,
+                6
+              ],
+              "dtype": "float32",
+              "device": "cuda:0",
+              "numel": 276480,
+              "finite": true,
+              "finite_count": 276480,
+              "nan_count": 0,
+              "positive_inf_count": 0,
+              "negative_inf_count": 0,
+              "minimum_finite_value": -22.860883712768555,
+              "maximum_finite_value": 22.340059280395508,
+              "absolute_maximum": 22.860883712768555
+            },
+            "fp16": {
+              "name": "condition_residual_fp16_3",
+              "shape": [
+                6,
+                1280,
+                6,
+                6
+              ],
+              "dtype": "float16",
+              "device": "cuda:0",
+              "numel": 276480,
+              "finite": true,
+              "finite_count": 276480,
+              "nan_count": 0,
+              "positive_inf_count": 0,
+              "negative_inf_count": 0,
+              "minimum_finite_value": -22.859375,
+              "maximum_finite_value": 22.34375,
+              "absolute_maximum": 22.859375
+            }
+          }
+        ],
+        "output_count": 4,
+        "output_dtype": "float16",
+        "output_device": "cuda:0",
+        "encoder_restored_dtype": "float16",
+        "temporary_fp32_released": true
+      }
+    },
+    "reference_unet_smoke": [
+      {
+        "name": "prompt_embeddings",
+        "shape": [
+          1,
+          77,
+          1024
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 78848
+      },
+      {
+        "name": "reference_image_tensor",
+        "shape": [
+          1,
+          3,
+          64,
+          64
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 12288
+      },
+      {
+        "name": "reference_latents",
+        "shape": [
+          1,
+          4,
+          8,
+          8
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 256
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.0.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.0.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.0.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.0.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.mid_block.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          1,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 1280
+      },
+      {
+        "name": "cached_reference_hidden_states.mid_block.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          1,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 1280
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.2.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.2.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.2.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.2.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.2.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.2.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      }
+    ],
+    "diffusion_latents": {
+      "name": "diffusion_latents",
+      "shape": [
+        6,
+        4,
+        48,
+        48
+      ],
+      "dtype": "float16",
+      "device": "cuda:0",
+      "numel": 55296
+    }
+  },
+  "sdpa_backend": {
+    "api": "torch.nn.functional.scaled_dot_product_attention",
+    "flash_sdp_enabled": true,
+    "mem_efficient_sdp_enabled": true,
+    "math_sdp_enabled": true,
+    "attention_backend": "PYTORCH_SDPA"
+  },
+  "reference_vae_fp32": {
+    "mode": "FP32_VAE_REFERENCE_ENCODE",
+    "requested_latent_dtype": "float16",
+    "preprocessed_reference": {
+      "name": "preprocessed_reference_image",
+      "shape": [
+        1,
+        3,
+        512,
+        512
+      ],
+      "dtype": "float32",
+      "device": "cpu",
+      "numel": 786432,
+      "finite": true,
+      "finite_count": 786432,
+      "nan_count": 0,
+      "positive_inf_count": 0,
+      "negative_inf_count": 0,
+      "minimum_finite_value": -1.0,
+      "maximum_finite_value": 1.0,
+      "absolute_maximum": 1.0
+    },
+    "reference_latents_fp32": {
+      "name": "reference_latents_fp32",
+      "shape": [
+        1,
+        4,
+        64,
+        64
+      ],
+      "dtype": "float16",
+      "device": "cuda:0",
+      "numel": 16384,
+      "finite": true,
+      "finite_count": 16384,
+      "nan_count": 0,
+      "positive_inf_count": 0,
+      "negative_inf_count": 0,
+      "minimum_finite_value": -3.154296875,
+      "maximum_finite_value": 2.84375,
+      "absolute_maximum": 3.154296875
+    },
+    "reference_latents_fp16": {
+      "name": "reference_latents_fp16",
+      "shape": [
+        1,
+        4,
+        64,
+        64
+      ],
+      "dtype": "float16",
+      "device": "cuda:0",
+      "numel": 16384,
+      "finite": true,
+      "finite_count": 16384,
+      "nan_count": 0,
+      "positive_inf_count": 0,
+      "negative_inf_count": 0,
+      "minimum_finite_value": -3.154296875,
+      "maximum_finite_value": 2.84375,
+      "absolute_maximum": 3.154296875
+    },
+    "vae_restored_dtype": "float32",
+    "temporary_fp32_released": true
+  },
+  "reference_cache_fp32": {
+    "mode": "FP32_REFERENCE_UNET_CACHE_CAST_TO_FP16",
+    "expected_key_count": 32,
+    "actual_key_count": 32,
+    "batch_before_expansion": 1,
+    "dtype_before_cast": "float32",
+    "dtype_after_cast": "float16",
+    "reference_unet_output": {
+      "name": "reference_unet_output",
+      "shape": [
+        1,
+        4,
+        64,
+        64
+      ],
+      "dtype": "float32",
+      "device": "cuda:0",
+      "numel": 16384,
+      "finite": true,
+      "finite_count": 16384,
+      "nan_count": 0,
+      "positive_inf_count": 0,
+      "negative_inf_count": 0,
+      "minimum_finite_value": -1.6731737852096558,
+      "maximum_finite_value": 1.745469570159912,
+      "absolute_maximum": 1.745469570159912
+    },
+    "reference_unet_output_finite": true,
+    "entries": [
+      {
+        "key": "down_blocks.0.attentions.0.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_0_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.4065070152282715,
+          "maximum_finite_value": 3.072617530822754,
+          "absolute_maximum": 3.072617530822754
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_0_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.40625,
+          "maximum_finite_value": 3.072265625,
+          "absolute_maximum": 3.072265625
+        }
+      },
+      {
+        "key": "down_blocks.0.attentions.0.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_0_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.8825417757034302,
+          "maximum_finite_value": 2.47599196434021,
+          "absolute_maximum": 2.47599196434021
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_0_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.8828125,
+          "maximum_finite_value": 2.4765625,
+          "absolute_maximum": 2.4765625
+        }
+      },
+      {
+        "key": "down_blocks.0.attentions.1.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_0_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.791156768798828,
+          "maximum_finite_value": 4.023894786834717,
+          "absolute_maximum": 4.023894786834717
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_0_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.791015625,
+          "maximum_finite_value": 4.0234375,
+          "absolute_maximum": 4.0234375
+        }
+      },
+      {
+        "key": "down_blocks.0.attentions.1.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_0_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.768861770629883,
+          "maximum_finite_value": 1.8172699213027954,
+          "absolute_maximum": 2.768861770629883
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_0_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.76953125,
+          "maximum_finite_value": 1.8173828125,
+          "absolute_maximum": 2.76953125
+        }
+      },
+      {
+        "key": "down_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_1_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.066056251525879,
+          "maximum_finite_value": 2.1888890266418457,
+          "absolute_maximum": 2.1888890266418457
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_1_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.06640625,
+          "maximum_finite_value": 2.189453125,
+          "absolute_maximum": 2.189453125
+        }
+      },
+      {
+        "key": "down_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_1_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.0496108531951904,
+          "maximum_finite_value": 1.231813907623291,
+          "absolute_maximum": 3.0496108531951904
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_1_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.048828125,
+          "maximum_finite_value": 1.2314453125,
+          "absolute_maximum": 3.048828125
+        }
+      },
+      {
+        "key": "down_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_1_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.9600977897644043,
+          "maximum_finite_value": 3.4481379985809326,
+          "absolute_maximum": 3.4481379985809326
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_1_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.9609375,
+          "maximum_finite_value": 3.447265625,
+          "absolute_maximum": 3.447265625
+        }
+      },
+      {
+        "key": "down_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_1_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.6684973239898682,
+          "maximum_finite_value": 4.22249698638916,
+          "absolute_maximum": 4.22249698638916
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_1_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.6689453125,
+          "maximum_finite_value": 4.22265625,
+          "absolute_maximum": 4.22265625
+        }
+      },
+      {
+        "key": "down_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_2_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.0609670877456665,
+          "maximum_finite_value": 2.112041711807251,
+          "absolute_maximum": 2.112041711807251
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_2_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.060546875,
+          "maximum_finite_value": 2.111328125,
+          "absolute_maximum": 2.111328125
+        }
+      },
+      {
+        "key": "down_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_2_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.577418565750122,
+          "maximum_finite_value": 2.008298635482788,
+          "absolute_maximum": 2.008298635482788
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_2_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.5771484375,
+          "maximum_finite_value": 2.0078125,
+          "absolute_maximum": 2.0078125
+        }
+      },
+      {
+        "key": "down_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_2_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.0719804763793945,
+          "maximum_finite_value": 1.2431621551513672,
+          "absolute_maximum": 2.0719804763793945
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_2_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.072265625,
+          "maximum_finite_value": 1.2431640625,
+          "absolute_maximum": 2.072265625
+        }
+      },
+      {
+        "key": "down_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_down_blocks_2_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.5937544107437134,
+          "maximum_finite_value": 1.6134501695632935,
+          "absolute_maximum": 1.6134501695632935
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_down_blocks_2_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.59375,
+          "maximum_finite_value": 1.61328125,
+          "absolute_maximum": 1.61328125
+        }
+      },
+      {
+        "key": "mid_block.attentions.0.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_mid_block_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            64,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 81920,
+          "finite": true,
+          "finite_count": 81920,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.0917789936065674,
+          "maximum_finite_value": 1.1460305452346802,
+          "absolute_maximum": 1.1460305452346802
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_mid_block_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            64,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 81920,
+          "finite": true,
+          "finite_count": 81920,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.091796875,
+          "maximum_finite_value": 1.146484375,
+          "absolute_maximum": 1.146484375
+        }
+      },
+      {
+        "key": "mid_block.attentions.0.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_mid_block_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            64,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 81920,
+          "finite": true,
+          "finite_count": 81920,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.890589714050293,
+          "maximum_finite_value": 1.537172555923462,
+          "absolute_maximum": 1.890589714050293
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_mid_block_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            64,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 81920,
+          "finite": true,
+          "finite_count": 81920,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.890625,
+          "maximum_finite_value": 1.537109375,
+          "absolute_maximum": 1.890625
+        }
+      },
+      {
+        "key": "up_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_1_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.9739460945129395,
+          "maximum_finite_value": 3.1516153812408447,
+          "absolute_maximum": 3.1516153812408447
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_1_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.974609375,
+          "maximum_finite_value": 3.15234375,
+          "absolute_maximum": 3.15234375
+        }
+      },
+      {
+        "key": "up_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_1_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.800367832183838,
+          "maximum_finite_value": 2.422281503677368,
+          "absolute_maximum": 2.800367832183838
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_1_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.80078125,
+          "maximum_finite_value": 2.421875,
+          "absolute_maximum": 2.80078125
+        }
+      },
+      {
+        "key": "up_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_1_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.0966227054595947,
+          "maximum_finite_value": 1.823218584060669,
+          "absolute_maximum": 3.0966227054595947
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_1_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.095703125,
+          "maximum_finite_value": 1.8232421875,
+          "absolute_maximum": 3.095703125
+        }
+      },
+      {
+        "key": "up_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_1_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.7350919246673584,
+          "maximum_finite_value": 2.476172685623169,
+          "absolute_maximum": 3.7350919246673584
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_1_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.734375,
+          "maximum_finite_value": 2.4765625,
+          "absolute_maximum": 3.734375
+        }
+      },
+      {
+        "key": "up_blocks.1.attentions.2.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_1_attentions_2_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.6060097217559814,
+          "maximum_finite_value": 4.056928634643555,
+          "absolute_maximum": 4.056928634643555
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_1_attentions_2_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.6064453125,
+          "maximum_finite_value": 4.05859375,
+          "absolute_maximum": 4.05859375
+        }
+      },
+      {
+        "key": "up_blocks.1.attentions.2.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_1_attentions_2_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.3597651720046997,
+          "maximum_finite_value": 5.983551025390625,
+          "absolute_maximum": 5.983551025390625
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_1_attentions_2_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            256,
+            1280
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 327680,
+          "finite": true,
+          "finite_count": 327680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.359375,
+          "maximum_finite_value": 5.984375,
+          "absolute_maximum": 5.984375
+        }
+      },
+      {
+        "key": "up_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_2_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.3723909854888916,
+          "maximum_finite_value": 4.2547831535339355,
+          "absolute_maximum": 4.2547831535339355
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_2_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.373046875,
+          "maximum_finite_value": 4.25390625,
+          "absolute_maximum": 4.25390625
+        }
+      },
+      {
+        "key": "up_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_2_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.7687196731567383,
+          "maximum_finite_value": 4.902545928955078,
+          "absolute_maximum": 4.902545928955078
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_2_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.7685546875,
+          "maximum_finite_value": 4.90234375,
+          "absolute_maximum": 4.90234375
+        }
+      },
+      {
+        "key": "up_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_2_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.846449375152588,
+          "maximum_finite_value": 3.505878448486328,
+          "absolute_maximum": 3.505878448486328
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_2_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.845703125,
+          "maximum_finite_value": 3.505859375,
+          "absolute_maximum": 3.505859375
+        }
+      },
+      {
+        "key": "up_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_2_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.8394153118133545,
+          "maximum_finite_value": 4.847701549530029,
+          "absolute_maximum": 4.847701549530029
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_2_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.83984375,
+          "maximum_finite_value": 4.84765625,
+          "absolute_maximum": 4.84765625
+        }
+      },
+      {
+        "key": "up_blocks.2.attentions.2.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_2_attentions_2_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.2050983905792236,
+          "maximum_finite_value": 3.790419578552246,
+          "absolute_maximum": 3.790419578552246
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_2_attentions_2_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.205078125,
+          "maximum_finite_value": 3.791015625,
+          "absolute_maximum": 3.791015625
+        }
+      },
+      {
+        "key": "up_blocks.2.attentions.2.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_2_attentions_2_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -4.63913631439209,
+          "maximum_finite_value": 3.70062255859375,
+          "absolute_maximum": 4.63913631439209
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_2_attentions_2_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            1024,
+            640
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 655360,
+          "finite": true,
+          "finite_count": 655360,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -4.640625,
+          "maximum_finite_value": 3.701171875,
+          "absolute_maximum": 4.640625
+        }
+      },
+      {
+        "key": "up_blocks.3.attentions.0.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_3_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.8700263500213623,
+          "maximum_finite_value": 3.9117720127105713,
+          "absolute_maximum": 3.9117720127105713
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_3_attentions_0_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.869140625,
+          "maximum_finite_value": 3.912109375,
+          "absolute_maximum": 3.912109375
+        }
+      },
+      {
+        "key": "up_blocks.3.attentions.0.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_3_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.607335090637207,
+          "maximum_finite_value": 3.242358684539795,
+          "absolute_maximum": 3.242358684539795
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_3_attentions_0_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -1.607421875,
+          "maximum_finite_value": 3.2421875,
+          "absolute_maximum": 3.2421875
+        }
+      },
+      {
+        "key": "up_blocks.3.attentions.1.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_3_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.384229898452759,
+          "maximum_finite_value": 2.961775779724121,
+          "absolute_maximum": 3.384229898452759
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_3_attentions_1_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.384765625,
+          "maximum_finite_value": 2.9609375,
+          "absolute_maximum": 3.384765625
+        }
+      },
+      {
+        "key": "up_blocks.3.attentions.1.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_3_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.5869219303131104,
+          "maximum_finite_value": 1.1509300470352173,
+          "absolute_maximum": 3.5869219303131104
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_3_attentions_1_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -3.587890625,
+          "maximum_finite_value": 1.1513671875,
+          "absolute_maximum": 3.587890625
+        }
+      },
+      {
+        "key": "up_blocks.3.attentions.2.transformer_blocks.0.attn1.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_3_attentions_2_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.90179181098938,
+          "maximum_finite_value": 3.3901264667510986,
+          "absolute_maximum": 3.3901264667510986
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_3_attentions_2_transformer_blocks_0_attn1_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.90234375,
+          "maximum_finite_value": 3.390625,
+          "absolute_maximum": 3.390625
+        }
+      },
+      {
+        "key": "up_blocks.3.attentions.2.transformer_blocks.0.attn2.processor",
+        "fp32": {
+          "name": "reference_cache_fp32_up_blocks_3_attentions_2_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.5126311779022217,
+          "maximum_finite_value": 2.309988021850586,
+          "absolute_maximum": 2.5126311779022217
+        },
+        "fp16": {
+          "name": "reference_cache_fp16_up_blocks_3_attentions_2_transformer_blocks_0_attn2_processor",
+          "shape": [
+            1,
+            4096,
+            320
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1310720,
+          "finite": true,
+          "finite_count": 1310720,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -2.51171875,
+          "maximum_finite_value": 2.310546875,
+          "absolute_maximum": 2.51171875
+        }
+      }
+    ],
+    "temporary_fp32_released": true
+  },
+  "condition_encoder_fp32": {
+    "mode": "FP32_COND_ENCODER_RESIDUALS_CAST_TO_FP16",
+    "requested_residual_dtype": "float16",
+    "control_feature": {
+      "name": "control_feature",
+      "shape": [
+        6,
+        6,
+        384,
+        384
+      ],
+      "dtype": "float16",
+      "device": "cuda:0",
+      "numel": 5308416,
+      "finite": true,
+      "finite_count": 5308416,
+      "nan_count": 0,
+      "positive_inf_count": 0,
+      "negative_inf_count": 0,
+      "minimum_finite_value": 0.0,
+      "maximum_finite_value": 1.0,
+      "absolute_maximum": 1.0
+    },
+    "entries": [
+      {
+        "index": 0,
+        "fp32": {
+          "name": "condition_residual_fp32_0",
+          "shape": [
+            6,
+            320,
+            48,
+            48
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 4423680,
+          "finite": true,
+          "finite_count": 4423680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -7.057712078094482,
+          "maximum_finite_value": 5.926326751708984,
+          "absolute_maximum": 7.057712078094482
+        },
+        "fp16": {
+          "name": "condition_residual_fp16_0",
+          "shape": [
+            6,
+            320,
+            48,
+            48
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 4423680,
+          "finite": true,
+          "finite_count": 4423680,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -7.05859375,
+          "maximum_finite_value": 5.92578125,
+          "absolute_maximum": 7.05859375
+        }
+      },
+      {
+        "index": 1,
+        "fp32": {
+          "name": "condition_residual_fp32_1",
+          "shape": [
+            6,
+            640,
+            24,
+            24
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 2211840,
+          "finite": true,
+          "finite_count": 2211840,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -7.126107692718506,
+          "maximum_finite_value": 7.608847141265869,
+          "absolute_maximum": 7.608847141265869
+        },
+        "fp16": {
+          "name": "condition_residual_fp16_1",
+          "shape": [
+            6,
+            640,
+            24,
+            24
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 2211840,
+          "finite": true,
+          "finite_count": 2211840,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -7.125,
+          "maximum_finite_value": 7.609375,
+          "absolute_maximum": 7.609375
+        }
+      },
+      {
+        "index": 2,
+        "fp32": {
+          "name": "condition_residual_fp32_2",
+          "shape": [
+            6,
+            1280,
+            12,
+            12
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 1105920,
+          "finite": true,
+          "finite_count": 1105920,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -11.374488830566406,
+          "maximum_finite_value": 10.82889461517334,
+          "absolute_maximum": 11.374488830566406
+        },
+        "fp16": {
+          "name": "condition_residual_fp16_2",
+          "shape": [
+            6,
+            1280,
+            12,
+            12
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 1105920,
+          "finite": true,
+          "finite_count": 1105920,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -11.375,
+          "maximum_finite_value": 10.828125,
+          "absolute_maximum": 11.375
+        }
+      },
+      {
+        "index": 3,
+        "fp32": {
+          "name": "condition_residual_fp32_3",
+          "shape": [
+            6,
+            1280,
+            6,
+            6
+          ],
+          "dtype": "float32",
+          "device": "cuda:0",
+          "numel": 276480,
+          "finite": true,
+          "finite_count": 276480,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -22.860883712768555,
+          "maximum_finite_value": 22.340059280395508,
+          "absolute_maximum": 22.860883712768555
+        },
+        "fp16": {
+          "name": "condition_residual_fp16_3",
+          "shape": [
+            6,
+            1280,
+            6,
+            6
+          ],
+          "dtype": "float16",
+          "device": "cuda:0",
+          "numel": 276480,
+          "finite": true,
+          "finite_count": 276480,
+          "nan_count": 0,
+          "positive_inf_count": 0,
+          "negative_inf_count": 0,
+          "minimum_finite_value": -22.859375,
+          "maximum_finite_value": 22.34375,
+          "absolute_maximum": 22.859375
+        }
+      }
+    ],
+    "output_count": 4,
+    "output_dtype": "float16",
+    "output_device": "cuda:0",
+    "encoder_restored_dtype": "float16",
+    "temporary_fp32_released": true
+  },
+  "offload": {
+    "offload_mode": "SEQUENTIAL",
+    "vae_slicing": "ENABLED",
+    "attention_slicing": "DISABLED",
+    "device": "cuda"
+  },
+  "offload_hooks": {
+    "vae": {
+      "hook_installed": true,
+      "hook_class": "AlignDevicesHook",
+      "submodule_hook_count": 125,
+      "execution_devices": [
+        "cuda:0"
+      ],
+      "at_rest_devices": [
+        "meta"
+      ],
+      "resident_on_cuda": false
+    },
+    "text_encoder": {
+      "hook_installed": true,
+      "hook_class": "AlignDevicesHook",
+      "submodule_hook_count": 189,
+      "execution_devices": [
+        "cuda:0"
+      ],
+      "at_rest_devices": [
+        "meta"
+      ],
+      "resident_on_cuda": false
+    },
+    "unet": {
+      "hook_installed": true,
+      "hook_class": "AlignDevicesHook",
+      "submodule_hook_count": 520,
+      "execution_devices": [
+        "cuda:0"
+      ],
+      "at_rest_devices": [
+        "meta"
+      ],
+      "resident_on_cuda": false
+    },
+    "cond_encoder": {
+      "hook_installed": true,
+      "hook_class": "AlignDevicesHook",
+      "submodule_hook_count": 20,
+      "execution_devices": [
+        "cuda:0"
+      ],
+      "at_rest_devices": [
+        "meta"
+      ],
+      "resident_on_cuda": false
+    }
+  },
+  "device_path_smoke_test": {
+    "mode": "FP32_CONDITION_RESIDUAL_PRECOMPUTE",
+    "passed": true,
+    "cond_encoder_output_level_count": 4,
+    "cond_encoder_output_finite": true,
+    "cond_encoder_resident_on_cuda_after": false,
+    "cuda_memory_released": true,
+    "unet_denoising_called": false,
+    "reference_unet_pass_called": false,
+    "scheduler_step_called": false,
+    "vae_decode_called": false,
+    "output_images": 0,
+    "gpu_sequence_consumed": false,
+    "condition_encoder_fp32": {
+      "mode": "FP32_COND_ENCODER_RESIDUALS_CAST_TO_FP16",
+      "requested_residual_dtype": "float16",
+      "control_feature": {
+        "name": "control_feature",
+        "shape": [
+          6,
+          6,
+          384,
+          384
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5308416,
+        "finite": true,
+        "finite_count": 5308416,
+        "nan_count": 0,
+        "positive_inf_count": 0,
+        "negative_inf_count": 0,
+        "minimum_finite_value": 0.0,
+        "maximum_finite_value": 1.0,
+        "absolute_maximum": 1.0
+      },
+      "entries": [
+        {
+          "index": 0,
+          "fp32": {
+            "name": "condition_residual_fp32_0",
+            "shape": [
+              6,
+              320,
+              48,
+              48
+            ],
+            "dtype": "float32",
+            "device": "cuda:0",
+            "numel": 4423680,
+            "finite": true,
+            "finite_count": 4423680,
+            "nan_count": 0,
+            "positive_inf_count": 0,
+            "negative_inf_count": 0,
+            "minimum_finite_value": -7.057712078094482,
+            "maximum_finite_value": 5.926326751708984,
+            "absolute_maximum": 7.057712078094482
+          },
+          "fp16": {
+            "name": "condition_residual_fp16_0",
+            "shape": [
+              6,
+              320,
+              48,
+              48
+            ],
+            "dtype": "float16",
+            "device": "cuda:0",
+            "numel": 4423680,
+            "finite": true,
+            "finite_count": 4423680,
+            "nan_count": 0,
+            "positive_inf_count": 0,
+            "negative_inf_count": 0,
+            "minimum_finite_value": -7.05859375,
+            "maximum_finite_value": 5.92578125,
+            "absolute_maximum": 7.05859375
+          }
+        },
+        {
+          "index": 1,
+          "fp32": {
+            "name": "condition_residual_fp32_1",
+            "shape": [
+              6,
+              640,
+              24,
+              24
+            ],
+            "dtype": "float32",
+            "device": "cuda:0",
+            "numel": 2211840,
+            "finite": true,
+            "finite_count": 2211840,
+            "nan_count": 0,
+            "positive_inf_count": 0,
+            "negative_inf_count": 0,
+            "minimum_finite_value": -7.126107692718506,
+            "maximum_finite_value": 7.608847141265869,
+            "absolute_maximum": 7.608847141265869
+          },
+          "fp16": {
+            "name": "condition_residual_fp16_1",
+            "shape": [
+              6,
+              640,
+              24,
+              24
+            ],
+            "dtype": "float16",
+            "device": "cuda:0",
+            "numel": 2211840,
+            "finite": true,
+            "finite_count": 2211840,
+            "nan_count": 0,
+            "positive_inf_count": 0,
+            "negative_inf_count": 0,
+            "minimum_finite_value": -7.125,
+            "maximum_finite_value": 7.609375,
+            "absolute_maximum": 7.609375
+          }
+        },
+        {
+          "index": 2,
+          "fp32": {
+            "name": "condition_residual_fp32_2",
+            "shape": [
+              6,
+              1280,
+              12,
+              12
+            ],
+            "dtype": "float32",
+            "device": "cuda:0",
+            "numel": 1105920,
+            "finite": true,
+            "finite_count": 1105920,
+            "nan_count": 0,
+            "positive_inf_count": 0,
+            "negative_inf_count": 0,
+            "minimum_finite_value": -11.374488830566406,
+            "maximum_finite_value": 10.82889461517334,
+            "absolute_maximum": 11.374488830566406
+          },
+          "fp16": {
+            "name": "condition_residual_fp16_2",
+            "shape": [
+              6,
+              1280,
+              12,
+              12
+            ],
+            "dtype": "float16",
+            "device": "cuda:0",
+            "numel": 1105920,
+            "finite": true,
+            "finite_count": 1105920,
+            "nan_count": 0,
+            "positive_inf_count": 0,
+            "negative_inf_count": 0,
+            "minimum_finite_value": -11.375,
+            "maximum_finite_value": 10.828125,
+            "absolute_maximum": 11.375
+          }
+        },
+        {
+          "index": 3,
+          "fp32": {
+            "name": "condition_residual_fp32_3",
+            "shape": [
+              6,
+              1280,
+              6,
+              6
+            ],
+            "dtype": "float32",
+            "device": "cuda:0",
+            "numel": 276480,
+            "finite": true,
+            "finite_count": 276480,
+            "nan_count": 0,
+            "positive_inf_count": 0,
+            "negative_inf_count": 0,
+            "minimum_finite_value": -22.860883712768555,
+            "maximum_finite_value": 22.340059280395508,
+            "absolute_maximum": 22.860883712768555
+          },
+          "fp16": {
+            "name": "condition_residual_fp16_3",
+            "shape": [
+              6,
+              1280,
+              6,
+              6
+            ],
+            "dtype": "float16",
+            "device": "cuda:0",
+            "numel": 276480,
+            "finite": true,
+            "finite_count": 276480,
+            "nan_count": 0,
+            "positive_inf_count": 0,
+            "negative_inf_count": 0,
+            "minimum_finite_value": -22.859375,
+            "maximum_finite_value": 22.34375,
+            "absolute_maximum": 22.859375
+          }
+        }
+      ],
+      "output_count": 4,
+      "output_dtype": "float16",
+      "output_device": "cuda:0",
+      "encoder_restored_dtype": "float16",
+      "temporary_fp32_released": true
+    }
+  },
+  "reference_unet_dtype_smoke": {
+    "passed": true,
+    "resolution": 64,
+    "rowcol_processor_active": true,
+    "cache_hidden_states_enabled": true,
+    "reference_unet_forward_count": 1,
+    "denoising_steps": 0,
+    "vae_decode": false,
+    "output_images": 0,
+    "gpu_sequence_consumed": false,
+    "reference_cache_summary": {
+      "name": "reference_cache",
+      "tensor_count": 32,
+      "total_bytes": 721920,
+      "dtypes": [
+        "float16"
+      ],
+      "devices": [
+        "cuda:0"
+      ]
+    },
+    "tensor_inventory": [
+      {
+        "name": "prompt_embeddings",
+        "shape": [
+          1,
+          77,
+          1024
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 78848
+      },
+      {
+        "name": "reference_image_tensor",
+        "shape": [
+          1,
+          3,
+          64,
+          64
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 12288
+      },
+      {
+        "name": "reference_latents",
+        "shape": [
+          1,
+          4,
+          8,
+          8
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 256
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.0.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.0.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.0.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.0.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.down_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.mid_block.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          1,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 1280
+      },
+      {
+        "name": "cached_reference_hidden_states.mid_block.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          1,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 1280
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.2.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.1.attentions.2.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          4,
+          1280
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 5120
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.2.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.2.attentions.2.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          16,
+          640
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 10240
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.0.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.0.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.1.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.1.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.2.transformer_blocks.0.attn1.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      },
+      {
+        "name": "cached_reference_hidden_states.up_blocks.3.attentions.2.transformer_blocks.0.attn2.processor",
+        "shape": [
+          1,
+          64,
+          320
+        ],
+        "dtype": "float16",
+        "device": "cuda:0",
+        "numel": 20480
+      }
+    ]
+  },
+  "reference_cache_summary": {
+    "name": "reference_cache",
+    "tensor_count": 32,
+    "total_bytes": 721920,
+    "dtypes": [
+      "float16"
+    ],
+    "devices": [
+      "cuda:0"
+    ]
+  },
+  "offload_hooks_after_smoke": {
+    "vae": {
+      "hook_installed": true,
+      "hook_class": "AlignDevicesHook",
+      "submodule_hook_count": 125,
+      "execution_devices": [
+        "cuda:0"
+      ],
+      "at_rest_devices": [
+        "meta"
+      ],
+      "resident_on_cuda": false
+    },
+    "text_encoder": {
+      "hook_installed": true,
+      "hook_class": "AlignDevicesHook",
+      "submodule_hook_count": 189,
+      "execution_devices": [
+        "cuda:0"
+      ],
+      "at_rest_devices": [
+        "meta"
+      ],
+      "resident_on_cuda": false
+    },
+    "unet": {
+      "hook_installed": true,
+      "hook_class": "AlignDevicesHook",
+      "submodule_hook_count": 520,
+      "execution_devices": [
+        "cuda:0"
+      ],
+      "at_rest_devices": [
+        "meta"
+      ],
+      "resident_on_cuda": false
+    },
+    "cond_encoder": {
+      "hook_installed": true,
+      "hook_class": "AlignDevicesHook",
+      "submodule_hook_count": 20,
+      "execution_devices": [
+        "cuda:0"
+      ],
+      "at_rest_devices": [
+        "meta"
+      ],
+      "resident_on_cuda": false
+    }
+  },
+  "latent_telemetry_dir": "evidence\\compare\\panda_sixview_384\\latent_telemetry",
+  "boundary_telemetry_installed": true,
+  "memory_before_denoising": {
+    "available": true,
+    "total_mb": 6144,
+    "free_mb": 4512,
+    "active_processes": [],
+    "name": "NVIDIA GeForce GTX 1660 SUPER",
+    "ignored_graphics_processes": [
+      {
+        "pid": "26924",
+        "name": "C:\\Windows\\System32\\ShellHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "6836",
+        "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "27180",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "25240",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "15376",
+        "name": "C:\\Users\\Lauri\\AppData\\Roaming\\uv\\python\\cpython-3.11.15-windows-x86_64-none\\python.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "12372",
+        "name": "[Insufficient Permissions]",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "33768",
+        "name": "C:\\Windows\\explorer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "28656",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "16236",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "32624",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "48004",
+        "name": "C:\\Windows\\explorer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "8336",
+        "name": "C:\\Windows\\explorer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "32140",
+        "name": "C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "47888",
+        "name": "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "11760",
+        "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "4740",
+        "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "47680",
+        "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "48800",
+        "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "49040",
+        "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "54656",
+        "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "33416",
+        "name": "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.730.8199.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "38388",
+        "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "26984",
+        "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "27712",
+        "name": "C:\\Program Files\\Traycer\\Traycer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "3456",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "35200",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "51988",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "36092",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "37352",
+        "name": "[Insufficient Permissions]",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "39736",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "13036",
+        "name": "C:\\AI\\HY3D2\\python_standalone\\python.exe",
+        "used_mb": "[N/A]"
+      }
+    ],
+    "allocated_mb": 80.421,
+    "reserved_mb": 380.0,
+    "max_memory_allocated_mb": 80.421,
+    "max_memory_reserved_mb": 380.0
+  },
+  "boundary_telemetry": {
+    "prepare_latents_calls": 1,
+    "vae_decode_calls": 1
+  },
+  "decoded_image_gate": {
+    "schema": "lowvram3d_mvadapter_decoded_image_gate_v1",
+    "image_count": 6,
+    "views": [
+      {
+        "index": 0,
+        "finite": true,
+        "mean": 85.206787,
+        "std": 32.459633,
+        "non_black": true,
+        "non_flat": true
+      },
+      {
+        "index": 1,
+        "finite": true,
+        "mean": 75.789238,
+        "std": 30.434774,
+        "non_black": true,
+        "non_flat": true
+      },
+      {
+        "index": 2,
+        "finite": true,
+        "mean": 82.443985,
+        "std": 30.310802,
+        "non_black": true,
+        "non_flat": true
+      },
+      {
+        "index": 3,
+        "finite": true,
+        "mean": 94.523277,
+        "std": 29.141439,
+        "non_black": true,
+        "non_flat": true
+      },
+      {
+        "index": 4,
+        "finite": true,
+        "mean": 107.26873,
+        "std": 24.186705,
+        "non_black": true,
+        "non_flat": true
+      },
+      {
+        "index": 5,
+        "finite": true,
+        "mean": 90.064766,
+        "std": 26.059063,
+        "non_black": true,
+        "non_flat": true
+      }
+    ],
+    "distinct_image_hashes": 6,
+    "all_views_identical": false,
+    "vae_output_finite": true,
+    "all_non_black": true,
+    "all_non_flat": true,
+    "passed": true
+  },
+  "latent_telemetry": {
+    "schema": "mvadapter_latent_telemetry_v1",
+    "checkpoint_count": 39,
+    "step_count": 20,
+    "step_hashes_all_distinct": true,
+    "violations": [],
+    "first_failure": null,
+    "first_nonfinite": null,
+    "first_unexpected_flat": null,
+    "probe_summary": null,
+    "chronological_record_count": 59,
+    "chronological_records": [
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_latent",
+        "stage": "reference",
+        "sequence": 1,
+        "timestamp": 1785998792.4426112,
+        "chronological_sequence": 1
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_prompt_embeddings",
+        "stage": "reference",
+        "sequence": 2,
+        "timestamp": 1785998794.4908314,
+        "chronological_sequence": 2
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.0.attentions.0.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 3,
+        "timestamp": 1785998794.5105438,
+        "chronological_sequence": 3
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.0.attentions.0.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 4,
+        "timestamp": 1785998794.5288439,
+        "chronological_sequence": 4
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.0.attentions.1.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 5,
+        "timestamp": 1785998794.5483928,
+        "chronological_sequence": 5
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.0.attentions.1.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 6,
+        "timestamp": 1785998794.566012,
+        "chronological_sequence": 6
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 7,
+        "timestamp": 1785998794.5770407,
+        "chronological_sequence": 7
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 8,
+        "timestamp": 1785998794.591079,
+        "chronological_sequence": 8
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 9,
+        "timestamp": 1785998794.6036823,
+        "chronological_sequence": 9
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 10,
+        "timestamp": 1785998794.617565,
+        "chronological_sequence": 10
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 11,
+        "timestamp": 1785998794.6281207,
+        "chronological_sequence": 11
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 12,
+        "timestamp": 1785998794.64264,
+        "chronological_sequence": 12
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 13,
+        "timestamp": 1785998794.6553574,
+        "chronological_sequence": 13
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.down_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 14,
+        "timestamp": 1785998794.6658726,
+        "chronological_sequence": 14
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.mid_block.attentions.0.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 15,
+        "timestamp": 1785998794.6733887,
+        "chronological_sequence": 15
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.mid_block.attentions.0.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 16,
+        "timestamp": 1785998794.679428,
+        "chronological_sequence": 16
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.1.attentions.0.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 17,
+        "timestamp": 1785998794.6905308,
+        "chronological_sequence": 17
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.1.attentions.0.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 18,
+        "timestamp": 1785998794.7025635,
+        "chronological_sequence": 18
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.1.attentions.1.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 19,
+        "timestamp": 1785998794.7116,
+        "chronological_sequence": 19
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.1.attentions.1.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 20,
+        "timestamp": 1785998794.7231662,
+        "chronological_sequence": 20
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.1.attentions.2.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 21,
+        "timestamp": 1785998794.7331972,
+        "chronological_sequence": 21
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.1.attentions.2.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 22,
+        "timestamp": 1785998794.747245,
+        "chronological_sequence": 22
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.2.attentions.0.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 23,
+        "timestamp": 1785998794.7602763,
+        "chronological_sequence": 23
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.2.attentions.0.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 24,
+        "timestamp": 1785998794.7753072,
+        "chronological_sequence": 24
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.2.attentions.1.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 25,
+        "timestamp": 1785998794.7858222,
+        "chronological_sequence": 25
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.2.attentions.1.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 26,
+        "timestamp": 1785998794.7983747,
+        "chronological_sequence": 26
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.2.attentions.2.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 27,
+        "timestamp": 1785998794.8098996,
+        "chronological_sequence": 27
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.2.attentions.2.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 28,
+        "timestamp": 1785998794.8224623,
+        "chronological_sequence": 28
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.3.attentions.0.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 29,
+        "timestamp": 1785998794.8405228,
+        "chronological_sequence": 29
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.3.attentions.0.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 30,
+        "timestamp": 1785998794.861096,
+        "chronological_sequence": 30
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.3.attentions.1.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 31,
+        "timestamp": 1785998794.87913,
+        "chronological_sequence": 31
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.3.attentions.1.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 32,
+        "timestamp": 1785998794.8981988,
+        "chronological_sequence": 32
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.3.attentions.2.transformer_blocks.0.attn1.processor",
+        "stage": "reference_cache",
+        "sequence": 33,
+        "timestamp": 1785998794.913208,
+        "chronological_sequence": 33
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "reference_cache.up_blocks.3.attentions.2.transformer_blocks.0.attn2.processor",
+        "stage": "reference_cache",
+        "sequence": 34,
+        "timestamp": 1785998794.9301245,
+        "chronological_sequence": 34
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "initial_latent",
+        "stage": null,
+        "sequence": 35,
+        "timestamp": 1785998795.5420835,
+        "chronological_sequence": 35
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step01",
+        "stage": "denoising_step",
+        "sequence": 36,
+        "timestamp": 1785998805.24051,
+        "chronological_sequence": 36
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step02",
+        "stage": "denoising_step",
+        "sequence": 37,
+        "timestamp": 1785998814.8736663,
+        "chronological_sequence": 37
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step03",
+        "stage": "denoising_step",
+        "sequence": 38,
+        "timestamp": 1785998823.7511678,
+        "chronological_sequence": 38
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step04",
+        "stage": "denoising_step",
+        "sequence": 39,
+        "timestamp": 1785998832.2357864,
+        "chronological_sequence": 39
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step05",
+        "stage": "denoising_step",
+        "sequence": 40,
+        "timestamp": 1785998842.1458936,
+        "chronological_sequence": 40
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step06",
+        "stage": "denoising_step",
+        "sequence": 41,
+        "timestamp": 1785998853.11173,
+        "chronological_sequence": 41
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step07",
+        "stage": "denoising_step",
+        "sequence": 42,
+        "timestamp": 1785998863.5288115,
+        "chronological_sequence": 42
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step08",
+        "stage": "denoising_step",
+        "sequence": 43,
+        "timestamp": 1785998874.644244,
+        "chronological_sequence": 43
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step09",
+        "stage": "denoising_step",
+        "sequence": 44,
+        "timestamp": 1785998884.3975587,
+        "chronological_sequence": 44
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step10",
+        "stage": "denoising_step",
+        "sequence": 45,
+        "timestamp": 1785998893.2439544,
+        "chronological_sequence": 45
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step11",
+        "stage": "denoising_step",
+        "sequence": 46,
+        "timestamp": 1785998902.698878,
+        "chronological_sequence": 46
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step12",
+        "stage": "denoising_step",
+        "sequence": 47,
+        "timestamp": 1785998911.9880438,
+        "chronological_sequence": 47
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step13",
+        "stage": "denoising_step",
+        "sequence": 48,
+        "timestamp": 1785998921.2597055,
+        "chronological_sequence": 48
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step14",
+        "stage": "denoising_step",
+        "sequence": 49,
+        "timestamp": 1785998931.0775447,
+        "chronological_sequence": 49
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step15",
+        "stage": "denoising_step",
+        "sequence": 50,
+        "timestamp": 1785998940.8911686,
+        "chronological_sequence": 50
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step16",
+        "stage": "denoising_step",
+        "sequence": 51,
+        "timestamp": 1785998950.9056633,
+        "chronological_sequence": 51
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step17",
+        "stage": "denoising_step",
+        "sequence": 52,
+        "timestamp": 1785998960.7873275,
+        "chronological_sequence": 52
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step18",
+        "stage": "denoising_step",
+        "sequence": 53,
+        "timestamp": 1785998970.8623786,
+        "chronological_sequence": 53
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step19",
+        "stage": "denoising_step",
+        "sequence": 54,
+        "timestamp": 1785998980.8165944,
+        "chronological_sequence": 54
+      },
+      {
+        "source": "telemetry",
+        "kind": "step",
+        "checkpoint": "step20",
+        "stage": "denoising_step",
+        "sequence": 55,
+        "timestamp": 1785998990.8517683,
+        "chronological_sequence": 55
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "final_latent_before_vae_scaling",
+        "stage": null,
+        "sequence": 56,
+        "timestamp": 1785998990.9627109,
+        "chronological_sequence": 56
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "latents_after_vae_scaling",
+        "stage": null,
+        "sequence": 57,
+        "timestamp": 1785998991.009901,
+        "chronological_sequence": 57
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "raw_vae_decoded_tensor",
+        "stage": null,
+        "sequence": 58,
+        "timestamp": 1785999000.2276297,
+        "chronological_sequence": 58
+      },
+      {
+        "source": "telemetry",
+        "kind": "checkpoint",
+        "checkpoint": "final_postprocessed_image_tensor",
+        "stage": null,
+        "sequence": 59,
+        "timestamp": 1785999001.5809488,
+        "chronological_sequence": 59
+      }
+    ],
+    "clean": true
+  },
+  "view_semantics": [
+    "front",
+    "right",
+    "rear",
+    "left",
+    "top",
+    "bottom"
+  ],
+  "contact_sheet": "evidence\\compare\\panda_sixview_384\\six_view_contact_sheet.png",
+  "qa": {
+    "schema": "lowvram3d_mvadapter_six_view_qa_v1",
+    "views": [
+      {
+        "index": 0,
+        "name": "front",
+        "dimensions": [
+          384,
+          384
+        ],
+        "foreground_coverage": 0.429891,
+        "direct_iou": 0.93704,
+        "registered_iou": 0.93704,
+        "registration": {
+          "scale": 1.0,
+          "dx": 0,
+          "dy": 0
+        },
+        "clipping_fraction": 0.0,
+        "color": {
+          "foreground_saturation": 0.10092,
+          "foreground_luminance": 0.391497,
+          "black_clipping_fraction": 0.000268,
+          "white_clipping_fraction": 0.000363,
+          "channel_std": 0.17853
+        },
+        "passed_generation_reference_gate": true
+      },
+      {
+        "index": 1,
+        "name": "right",
+        "dimensions": [
+          384,
+          384
+        ],
+        "foreground_coverage": 0.416782,
+        "direct_iou": 0.956918,
+        "registered_iou": 0.956918,
+        "registration": {
+          "scale": 1.0,
+          "dx": 0,
+          "dy": 0
+        },
+        "clipping_fraction": 0.0,
+        "color": {
+          "foreground_saturation": 0.143637,
+          "foreground_luminance": 0.306912,
+          "black_clipping_fraction": 0.000765,
+          "white_clipping_fraction": 0.000114,
+          "channel_std": 0.17498
+        },
+        "passed_generation_reference_gate": true
+      },
+      {
+        "index": 2,
+        "name": "rear",
+        "dimensions": [
+          384,
+          384
+        ],
+        "foreground_coverage": 0.439202,
+        "direct_iou": 0.960412,
+        "registered_iou": 0.960412,
+        "registration": {
+          "scale": 1.0,
+          "dx": 0,
+          "dy": 0
+        },
+        "clipping_fraction": 0.0,
+        "color": {
+          "foreground_saturation": 0.113122,
+          "foreground_luminance": 0.293312,
+          "black_clipping_fraction": 0.000247,
+          "white_clipping_fraction": 0.000417,
+          "channel_std": 0.165186
+        },
+        "passed_generation_reference_gate": true
+      },
+      {
+        "index": 3,
+        "name": "left",
+        "dimensions": [
+          384,
+          384
+        ],
+        "foreground_coverage": 0.414503,
+        "direct_iou": 0.948701,
+        "registered_iou": 0.948701,
+        "registration": {
+          "scale": 1.0,
+          "dx": 0,
+          "dy": 0
+        },
+        "clipping_fraction": 0.0,
+        "color": {
+          "foreground_saturation": 0.109204,
+          "foreground_luminance": 0.396057,
+          "black_clipping_fraction": 8.2e-05,
+          "white_clipping_fraction": 0.000736,
+          "channel_std": 0.17033
+        },
+        "passed_generation_reference_gate": true
+      },
+      {
+        "index": 4,
+        "name": "top",
+        "dimensions": [
+          384,
+          384
+        ],
+        "foreground_coverage": 0.301927,
+        "direct_iou": 0.976306,
+        "registered_iou": 0.976306,
+        "registration": {
+          "scale": 1.0,
+          "dx": 0,
+          "dy": 0
+        },
+        "clipping_fraction": 0.0,
+        "color": {
+          "foreground_saturation": 0.160591,
+          "foreground_luminance": 0.497247,
+          "black_clipping_fraction": 0.0,
+          "white_clipping_fraction": 0.0,
+          "channel_std": 0.140195
+        },
+        "passed_generation_reference_gate": true
+      },
+      {
+        "index": 5,
+        "name": "bottom",
+        "dimensions": [
+          384,
+          384
+        ],
+        "foreground_coverage": 0.304552,
+        "direct_iou": 0.967221,
+        "registered_iou": 0.967221,
+        "registration": {
+          "scale": 1.0,
+          "dx": 0,
+          "dy": 0
+        },
+        "clipping_fraction": 0.0,
+        "color": {
+          "foreground_saturation": 0.10095,
+          "foreground_luminance": 0.26515,
+          "black_clipping_fraction": 0.000289,
+          "white_clipping_fraction": 8.9e-05,
+          "channel_std": 0.137675
+        },
+        "passed_generation_reference_gate": true
+      }
+    ],
+    "front_rear_direct_correlation": 0.081046,
+    "front_rear_mirrored_correlation": 0.242117,
+    "rear_numeric_gate_passed": true,
+    "structural_gate_passed": true,
+    "colour_gate_passed": true,
+    "semantic_gate": "PROVEN",
+    "semantic_gate_passed": true,
+    "rear_semantic_visual_review_required": true,
+    "passed": true
+  },
+  "status": "PROVEN",
+  "memory_after": {
+    "available": true,
+    "total_mb": 6144,
+    "free_mb": 4459,
+    "active_processes": [],
+    "name": "NVIDIA GeForce GTX 1660 SUPER",
+    "ignored_graphics_processes": [
+      {
+        "pid": "26924",
+        "name": "C:\\Windows\\System32\\ShellHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "6836",
+        "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "27180",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "25240",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.ScreenSketch_11.2602.49.0_x64__8wekyb3d8bbwe\\SnippingTool\\SnippingTool.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "15376",
+        "name": "C:\\Users\\Lauri\\AppData\\Roaming\\uv\\python\\cpython-3.11.15-windows-x86_64-none\\python.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "12372",
+        "name": "[Insufficient Permissions]",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "33768",
+        "name": "C:\\Windows\\explorer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "28656",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "16236",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "32624",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Paint_11.2605.71.0_x64__8wekyb3d8bbwe\\PaintApp\\mspaint.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "48004",
+        "name": "C:\\Windows\\explorer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "8336",
+        "name": "C:\\Windows\\explorer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "32140",
+        "name": "C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "47888",
+        "name": "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "11760",
+        "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "4740",
+        "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "47680",
+        "name": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "48800",
+        "name": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\151.0.4129.59\\msedgewebview2.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "49040",
+        "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "54656",
+        "name": "C:\\Users\\Lauri\\AppData\\Local\\AnthropicClaude\\app-1.25927.0\\claude.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "33416",
+        "name": "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.730.8199.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "38388",
+        "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "26984",
+        "name": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "27712",
+        "name": "C:\\Program Files\\Traycer\\Traycer.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "3456",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "35200",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "51988",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "36092",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "37352",
+        "name": "[Insufficient Permissions]",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "39736",
+        "name": "C:\\Program Files\\WindowsApps\\Microsoft.Windows.Photos_2026.11060.2004.0_x64__8wekyb3d8bbwe\\Photos.exe",
+        "used_mb": "[N/A]"
+      },
+      {
+        "pid": "13036",
+        "name": "C:\\AI\\HY3D2\\python_standalone\\python.exe",
+        "used_mb": "[N/A]"
+      }
+    ],
+    "allocated_mb": 80.358,
+    "reserved_mb": 390.0,
+    "max_memory_allocated_mb": 2359.235,
+    "max_memory_reserved_mb": 2404.0
+  },
+  "system_after": {
+    "ram_total_mb": 15709.707,
+    "ram_available_mb": 1593.582,
+    "pagefile_total_mb": 32768.0,
+    "pagefile_free_mb": 29614.855,
+    "pid": 13036
+  },
+  "output_count": 6,
+  "wall_seconds": 286.356
+}

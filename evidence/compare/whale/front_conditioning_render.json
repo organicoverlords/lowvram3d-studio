@@ -1,0 +1,15 @@
+{
+  "schema_version": "render_view_from_controls_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\whale_front_zup.glb",
+  "atlas": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\front_texture\\basecolor.png",
+  "controls": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\controls_384_audited",
+  "view": "front",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\front_conditioning_render.png",
+  "size": [
+    384,
+    384
+  ],
+  "covered_pixels": 31537,
+  "coverage": 0.213874,
+  "note": "silhouette is the control's own coverage, so conditioning IoU against this view is 1.0 by construction"
+}

@@ -1,0 +1,145 @@
+{
+  "schema": "fast_texture_projection_v1",
+  "backend": "numpy_vectorised_rasteriser",
+  "blender_used": false,
+  "scene_ray_cast_calls": 0,
+  "bpy_pixel_accesses": 0,
+  "mesh": "evidence/compare/shaman/shaman_mt_uv.glb",
+  "mesh_sha256": "6859a35b4aaef959f154a6d3167ee2d5d24ed769d2c4874f2278f59530c542dc",
+  "source_image": "evidence/compare/shaman/shaman4k_2048.png",
+  "source_image_sha256": "a68356ec813603bbde8ad2cffaa1820d870ff227745a5093a3494f0812546e2d",
+  "alpha_mask_sha256": "3d00a85b5acc0f3807809d1cf75dc887f45acb0c4d9aadd387d89dcb36bc7618",
+  "input_contract": {
+    "schema": "projection_input_contract_v1",
+    "mask_method": "BIREFNET_HARD_MASK",
+    "mask_method_accepted": true,
+    "source_image": "evidence\\compare\\shaman\\shaman4k_2048.png",
+    "source_image_sha256": "a68356ec813603bbde8ad2cffaa1820d870ff227745a5093a3494f0812546e2d",
+    "alpha_mask": "evidence\\compare\\shaman\\shaman4k_2048_alpha.png",
+    "alpha_mask_sha256": "3d00a85b5acc0f3807809d1cf75dc887f45acb0c4d9aadd387d89dcb36bc7618",
+    "normalized_conditioning_image": null,
+    "normalized_conditioning_sha256": null,
+    "original_plate": "evidence\\compare\\shaman\\shaman4k_matte.png",
+    "original_plate_sha256": "f42d44cfcfd2bb299a971de0337f83410a877c5f32c5868b948e4eb2599bf59e",
+    "source_equals_original_plate": false,
+    "source_dimensions": [
+      2048,
+      2048
+    ],
+    "alpha_coverage": 0.266845,
+    "foreground_components": 1,
+    "crop_bounds_x0y0x1y1": [
+      289,
+      75,
+      1759,
+      1971
+    ],
+    "crop_transform": null,
+    "background_treatment": {
+      "estimated_plate_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "plate_like_halo_fraction_at_boundary": 0.003003,
+      "plate_like_fraction_deep_interior": 0.031943,
+      "interior_note": "interior plate-coloured pixels are the lit sign and lamps, not leakage",
+      "tolerance": 0.005
+    },
+    "ground_shadow_remains": false,
+    "ground_shadow_fraction": 0.0,
+    "checkerboard": {
+      "method": "two-tone plate-tile fraction, calibrated against the plate's own background and foreground",
+      "plate_tile_tones": [],
+      "positive_reference_plate_background": 0.0,
+      "negative_reference_plate_foreground": 0.0,
+      "observed_in_sampled_region": 0.0,
+      "decision_midpoint": 0.0,
+      "detected_in_sampled_region": false
+    },
+    "image_mask_agreement_iou": 1.0,
+    "transforms_match": true,
+    "failures": [],
+    "contract_satisfied": true,
+    "classification": "PROJECTION_INPUT_ACCEPTED"
+  },
+  "atlas_size": 2048,
+  "padding_px": 8,
+  "camera": {
+    "yaw": 50.0,
+    "pitch": 25.0,
+    "roll": 0.0,
+    "silhouette_iou": 0.5999,
+    "scale": 878.4013319021356,
+    "offset": [
+      1029.5847318897213,
+      972.3766350338383
+    ],
+    "centre": [
+      0.012943479068150462,
+      -0.08555510565573039,
+      -0.016507021475177717
+    ],
+    "image_size": [
+      2048,
+      2048
+    ]
+  },
+  "triangles": 400000,
+  "vertices": 257585,
+  "atlas": {
+    "owned_texels": 2044363,
+    "owned_fraction": 0.487414,
+    "observed_texels": 274948,
+    "observed_fraction_of_owned": 0.134491,
+    "synthesized_texels": 1769415,
+    "rejected_background_texels": 69195
+  },
+  "gates": {
+    "in_bounds": 2044363,
+    "matte_foreground": 1710817,
+    "front_facing": 934706,
+    "depth_consistent": 386992,
+    "accepted": 274948,
+    "rejected_as_background": 69195,
+    "depth_tolerance": 0.0105712,
+    "front_facing_min": 0.1
+  },
+  "artifacts": {
+    "basecolor": "evidence\\compare\\shaman\\mt_texture\\basecolor.png",
+    "basecolor_sha256": "3ea879b1f900805a05a3b6eee855b5b44d1bda63b6d8041968aa76444c8818f6",
+    "observed_mask": "evidence\\compare\\shaman\\mt_texture\\observed_mask.png",
+    "synthesized_mask": "evidence\\compare\\shaman\\mt_texture\\synthesized_mask.png",
+    "rejected_background_mask": "evidence\\compare\\shaman\\mt_texture\\rejected_background_mask.png",
+    "confidence": "evidence\\compare\\shaman\\mt_texture\\confidence.png",
+    "depth_consistency": "evidence\\compare\\shaman\\mt_texture\\depth_consistency.png",
+    "textured_glb": "evidence\\compare\\shaman\\mt_texture\\textured.glb",
+    "textured_glb_sha256": "9d3d0cb59988cec7e8f61b6309e499cba67c2f08a4b1fe03332e73c00d8c7c0b"
+  },
+  "materials_bound": 1,
+  "immutable_buffers_before": {
+    "position_bytes_sha256": "dd75a9100915eda405844395fa18c9ee06ed5dc0ad46eb4c721f60addc9791af",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "97521f4c507a481d6c35884b4abfa4a7a7aac37c0e7e7fa5e1afabcdf0251c36",
+    "index_bytes_sha256": "d688137973d07d1e8af7910029029f64f0f2175cd05ffb5f4b818fd799c49deb",
+    "geometry_uv_index_sha256": "642f1629db71daf797a98edb935bf9323d23d98a7ef8db74fe5d6cc64937939c"
+  },
+  "immutable_buffers_after": {
+    "position_bytes_sha256": "dd75a9100915eda405844395fa18c9ee06ed5dc0ad46eb4c721f60addc9791af",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "97521f4c507a481d6c35884b4abfa4a7a7aac37c0e7e7fa5e1afabcdf0251c36",
+    "index_bytes_sha256": "d688137973d07d1e8af7910029029f64f0f2175cd05ffb5f4b818fd799c49deb",
+    "geometry_uv_index_sha256": "642f1629db71daf797a98edb935bf9323d23d98a7ef8db74fe5d6cc64937939c"
+  },
+  "geometry_uv_index_preserved": true,
+  "timings_seconds": {
+    "load": 0.289,
+    "camera_fit": 39.036,
+    "depth_buffer": 2.506,
+    "atlas_raster": 1.922,
+    "sampling": 1.235,
+    "fill": 0.428,
+    "write_and_bind": 0.23,
+    "total": 46.413
+  }
+}

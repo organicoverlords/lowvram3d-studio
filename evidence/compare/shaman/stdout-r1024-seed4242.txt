@@ -1,0 +1,106 @@
+[trellis] generating model with seed 4242
+[1/6] preprocess C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803\evidence\compare\shaman\shaman4k_512.png (1024 cascade)
+[2/6] DINOv3 conditioning
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 6143 MiB):
+  Device 0: NVIDIA GeForce GTX 1660 SUPER, compute capability 7.5, VMM: yes, VRAM: 6143 MiB
+      cond tokens=1029 / 1024-cond tokens=4101
+      [stats] cond_512 (DINOv3@512) n=1053696 mean=0.0000 std=1.0000 min=-29.337 max=24.980 nan/inf=0
+      [stats] cond_1024 (DINOv3@1024) n=4199424 mean=-0.0000 std=1.0000 min=-29.332 max=25.003 nan/inf=0
+[3/6] sparse-structure flow + decode
+      [flow] [....................]  0/12    0.0s  starting    
+      [flow] [#...................]  1/12    7.5s  ~83s left   
+      [flow] [###.................]  2/12   15.1s  ~75s left   
+      [flow] [#####...............]  3/12   22.3s  ~67s left   
+      [flow] [######..............]  4/12   29.5s  ~59s left   
+      [flow] [########............]  5/12   36.7s  ~51s left   
+      [flow] [##########..........]  6/12   44.1s  ~44s left   
+      [flow] [###########.........]  7/12   51.4s  ~37s left   
+      [flow] [#############.......]  8/12   58.8s  ~29s left   
+      [flow] [###############.....]  9/12   66.4s  ~22s left   
+      [flow] [################....] 10/12   74.0s  ~15s left   
+      [flow] [##################..] 11/12   77.8s  ~7s left    
+      [flow] [####################] 12/12   81.6s  ~0s left    
+      [flow] 12 steps, 22 forwards, 81.6s
+CUDA error: an illegal memory access was encountered
+  current device: 0, in function ggml_backend_cuda_synchronize at C:\AI\trellis-cpp\thirdparty\ggml\src\ggml-cuda\ggml-cuda.cu:3290
+  cudaStreamSynchronize(cuda_ctx->stream())
+C:\AI\trellis-cpp\thirdparty\ggml\src\ggml-cuda\ggml-cuda.cu:103: CUDA error
+{
+  "schema_version": "trellis_run_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman4k_512.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_r1024.glb",
+  "command": [
+    "C:\\AI\\trellis-cpp\\build-mmq\\Release\\trellis-cli.exe",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman4k_512.png",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_r1024.glb",
+    "--models",
+    "C:\\AI\\trellis-cpp\\models",
+    "--res",
+    "1024",
+    "--atlas",
+    "1024",
+    "--seed",
+    "4242",
+    "--no-fa",
+    "--require-gpu"
+  ],
+  "res": "1024",
+  "atlas": 1024,
+  "seed": 4242,
+  "seconds": 88.7,
+  "latent_size": null,
+  "latent_band": "unknown",
+  "latent_warn": 120000,
+  "latent_abort": 0,
+  "aborted_on_latent": false,
+  "decoded_voxels": null,
+  "decoded_faces": null,
+  "vram_oom_mib": null,
+  "geometry_decoded": false,
+  "tex_res": null,
+  "exit_code": 3221226505,
+  "success": false,
+  "output_bytes": 0,
+  "reference_latents": [
+    [
+      82304,
+      "castle1",
+      "decoded"
+    ],
+    [
+      86784,
+      "boat",
+      "decoded"
+    ],
+    [
+      94528,
+      "castle2",
+      "died stage 5"
+    ],
+    [
+      96448,
+      "castle2",
+      "died stage 5"
+    ],
+    [
+      106496,
+      "castle2",
+      "geometry decoded, died stage 6"
+    ],
+    [
+      111520,
+      "castle2",
+      "full success, 3949828 faces"
+    ],
+    [
+      140480,
+      "red_panda",
+      "died stage 5"
+    ],
+    [
+      191744,
+      "blue_tree",
+      "died stage 5"
+    ]
+  ]
+}

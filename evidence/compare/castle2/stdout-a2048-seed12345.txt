@@ -1,0 +1,123 @@
+[trellis] generating model with seed 12345
+[1/6] preprocess C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803\evidence\compare\castle2\castle2_512.png (512)
+[2/6] DINOv3 conditioning
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 6143 MiB):
+  Device 0: NVIDIA GeForce GTX 1660 SUPER, compute capability 7.5, VMM: yes, VRAM: 6143 MiB
+      cond tokens=1029
+      [stats] cond_512 (DINOv3@512) n=1053696 mean=0.0000 std=1.0000 min=-29.336 max=24.920 nan/inf=0
+[3/6] sparse-structure flow + decode
+      [flow] [....................]  0/12    0.0s  starting    
+      [flow] [#...................]  1/12    7.4s  ~81s left   
+      [flow] [###.................]  2/12   14.6s  ~73s left   
+      [flow] [#####...............]  3/12   21.8s  ~65s left   
+      [flow] [######..............]  4/12   29.0s  ~58s left   
+      [flow] [########............]  5/12   36.3s  ~51s left   
+      [flow] [##########..........]  6/12   43.8s  ~44s left   
+      [flow] [###########.........]  7/12   51.5s  ~37s left   
+      [flow] [#############.......]  8/12   59.2s  ~30s left   
+      [flow] [###############.....]  9/12   66.9s  ~22s left   
+      [flow] [################....] 10/12   74.8s  ~15s left   
+      [flow] [##################..] 11/12   78.7s  ~7s left    
+      [flow] [####################] 12/12   82.6s  ~0s left    
+      [flow] 12 steps, 22 forwards, 82.6s
+      active voxels @res32 = 3372
+[4/7] shape SLAT flow (512)
+      [flow] [....................]  0/12    0.0s  starting    
+      [flow] [#...................]  1/12    6.6s  ~73s left   
+      [flow] [###.................]  2/12   13.2s  ~66s left   
+      [flow] [#####...............]  3/12   19.8s  ~59s left   
+      [flow] [######..............]  4/12   26.4s  ~53s left   
+      [flow] [########............]  5/12   33.1s  ~46s left   
+      [flow] [##########..........]  6/12   39.9s  ~40s left   
+      [flow] [###########.........]  7/12   46.5s  ~33s left   
+      [flow] [#############.......]  8/12   53.2s  ~27s left   
+      [flow] [###############.....]  9/12   56.5s  ~19s left   
+      [flow] [################....] 10/12   59.9s  ~12s left   
+      [flow] [##################..] 11/12   63.2s  ~6s left    
+      [flow] [####################] 12/12   66.6s  ~0s left    
+      [flow] 12 steps, 20 forwards, 66.6s
+      [stats] slat (res32) n=107904 mean=0.2549 std=5.7666 min=-24.458 max=25.978 nan/inf=0
+[5/7] FlexiDualGrid shape decode -> mesh @res512
+ggml_backend_cuda_buffer_type_alloc_buffer: allocating 2285.00 MiB on device 0: cudaMalloc failed: out of memory
+ggml_gallocr_reserve_n_impl: failed to allocate CUDA0 buffer of size 2395994880
+
+TRELLIS_VRAM_OOM at stage 5 (FlexiDualGrid shape decode). No geometry was produced. Asked for 2285 MiB and failed; latent was 107,904 (typical). This is a VRAM failure, not the latent wall -- a smaller latent does not make it go away. Options: close other GPU consumers and retry; --no-texture lowers peak but does not help this stage; simplify or crop the subject.
+{
+  "schema_version": "trellis_run_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2_512.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2_a2048.glb",
+  "command": [
+    "C:\\AI\\trellis-cpp\\build-mmq\\Release\\trellis-cli.exe",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2_512.png",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\castle2\\castle2_a2048.glb",
+    "--models",
+    "C:\\AI\\trellis-cpp\\models",
+    "--res",
+    "512",
+    "--atlas",
+    "2048",
+    "--seed",
+    "12345",
+    "--no-fa",
+    "--require-gpu"
+  ],
+  "res": "512",
+  "atlas": 2048,
+  "seed": 12345,
+  "seconds": 207.8,
+  "latent_size": 107904,
+  "latent_band": "typical",
+  "latent_warn": 120000,
+  "latent_abort": 0,
+  "aborted_on_latent": false,
+  "decoded_voxels": null,
+  "decoded_faces": null,
+  "vram_oom_mib": 2285.0,
+  "geometry_decoded": false,
+  "tex_res": null,
+  "exit_code": 3221226505,
+  "success": false,
+  "output_bytes": 0,
+  "reference_latents": [
+    [
+      82304,
+      "castle1",
+      "decoded"
+    ],
+    [
+      86784,
+      "boat",
+      "decoded"
+    ],
+    [
+      94528,
+      "castle2",
+      "died stage 5"
+    ],
+    [
+      96448,
+      "castle2",
+      "died stage 5"
+    ],
+    [
+      106496,
+      "castle2",
+      "geometry decoded, died stage 6"
+    ],
+    [
+      111520,
+      "castle2",
+      "full success, 3949828 faces"
+    ],
+    [
+      140480,
+      "red_panda",
+      "died stage 5"
+    ],
+    [
+      191744,
+      "blue_tree",
+      "died stage 5"
+    ]
+  ]
+}

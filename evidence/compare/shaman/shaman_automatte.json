@@ -1,0 +1,44 @@
+{
+  "schema_version": "auto_matte_v1",
+  "image": "C:\\Users\\Lauri\\Downloads\\benchmarkpics\\shaman.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_automatte.png",
+  "selection": "measured",
+  "criterion": "largest tolerance whose removed pixels are still smooth; a shadow has no texture and a subject does",
+  "selected_tolerance": 300,
+  "shadow_from": 0.78,
+  "reference_texture_energy": 26.655,
+  "texture_ratio_limit": 1.25,
+  "subject_coverage": 0.3049,
+  "trace": [
+    {
+      "tolerance": 60,
+      "removed_px": 9143,
+      "texture_energy": 26.655,
+      "verdict": "smooth -> shadow"
+    },
+    {
+      "tolerance": 120,
+      "removed_px": 22638,
+      "texture_energy": 15.975,
+      "verdict": "smooth -> shadow"
+    },
+    {
+      "tolerance": 180,
+      "removed_px": 37917,
+      "texture_energy": 16.8,
+      "verdict": "smooth -> shadow"
+    },
+    {
+      "tolerance": 240,
+      "removed_px": 76245,
+      "texture_energy": 20.437,
+      "verdict": "smooth -> shadow"
+    },
+    {
+      "tolerance": 300,
+      "removed_px": 81451,
+      "texture_energy": 19.837,
+      "verdict": "smooth -> shadow"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "atlas_prefer_observed_v1",
+  "multiview": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\mv\\panda_multiview_basecolor.png",
+  "single": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\front_texture\\basecolor.png",
+  "observed_mask": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\front_texture\\observed_mask.png",
+  "atlas": "evidence\\compare\\whale\\whale_final_base.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\whale\\whale_final.glb",
+  "atlas_size": [
+    2048,
+    2048
+  ],
+  "observed_texels": 400659,
+  "observed_fraction": 0.095525,
+  "core_texels_after_erosion": 242806,
+  "fully_single_sourced_texels": 78768,
+  "feather_texels": 6,
+  "erode_texels": 2
+}

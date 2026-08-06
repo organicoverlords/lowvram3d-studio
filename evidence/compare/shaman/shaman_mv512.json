@@ -1,0 +1,168 @@
+{
+  "schema": "multiview_texture_projection_v1",
+  "mesh": "evidence\\compare\\shaman\\shaman_front_zup.glb",
+  "mesh_sha256": "78c35314b87d5031dafee8fb04793e5013bc09c3839c645306d3820c877eccbd",
+  "bundle": "evidence\\compare\\shaman\\controls_512_audited",
+  "views_receipt": "evidence/compare/shaman_sixview_512/views_original_front.json",
+  "raw_to_semantic": null,
+  "atlas": "evidence\\compare\\shaman\\mv512\\panda_multiview_basecolor.png",
+  "atlas_sha256": "b81c0fc43454131d562cefe5b9e2260bb3201e3dd1b5eb50fcb5074877aaa2de",
+  "atlas_size": 2048,
+  "output_glb": "evidence\\compare\\shaman\\shaman_mv512.glb",
+  "output_glb_sha256": "0a15fb40ee633a25c36cd5ff15104d99590e0da301f57765c4c36eb4b443d6eb",
+  "geometry_buffers_before": {
+    "position_bytes_sha256": "dd75a9100915eda405844395fa18c9ee06ed5dc0ad46eb4c721f60addc9791af",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "97521f4c507a481d6c35884b4abfa4a7a7aac37c0e7e7fa5e1afabcdf0251c36",
+    "index_bytes_sha256": "d688137973d07d1e8af7910029029f64f0f2175cd05ffb5f4b818fd799c49deb",
+    "geometry_uv_index_sha256": "642f1629db71daf797a98edb935bf9323d23d98a7ef8db74fe5d6cc64937939c"
+  },
+  "geometry_buffers_after": {
+    "position_bytes_sha256": "dd75a9100915eda405844395fa18c9ee06ed5dc0ad46eb4c721f60addc9791af",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "97521f4c507a481d6c35884b4abfa4a7a7aac37c0e7e7fa5e1afabcdf0251c36",
+    "index_bytes_sha256": "d688137973d07d1e8af7910029029f64f0f2175cd05ffb5f4b818fd799c49deb",
+    "geometry_uv_index_sha256": "642f1629db71daf797a98edb935bf9323d23d98a7ef8db74fe5d6cc64937939c"
+  },
+  "geometry_unchanged": true,
+  "coverage": {
+    "atlas_texels_with_geometry": 2044363,
+    "directly_observed_percent": 53.8485,
+    "multiview_observed_percent": 26.1794,
+    "blended_from_multiple_views_percent": 14.7489,
+    "synthesized_percent": 46.1515,
+    "unresolved_percent": 0.0,
+    "note": "synthesized and unresolved are reported separately and are NOT folded into the observed figure"
+  },
+  "gates": {
+    "depth_tolerance": 0.01,
+    "min_facing_cosine": 0.2,
+    "colour_compatibility": 60.0,
+    "semantic_reliability": {
+      "front": 1.0,
+      "rear": 1.0,
+      "left": 1.0,
+      "right": 1.0,
+      "top": 0.45,
+      "bottom": 0.45
+    }
+  },
+  "per_view": [
+    {
+      "raw_index": 0,
+      "semantic_label": "front",
+      "source_image": "evidence\\compare\\shaman\\front_cond_512.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9974228917497394
+      },
+      "texels_in_bounds": 2044363,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 46595,
+      "texels_rejected_by_depth": 1487970,
+      "texels_rejected_back_facing": 116657,
+      "texels_valid": 393141,
+      "mean_confidence_where_valid": 0.5088879958558377
+    },
+    {
+      "raw_index": 1,
+      "semantic_label": "right",
+      "source_image": "evidence\\compare\\shaman_sixview_512\\view_1_right.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9705805370884154
+      },
+      "texels_in_bounds": 2044363,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 17213,
+      "texels_rejected_by_depth": 1670807,
+      "texels_rejected_back_facing": 71470,
+      "texels_valid": 284873,
+      "mean_confidence_where_valid": 0.49355400457293674
+    },
+    {
+      "raw_index": 2,
+      "semantic_label": "rear",
+      "source_image": "evidence\\compare\\shaman_sixview_512\\view_2_rear.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.942933392638719
+      },
+      "texels_in_bounds": 2044363,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 52788,
+      "texels_rejected_by_depth": 1445121,
+      "texels_rejected_back_facing": 117895,
+      "texels_valid": 428559,
+      "mean_confidence_where_valid": 0.45284761432623866
+    },
+    {
+      "raw_index": 3,
+      "semantic_label": "left",
+      "source_image": "evidence\\compare\\shaman_sixview_512\\view_3_left.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9627916681155892
+      },
+      "texels_in_bounds": 2044363,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 22622,
+      "texels_rejected_by_depth": 1661881,
+      "texels_rejected_back_facing": 86550,
+      "texels_valid": 273310,
+      "mean_confidence_where_valid": 0.5190332762425569
+    },
+    {
+      "raw_index": 4,
+      "semantic_label": "top",
+      "source_image": "evidence\\compare\\shaman_sixview_512\\view_4_top.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9521155385847139
+      },
+      "texels_in_bounds": 2044363,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 24847,
+      "texels_rejected_by_depth": 1791472,
+      "texels_rejected_back_facing": 48747,
+      "texels_valid": 179297,
+      "mean_confidence_where_valid": 0.17270387572573245
+    },
+    {
+      "raw_index": 5,
+      "semantic_label": "bottom",
+      "source_image": "evidence\\compare\\shaman_sixview_512\\view_5_bottom.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9608294214567724
+      },
+      "texels_in_bounds": 2044363,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 19477,
+      "texels_rejected_by_depth": 1709358,
+      "texels_rejected_back_facing": 147399,
+      "texels_valid": 168129,
+      "mean_confidence_where_valid": 0.1375679654901865
+    }
+  ],
+  "maps": {
+    "ownership_map.png": "evidence\\compare\\shaman\\mv512\\ownership_map.png",
+    "observed_coverage_mask.png": "evidence\\compare\\shaman\\mv512\\observed_coverage_mask.png",
+    "synthesized_coverage_mask.png": "evidence\\compare\\shaman\\mv512\\synthesized_coverage_mask.png",
+    "confidence_map.png": "evidence\\compare\\shaman\\mv512\\confidence_map.png",
+    "seam_map.png": "evidence\\compare\\shaman\\mv512\\seam_map.png",
+    "multiview_coverage_mask.png": "evidence\\compare\\shaman\\mv512\\multiview_coverage_mask.png"
+  }
+}

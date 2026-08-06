@@ -1,0 +1,168 @@
+{
+  "schema": "multiview_texture_projection_v1",
+  "mesh": "evidence\\compare\\panda2\\panda_front_zup.glb",
+  "mesh_sha256": "2a95dd1fcb8e42b32842b49bf2944d4a4de110a5808e5753ff8bcd07555c4757",
+  "bundle": "evidence\\compare\\panda2\\controls_512_audited",
+  "views_receipt": "evidence/compare/panda_sixview_512/views_original_front.json",
+  "raw_to_semantic": null,
+  "atlas": "evidence\\compare\\panda2\\mv512b\\panda_multiview_basecolor.png",
+  "atlas_sha256": "f7bf1c2fb7180a8a4caa3615dada404a306d68c17292e647c8cda94d031dbc09",
+  "atlas_size": 2048,
+  "output_glb": "evidence\\compare\\panda2\\panda_mv512b.glb",
+  "output_glb_sha256": "c6c868a289ef5499fe6dbb2bc41422bdc649984624b03ede3013b6071430c4a8",
+  "geometry_buffers_before": {
+    "position_bytes_sha256": "2ad1fc5394212ae2726fc9495b1952336f34ba3d220dc637cecacc4d443586a4",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "b772c9d8b3859cc1cc74823b1f19efc12955cf850a22beb9828ca050245bb53b",
+    "index_bytes_sha256": "9726ce082edae903de3d53cc785b09d14786794bd1b0b94d9e027be58dee9571",
+    "geometry_uv_index_sha256": "8c646b6a07ab6d8f699ac550db2ae13e029e95784fb43817d2ba2b8d1cd314db"
+  },
+  "geometry_buffers_after": {
+    "position_bytes_sha256": "2ad1fc5394212ae2726fc9495b1952336f34ba3d220dc637cecacc4d443586a4",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "b772c9d8b3859cc1cc74823b1f19efc12955cf850a22beb9828ca050245bb53b",
+    "index_bytes_sha256": "9726ce082edae903de3d53cc785b09d14786794bd1b0b94d9e027be58dee9571",
+    "geometry_uv_index_sha256": "8c646b6a07ab6d8f699ac550db2ae13e029e95784fb43817d2ba2b8d1cd314db"
+  },
+  "geometry_unchanged": true,
+  "coverage": {
+    "atlas_texels_with_geometry": 1719086,
+    "directly_observed_percent": 66.427,
+    "multiview_observed_percent": 29.8201,
+    "blended_from_multiple_views_percent": 19.5953,
+    "synthesized_percent": 33.573,
+    "unresolved_percent": 0.0,
+    "note": "synthesized and unresolved are reported separately and are NOT folded into the observed figure"
+  },
+  "gates": {
+    "depth_tolerance": 0.01,
+    "min_facing_cosine": 0.2,
+    "colour_compatibility": 60.0,
+    "semantic_reliability": {
+      "front": 1.0,
+      "rear": 1.0,
+      "left": 1.0,
+      "right": 1.0,
+      "top": 0.45,
+      "bottom": 0.45
+    }
+  },
+  "per_view": [
+    {
+      "raw_index": 0,
+      "semantic_label": "front",
+      "source_image": "evidence\\compare\\panda2\\front_cond_512.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9975280592538738
+      },
+      "texels_in_bounds": 1719086,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 36909,
+      "texels_rejected_by_depth": 1229904,
+      "texels_rejected_back_facing": 104886,
+      "texels_valid": 347387,
+      "mean_confidence_where_valid": 0.5016587510819966
+    },
+    {
+      "raw_index": 1,
+      "semantic_label": "right",
+      "source_image": "evidence\\compare\\panda_sixview_512\\view_1_right.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9761375542217043
+      },
+      "texels_in_bounds": 1719086,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 28162,
+      "texels_rejected_by_depth": 1282281,
+      "texels_rejected_back_facing": 99159,
+      "texels_valid": 309484,
+      "mean_confidence_where_valid": 0.5031784774188763
+    },
+    {
+      "raw_index": 2,
+      "semantic_label": "rear",
+      "source_image": "evidence\\compare\\panda_sixview_512\\view_2_rear.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9703871993135524
+      },
+      "texels_in_bounds": 1719086,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 30492,
+      "texels_rejected_by_depth": 1300779,
+      "texels_rejected_back_facing": 80148,
+      "texels_valid": 307667,
+      "mean_confidence_where_valid": 0.5038815992811622
+    },
+    {
+      "raw_index": 3,
+      "semantic_label": "left",
+      "source_image": "evidence\\compare\\panda_sixview_512\\view_3_left.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9772080025630985
+      },
+      "texels_in_bounds": 1719086,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 38026,
+      "texels_rejected_by_depth": 1246479,
+      "texels_rejected_back_facing": 89182,
+      "texels_valid": 345399,
+      "mean_confidence_where_valid": 0.47537421358373616
+    },
+    {
+      "raw_index": 4,
+      "semantic_label": "top",
+      "source_image": "evidence\\compare\\panda_sixview_512\\view_4_top.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9826411584292826
+      },
+      "texels_in_bounds": 1719086,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 11729,
+      "texels_rejected_by_depth": 1378868,
+      "texels_rejected_back_facing": 75368,
+      "texels_valid": 253121,
+      "mean_confidence_where_valid": 0.21059917683083867
+    },
+    {
+      "raw_index": 5,
+      "semantic_label": "bottom",
+      "source_image": "evidence\\compare\\panda_sixview_512\\view_5_bottom.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9826947003305224
+      },
+      "texels_in_bounds": 1719086,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 9889,
+      "texels_rejected_by_depth": 1401794,
+      "texels_rejected_back_facing": 85768,
+      "texels_valid": 221635,
+      "mean_confidence_where_valid": 0.2476786047547966
+    }
+  ],
+  "maps": {
+    "ownership_map.png": "evidence\\compare\\panda2\\mv512b\\ownership_map.png",
+    "observed_coverage_mask.png": "evidence\\compare\\panda2\\mv512b\\observed_coverage_mask.png",
+    "synthesized_coverage_mask.png": "evidence\\compare\\panda2\\mv512b\\synthesized_coverage_mask.png",
+    "confidence_map.png": "evidence\\compare\\panda2\\mv512b\\confidence_map.png",
+    "seam_map.png": "evidence\\compare\\panda2\\mv512b\\seam_map.png",
+    "multiview_coverage_mask.png": "evidence\\compare\\panda2\\mv512b\\multiview_coverage_mask.png"
+  }
+}

@@ -1,0 +1,397 @@
+{
+  "schema": "lowvram3d_mvadapter_camera_orientation_audit_v1",
+  "mesh": "evidence\\compare\\boat\\boat_uv.glb",
+  "mesh_sha256": "91bac83d6d5d95d31d999202ea240dcedf5139d94d4978777d9a7f2f2a312794",
+  "mesh_vertices": 108538,
+  "mesh_triangles": 149720,
+  "normal_source": "AREA_WEIGHTED_RECOMPUTED",
+  "gltf_scene_transform": {
+    "default_scene": 0,
+    "mesh_nodes": [
+      {
+        "node_index": 1,
+        "mesh_index": 0,
+        "global_matrix": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "identity": true,
+        "uniform_scale": 1.0,
+        "determinant": 1.0
+      }
+    ],
+    "identity_all": true
+  },
+  "source_image": {
+    "path": "evidence\\compare\\boat\\crop512.png",
+    "sha256": "ae730afe31e2d12ee6fd5780aa9444d08bc22b62c900dd374d3b599bb4b4c9bb",
+    "dimensions": [
+      512,
+      512
+    ],
+    "alpha_pixels": 128707,
+    "foreground_bbox": [
+      0,
+      51,
+      511,
+      460
+    ],
+    "foreground_aspect_width_over_height": 1.24878,
+    "tail_colour_rule": "orange_red_brown_pixels_in_lower_half",
+    "tail_orange_pixels_left": 250,
+    "tail_orange_pixels_right": 1612,
+    "tail_side": "right",
+    "tail_rule_status": "FALLBACK_ONLY: red panda anatomy, kept only to break a silhouette tie"
+  },
+  "raw_views": [
+    {
+      "raw_index": 0,
+      "azimuth_deg": -90.0,
+      "elevation_deg": 0.0,
+      "world_direction_camera_to_mesh": [
+        -6.123233995736766e-17,
+        1.0,
+        -0.0
+      ],
+      "world_position_mesh_to_camera": [
+        1.1021821192326179e-16,
+        -1.8,
+        0.0
+      ],
+      "world_up": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "mesh_local_direction_camera_to_mesh": [
+        1.0,
+        0.0,
+        -6.123233995736766e-17
+      ],
+      "mesh_local_position_direction": [
+        -1.0,
+        0.0,
+        6.123233995736766e-17
+      ],
+      "current_label": "front",
+      "silhouette": {
+        "path": "evidence\\compare\\boat\\controls_384\\front_mask.png",
+        "bbox": [
+          17,
+          55,
+          360,
+          328
+        ],
+        "aspect_width_over_height": 1.255474,
+        "silhouette_pixels": 61494,
+        "lower_left_pixels": 23060,
+        "lower_right_pixels": 20911,
+        "lower_side_delta": -2149,
+        "tail_side_candidate": "left"
+      }
+    },
+    {
+      "raw_index": 1,
+      "azimuth_deg": 0.0,
+      "elevation_deg": 0.0,
+      "world_direction_camera_to_mesh": [
+        -1.0,
+        -0.0,
+        -0.0
+      ],
+      "world_position_mesh_to_camera": [
+        1.8,
+        0.0,
+        0.0
+      ],
+      "world_up": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "mesh_local_direction_camera_to_mesh": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "mesh_local_position_direction": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "current_label": "right",
+      "silhouette": {
+        "path": "evidence\\compare\\boat\\controls_384\\right_mask.png",
+        "bbox": [
+          72,
+          55,
+          305,
+          328
+        ],
+        "aspect_width_over_height": 0.854015,
+        "silhouette_pixels": 46839,
+        "lower_left_pixels": 15597,
+        "lower_right_pixels": 15296,
+        "lower_side_delta": -301,
+        "tail_side_candidate": "left"
+      }
+    },
+    {
+      "raw_index": 2,
+      "azimuth_deg": 90.0,
+      "elevation_deg": 0.0,
+      "world_direction_camera_to_mesh": [
+        -6.123233995736766e-17,
+        -1.0,
+        -0.0
+      ],
+      "world_position_mesh_to_camera": [
+        1.1021821192326179e-16,
+        1.8,
+        0.0
+      ],
+      "world_up": [
+        0.0,
+        -0.0,
+        1.0
+      ],
+      "mesh_local_direction_camera_to_mesh": [
+        -1.0,
+        0.0,
+        -6.123233995736766e-17
+      ],
+      "mesh_local_position_direction": [
+        1.0,
+        0.0,
+        6.123233995736766e-17
+      ],
+      "current_label": "rear",
+      "silhouette": {
+        "path": "evidence\\compare\\boat\\controls_384\\rear_mask.png",
+        "bbox": [
+          22,
+          55,
+          365,
+          328
+        ],
+        "aspect_width_over_height": 1.255474,
+        "silhouette_pixels": 61494,
+        "lower_left_pixels": 20911,
+        "lower_right_pixels": 23060,
+        "lower_side_delta": 2149,
+        "tail_side_candidate": "right"
+      }
+    },
+    {
+      "raw_index": 3,
+      "azimuth_deg": 180.0,
+      "elevation_deg": 0.0,
+      "world_direction_camera_to_mesh": [
+        1.0,
+        -1.2246467991473532e-16,
+        -0.0
+      ],
+      "world_position_mesh_to_camera": [
+        -1.8,
+        2.2043642384652358e-16,
+        0.0
+      ],
+      "world_up": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "mesh_local_direction_camera_to_mesh": [
+        -1.2246467991473532e-16,
+        0.0,
+        1.0
+      ],
+      "mesh_local_position_direction": [
+        1.2246467991473532e-16,
+        0.0,
+        -1.0
+      ],
+      "current_label": "left",
+      "silhouette": {
+        "path": "evidence\\compare\\boat\\controls_384\\left_mask.png",
+        "bbox": [
+          77,
+          55,
+          310,
+          328
+        ],
+        "aspect_width_over_height": 0.854015,
+        "silhouette_pixels": 46839,
+        "lower_left_pixels": 15296,
+        "lower_right_pixels": 15597,
+        "lower_side_delta": 301,
+        "tail_side_candidate": "right"
+      }
+    },
+    {
+      "raw_index": 4,
+      "azimuth_deg": 90.0,
+      "elevation_deg": 89.99,
+      "world_direction_camera_to_mesh": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        -0.999999984769129
+      ],
+      "world_position_mesh_to_camera": [
+        1.923670683955952e-20,
+        0.00031415926376409693,
+        1.7999999725844325
+      ],
+      "world_up": [
+        -6.12323390247458e-17,
+        -0.9999999847691291,
+        0.0001745329243133872
+      ],
+      "mesh_local_direction_camera_to_mesh": [
+        -0.0001745329243133872,
+        -0.9999999847691291,
+        -1.0687059355310844e-20
+      ],
+      "mesh_local_position_direction": [
+        0.00017453292431338717,
+        0.999999984769129,
+        1.0687059355310842e-20
+      ],
+      "current_label": "top",
+      "silhouette": {
+        "path": "evidence\\compare\\boat\\controls_384\\top_mask.png",
+        "bbox": [
+          22,
+          71,
+          365,
+          305
+        ],
+        "aspect_width_over_height": 1.46383,
+        "silhouette_pixels": 62029,
+        "lower_left_pixels": 18286,
+        "lower_right_pixels": 15032,
+        "lower_side_delta": -3254,
+        "tail_side_candidate": "left"
+      }
+    },
+    {
+      "raw_index": 5,
+      "azimuth_deg": 90.0,
+      "elevation_deg": -89.99,
+      "world_direction_camera_to_mesh": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        0.999999984769129
+      ],
+      "world_position_mesh_to_camera": [
+        1.923670683955952e-20,
+        0.00031415926376409693,
+        -1.7999999725844325
+      ],
+      "world_up": [
+        6.12323390247458e-17,
+        0.9999999847691291,
+        0.0001745329243133872
+      ],
+      "mesh_local_direction_camera_to_mesh": [
+        -0.0001745329243133872,
+        0.9999999847691291,
+        -1.0687059355310844e-20
+      ],
+      "mesh_local_position_direction": [
+        0.00017453292431338717,
+        -0.999999984769129,
+        1.0687059355310842e-20
+      ],
+      "current_label": "bottom",
+      "silhouette": {
+        "path": "evidence\\compare\\boat\\controls_384\\bottom_mask.png",
+        "bbox": [
+          22,
+          77,
+          365,
+          311
+        ],
+        "aspect_width_over_height": 1.46383,
+        "silhouette_pixels": 62031,
+        "lower_left_pixels": 14210,
+        "lower_right_pixels": 19503,
+        "lower_side_delta": 5293,
+        "tail_side_candidate": "right"
+      }
+    }
+  ],
+  "front_axis_determination": {
+    "basis": "silhouette_iou_against_source",
+    "silhouette_registration": {
+      "iou_per_raw_index": {
+        "0": 0.7897,
+        "2": 0.7515
+      },
+      "front_raw_index": 0,
+      "margin": 0.0382,
+      "decisive": true,
+      "margin_threshold": 0.03
+    },
+    "tail_rule_would_have_chosen": 2,
+    "source_tail_side": "right",
+    "selected_pair": [
+      0,
+      2
+    ],
+    "front_raw_index": 0,
+    "mesh_local_object_to_camera": [
+      -1.0,
+      0.0,
+      6.123233995736766e-17
+    ],
+    "mesh_local_axis": "-X",
+    "required_rotation_deg_z_to_legacy_front": 0.0,
+    "evidence": "aspect selects the opposed pair; silhouette IoU against the source matte then picks which of the two was photographed. The tail-colour rule is a fallback for a genuine tie only -- it is red panda anatomy and it chose wrong on the shaman."
+  },
+  "index_permutation": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "output_semantics": [
+    "front",
+    "right",
+    "rear",
+    "left",
+    "top",
+    "bottom"
+  ],
+  "output_control_tensor_sha256": "8e1a979f0426f188443e571874ef0629d0e42402987bc14ed3cfe71e2825c4ff",
+  "output_camera_contract": "evidence\\compare\\boat\\controls_384_refixed\\camera_contract.json",
+  "contact_sheet": "evidence\\compare\\boat\\controls_384_refixed\\position_normal_control_contact_sheet.png",
+  "semantic_gate": {
+    "passed": true,
+    "rule": "output labels must equal proven_semantic in the reordered camera contract"
+  }
+}

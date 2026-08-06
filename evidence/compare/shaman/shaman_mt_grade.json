@@ -1,0 +1,24 @@
+{
+  "schema_version": "hybrid_atlas_composite_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\mt_texture2\\textured.glb",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_mt_graded.glb",
+  "atlas": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_mt_graded_base.png",
+  "atlas_size": 2048,
+  "views": {},
+  "texels_in_atlas": 1892801,
+  "texels_painted": 0,
+  "painted_fraction_of_surface": 0.0,
+  "luma_transfer": 1.0,
+  "delight": true,
+  "grade": {
+    "contrast": 0.22,
+    "shadows": -0.1,
+    "highlights": 0.04,
+    "saturation": 1.12,
+    "warmth": 0.04
+  },
+  "min_facing": 0.3,
+  "feather_texels": 12,
+  "dilated_texels": 2238071,
+  "material_channels": "native, unmodified"
+}

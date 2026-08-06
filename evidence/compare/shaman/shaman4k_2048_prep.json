@@ -1,0 +1,26 @@
+{
+  "schema_version": "prepare_input_v1",
+  "source": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman4k_matte.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman4k_2048.png",
+  "source_subject_px": [
+    2694,
+    3473
+  ],
+  "source_aspect": 0.776,
+  "square_side": 3750,
+  "margin": 0.04,
+  "thin_preserve": 0.65,
+  "downsample_factor": 1.83,
+  "subject_px_in_output": [
+    1471,
+    1897
+  ],
+  "coverage": 0.2742,
+  "coverage_averaged_only": 0.2702,
+  "target_res": 512,
+  "structural_grid": 32,
+  "structural_cell_px": 64.0,
+  "detail_pass": null,
+  "emphasis": null,
+  "note": "A feature smaller than ~64 px competes for a single structural cell and usually loses, unless it is long enough to claim cells along its length."
+}

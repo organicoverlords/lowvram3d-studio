@@ -1,0 +1,25 @@
+{
+  "body_count": 23,
+  "classification": "PROVEN",
+  "euler_number": -156,
+  "extent": [
+    1.6432,
+    1.974,
+    0.6232
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_miniturbo.glb",
+  "merged_vertices": 556093,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_miniturbo_7view.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 1112498,
+  "unwelded": false,
+  "vertex_split_ratio": 1.0,
+  "vertices": 556093,
+  "view_coverage": {
+    "front": 0.3373,
+    "side": 0.1833,
+    "three_quarter": 0.263,
+    "top": 0.1649
+  },
+  "watertight": true
+}

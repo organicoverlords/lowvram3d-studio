@@ -1,0 +1,6 @@
+{
+  "rotate_about_y_deg": 178.33,
+  "then_x_deg": 90.0,
+  "basis": "builder z_up",
+  "derived_from": "projection camera"
+}

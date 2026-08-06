@@ -1,0 +1,5 @@
+{
+  "canonical_rotation_deg_about_y": 151.67,
+  "derived_from": "projection camera front direction",
+  "source": "evidence/compare/shaman/shaman_mt_graded.glb"
+}

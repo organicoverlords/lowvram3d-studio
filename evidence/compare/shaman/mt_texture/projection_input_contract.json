@@ -1,0 +1,54 @@
+{
+  "schema": "projection_input_contract_v1",
+  "mask_method": "BIREFNET_HARD_MASK",
+  "mask_method_accepted": true,
+  "source_image": "evidence\\compare\\shaman\\shaman4k_2048.png",
+  "source_image_sha256": "a68356ec813603bbde8ad2cffaa1820d870ff227745a5093a3494f0812546e2d",
+  "alpha_mask": "evidence\\compare\\shaman\\shaman4k_2048_alpha.png",
+  "alpha_mask_sha256": "3d00a85b5acc0f3807809d1cf75dc887f45acb0c4d9aadd387d89dcb36bc7618",
+  "normalized_conditioning_image": null,
+  "normalized_conditioning_sha256": null,
+  "original_plate": "evidence\\compare\\shaman\\shaman4k_matte.png",
+  "original_plate_sha256": "f42d44cfcfd2bb299a971de0337f83410a877c5f32c5868b948e4eb2599bf59e",
+  "source_equals_original_plate": false,
+  "source_dimensions": [
+    2048,
+    2048
+  ],
+  "alpha_coverage": 0.266845,
+  "foreground_components": 1,
+  "crop_bounds_x0y0x1y1": [
+    289,
+    75,
+    1759,
+    1971
+  ],
+  "crop_transform": null,
+  "background_treatment": {
+    "estimated_plate_rgb": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "plate_like_halo_fraction_at_boundary": 0.003003,
+    "plate_like_fraction_deep_interior": 0.031943,
+    "interior_note": "interior plate-coloured pixels are the lit sign and lamps, not leakage",
+    "tolerance": 0.005
+  },
+  "ground_shadow_remains": false,
+  "ground_shadow_fraction": 0.0,
+  "checkerboard": {
+    "method": "two-tone plate-tile fraction, calibrated against the plate's own background and foreground",
+    "plate_tile_tones": [],
+    "positive_reference_plate_background": 0.0,
+    "negative_reference_plate_foreground": 0.0,
+    "observed_in_sampled_region": 0.0,
+    "decision_midpoint": 0.0,
+    "detected_in_sampled_region": false
+  },
+  "image_mask_agreement_iou": 1.0,
+  "transforms_match": true,
+  "failures": [],
+  "contract_satisfied": true,
+  "classification": "PROJECTION_INPUT_ACCEPTED"
+}

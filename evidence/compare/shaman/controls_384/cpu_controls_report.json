@@ -1,0 +1,456 @@
+{
+  "schema": "lowvram3d_mvadapter_cpu_controls_v1",
+  "mesh": "evidence\\compare\\shaman\\shaman_mt_uv_oriented.glb",
+  "mesh_sha256_before": "f1aa034ad50361cc3560a401873e2c894b91b89d159664eea7e6653a1d07474f",
+  "mesh_sha256_after": "f1aa034ad50361cc3560a401873e2c894b91b89d159664eea7e6653a1d07474f",
+  "geometry_or_uv_mutation": false,
+  "normal_source": "AREA_WEIGHTED_RECOMPUTED",
+  "gltf_scene_transform": {
+    "default_scene": 0,
+    "mesh_nodes": [
+      {
+        "node_index": 1,
+        "mesh_index": 0,
+        "global_matrix": [
+          [
+            -0.8802290008207914,
+            0.0,
+            0.47454916090330534,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            -0.47454916090330534,
+            0.0,
+            -0.8802290008207914,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "identity": false,
+        "uniform_scale": 0.9999999999999999,
+        "determinant": 1.0
+      }
+    ],
+    "identity_all": false
+  },
+  "official_normal_contract": true,
+  "control_space_transform": [
+    [
+      0.0,
+      -1.0,
+      0.0
+    ],
+    [
+      1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "control_space_inverse": [
+    [
+      0.0,
+      1.0,
+      0.0
+    ],
+    [
+      -1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "control_space_recentered": false,
+  "control_space_rescaled": true,
+  "control_max_abs": 0.5,
+  "size": 384,
+  "projection_span": 1.1,
+  "projection_half_span": 0.55,
+  "framing": {
+    "shared_span": 1.1,
+    "per_view_autofit": false,
+    "expected_occupancy": 0.909091,
+    "occupancy_min_gate": 0.89,
+    "occupancy_max_gate": 0.93,
+    "lower_coverage_is_evidence_only": true,
+    "occupancy_lower_gate_applied": 0.89,
+    "occupancy_upper_gate_applied": 0.93,
+    "pixel_quantisation": 0.005208,
+    "measured_occupancy_per_view": {
+      "0": 0.895833,
+      "1": 0.742188,
+      "2": 0.895833,
+      "3": 0.742188,
+      "4": 0.895833,
+      "5": 0.895833
+    },
+    "measured_max_occupancy": 0.895833,
+    "opposing_borders_touched": false,
+    "passed": true
+  },
+  "control_tensor": "evidence\\compare\\shaman\\controls_384\\control_tensor.npy",
+  "control_tensor_shape": [
+    6,
+    6,
+    384,
+    384
+  ],
+  "channel_order": [
+    "position_x",
+    "position_y",
+    "position_z",
+    "normal_x",
+    "normal_y",
+    "normal_z"
+  ],
+  "background_encoding": [
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5
+  ],
+  "views": [
+    {
+      "index": 0,
+      "semantic_name": "horizontal_0",
+      "proven_semantic": "front",
+      "direction": [
+        -6.123233995736766e-17,
+        1.0,
+        -0.0
+      ],
+      "camera_to_world": [
+        [
+          1.0,
+          0.0,
+          6.123233995736766e-17,
+          1.1021821192326179e-16
+        ],
+        [
+          6.123233995736766e-17,
+          0.0,
+          -1.0,
+          -1.8
+        ],
+        [
+          -0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "silhouette_pixels": 31353,
+      "visible_triangles": 23994,
+      "projection_span": 1.1,
+      "elevation_deg": 0.0,
+      "azimuth_deg": -90.0,
+      "occupancy_x": 0.895833,
+      "occupancy_y": 0.34375,
+      "occupancy": 0.895833,
+      "borders_touched": {
+        "left": false,
+        "right": false,
+        "top": false,
+        "bottom": false
+      },
+      "projected_occupancy": 0.896629,
+      "depth_finite": true,
+      "normal_unit_before_encoding": true
+    },
+    {
+      "index": 1,
+      "semantic_name": "horizontal_1",
+      "proven_semantic": "right",
+      "direction": [
+        -1.0,
+        -0.0,
+        -0.0
+      ],
+      "camera_to_world": [
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.8
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "silhouette_pixels": 17371,
+      "visible_triangles": 16717,
+      "projection_span": 1.1,
+      "elevation_deg": 0.0,
+      "azimuth_deg": 0.0,
+      "occupancy_x": 0.742188,
+      "occupancy_y": 0.34375,
+      "occupancy": 0.742188,
+      "borders_touched": {
+        "left": false,
+        "right": false,
+        "top": false,
+        "bottom": false
+      },
+      "projected_occupancy": 0.74494,
+      "depth_finite": true,
+      "normal_unit_before_encoding": true
+    },
+    {
+      "index": 2,
+      "semantic_name": "horizontal_2",
+      "proven_semantic": "rear",
+      "direction": [
+        -6.123233995736766e-17,
+        -1.0,
+        -0.0
+      ],
+      "camera_to_world": [
+        [
+          -1.0,
+          0.0,
+          6.123233995736766e-17,
+          1.1021821192326179e-16
+        ],
+        [
+          6.123233995736766e-17,
+          -0.0,
+          1.0,
+          1.8
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "silhouette_pixels": 31353,
+      "visible_triangles": 26033,
+      "projection_span": 1.1,
+      "elevation_deg": 0.0,
+      "azimuth_deg": 90.0,
+      "occupancy_x": 0.895833,
+      "occupancy_y": 0.34375,
+      "occupancy": 0.895833,
+      "borders_touched": {
+        "left": false,
+        "right": false,
+        "top": false,
+        "bottom": false
+      },
+      "projected_occupancy": 0.896629,
+      "depth_finite": true,
+      "normal_unit_before_encoding": true
+    },
+    {
+      "index": 3,
+      "semantic_name": "horizontal_3",
+      "proven_semantic": "left",
+      "direction": [
+        1.0,
+        -1.2246467991473532e-16,
+        -0.0
+      ],
+      "camera_to_world": [
+        [
+          -1.2246467991473532e-16,
+          0.0,
+          -1.0,
+          -1.8
+        ],
+        [
+          -1.0,
+          0.0,
+          1.2246467991473532e-16,
+          2.2043642384652358e-16
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "silhouette_pixels": 17371,
+      "visible_triangles": 16368,
+      "projection_span": 1.1,
+      "elevation_deg": 0.0,
+      "azimuth_deg": 180.0,
+      "occupancy_x": 0.742188,
+      "occupancy_y": 0.34375,
+      "occupancy": 0.742188,
+      "borders_touched": {
+        "left": false,
+        "right": false,
+        "top": false,
+        "bottom": false
+      },
+      "projected_occupancy": 0.74494,
+      "depth_finite": true,
+      "normal_unit_before_encoding": true
+    },
+    {
+      "index": 4,
+      "semantic_name": "top",
+      "proven_semantic": "top",
+      "direction": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        -0.999999984769129
+      ],
+      "camera_to_world": [
+        [
+          -1.0,
+          -6.12323390247458e-17,
+          1.0687059355310842e-20,
+          1.923670683955952e-20
+        ],
+        [
+          6.123233995736766e-17,
+          -0.9999999847691291,
+          0.00017453292431338717,
+          0.00031415926376409693
+        ],
+        [
+          0.0,
+          0.0001745329243133872,
+          0.999999984769129,
+          1.7999999725844325
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "silhouette_pixels": 47925,
+      "visible_triangles": 35077,
+      "projection_span": 1.1,
+      "elevation_deg": 89.99,
+      "azimuth_deg": 90.0,
+      "occupancy_x": 0.895833,
+      "occupancy_y": 0.742188,
+      "occupancy": 0.895833,
+      "borders_touched": {
+        "left": false,
+        "right": false,
+        "top": false,
+        "bottom": false
+      },
+      "projected_occupancy": 0.896629,
+      "depth_finite": true,
+      "normal_unit_before_encoding": true
+    },
+    {
+      "index": 5,
+      "semantic_name": "bottom",
+      "proven_semantic": "bottom",
+      "direction": [
+        -1.0687059355310842e-20,
+        -0.00017453292431338717,
+        0.999999984769129
+      ],
+      "camera_to_world": [
+        [
+          -1.0,
+          6.12323390247458e-17,
+          1.0687059355310842e-20,
+          1.923670683955952e-20
+        ],
+        [
+          6.123233995736766e-17,
+          0.9999999847691291,
+          0.00017453292431338717,
+          0.00031415926376409693
+        ],
+        [
+          0.0,
+          0.0001745329243133872,
+          -0.999999984769129,
+          -1.7999999725844325
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "silhouette_pixels": 47938,
+      "visible_triangles": 40210,
+      "projection_span": 1.1,
+      "elevation_deg": -89.99,
+      "azimuth_deg": 90.0,
+      "occupancy_x": 0.895833,
+      "occupancy_y": 0.742188,
+      "occupancy": 0.895833,
+      "borders_touched": {
+        "left": false,
+        "right": false,
+        "top": false,
+        "bottom": false
+      },
+      "projected_occupancy": 0.896629,
+      "depth_finite": true,
+      "normal_unit_before_encoding": true
+    }
+  ],
+  "camera_contract": "evidence\\compare\\shaman\\controls_384\\camera_contract.json",
+  "deterministic": true,
+  "passed": true
+}

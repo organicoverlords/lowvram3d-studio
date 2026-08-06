@@ -1,0 +1,168 @@
+{
+  "schema": "multiview_texture_projection_v1",
+  "mesh": "evidence\\compare\\whale\\whale_front_zup.glb",
+  "mesh_sha256": "e8edbeb9bb42901ac1789f39c8500907369890964030e718b88fa703156229d8",
+  "bundle": "evidence\\compare\\whale\\controls_384_audited",
+  "views_receipt": "evidence/compare/whale_sixview_384/views_original_front.json",
+  "raw_to_semantic": null,
+  "atlas": "evidence\\compare\\whale\\mv2\\panda_multiview_basecolor.png",
+  "atlas_sha256": "0b234a3c97d2933e946c2c2c00d05d39968c43edc03b6f3d2c61273955b36a01",
+  "atlas_size": 2048,
+  "output_glb": "evidence\\compare\\whale\\whale_mv2.glb",
+  "output_glb_sha256": "5631b5b4c2ec06eae0449918aedc58dde7cdc21f50bfb16d9049793cca95ee99",
+  "geometry_buffers_before": {
+    "position_bytes_sha256": "298dca20fdad82e09d77970111f3d3d20a4b06b4a4ab9e5838cbf65d480b3d3d",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "f3c4dd7b4c6ecaa75a74f5ef8e24e9614d6c38c2fcd2abfe2233077669dd0f47",
+    "index_bytes_sha256": "090e33db27de6def13bdca6c96e1a79ea11e86cfed6aa7f39ceb126b909ba2d5",
+    "geometry_uv_index_sha256": "5a8ee62f344d9d93175a6045feaac630fd6eac8f92c55d326267c2f31eab6d0a"
+  },
+  "geometry_buffers_after": {
+    "position_bytes_sha256": "298dca20fdad82e09d77970111f3d3d20a4b06b4a4ab9e5838cbf65d480b3d3d",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "f3c4dd7b4c6ecaa75a74f5ef8e24e9614d6c38c2fcd2abfe2233077669dd0f47",
+    "index_bytes_sha256": "090e33db27de6def13bdca6c96e1a79ea11e86cfed6aa7f39ceb126b909ba2d5",
+    "geometry_uv_index_sha256": "5a8ee62f344d9d93175a6045feaac630fd6eac8f92c55d326267c2f31eab6d0a"
+  },
+  "geometry_unchanged": true,
+  "coverage": {
+    "atlas_texels_with_geometry": 1764356,
+    "directly_observed_percent": 69.0566,
+    "multiview_observed_percent": 35.0058,
+    "blended_from_multiple_views_percent": 12.1444,
+    "synthesized_percent": 30.9434,
+    "unresolved_percent": 0.0,
+    "note": "synthesized and unresolved are reported separately and are NOT folded into the observed figure"
+  },
+  "gates": {
+    "depth_tolerance": 0.01,
+    "min_facing_cosine": 0.2,
+    "colour_compatibility": 60.0,
+    "semantic_reliability": {
+      "front": 1.0,
+      "rear": 1.0,
+      "left": 1.0,
+      "right": 1.0,
+      "top": 0.45,
+      "bottom": 0.45
+    }
+  },
+  "per_view": [
+    {
+      "raw_index": 0,
+      "semantic_label": "front",
+      "source_image": "evidence\\compare\\whale\\front_conditioning_render.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9877604084091702
+      },
+      "texels_in_bounds": 1764356,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 28645,
+      "texels_rejected_by_depth": 1186093,
+      "texels_rejected_back_facing": 113433,
+      "texels_valid": 436185,
+      "mean_confidence_where_valid": 0.5016991622791495
+    },
+    {
+      "raw_index": 1,
+      "semantic_label": "right",
+      "source_image": "evidence\\compare\\whale_sixview_384\\view_1_right.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9298069498069498
+      },
+      "texels_in_bounds": 1764356,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 41078,
+      "texels_rejected_by_depth": 1418207,
+      "texels_rejected_back_facing": 97319,
+      "texels_valid": 207752,
+      "mean_confidence_where_valid": 0.27349049154454314
+    },
+    {
+      "raw_index": 2,
+      "semantic_label": "rear",
+      "source_image": "evidence\\compare\\whale_sixview_384\\view_2_rear.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9466377175009939
+      },
+      "texels_in_bounds": 1764356,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 26394,
+      "texels_rejected_by_depth": 1190651,
+      "texels_rejected_back_facing": 112150,
+      "texels_valid": 435161,
+      "mean_confidence_where_valid": 0.5076868536714131
+    },
+    {
+      "raw_index": 3,
+      "semantic_label": "left",
+      "source_image": "evidence\\compare\\whale_sixview_384\\view_3_left.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9303666128660364
+      },
+      "texels_in_bounds": 1764356,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 38221,
+      "texels_rejected_by_depth": 1395220,
+      "texels_rejected_back_facing": 139394,
+      "texels_valid": 191521,
+      "mean_confidence_where_valid": 0.28951799601085876
+    },
+    {
+      "raw_index": 4,
+      "semantic_label": "top",
+      "source_image": "evidence\\compare\\whale_sixview_384\\view_4_top.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9391747730806784
+      },
+      "texels_in_bounds": 1764356,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 23052,
+      "texels_rejected_by_depth": 1285384,
+      "texels_rejected_back_facing": 93108,
+      "texels_valid": 362812,
+      "mean_confidence_where_valid": 0.22132513624072675
+    },
+    {
+      "raw_index": 5,
+      "semantic_label": "bottom",
+      "source_image": "evidence\\compare\\whale_sixview_384\\view_5_bottom.png",
+      "registration": {
+        "scale": 1.0,
+        "dx": 0,
+        "dy": 0,
+        "iou": 0.9597802197802198
+      },
+      "texels_in_bounds": 1764356,
+      "texels_rejected_out_of_bounds": 0,
+      "texels_rejected_by_mask": 20598,
+      "texels_rejected_by_depth": 1294878,
+      "texels_rejected_back_facing": 86058,
+      "texels_valid": 362822,
+      "mean_confidence_where_valid": 0.22450385639552456
+    }
+  ],
+  "maps": {
+    "ownership_map.png": "evidence\\compare\\whale\\mv2\\ownership_map.png",
+    "observed_coverage_mask.png": "evidence\\compare\\whale\\mv2\\observed_coverage_mask.png",
+    "synthesized_coverage_mask.png": "evidence\\compare\\whale\\mv2\\synthesized_coverage_mask.png",
+    "confidence_map.png": "evidence\\compare\\whale\\mv2\\confidence_map.png",
+    "seam_map.png": "evidence\\compare\\whale\\mv2\\seam_map.png",
+    "multiview_coverage_mask.png": "evidence\\compare\\whale\\mv2\\multiview_coverage_mask.png"
+  }
+}

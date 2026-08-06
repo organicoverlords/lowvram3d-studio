@@ -485,12 +485,13 @@ py workers/audit_and_relabel_mvadapter_controls.py --mesh uv_zup.glb \
    --source-image crop512.png --source-dir controls_384 \
    --output-dir controls_384_audited
 
-# 6. six-view inference — NOTE the interpreter, see below
-PYTHONPATH=C:/AI/HY3D2/Hunyuan3D-2 \
+# 6. six-view inference — NOTE the interpreter and --worker, see below
+PYTHONPATH="C:/AI/HY3D2/Hunyuan3D-2;C:/AI/mvadapter-upstream-inspection" \
 C:/AI/HY3D2/python_standalone/python.exe workers/run_sixview_no_cudnn.py \
-   --config configs/<asset>_mvadapter_ig2mv_sd21_384x20.json \
-   --output-dir evidence/compare/<asset>_sixview_384
-#    20/20 steps, 302 s
+   --config configs/<asset>_mvadapter_ig2mv_sd21_512x20.json \
+   --output-dir evidence/compare/<asset>_sixview_512 \
+   --worker "$PWD/workers/mvadapter_sd21_six_view_inference.py"
+#    20/20 steps, 302 s at 384; 512 costs more but fits and is better
 
 # 7. project all six
 py workers/multiview_texture_projection.py --mesh uv_zup.glb \
@@ -535,6 +536,43 @@ near mirrors, scoring 0.689 vs 0.560. `fast_texture_projection` now reports
 painted the atlas: the painted hemisphere is centred on `-matrix[2]`, which is
 a fact about where paint landed rather than a guess about shape.
 
+### Three more traps in the six-view stage
+
+**The launcher hardcodes its worker path.** `run_sixview_no_cudnn.py` defaults to
+the worker inside `lowvram3d-two-character-production-20260804`, which is a
+different repo owned by a different agent. An edit made to this repo's
+`workers/mvadapter_sd21_six_view_inference.py` — for example admitting 512 to the
+resolution gate — has no effect at all unless `--worker` points at it. The
+symptom is a preflight rejection that names a value you have already changed.
+
+**The labels are rotated by one; the images are not.** The builder emits
+`front, right, rear, left`, but the true geometric opposite of index 0 is
+**index 3**, not index 2 — read the camera directions from `camera_contract.json`
+rather than trusting the names. Any check that pairs views by label order is
+comparing things 90° apart and will pass on anything. See
+`docs/JANUS-six-view-defect-20260806.md`.
+
+**512 is admitted and is better than 384.** It fits in 6 GB. The gate lives in
+`ALLOWED_RESOLUTIONS` in the worker — and see the `--worker` trap above, because
+that is exactly the edit that silently does nothing.
+
+### Which way is front — use paint, not silhouette
+
+Two heuristics were tried and both chose wrong:
+
+| method | failed on | why |
+|---|---|---|
+| tail-colour | shaman (6448 vs 6559), and the red panda itself | a near-tie decided by noise |
+| silhouette IoU | whale (0.881 vs 0.618, chose the mirror profile) | front and back silhouettes of a symmetric subject are near-identical |
+
+The decisive signal is **painted-texel coverage**: sample the observed mask
+through each candidate view's stored `triangle_ids`/`barycentric` and count texels
+that actually received paint. On the whale the two candidates scored **5 texels
+vs 25,107**. Silhouette IoU cannot separate a mirror-symmetric subject; where
+paint landed can. `audit_and_relabel_mvadapter_controls.py --observed-mask` does
+this, and its report records `basis`, `painted_texel_coverage`, and
+`tail_rule_would_have_chosen` so a wrong answer is visible rather than silent.
+
 ### The interpreter
 
 GPU work needs **`C:\AI\HY3D2\python_standalone\python.exe`** with
@@ -561,3 +599,23 @@ A rotating view exposes what a contact sheet hides: seams where two projected
 views disagree, and surfaces that change character as they turn. WebP, not GIF —
 256-colour quantisation posterises weathered cloth into flat plates that look
 exactly like the projection artefact you are checking for.
+
+**The turntable is retired.** At useful quality it took 30 minutes for one
+asset, which is not worth it for a check a seven-view contact sheet mostly
+answers. `workers/turntable.py` still works if you want it; nothing in the route
+depends on it. Use `preview_textured_mesh.py` instead.
+
+### What this route achieves, and its one open defect
+
+| asset | resolution | directly observed | seen by ≥2 views |
+|---|---:|---:|---:|
+| sky whale courier | 512 | 69.59% | 36.27% |
+| red panda | 512 | 66.43% | 29.82% |
+| boat | 384 | 64.94% | 19.50% |
+| bird-skull shaman | 512 | 53.85% | 26.18% |
+
+Against 16.5% for a single projection. **Every one of these has a duplicated
+face on the true rear** — MV-Adapter paints the reference's frontal appearance
+onto the view facing away from it. It is a property of the model, reachable
+through `reference_conditioning_scale`, and it is not yet fixed. Read
+`docs/JANUS-six-view-defect-20260806.md` before running another sequence.

@@ -1,0 +1,6 @@
+{
+  "canonical_yaw_deg": 325.0,
+  "silhouette_iou": 0.9069,
+  "then_x_rotation_deg": 90.0,
+  "basis": "builder z_up"
+}
