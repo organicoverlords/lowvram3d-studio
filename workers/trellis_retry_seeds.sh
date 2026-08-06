@@ -27,6 +27,9 @@ SEEDS="${*:-12345 777 20260806 4242 31337 8675309}"
 ATLAS="${ATLAS:-1024}"
 RES="${RES:-512}"
 TAG="${TAG:-}"
+#: Extra flags passed straight to trellis-cli, e.g. EXTRA="--f32". Kept as a
+#: single string because the only current use is one or two flags.
+EXTRA="${EXTRA:-}"
 
 # Refuse to start if another trellis-cli already holds the card.
 #
@@ -53,7 +56,8 @@ for seed in $SEEDS; do
       --image "$IMAGE" --out "$OUT" \
       --res "$RES" --atlas "$ATLAS" --seed "$seed" \
       --receipt "$DIR/run$TAG-seed$seed.json" \
-      --log "$DIR/run$TAG-seed$seed.log" > "$DIR/stdout$TAG-seed$seed.txt" 2>&1
+      --log "$DIR/run$TAG-seed$seed.log" \
+      ${EXTRA:+--extra $EXTRA} > "$DIR/stdout$TAG-seed$seed.txt" 2>&1
   status=$?
   faces=$(grep -oE 'mesh V=[0-9]+ F=[0-9]+' "$DIR/run$TAG-seed$seed.log" 2>/dev/null | tail -1)
   if [ $status -eq 0 ] && [ -s "$OUT" ]; then

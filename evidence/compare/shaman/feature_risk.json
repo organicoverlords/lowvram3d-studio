@@ -1,0 +1,105 @@
+{
+  "schema_version": "feature_risk_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman4k_512.png",
+  "input_size": 512,
+  "structural_grid": 32,
+  "structural_cell_px": 16.0,
+  "regions_examined": 99,
+  "at_risk": 23,
+  "shape_lost": 57,
+  "strands": 18,
+  "findings": [
+    {
+      "bbox": [
+        362,
+        220,
+        372,
+        246
+      ],
+      "area_px": 134,
+      "thickness_px": 8.9,
+      "thickness_cells": 0.56,
+      "run_px": 32.0,
+      "run_cells": 2.0,
+      "verdict": "at_risk"
+    },
+    {
+      "bbox": [
+        199,
+        462,
+        216,
+        474
+      ],
+      "area_px": 112,
+      "thickness_px": 8.0,
+      "thickness_cells": 0.5,
+      "run_px": 30.0,
+      "run_cells": 1.87,
+      "verdict": "at_risk"
+    },
+    {
+      "bbox": [
+        209,
+        191,
+        222,
+        206
+      ],
+      "area_px": 88,
+      "thickness_px": 10.0,
+      "thickness_cells": 0.62,
+      "run_px": 15.8,
+      "run_cells": 0.99,
+      "verdict": "at_risk"
+    },
+    {
+      "bbox": [
+        215,
+        43,
+        229,
+        55
+      ],
+      "area_px": 83,
+      "thickness_px": 6.0,
+      "thickness_cells": 0.38,
+      "run_px": 29.0,
+      "run_cells": 1.81,
+      "verdict": "at_risk"
+    }
+  ],
+  "detail_passes": [
+    {
+      "crop_px": [
+        135,
+        339,
+        408,
+        512
+      ],
+      "crop_normalised": [
+        0.2637,
+        0.6621,
+        0.7969,
+        1.0
+      ],
+      "lost_area_px": 1721,
+      "magnification": 1.88,
+      "structural_cells_gained": 1.9
+    },
+    {
+      "crop_px": [
+        96,
+        200,
+        275,
+        400
+      ],
+      "crop_normalised": [
+        0.1875,
+        0.3906,
+        0.5371,
+        0.7812
+      ],
+      "lost_area_px": 195,
+      "magnification": 2.56,
+      "structural_cells_gained": 2.6
+    }
+  ]
+}

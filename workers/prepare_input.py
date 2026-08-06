@@ -50,8 +50,18 @@ DEFAULT_MARGIN = 0.04
 #: Blend between area-averaged alpha (0.0) and max-pooled alpha (1.0).
 DEFAULT_THIN_PRESERVE = 0.65
 
-#: Structural grid the sparse-structure stage runs on, per --res value.
-STRUCTURAL_GRID = {512: 32, 1024: 64, 1536: 96}
+#: Structural grid the sparse-structure stage runs on.
+#:
+#: **32 at every --res.** This was assumed to scale with --res and it does not:
+#: a res-1024 run logs `active voxels @res32` exactly like a res-512 run, then
+#: does `LR 512 -> upsample -> HR 1024 cascade`. Occupancy is decided once, on a
+#: 32^3 grid, and everything above that refines what the grid already claimed.
+#:
+#: The consequence is the useful part: **raising --res cannot recover a feature
+#: that failed to claim a structural cell.** It can only sharpen one that did.
+#: A pendant that came out as a stub had a cell and may be improved; a
+#: portcullis bar that vanished had none and will stay vanished.
+STRUCTURAL_GRID = 32
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -64,8 +74,10 @@ def main(argv: list[str] | None = None) -> int:
                         default=DEFAULT_THIN_PRESERVE,
                         help="0 = plain resampling, 1 = pure max-pooled alpha.")
     parser.add_argument("--res", type=int, default=512, choices=(512, 1024, 1536),
-                        help="Generator --res this input is destined for. Only "
-                             "used to report the structural cell size.")
+                        help="Generator --res this input is destined for. "
+                             "Recorded only; it does NOT change the structural "
+                             "cell size, which is fixed by the 32^3 occupancy "
+                             "grid and the input resolution.")
     parser.add_argument("--receipt", default="")
     args = parser.parse_args(argv)
 
@@ -109,7 +121,7 @@ def main(argv: list[str] | None = None) -> int:
     result.save(args.out)
 
     final_alpha = np.asarray(result)[..., 3]
-    grid = STRUCTURAL_GRID.get(args.res, 32)
+    grid = STRUCTURAL_GRID
     cell_px = size / grid
 
     receipt = {
