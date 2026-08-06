@@ -39,6 +39,12 @@ from lowvram3d.uv_quality import (  # noqa: E402
     area_weighted_percentile,
     conformal_stretch,
 )
+from lowvram3d.anchor_provenance import (  # noqa: E402
+    AnchorProvenanceError,
+    geometry_sha256,
+    load_anchor_provenance,
+    provenance_record,
+)
 from uv_xatlas_route import load_indexed, weld, write_glb  # noqa: E402
 
 
@@ -178,10 +184,28 @@ def main() -> int:
     parser.add_argument("--repair-rounds", type=int, default=4)
     parser.add_argument("--shrink-factors", default="0.97,0.93,0.88,0.80")
     parser.add_argument("--max-unwrap-attempts", type=int, default=3)
+    parser.add_argument("--anchor-receipt", required=True)
+    parser.add_argument("--expected-source-sha256", default="")
     args = parser.parse_args()
+
+    try:
+        _receipt, receipt_hash, anchor_ids = load_anchor_provenance(
+            args.anchor_receipt,
+            expected_source_sha256=args.expected_source_sha256 or None,
+        )
+    except AnchorProvenanceError as exc:
+        Path(args.report).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.report).write_text(json.dumps({
+            "input": args.input, "output": args.output, "gate_passed": False,
+            "failure_codes": [exc.code], "failure_detail": exc.detail,
+            "anchor_receipt": args.anchor_receipt,
+        }, indent=2), encoding="utf-8")
+        print(f"UV_PROVENANCE_FAILED {exc.code}: {exc.detail}", file=sys.stderr, flush=True)
+        return 2
 
     positions_raw, normals_raw, indices_raw = load_indexed(Path(args.input))
     positions, indices, first = weld(positions_raw, indices_raw)
+    input_geometry_hash = geometry_sha256(positions, indices)
     normals = normals_raw[first] if normals_raw is not None else None
     print(f"welded: {len(positions_raw)} -> {len(positions)} verts, {len(indices)} faces", flush=True)
 
@@ -295,6 +319,9 @@ def main() -> int:
             "utilisation_ok": utilisation >= MIN_ATLAS_UTILIZATION,
             "stretch_ok": bool(np.isfinite(stretch_p95) and stretch_p95 <= MAX_STRETCH_P95),
         }
+        output_geometry_hash = geometry_sha256(out_positions, out_indices)
+        geometry_unchanged = output_geometry_hash == input_geometry_hash
+        gate["geometry_unchanged"] = geometry_unchanged
         passed = all(gate.values())
 
         report = {
@@ -315,6 +342,14 @@ def main() -> int:
             "repair_journal": journal,
             "gate": gate,
             "gate_passed": passed,
+            "provenance": provenance_record(
+                receipt_sha256=receipt_hash,
+                anchor_ids=anchor_ids,
+                input_geometry_sha256=input_geometry_hash,
+                output_geometry_sha256=output_geometry_hash,
+                geometry_unchanged=geometry_unchanged,
+            ),
+            "failure_codes": ["GEOMETRY_MUTATION"] if not geometry_unchanged else [],
         }
         Path(args.report).parent.mkdir(parents=True, exist_ok=True)
         Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")

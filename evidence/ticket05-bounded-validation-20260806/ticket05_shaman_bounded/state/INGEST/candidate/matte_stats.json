@@ -1,0 +1,13 @@
+{
+  "tolerance": 42.0,
+  "background_rgb": [
+    154.0,
+    153.0,
+    137.0
+  ],
+  "candidate_regions": 505,
+  "subject_pixel_fraction": 0.36168212890625,
+  "subject_components": 7,
+  "largest_component_fraction": 0.971244388943265,
+  "detached_components": 2
+}

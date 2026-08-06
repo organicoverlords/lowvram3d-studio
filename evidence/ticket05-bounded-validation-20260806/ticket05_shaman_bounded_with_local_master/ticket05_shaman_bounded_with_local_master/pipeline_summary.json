@@ -1,0 +1,26 @@
+{
+  "asset_id": "ticket05_shaman_bounded_with_local_master",
+  "profile": "humanoid_complex_accessories",
+  "stages": {
+    "INGEST": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "GENERATE": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "GEOMETRY_QA": {
+      "status": "passed",
+      "failure_codes": [],
+      "needs_human": false
+    },
+    "CLEAN": {
+      "status": "failed",
+      "failure_codes": [],
+      "needs_human": true
+    }
+  }
+}

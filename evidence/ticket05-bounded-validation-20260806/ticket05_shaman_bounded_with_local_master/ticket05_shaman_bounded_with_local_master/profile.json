@@ -1,0 +1,18 @@
+{
+  "name": "humanoid_complex_accessories",
+  "lod_triangle_targets": [
+    220000,
+    80000,
+    35000,
+    12000
+  ],
+  "texture_resolution": 4096,
+  "rig_required": true,
+  "preserve_thin_features": true,
+  "separate_props": true,
+  "expected_upright_axis": "y",
+  "max_axis_ratio": 6.0,
+  "debris_height_min": 0.7,
+  "uv_max_charts": 3000,
+  "notes": "Hanging cords, pendants and a held prop. Thin features must survive decimation and detached ornaments must not be mistaken for debris."
+}

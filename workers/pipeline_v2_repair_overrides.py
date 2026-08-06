@@ -18,7 +18,9 @@ from pathlib import Path
 
 from run_asset_pipeline import REPO_ROOT, StageResult, sha256
 
-REPAIR_SCHEMA = 2
+# Bumped for the anchor-gated post-LOD cleanup receipt contract.  Existing schema-2 receipts are
+# intentionally re-run so an older cleanup cannot bypass the hard anchor gate.
+REPAIR_SCHEMA = 3
 HUMANOID_PROFILES = {"humanoid", "humanoid_complex_accessories"}
 
 
@@ -139,6 +141,22 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
                 return receipt
 
         outputs = dict(receipt.get("outputs") or {})
+        anchor_entry = outputs.get("anchor_receipt") or {}
+        anchor_receipt_path = Path(anchor_entry["path"]) if anchor_entry.get("path") else None
+        source_hash = gates.get("clean_master_sha256_before") or gates.get("clean_master_sha256_after")
+        if anchor_receipt_path is None or not anchor_receipt_path.exists() or not source_hash:
+            return _write_failed(
+                pipeline,
+                "LOD",
+                receipt,
+                "LOD_ANCHOR_GATE_FAILED",
+                "post-LOD cleanup requires the ticket-01 anchor receipt and clean-master source hash",
+                {
+                    "post_lod_cleanup_schema": REPAIR_SCHEMA,
+                    "anchor_receipt": str(anchor_receipt_path) if anchor_receipt_path else None,
+                    "source_mesh_sha256": source_hash,
+                },
+            )
         post_reports = []
         for index in range(len(profile.lod_triangle_targets)):
             key = f"lod{index}"
@@ -157,6 +175,8 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
                 "--height-min", "0.66",
                 "--max-triangles", "20",
                 "--max-diagonal-fraction", "0.062",
+                "--anchor-receipt", anchor_receipt_path,
+                "--source-hash", source_hash,
             ])
             cleanup = _json(cleanup_report)
             if code != 0 or not cleaned.exists():
@@ -191,6 +211,7 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
                         "lod": index,
                         "cleanup": cleanup,
                         "verify": verify,
+                        "anchor_gate": cleanup.get("anchor_gate"),
                     },
                 )
             promoted = pipeline.promote("LOD", {
@@ -208,6 +229,7 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
                 "remaining": (verify.get("debris") or {}).get(
                     "unsupported_components_remaining"
                 ),
+                "anchor_gate": cleanup.get("anchor_gate"),
                 "sha256": sha256(Path(promoted[key]["path"])),
             })
 

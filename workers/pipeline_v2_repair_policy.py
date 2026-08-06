@@ -50,6 +50,13 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
 
         outputs = dict(receipt.get("outputs") or {})
         base_gates = dict(receipt.get("gates") or {})
+        anchor_entry = outputs.get("anchor_receipt") or {}
+        anchor_receipt_path = Path(anchor_entry["path"]) if anchor_entry.get("path") else None
+        source_hash = base_gates.get("clean_master_sha256_before") or base_gates.get(
+            "clean_master_sha256_after"
+        )
+        if anchor_receipt_path is None or not anchor_receipt_path.exists() or not source_hash:
+            return receipt
         post_reports = []
 
         for index in range(len(profile.lod_triangle_targets)):
@@ -73,9 +80,15 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
                 "--height-min", "0.66",
                 "--max-triangles", "20",
                 "--max-diagonal-fraction", "0.062",
+                "--anchor-receipt", anchor_receipt_path,
+                "--source-hash", source_hash,
             ])
             cleanup = _json(cleanup_report)
-            if code != 0 or not cleaned.exists():
+            if (
+                code != 0
+                or not cleaned.exists()
+                or not (cleanup.get("anchor_gate") or {}).get("passed", False)
+            ):
                 return receipt
 
             verify_code, _ = pipeline.run([
@@ -112,6 +125,7 @@ def apply_repair_overrides(pipeline, manifest: dict, stages: dict) -> dict:
                 "triangles_removed_percent": loss,
                 "max_allowed_percent": POST_LOD_MAX_FACE_LOSS_PERCENT,
                 "remaining": remaining,
+                "anchor_gate": cleanup.get("anchor_gate"),
                 "sha256": sha256(Path(promoted[key]["path"])),
             })
 

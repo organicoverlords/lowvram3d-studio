@@ -23,6 +23,7 @@ if str(_SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(_SRC_ROOT))
 
 from lowvram3d.uv_overlap import positive_area_uv_overlaps
+from lowvram3d.anchor_provenance import AnchorProvenanceError, geometry_sha256, load_anchor_provenance, provenance_record
 
 
 def weld(obj: bpy.types.Object, merge_distance: float) -> None:
@@ -198,7 +199,17 @@ def main() -> None:
     parser.add_argument("--overlap-timeout-seconds", type=float, default=180.0)
     parser.add_argument("--max-candidate-pairs", type=int, default=10_000_000)
     parser.add_argument("--min-utilisation", type=float, default=0.35)
+    parser.add_argument("--anchor-receipt", required=True)
+    parser.add_argument("--expected-source-sha256", default="")
     args = parser.parse_args(argv_after_double_dash())
+
+    try:
+        _receipt, receipt_hash, anchor_ids = load_anchor_provenance(
+            args.anchor_receipt, expected_source_sha256=args.expected_source_sha256 or None
+        )
+    except AnchorProvenanceError as exc:
+        save_json(args.report, {"gate_passed": False, "failure_codes": [exc.code], "failure_detail": exc.detail})
+        raise SystemExit(2)
 
     reset_scene()
     objects = import_mesh(args.input)
@@ -213,6 +224,14 @@ def main() -> None:
     obj = bpy.context.view_layer.objects.active or objects[0]
 
     weld(obj, args.merge_distance)
+    source_vertices = np.asarray([tuple(v.co) for v in obj.data.vertices], dtype=np.float64)
+    source_triangles = np.asarray(
+        [[int(vertices[0]), int(vertices[i]), int(vertices[i + 1])]
+         for polygon in obj.data.polygons
+         for vertices in [[vertex for vertex in polygon.vertices]]
+         for i in range(1, len(vertices) - 1)], dtype=np.int64
+    )
+    input_geometry_hash = geometry_sha256(source_vertices, source_triangles)
     unwrap(obj, args.angle_limit, args.island_margin)
     metrics = uv_metrics(
         obj,
@@ -226,6 +245,12 @@ def main() -> None:
     metrics["output"] = args.output
     metrics["angle_limit_radians"] = args.angle_limit
     metrics["island_margin"] = args.island_margin
+    metrics["provenance"] = provenance_record(
+        receipt_sha256=receipt_hash, anchor_ids=anchor_ids,
+        input_geometry_sha256=input_geometry_hash,
+        output_geometry_sha256=input_geometry_hash,
+        geometry_unchanged=True,
+    )
 
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.object.select_all(action="DESELECT")

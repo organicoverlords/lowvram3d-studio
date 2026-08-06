@@ -20,6 +20,10 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from lowvram3d.anchor_provenance import GEOMETRY_HASH_FRAME, geometry_sha256  # noqa: E402
 
 from mesh_io import read_glb
 from shaman_texture_views import (
@@ -158,6 +162,7 @@ def main() -> None:
         ortho_scale=np.float32(ortho),
         vis_front=visible,
     )
+    geometry_hash = geometry_sha256(verts, tris)
 
     facing = face_normals @ direction
     final_registration_iou = (
@@ -189,6 +194,8 @@ def main() -> None:
         "failure_codes": failure_codes,
         "ortho_scale": ortho,
         "centre_offset": [float(v) for v in centre],
+        "geometry_hash_frame": GEOMETRY_HASH_FRAME,
+        "geometry_sha256": geometry_hash,
         "triangles": int(len(tris)),
         "visible_triangles": int(visible.sum()),
         "visible_percent": round(float(visible.mean() * 100), 3),

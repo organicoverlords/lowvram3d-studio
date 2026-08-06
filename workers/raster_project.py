@@ -24,6 +24,15 @@ import numpy as np
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
 from scipy.spatial import cKDTree
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from lowvram3d.anchor_provenance import (
+    AnchorProvenanceError,
+    GEOMETRY_HASH_FRAME,
+    geometry_sha256_from_npz,
+    load_anchor_provenance,
+    provenance_record,
+)
 
 FACING_POWER = 3.0
 FACING_MIN = 0.15
@@ -46,7 +55,32 @@ def main() -> None:
     parser.add_argument("--atlas-size", type=int, default=1024)
     parser.add_argument("--progress", default="")
     parser.add_argument("--report", default="")
+    parser.add_argument("--anchor-receipt", default="")
+    parser.add_argument("--expected-source-sha256", default="")
+    parser.add_argument("--expected-input-geometry-sha256", default="")
+    parser.add_argument("--require-anchor-provenance", action="store_true")
     args = parser.parse_args()
+
+    if args.require_anchor_provenance and not args.anchor_receipt:
+        if args.report:
+            Path(args.report).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.report).write_text(json.dumps({"success": False, "failure_codes": ["ANCHOR_RECEIPT_MISSING"]}, indent=2), encoding="utf-8")
+        raise SystemExit(2)
+
+    receipt_hash = None
+    anchor_ids = []
+    provenance_verified = False
+    try:
+        if args.anchor_receipt:
+            _receipt, receipt_hash, anchor_ids = load_anchor_provenance(
+                args.anchor_receipt, expected_source_sha256=args.expected_source_sha256 or None
+            )
+            provenance_verified = True
+    except AnchorProvenanceError as exc:
+        if args.report:
+            Path(args.report).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.report).write_text(json.dumps({"success": False, "failure_codes": [exc.code], "failure_detail": exc.detail}, indent=2), encoding="utf-8")
+        raise SystemExit(2)
 
     npz, viewdir, meta_path, outdir = Path(args.npz), Path(args.views_dir), Path(args.view_metadata), Path(args.output_dir)
     atlas_size = args.atlas_size
@@ -62,6 +96,23 @@ def main() -> None:
     view_names = [str(x) for x in d["view_names"]]
     view_locs, ortho = d["view_locs"], float(d["ortho_scale"])
     total_tris = len(tris)
+    geometry_hash = geometry_sha256_from_npz(npz)
+    if args.expected_input_geometry_sha256 and geometry_hash != args.expected_input_geometry_sha256:
+        if args.report:
+            Path(args.report).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.report).write_text(json.dumps({
+                "success": False,
+                "failure_codes": ["GEOMETRY_MUTATION"],
+                "failure_detail": "raster input geometry hash mismatch",
+                "provenance": {
+                    "geometry_hash_frame": GEOMETRY_HASH_FRAME,
+                    "input_geometry_sha256": geometry_hash,
+                    "expected_input_geometry_sha256": args.expected_input_geometry_sha256,
+                    "geometry_unchanged": False,
+                    "provenance_verified": provenance_verified,
+                },
+            }, indent=2), encoding="utf-8")
+        raise SystemExit(2)
 
     usable = [(i, n) for i, n in enumerate(view_names)
               if conf_by_view.get(n, ("synthetic", 0.0))[0] in semantic_types
@@ -392,6 +443,18 @@ def main() -> None:
                 "same_component_required": True,
             },
             "elapsed_seconds": round(time.time() - t0, 1),
+            "provenance": ({**provenance_record(
+                receipt_sha256=receipt_hash, anchor_ids=anchor_ids,
+                input_geometry_sha256=geometry_hash,
+                output_geometry_sha256=geometry_hash,
+                geometry_unchanged=True,
+            ), "provenance_verified": provenance_verified} if provenance_verified else {
+                "geometry_hash_frame": GEOMETRY_HASH_FRAME,
+                "provenance_verified": False,
+                "input_geometry_sha256": geometry_hash,
+                "output_geometry_sha256": geometry_hash,
+                "geometry_unchanged": True,
+            }),
         }
         Path(args.report).write_text(json.dumps(report, indent=2), encoding="utf-8")
 

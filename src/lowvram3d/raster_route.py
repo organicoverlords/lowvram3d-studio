@@ -9,9 +9,27 @@ from typing import TYPE_CHECKING
 
 from .contracts import JobReceipt, StageReceipt, now_ms
 from .runner import StageFailure, artifact_is_valid
+from .anchor_provenance import (
+    AnchorProvenanceError,
+    geometry_sha256_from_glb,
+    load_anchor_provenance,
+)
 
 if TYPE_CHECKING:
     from .pipeline import PipelineEngine
+
+
+def verified_cleanup_geometry_hash(cleanup_report: dict, expected_hash: str) -> str:
+    """Return cleanup's verified output hash or reject a mutating cleanup."""
+    provenance = cleanup_report.get("provenance") or {}
+    output_hash = provenance.get("output_geometry_sha256")
+    if (
+        not cleanup_report.get("success", False)
+        or provenance.get("input_geometry_sha256") != expected_hash
+        or output_hash != expected_hash
+    ):
+        raise ValueError("cleanup geometry hash mismatch; production promotion refused")
+    return str(output_hash)
 
 
 def run_raster_texture_route(
@@ -22,6 +40,37 @@ def run_raster_texture_route(
     job_dir: Path,
 ) -> tuple[Path, Path]:
     """Create and validate a candidate before promoting public texture artifacts."""
+    anchor_value = receipt.parameters.get("anchor_receipt") or receipt.outputs.get("anchor_receipt")
+    if isinstance(anchor_value, dict):
+        anchor_value = anchor_value.get("path")
+    anchor_path = Path(anchor_value) if anchor_value else None
+    expected_source = receipt.parameters.get("anchor_source_mesh_sha256")
+    provenance_required = bool(
+        receipt.parameters.get("require_anchor_provenance")
+        or receipt.parameters.get("provenance_required")
+        or receipt.parameters.get("pipeline_version") == 2
+    )
+    provenance_verified = False
+    anchor_hash = None
+    anchor_ids: list[str] = []
+    if anchor_path:
+        try:
+            _anchor_receipt, anchor_hash, anchor_ids = load_anchor_provenance(
+                anchor_path, expected_source_sha256=expected_source
+            )
+            provenance_verified = True
+        except AnchorProvenanceError as exc:
+            failure = StageReceipt("raster_provenance", "failed", now_ms(), finished_at=now_ms(),
+                                   error=exc.detail, failure_class=exc.code)
+            raise StageFailure(exc.detail, failure) from exc
+    elif provenance_required:
+        failure = StageReceipt("raster_provenance", "failed", now_ms(), finished_at=now_ms(),
+                               error="anchor receipt is required for this pipeline", failure_class="ANCHOR_RECEIPT_MISSING")
+        raise StageFailure(failure.error or "anchor receipt required", failure)
+    geometry_provenance_required = provenance_required or provenance_verified
+    accepted_geometry_hash = (
+        geometry_sha256_from_glb(mesh) if geometry_provenance_required else None
+    )
     projection = job_dir / "textured" / "projection"
     candidate = projection / "candidate_v2"
     candidate.mkdir(parents=True, exist_ok=True)
@@ -51,11 +100,27 @@ def run_raster_texture_route(
             "--output-npz", npz,
             "--report", cleanup_report,
             "--cleanup-mode", cleanup_mode,
+            *( ["--expected-input-geometry-sha256", accepted_geometry_hash] if accepted_geometry_hash else [] ),
+            *( ["--anchor-receipt", anchor_path, "--expected-source-sha256", expected_source or ""] if provenance_verified else [] ),
+            *( ["--require-anchor-provenance"] if provenance_required else [] ),
         ],
         {"mesh": cleaned_glb, "npz": npz, "report": cleanup_report},
         receipt,
         job_dir,
     )
+
+    verified_geometry_hash = None
+    if accepted_geometry_hash:
+        cleanup_data = json.loads(cleanup_report.read_text(encoding="utf-8"))
+        try:
+            verified_geometry_hash = verified_cleanup_geometry_hash(cleanup_data, accepted_geometry_hash)
+        except ValueError as exc:
+            detail = str(exc)
+            failure = StageReceipt(
+                "raster_provenance", "failed", now_ms(), finished_at=now_ms(),
+                error=detail, failure_class="GEOMETRY_MUTATION",
+            )
+            raise StageFailure(detail, failure)
 
     view_metadata = views / "view_metadata.json"
     if not artifact_is_valid(view_metadata):
@@ -86,6 +151,9 @@ def run_raster_texture_route(
             "--atlas-size", str(atlas_size),
             "--progress", str(progress),
             "--report", str(project_report),
+            *( ["--expected-input-geometry-sha256", verified_geometry_hash] if verified_geometry_hash else [] ),
+            *( ["--anchor-receipt", str(anchor_path), "--expected-source-sha256", expected_source or ""] if provenance_verified else [] ),
+            *( ["--require-anchor-provenance"] if provenance_required else [] ),
         ],
         {"basecolor": atlas, "report": project_report},
         receipt,
@@ -104,6 +172,9 @@ def run_raster_texture_route(
             "--output", candidate_glb,
             "--texture", candidate_texture,
             "--report", export_report,
+            *( ["--expected-input-geometry-sha256", verified_geometry_hash] if verified_geometry_hash else [] ),
+            *( ["--anchor-receipt", str(anchor_path), "--expected-source-sha256", expected_source or ""] if provenance_verified else [] ),
+            *( ["--require-anchor-provenance"] if provenance_required else [] ),
         ],
         {"mesh": candidate_glb, "basecolor": candidate_texture, "report": export_report},
         receipt,
@@ -142,6 +213,12 @@ def run_raster_texture_route(
                 "atlas_size": atlas_size,
                 "cleanup_mode": cleanup_mode,
                 "geometry_validation": str(validation_report),
+                "anchor_receipt_sha256": anchor_hash,
+                "anchor_ids": anchor_ids,
+                "input_geometry_sha256": accepted_geometry_hash,
+                "verified_geometry_sha256": verified_geometry_hash,
+                "provenance_verified": provenance_verified,
+                "geometry_provenance_verified": bool(verified_geometry_hash),
             },
             indent=2,
         ),

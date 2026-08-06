@@ -1,0 +1,35 @@
+{
+  "stage": "GENERATE",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "ticket05_shaman_bounded_with_local_master",
+  "input_hashes": {
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_full.glb": "db2b59169ae5e725e847513725703b88dbdd857060e70281ac4e86a8b14b8784"
+  },
+  "outputs": {
+    "master": {
+      "path": "evidence\\ticket05-bounded-validation-20260806\\ticket05_shaman_bounded_with_local_master\\ticket05_shaman_bounded_with_local_master\\state\\GENERATE\\proven\\master.glb",
+      "sha256": "db2b59169ae5e725e847513725703b88dbdd857060e70281ac4e86a8b14b8784",
+      "bytes": 82749764
+    }
+  },
+  "gates": {
+    "adopted_existing_master": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_full.glb",
+    "sha256": "db2b59169ae5e725e847513725703b88dbdd857060e70281ac4e86a8b14b8784"
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "adopted_existing_master": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\shaman\\shaman_full.glb",
+        "sha256": "db2b59169ae5e725e847513725703b88dbdd857060e70281ac4e86a8b14b8784"
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 0.6
+    }
+  ],
+  "finished_at": "2026-08-06T03:38:02Z"
+}

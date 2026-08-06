@@ -1,5 +1,49 @@
 # LowVRAM3DStudio — Session Handoff
 
+## 2026-08-06 — Thin-feature anchor/provenance pipeline update
+
+This update is committed on `infra/windows-self-hosted-runner-20260731` and covers the
+shaman thin-feature loss path across discovery, LOD, debris cleanup, UV, raster projection,
+export, and promotion.
+
+### What changed
+
+- Added a strict six-view thin-feature anchor receipt with normalized floating-point seed/bounds,
+  a persisted normalization frame, deterministic IDs, and source geometry hashes.
+- Added per-view LOD silhouette support gates and fixed-frame anchor protection; nearby body
+  vertices can no longer satisfy a vanished pendant/ornament anchor.
+- Added anchor-aware debris cleanup gates with before/after IDs, hashes, and fail-closed
+  promotion behavior.
+- Added geometry provenance through UV, raster cleanup/project/export, and fresh-import export
+  validation. V2 routes reject missing receipts, geometry mutation, hash mismatches, and anchor
+  loss; explicitly unmarked legacy routes remain reported as unverified.
+- Added focused regression tests for receipt contracts, fixed-frame LOD support, debris cleanup,
+  and translation-invariant raster geometry hashes.
+
+### Validation
+
+Control environment: `C:\Users\Lauri\AppData\Local\LowVRAM3DStudio\envs\control\Scripts\python.exe`
+
+- Full suite: **288 passed**, 8 subtests, 2 Pillow warnings.
+- Focused anchor/debris/LOD/raster provenance tests: **19 passed**.
+- `compileall -q src workers blender` passed.
+- `git diff --check` passed.
+
+### Bounded shaman run and limitation
+
+The representative run used the full ornamented source
+`C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803\evidence\compare\shaman\shaman_full.glb`
+(82,749,764 bytes; SHA-256
+`db2b59169ae5e725e847513725703b88dbdd857060e70281ac4e86a8b14b8784`). It passed INGEST,
+GENERATE, and GEOMETRY_QA. CLEAN then stopped on a SciPy sparse-matrix memory allocation
+failure before LOD/UV/raster/export. No final replacement model was promoted.
+
+The canonical external clean-master path was absent in the earlier run; the pipeline now emits a
+structured `EXISTING_MASTER_MISSING` receipt instead of crashing. The smaller ornament-incomplete
+baseline was exploratory only and is not part of the production evidence.
+
+Evidence: `evidence/ticket05-bounded-validation-20260806/`.
+
 > **Read `evidence/RESULTS.md` first.** It carries the current measured state, the known
 > limitations, and the six measurement bugs that invalidated earlier conclusions. Everything below
 > the "CURRENT STATE" section is older history, kept for context but partly superseded.

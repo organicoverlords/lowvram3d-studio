@@ -1,0 +1,51 @@
+{
+  "stage": "GENERATE",
+  "status": "failed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "ticket05_shaman_bounded",
+  "input_hashes": {
+    "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\high\\shaman_high_clean.glb": null
+  },
+  "gates": {
+    "existing_master": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\high\\shaman_high_clean.glb",
+    "existing_master_present": false,
+    "input_sha256": null,
+    "output_sha256": null,
+    "missing_anchor_ids": [],
+    "support_metrics": {},
+    "geometry_loss_context": {
+      "status": "not_reached",
+      "first_unavailable_stage": "GENERATE"
+    }
+  },
+  "failure_codes": [
+    "EXISTING_MASTER_MISSING"
+  ],
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "failed",
+      "overrides": {},
+      "gates": {
+        "existing_master": "C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\high\\shaman_high_clean.glb",
+        "existing_master_present": false,
+        "input_sha256": null,
+        "output_sha256": null,
+        "missing_anchor_ids": [],
+        "support_metrics": {},
+        "geometry_loss_context": {
+          "status": "not_reached",
+          "first_unavailable_stage": "GENERATE"
+        }
+      },
+      "failure_codes": [
+        "EXISTING_MASTER_MISSING"
+      ],
+      "detail": "existing master is unavailable: C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\high\\shaman_high_clean.glb",
+      "seconds": 0.0
+    }
+  ],
+  "needs_human": true,
+  "detail": "existing master is unavailable: C:\\AI\\LowVRAM3D-benchmarks\\outputs\\antlered_bird_shaman_anchor\\final-pipeline\\high\\shaman_high_clean.glb",
+  "finished_at": "2026-08-06T02:55:48Z"
+}

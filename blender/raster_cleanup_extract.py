@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
 
 import bmesh
 import bpy
@@ -23,6 +24,7 @@ from mathutils.bvhtree import BVHTree
 
 from common import argv_after_double_dash, import_mesh, reset_scene, save_json
 from lowvram3d.geometry_quality import ComponentMetrics, decide_component, topology_gate
+from lowvram3d.anchor_provenance import GEOMETRY_HASH_FRAME, geometry_sha256
 
 VIEWS = {
     "front": (0.0, -3.0, 0.0),
@@ -36,6 +38,22 @@ ATTACH_DISTANCE_FRACTION = 0.006
 MAX_HOLE_EDGES = 12
 MAX_HOLE_DIAMETER_FRACTION = 0.015
 MAX_HOLE_PERIMETER_FRACTION = 0.05
+
+
+def scene_geometry_hash(objects: list) -> str:
+    vertices: list[list[float]] = []
+    triangles: list[list[int]] = []
+    base = 0
+    for obj in objects:
+        obj.data.calc_loop_triangles()
+        matrix = obj.matrix_world
+        vertices.extend([list(matrix @ vertex.co) for vertex in obj.data.vertices])
+        triangles.extend(
+            [[base + int(index) for index in triangle.vertices]
+             for triangle in obj.data.loop_triangles]
+        )
+        base += len(obj.data.vertices)
+    return geometry_sha256(np.asarray(vertices, dtype=np.float64), np.asarray(triangles, dtype=np.int64))
 
 
 def component_faces(bm: bmesh.types.BMesh) -> list[list[bmesh.types.BMFace]]:
@@ -178,12 +196,35 @@ def main() -> None:
         choices=("conservative", "single_subject_strict"),
         default="conservative",
     )
+    # Provenance is validated by the orchestrator; these optional arguments keep the legacy
+    # worker CLI compatible while allowing the receipt to be carried through command receipts.
+    parser.add_argument("--anchor-receipt", default="")
+    parser.add_argument("--expected-source-sha256", default="")
+    parser.add_argument("--expected-input-geometry-sha256", default="")
+    parser.add_argument("--require-anchor-provenance", action="store_true")
     args = parser.parse_args(argv_after_double_dash())
+
+    if args.require_anchor_provenance and not args.anchor_receipt:
+        raise SystemExit(2)
 
     reset_scene()
     objects = import_mesh(args.input)
     if not objects:
         raise RuntimeError("No mesh imported")
+    input_geometry_hash = scene_geometry_hash(objects)
+    if args.expected_input_geometry_sha256 and input_geometry_hash != args.expected_input_geometry_sha256:
+        save_json(args.report, {
+            "success": False,
+            "failure_codes": ["GEOMETRY_MUTATION"],
+            "failure_detail": "cleanup input geometry hash differs from accepted geometry",
+            "provenance": {
+                "geometry_hash_frame": GEOMETRY_HASH_FRAME,
+                "input_geometry_sha256": input_geometry_hash,
+                "expected_input_geometry_sha256": args.expected_input_geometry_sha256,
+                "geometry_unchanged": False,
+            },
+        })
+        raise SystemExit(2)
 
     scene_points = [obj.matrix_world @ vertex.co for obj in objects for vertex in obj.data.vertices]
     if not scene_points:
@@ -336,6 +377,8 @@ def main() -> None:
         boundary_after=boundary_after,
         mode=args.cleanup_mode,
     )
+    output_geometry_hash = scene_geometry_hash(objects) if objects else ""
+    geometry_unchanged = bool(input_geometry_hash and output_geometry_hash == input_geometry_hash)
     report = {
         "success": gate_passed,
         "policy_version": 2,
@@ -356,7 +399,21 @@ def main() -> None:
         "gate_errors": gate_errors,
         "objects": object_reports,
         "components": decisions,
+        "provenance": {
+            "geometry_hash_frame": GEOMETRY_HASH_FRAME,
+            "input_geometry_sha256": input_geometry_hash,
+            "output_geometry_sha256": output_geometry_hash,
+            "expected_input_geometry_sha256": args.expected_input_geometry_sha256 or None,
+            "geometry_unchanged": geometry_unchanged,
+            "provenance_verified": bool(args.expected_input_geometry_sha256),
+        },
     }
+    if args.expected_input_geometry_sha256 and not geometry_unchanged:
+        gate_passed = False
+        report["success"] = False
+        report["failure_codes"] = ["GEOMETRY_MUTATION"]
+        gate_errors = [*gate_errors, "cleanup changed geometry"]
+        report["gate_errors"] = gate_errors
     save_json(args.report, report)
     if not gate_passed:
         raise RuntimeError(f"Geometry cleanup gate failed: {gate_errors}")

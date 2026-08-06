@@ -1,0 +1,25 @@
+{
+  "stage": "CLEAN",
+  "status": "failed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "ticket05_shaman_bounded_with_local_master",
+  "input_hashes": {
+    "evidence\\ticket05-bounded-validation-20260806\\ticket05_shaman_bounded_with_local_master\\ticket05_shaman_bounded_with_local_master\\state\\GENERATE\\proven\\master.glb": "db2b59169ae5e725e847513725703b88dbdd857060e70281ac4e86a8b14b8784"
+  },
+  "gates": {},
+  "failure_codes": [],
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "failed",
+      "overrides": {},
+      "gates": {},
+      "failure_codes": [],
+      "detail": "debris strip exit 1: \n  File \"C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\control\\Lib\\site-packages\\scipy\\sparse\\csgraph\\_validation.py\", line 35, in validate_graph\n    csgraph = csgraph.tocsr(copy=copy_if_sparse).astype(DTYPE, copy=False)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\control\\Lib\\site-packages\\scipy\\sparse\\_data.py\", line 72, in astype\n    matrix = self._with_data(\n             ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\control\\Lib\\site-packages\\scipy\\sparse\\_compressed.py\", line 1173, in _with_data\n    self.indptr.copy()),\n    ^^^^^^^^^^^^^^^^^^\nnumpy._core._exceptions._ArrayMemoryError: Unable to allocate 4.12 MiB for an array with shape (1081265,) and data type int32\n",
+      "seconds": 8.3
+    }
+  ],
+  "needs_human": true,
+  "detail": "debris strip exit 1: \n  File \"C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\control\\Lib\\site-packages\\scipy\\sparse\\csgraph\\_validation.py\", line 35, in validate_graph\n    csgraph = csgraph.tocsr(copy=copy_if_sparse).astype(DTYPE, copy=False)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\control\\Lib\\site-packages\\scipy\\sparse\\_data.py\", line 72, in astype\n    matrix = self._with_data(\n             ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Lauri\\AppData\\Local\\LowVRAM3DStudio\\envs\\control\\Lib\\site-packages\\scipy\\sparse\\_compressed.py\", line 1173, in _with_data\n    self.indptr.copy()),\n    ^^^^^^^^^^^^^^^^^^\nnumpy._core._exceptions._ArrayMemoryError: Unable to allocate 4.12 MiB for an array with shape (1081265,) and data type int32\n",
+  "finished_at": "2026-08-06T03:38:17Z"
+}

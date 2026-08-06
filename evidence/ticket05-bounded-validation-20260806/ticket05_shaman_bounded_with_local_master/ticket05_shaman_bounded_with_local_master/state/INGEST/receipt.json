@@ -1,0 +1,39 @@
+{
+  "stage": "INGEST",
+  "status": "passed",
+  "profile": "humanoid_complex_accessories",
+  "asset_id": "ticket05_shaman_bounded_with_local_master",
+  "input_hashes": {
+    "benchmarks\\images\\antlered_bird_shaman_anchor.preview.webp": "e4e991109ada22837cc58720b671df1c64979ec37fb585dc177bc4f8293d537a"
+  },
+  "outputs": {
+    "matte": {
+      "path": "evidence\\ticket05-bounded-validation-20260806\\ticket05_shaman_bounded_with_local_master\\ticket05_shaman_bounded_with_local_master\\state\\INGEST\\proven\\matte.png",
+      "sha256": "150bbc8a39fc4077339c2660c1946222e8b21494c3f6be8292139b1310b9ed46",
+      "bytes": 77822
+    }
+  },
+  "gates": {
+    "source_sha256": "e4e991109ada22837cc58720b671df1c64979ec37fb585dc177bc4f8293d537a",
+    "matte_sha256": "150bbc8a39fc4077339c2660c1946222e8b21494c3f6be8292139b1310b9ed46",
+    "subject_components": 7,
+    "subject_pixel_fraction": 0.36168212890625
+  },
+  "attempts": [
+    {
+      "attempt": 0,
+      "status": "passed",
+      "overrides": {},
+      "gates": {
+        "source_sha256": "e4e991109ada22837cc58720b671df1c64979ec37fb585dc177bc4f8293d537a",
+        "matte_sha256": "150bbc8a39fc4077339c2660c1946222e8b21494c3f6be8292139b1310b9ed46",
+        "subject_components": 7,
+        "subject_pixel_fraction": 0.36168212890625
+      },
+      "failure_codes": [],
+      "detail": "",
+      "seconds": 1.7
+    }
+  ],
+  "finished_at": "2026-08-06T03:38:00Z"
+}

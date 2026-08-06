@@ -11,6 +11,11 @@ import shutil
 from pathlib import Path
 
 from run_asset_pipeline import REPO_ROOT, StageResult, sha256
+from lowvram3d.thin_feature_anchors import (
+    anchor_receipt_sha256,
+    discover_thin_feature_anchors,
+    serialize_anchor_receipt,
+)
 
 
 def _json(path: Path) -> dict:
@@ -73,35 +78,108 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             stage = pipeline.stage_dir("LOD") / "candidate"
             outdir = stage / "lods"
             report = stage / "lod_report.json"
+            clean_hash_before = sha256(clean)
+            anchor_receipt_path = stage / "anchor_receipt.json"
+            try:
+                anchor_receipt = discover_thin_feature_anchors(clean, profile=profile)
+                anchor_receipt_path.write_bytes(serialize_anchor_receipt(anchor_receipt))
+            except Exception as exc:
+                return StageResult("failed", failure_codes=["ANCHOR_RECEIPT_INVALID"],
+                                   detail=f"anchor discovery failed: {exc}")
             targets = ",".join(str(v) for v in profile.lod_triangle_targets)
             code, out = _blender(
                 pipeline, b("final_pipeline_lods.py"),
                 "--input", clean, "--output-dir", outdir, "--report", report,
-                "--targets", targets,
+                "--targets", targets, "--anchor-receipt", anchor_receipt_path,
             )
             data = _json(report)
-            if code != 0 or not data.get("lods"):
+            if not data.get("lods"):
                 return StageResult("failed", detail=f"LOD worker exit {code}: {out[-1200:]}")
 
-            outputs = {"lod_report": report}
-            gates = {"targets": list(profile.lod_triangle_targets), "lods": []}
+            clean_hash_after = sha256(clean)
+            outputs = {"lod_report": report, "anchor_receipt": anchor_receipt_path}
+            gates = {
+                "targets": list(profile.lod_triangle_targets),
+                "clean_master_sha256_before": clean_hash_before,
+                "clean_master_sha256_after": clean_hash_after,
+                "clean_master_unchanged": clean_hash_before == clean_hash_after,
+                "anchor_receipt_sha256": anchor_receipt_sha256(anchor_receipt),
+                "anchor_ids": [a["anchor_id"] for a in anchor_receipt.get("anchors", [])],
+                "lods": [],
+            }
             failures = []
+            candidates = []
+            if code != 0:
+                failures.append(f"LOD worker exit {code}: {out[-600:]}")
             for index, target in enumerate(profile.lod_triangle_targets):
                 source = outdir / f"shaman_lod{index}.glb"
                 if not source.exists():
                     failures.append(f"LOD{index} missing")
                     continue
                 destination = stage / f"{asset_id}_lod{index}.glb"
-                _copy_named(source, destination)
-                outputs[f"lod{index}"] = destination
                 row = next((r for r in data["lods"] if int(r.get("lod", -1)) == index), {})
                 achieved = int(row.get("achieved_triangles", 0))
+                survival = row.get("anchor_survival") or {}
+                anchor_gate = {
+                    "anchor_ids": row.get("anchor_ids", []),
+                    "present_ids": survival.get("present_ids", []),
+                    "missing_ids": survival.get("missing_ids", []),
+                    "anchors": survival.get("anchors", []),
+                }
                 gates["lods"].append({"lod": index, "target": target, "triangles": achieved,
-                                      "sha256": sha256(destination)})
+                                      "input_sha256": row.get("input_sha256"),
+                                      "output_sha256": row.get("output_sha256"),
+                                      "sha256": sha256(source), "anchors": anchor_gate,
+                                      "passed": bool(row.get("passed", False)),
+                                      "failure_reasons": row.get("failure_reasons", [])})
+                candidates.append((index, source, destination))
                 if achieved <= 0 or achieved > max(target * 1.20, target + 5000):
                     failures.append(f"LOD{index} achieved {achieved}, target {target}")
+                if row.get("input_sha256") != clean_hash_before:
+                    failures.append(f"LOD{index} input hash does not match clean master")
+                if row.get("output_sha256") != sha256(source):
+                    failures.append(f"LOD{index} output hash mismatch")
+                expected_anchor_ids = gates["anchor_ids"]
+                row_anchor_ids = sorted(row.get("anchor_ids", []))
+                if row_anchor_ids != expected_anchor_ids:
+                    failures.append(f"LOD{index} anchor ID set does not match receipt")
+                records = survival.get("anchors") or []
+                record_ids = sorted(
+                    record.get("anchor_id")
+                    for record in records
+                    if isinstance(record, dict) and isinstance(record.get("anchor_id"), str)
+                )
+                if record_ids != expected_anchor_ids:
+                    failures.append(f"LOD{index} anchor survival records are incomplete")
+                if any(
+                    not isinstance(record, dict)
+                    or not record.get("present")
+                    or record.get("under_floor_views")
+                    for record in records
+                ):
+                    failures.append(f"LOD{index} anchor survival record is under floor")
+                if not row.get("passed", False):
+                    failures.append(
+                        f"LOD{index} receipt failed: {row.get('failure_reasons', [])}"
+                    )
+                if not survival.get("all_present"):
+                    failures.append(
+                        f"LOD{index} anchors missing/under floor: "
+                        f"{survival.get('missing_ids', [])}"
+                    )
+            if not gates["clean_master_unchanged"]:
+                failures.append("clean master changed during LOD generation")
             if failures:
-                return StageResult("failed", gates=gates, detail="; ".join(failures))
+                codes = []
+                if any("anchor" in failure.lower() or "receipt failed" in failure.lower() for failure in failures):
+                    codes.append("LOD_ANCHOR_GATE_FAILED")
+                if any("clean master" in failure.lower() for failure in failures):
+                    codes.append("CLEAN_MASTER_CHANGED")
+                return StageResult("failed", gates=gates, failure_codes=codes, detail="; ".join(failures))
+            # Promote no individual target until every target has passed all gates.
+            for index, source, destination in candidates:
+                _copy_named(source, destination)
+                outputs[f"lod{index}"] = destination
             return StageResult("passed", outputs=outputs, gates=gates)
 
         return pipeline.execute("LOD", [clean], runner)
@@ -109,6 +187,11 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     # ---------------------------------------------------------------- UV
     def uv():
         lod0 = _output(pipeline, "LOD", "lod0")
+        lod_receipt = pipeline.read_receipt("LOD") or {}
+        lod_outputs = lod_receipt.get("outputs") or {}
+        anchor_entry = lod_outputs.get("anchor_receipt") or {}
+        anchor_receipt = Path(anchor_entry["path"]) if anchor_entry.get("path") else None
+        expected_source_sha256 = (lod_receipt.get("gates") or {}).get("clean_master_sha256_before")
 
         def runner(overrides):
             stage = pipeline.stage_dir("UV") / "candidate"
@@ -121,6 +204,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "--resolution", str(resolution), "--padding", str(padding),
                 "--overlap-timeout", "1200", "--max-candidate-pairs", "10000000",
                 "--max-overlap-texels", "1.0",
+                "--anchor-receipt", anchor_receipt or "",
+                "--expected-source-sha256", expected_source_sha256 or "",
             ])
             data = _json(report)
             exact = data.get("exact_overlap") or {}
@@ -137,8 +222,10 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "positive_overlap_texels": exact.get("positive_overlap_total_texels_equivalent"),
                 "degenerate_uv_triangles": exact.get("degenerate_uv_triangle_count"),
                 "out_of_bounds_triangles": exact.get("out_of_bounds_triangle_count"),
+                "provenance": data.get("provenance"),
             }
             codes = []
+            codes.extend(str(code) for code in (data.get("failure_codes") or []))
             if exact.get("timed_out") or not exact.get("success") or int(exact.get("tested_pair_count") or 0) <= 0:
                 codes.append("UV_OVERLAP")
             if int(exact.get("degenerate_uv_triangle_count") or 0) > 0:
@@ -147,6 +234,15 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 codes.append("UV_OVERLAP")
             if int(data.get("chart_count") or 0) > int(profile.uv_max_charts):
                 codes.append("UV_CHART_BUDGET")
+            provenance = data.get("provenance") or {}
+            if not anchor_receipt:
+                codes.append("ANCHOR_RECEIPT_MISSING")
+            elif not provenance.get("geometry_unchanged", False):
+                codes.append("GEOMETRY_MUTATION")
+            elif provenance.get("anchor_receipt_sha256") != (lod_receipt.get("gates") or {}).get("anchor_receipt_sha256"):
+                codes.append("ANCHOR_RECEIPT_SOURCE_MISMATCH")
+            elif sorted(provenance.get("anchor_ids") or []) != sorted((lod_receipt.get("gates") or {}).get("anchor_ids") or []):
+                codes.append("ANCHOR_SET_MISMATCH")
             if code != 0 or not output.exists() or not data.get("gate_passed") or codes:
                 return StageResult("failed", gates=gates, failure_codes=sorted(set(codes)),
                                    detail=f"UV worker exit {code}: {out[-1000:]}")
@@ -205,6 +301,12 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
         ao = _output(pipeline, "BAKE", "ao")
         cavity = _output(pipeline, "BAKE", "cavity")
         material_id = _output(pipeline, "BAKE", "material_id")
+        lod_receipt = pipeline.read_receipt("LOD") or {}
+        lod_anchor = (lod_receipt.get("outputs") or {}).get("anchor_receipt") or {}
+        lod_anchor_path = Path(lod_anchor["path"]) if lod_anchor.get("path") else None
+        lod_source_hash = (lod_receipt.get("gates") or {}).get("clean_master_sha256_before")
+        uv_receipt = pipeline.read_receipt("UV") or {}
+        uv_geometry_hash = ((uv_receipt.get("gates") or {}).get("provenance") or {}).get("output_geometry_sha256")
 
         def runner(overrides):
             stage = pipeline.stage_dir("TEXTURE") / "candidate"
@@ -239,6 +341,10 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 pipeline.python, w("raster_project.py"), "--npz", npz,
                 "--views-dir", views, "--view-metadata", views / "view_metadata.json",
                 "--output-dir", projection, "--atlas-size", str(resolution),
+                "--anchor-receipt", lod_anchor_path or "",
+                "--expected-source-sha256", lod_source_hash or "",
+                "--expected-input-geometry-sha256", uv_geometry_hash or "",
+                "--require-anchor-provenance",
                 "--report", projection_report,
             ])
             if code != 0 or not (projection / "basecolor.png").exists():
@@ -310,9 +416,27 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "--basecolor", basecolor, "--normal", normal, "--orm", orm,
                 "--output-glb", glb, "--output-blend", blend,
                 "--manifest", material_manifest,
+                "--anchor-receipt", lod_anchor_path or "",
+                "--expected-source-sha256", lod_source_hash or "",
             )
             if code != 0 or not glb.exists():
                 return StageResult("failed", detail=f"texture export exit {code}: {out[-1000:]}")
+            material_data = _json(material_manifest)
+            export_provenance = material_data.get("provenance") or {}
+            expected_gates = lod_receipt.get("gates") or {}
+            export_failures = []
+            if not lod_anchor_path:
+                export_failures.append("ANCHOR_RECEIPT_MISSING")
+            if export_provenance.get("anchor_receipt_sha256") != expected_gates.get("anchor_receipt_sha256"):
+                export_failures.append("ANCHOR_RECEIPT_SOURCE_MISMATCH")
+            if sorted(export_provenance.get("anchor_ids") or []) != sorted(expected_gates.get("anchor_ids") or []):
+                export_failures.append("ANCHOR_SET_MISMATCH")
+            if not export_provenance.get("geometry_unchanged"):
+                export_failures.append("GEOMETRY_MUTATION")
+            if export_failures or not material_data.get("success"):
+                return StageResult("failed", gates={"provenance": export_provenance},
+                                   failure_codes=sorted(set(export_failures or ["TEXTURE_EXPORT_FAILED"])),
+                                   detail="textured GLB provenance gate failed")
 
             render_dir = stage / "renders"
             review_report = stage / "review_report.json"
@@ -346,6 +470,7 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
                 "final_filled_uv_percent": projection_data.get("final_filled_uv_percent"),
                 "material_slot_count": _json(material_manifest).get("material_slot_count"),
                 "review_views": sorted((review.get("views") or {}).keys()),
+                "provenance": export_provenance,
             }
             return StageResult("passed", outputs=outputs, gates=gates)
 
@@ -482,6 +607,10 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
     # ---------------------------------------------------------------- EXPORT
     def export():
         rigged = _output(pipeline, "RIG", "rigged_glb")
+        lod_receipt = pipeline.read_receipt("LOD") or {}
+        lod_anchor = (lod_receipt.get("outputs") or {}).get("anchor_receipt") or {}
+        lod_anchor_path = Path(lod_anchor["path"]) if lod_anchor.get("path") else None
+        lod_source_hash = (lod_receipt.get("gates") or {}).get("clean_master_sha256_before")
 
         def runner(overrides):
             stage = pipeline.stage_dir("EXPORT") / "candidate"
@@ -490,6 +619,8 @@ def register_production_stages(pipeline, manifest: dict) -> dict:
             code, out = _blender(
                 pipeline, b("pipeline_export_validate.py"), "--input", rigged,
                 "--output", final_glb, "--report", report,
+                "--anchor-receipt", lod_anchor_path or "",
+                "--expected-source-sha256", lod_source_hash or "",
             )
             data = _json(report)
             if code != 0 or not final_glb.exists() or not data.get("passed"):

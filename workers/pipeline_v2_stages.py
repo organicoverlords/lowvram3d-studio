@@ -67,7 +67,26 @@ def register_stages(pipeline, manifest: dict, existing_master: str = "") -> dict
             stage = pipeline.stage_dir("GENERATE") / "candidate"
             master = stage / "master.glb"
             if existing_master:
-                shutil.copy2(existing_master, master)
+                source = Path(existing_master)
+                if not source.is_file():
+                    return StageResult(
+                        "failed",
+                        gates={
+                            "existing_master": str(source),
+                            "existing_master_present": False,
+                            "input_sha256": None,
+                            "output_sha256": None,
+                            "missing_anchor_ids": [],
+                            "support_metrics": {},
+                            "geometry_loss_context": {
+                                "status": "not_reached",
+                                "first_unavailable_stage": "GENERATE",
+                            },
+                        },
+                        failure_codes=["EXISTING_MASTER_MISSING"],
+                        detail=f"existing master is unavailable: {source}",
+                    )
+                shutil.copy2(source, master)
                 return StageResult("passed", outputs={"master": master},
                                    gates={"adopted_existing_master": str(existing_master),
                                           "sha256": sha256(master)})

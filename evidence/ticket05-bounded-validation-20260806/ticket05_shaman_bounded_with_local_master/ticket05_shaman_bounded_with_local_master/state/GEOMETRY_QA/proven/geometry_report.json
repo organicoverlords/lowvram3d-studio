@@ -1,0 +1,29 @@
+{
+  "mesh": "evidence\\ticket05-bounded-validation-20260806\\ticket05_shaman_bounded_with_local_master\\ticket05_shaman_bounded_with_local_master\\state\\GENERATE\\proven\\master.glb",
+  "triangles": 2185428,
+  "components": 2,
+  "extent": {
+    "x": 0.6880468130111694,
+    "y": 1.0028558373451233,
+    "z": 0.44432125985622406
+  },
+  "axis_ratio": 2.2571,
+  "longest_axis": "y",
+  "debris": {
+    "policy": "legacy_pre_lod",
+    "source_aware": false,
+    "source_path": null,
+    "unsupported_components_remaining": 0,
+    "triangles_in_shards": 0,
+    "shards": [],
+    "preserved_small_components": [],
+    "preserved_small_component_count": 0,
+    "source_support_min": 0.18,
+    "outboard_min": 0.14,
+    "very_high_min": 0.78
+  },
+  "failure_codes": [],
+  "advisory_codes": [],
+  "messages": [],
+  "passed": true
+}
