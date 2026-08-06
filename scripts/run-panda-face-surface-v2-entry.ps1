@@ -14,6 +14,7 @@ foreach ($directory in @($pythonDirectory, $blenderDirectory)) {
     }
 }
 $env:PATH = "$pythonDirectory;$blenderDirectory;$env:PATH"
+$env:PYTHONWARNINGS = "ignore::DeprecationWarning"
 $implementation = Join-Path $PSScriptRoot "run-panda-face-surface-v2.ps1"
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $implementation `
     -RunId $RunId `
