@@ -29,11 +29,15 @@ def test_border_connected_background_preserves_enclosed_white_object() -> None:
 
 
 def test_fixture_face_mask_is_polygon_bounded() -> None:
-    fixture = {"face_polygon": [[10, 10], [30, 10], [30, 30], [10, 30]]}
+    # Production deliberately rejects masks smaller than 512 pixels. Keep the
+    # synthetic fixture comfortably above that boundary while still proving
+    # that polygon rasterization remains spatially bounded.
+    fixture = {"face_polygon": [[8, 8], [36, 8], [36, 36], [8, 36]]}
     mask = fixture_face_mask((50, 50), fixture)
     assert mask[20, 20]
     assert not mask[5, 5]
-    assert int(mask.sum()) > 300
+    assert int(mask.sum()) >= 512
+    assert not mask[40, 40]
 
 
 def test_welded_surface_connects_duplicate_vertex_indices() -> None:
