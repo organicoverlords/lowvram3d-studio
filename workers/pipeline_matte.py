@@ -153,6 +153,10 @@ def key_alpha(
     enclosed_tolerance: float | None = None,
     shadow_tolerance: float | None = None,
     shadow_from: float = 0.82,
+    shadow_chroma: float | None = None,
+    shadow_luma: float = 90.0,
+    shadow_smooth: float = 3.0,
+    shadow_smooth_window: int = 9,
     close_radius: int = 2,
     min_detached_fraction: float = 0.001,
     feather: int = 2,
@@ -168,6 +172,48 @@ def key_alpha(
         first_row = int(distance.shape[0] * shadow_from)
         threshold[first_row:] = float(shadow_tolerance)
     candidate = distance < threshold
+
+    # Distance from the plate colour cannot always separate the shadow from what casts it. Measured
+    # on the frog, whose feet are dark and stand in their own contact shadow:
+    #
+    #     shadow      chroma p95   4     distance p50   13 (soft) .. 238 (contact)
+    #     feet        chroma p50  15-29  distance p50  340-378
+    #
+    # The distance ranges overlap -- the contact shadow is darker than parts of the feet -- so any
+    # single tolerance either keeps the shadow or punches holes in the toes, and at 220 it does
+    # both. Chroma does not overlap: a neutral-grey shadow on a neutral plate stays achromatic
+    # however dark it gets, while the subject is pigmented. So key the band on being achromatic AND
+    # not fully dark, rather than on being close to white.
+    #
+    # This is a property of the lighting setup -- one subject, white sweep, soft key -- and not of
+    # any one asset. It stays gated behind border connectivity below, so an achromatic pixel inside
+    # the subject is only ever removed if it belongs to a genuine enclosed background pocket.
+    neutral_shadow = np.zeros(distance.shape, dtype=bool)
+    if shadow_chroma is not None:
+        first_row = int(distance.shape[0] * shadow_from)
+        values = rgb[first_row:].astype(np.float32)
+        chroma = values.max(axis=-1) - values.min(axis=-1)
+        luminance = values.mean(axis=-1)
+
+        # Chroma alone is not enough at the contact point, where the shadow is both dark and warm
+        # from bounce off the subject: measured there it is lum 56 chroma 9, which overlaps the feet
+        # instead of separating from them. What does separate is that a cast shadow is smooth and a
+        # photographed surface is not. Local standard deviation over a 9px window, measured:
+        #
+        #     shadow deep / soft     0.9 - 1.5
+        #     left / right foot      5.0 - 7.7
+        #
+        # At std<=3 with lum>=55 this takes 67% of the deep shadow and 80% of the soft shadow while
+        # taking 0.4% and 0.0% of the two feet. The luminance floor is what keeps the robe fringe,
+        # which is just as smooth as the shadow but much darker (lum 29).
+        window = ndimage.uniform_filter(luminance, shadow_smooth_window)
+        squares = ndimage.uniform_filter(luminance * luminance, shadow_smooth_window)
+        roughness = np.sqrt(np.clip(squares - window * window, 0.0, None))
+
+        neutral_shadow[first_row:] = ((luminance >= float(shadow_luma)) &
+                                      (chroma <= float(shadow_chroma)) &
+                                      (roughness <= float(shadow_smooth)))
+        candidate |= neutral_shadow
 
     if mode == "hybrid":
         # Border-connected background at a generous tolerance removes the plate and the soft floor
@@ -194,7 +240,13 @@ def key_alpha(
         )
         if shadow_tolerance is not None:
             enclosed_threshold[int(distance.shape[0] * shadow_from):] = float(shadow_tolerance)
-        enclosed = ndimage.label((distance < enclosed_threshold) & ~background_mask)
+        # The neutral-shadow test has to apply here too, not only to the border flood. The deepest
+        # part of a contact shadow is walled off by the feet on both sides, so it is enclosed rather
+        # than border-connected, and it sits 100-260 from the plate colour -- far outside any
+        # enclosed distance threshold that is safe elsewhere. Keying it on distance is what fails;
+        # keying it on being achromatic works regardless of how dark it gets.
+        enclosed = ndimage.label(
+            ((distance < enclosed_threshold) | neutral_shadow) & ~background_mask)
         enclosed_labels, enclosed_count = enclosed
         if enclosed_count:
             areas = ndimage.sum(
@@ -314,6 +366,26 @@ def main() -> int:
     parser.add_argument("--enclosed-tolerance", type=float, default=None)
     parser.add_argument("--shadow-tolerance", type=float, default=None)
     parser.add_argument("--shadow-from", type=float, default=0.82)
+    parser.add_argument(
+        "--shadow-chroma", type=float, default=None,
+        help="In the shadow band, also key pixels whose max-min RGB spread is at "
+             "or below this and whose mean is at least --shadow-luma. Separates a "
+             "neutral cast shadow from a pigmented subject standing in it, which "
+             "--shadow-tolerance cannot do once the contact shadow is darker than "
+             "the subject. Measured: shadow chroma p95 4, feet p50 15-29.")
+    parser.add_argument("--shadow-luma", type=float, default=90.0,
+                        help="Mean-RGB floor for --shadow-chroma, so that a dark "
+                             "achromatic part of the subject is never keyed. This "
+                             "is what protects smooth dark cloth: the frog's robe "
+                             "fringe is as smooth as the shadow but sits at 29.")
+    parser.add_argument("--shadow-smooth", type=float, default=3.0,
+                        help="Local standard deviation ceiling for the shadow key. "
+                             "A cast shadow is smooth (0.9-1.5) and a photographed "
+                             "surface is not (feet 5.0-7.7), which separates them "
+                             "at the contact point where chroma and distance both "
+                             "overlap.")
+    parser.add_argument("--shadow-smooth-window", type=int, default=9,
+                        help="Window in pixels for --shadow-smooth.")
     parser.add_argument("--close-radius", type=int, default=2)
     parser.add_argument("--mode", choices=("hybrid", "colour", "flood"), default="hybrid")
     parser.add_argument(
@@ -334,7 +406,7 @@ def main() -> int:
         report = []
         for raw in args.sweep.split(","):
             tolerance = float(raw)
-            alpha, stats = key_alpha(rgb, tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.close_radius, args.min_detached_fraction, args.feather)
+            alpha, stats = key_alpha(rgb, tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.shadow_chroma, args.shadow_luma, args.shadow_smooth, args.shadow_smooth_window, args.close_radius, args.min_detached_fraction, args.feather)
             preview = Image.new("RGB", source.size, (255, 0, 255))
             preview.paste(source, mask=Image.fromarray(alpha, "L"))
             path = Path(args.output).with_name(f"matte_{args.mode}_t{int(tolerance)}.png")
@@ -351,7 +423,7 @@ def main() -> int:
             Path(args.stats_json).write_text(json.dumps(report, indent=2), encoding="utf-8")
         return 0
 
-    alpha, stats = key_alpha(rgb, args.tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.close_radius, args.min_detached_fraction, args.feather)
+    alpha, stats = key_alpha(rgb, args.tolerance, args.mode, args.enclosed_min_area, args.enclosed_tolerance, args.shadow_tolerance, args.shadow_from, args.shadow_chroma, args.shadow_luma, args.shadow_smooth, args.shadow_smooth_window, args.close_radius, args.min_detached_fraction, args.feather)
     # Neutralise the colour under the transparent region. Leaving the original plate colour there
     # lets any consumer that flattens without honouring alpha reintroduce the background.
     keyed = np.where(alpha[..., None] > 0, rgb, 255).astype(np.uint8)

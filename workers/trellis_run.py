@@ -39,12 +39,19 @@ import time
 from pathlib import Path
 
 #: Overridable so a differently-compiled binary can be A/B'd against this one
-#: without editing code. The stock build is build-mmq, compiled with
+#: without editing code. build-mmq is the stock build, compiled with
 #: GGML_CUDA_FORCE_MMQ=ON, which forces every quantized MUL_MAT through ggml's
 #: own kernels -- and MUL_MAT is where this card's "misaligned address" faults
-#: land. build-cublas is the same source with GGML_CUDA_FORCE_CUBLAS=ON.
+#: land. build-cublas is the same source with GGML_CUDA_FORCE_CUBLAS=ON, so
+#: ggml_cuda_should_use_mmq() returns false and those kernels never run.
+#:
+#: build-cublas is now the default. It is not yet proven: the fault is ~50% per
+#: attempt and shape-dependent, so it takes a run of attempts to tell a real
+#: reduction from luck. Every receipt records the binary in `command[0]`, so
+#: the fault rate accumulates as evidence from ordinary production runs rather
+#: than needing a dedicated A/B that ties up the GPU.
 CLI = os.environ.get(
-    "TRELLIS_CLI", r"C:\AI\trellis-cpp\build-mmq\Release\trellis-cli.exe")
+    "TRELLIS_CLI", r"C:\AI\trellis-cpp\build-cublas\Release\trellis-cli.exe")
 MODELS = r"C:\AI\trellis-cpp\models"
 
 #: Latent size is reported, and by default no longer aborts. It was worth a try
