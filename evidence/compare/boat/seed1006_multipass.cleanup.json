@@ -1,0 +1,142 @@
+{
+  "schema": "lowvram3d_mesh_cleanup_gate_v1",
+  "mesh_in": "evidence\\compare\\boat\\tournament\\seed1006.glb",
+  "mesh_out": "evidence\\compare\\boat\\seed1006_multipass.glb",
+  "target_faces": 500000,
+  "passes": 2,
+  "remesh_resolution": 256,
+  "seconds": 183.3,
+  "before": {
+    "step": "weld",
+    "elapsed": 2.8,
+    "faces": 2035434,
+    "vertices": 946863,
+    "shells": 51502,
+    "main_shell_area_fraction": 0.7552,
+    "winding_consistent": false,
+    "watertight": false
+  },
+  "steps": [
+    {
+      "step": "weld",
+      "elapsed": 2.8,
+      "faces": 2035434,
+      "vertices": 946863,
+      "shells": 51502,
+      "main_shell_area_fraction": 0.7552,
+      "winding_consistent": false,
+      "watertight": false
+    },
+    {
+      "step": "remove_degenerate",
+      "elapsed": 3.7,
+      "faces": 2035434,
+      "vertices": 946863,
+      "shells": 51502,
+      "main_shell_area_fraction": 0.7552,
+      "winding_consistent": false,
+      "watertight": false
+    },
+    {
+      "step": "drop_debris",
+      "elapsed": 5.8,
+      "faces": 1628088,
+      "vertices": 821036,
+      "shells": 7,
+      "main_shell_area_fraction": 0.9849,
+      "winding_consistent": false,
+      "watertight": false,
+      "components_kept": 23,
+      "components_dropped": 51479
+    },
+    {
+      "step": "decimate",
+      "elapsed": 25.5,
+      "faces": 500000,
+      "vertices": 246866,
+      "shells": 22,
+      "main_shell_area_fraction": 0.9849,
+      "winding_consistent": false,
+      "watertight": false
+    },
+    {
+      "step": "repair_winding",
+      "elapsed": 98.0,
+      "faces": 500000,
+      "vertices": 246866,
+      "shells": 22,
+      "main_shell_area_fraction": 0.9849,
+      "winding_consistent": false,
+      "watertight": false
+    },
+    {
+      "step": "fill_holes",
+      "elapsed": 98.9,
+      "faces": 501813,
+      "vertices": 246866,
+      "shells": 22,
+      "main_shell_area_fraction": 0.9849,
+      "winding_consistent": false,
+      "watertight": false
+    },
+    {
+      "step": "manifold",
+      "rejected": true,
+      "faces_returned": 0,
+      "faces_in": 501813,
+      "reason": "returned under half the input; kept previous mesh"
+    },
+    {
+      "step": "repair_pass_2",
+      "elapsed": 171.1,
+      "faces": 501772,
+      "vertices": 246848,
+      "shells": 7,
+      "main_shell_area_fraction": 0.9849,
+      "winding_consistent": false,
+      "watertight": false,
+      "components_dropped": 14,
+      "changed": true
+    },
+    {
+      "step": "voxel_remesh",
+      "elapsed": 177.8,
+      "resolution": 256,
+      "faces": 719548,
+      "vertices": 357434,
+      "shells": 1,
+      "main_shell_area_fraction": 1.0,
+      "winding_consistent": true,
+      "watertight": true
+    },
+    {
+      "step": "repair_after_remesh",
+      "elapsed": 178.6,
+      "faces": 719548,
+      "vertices": 357434,
+      "shells": 1,
+      "main_shell_area_fraction": 1.0,
+      "winding_consistent": true,
+      "watertight": true
+    },
+    {
+      "step": "decimate_after_remesh",
+      "elapsed": 183.2,
+      "faces": 500000,
+      "vertices": 247660,
+      "shells": 1,
+      "main_shell_area_fraction": 1.0,
+      "winding_consistent": true,
+      "watertight": true
+    }
+  ],
+  "after": {
+    "faces": 500000,
+    "vertices": 247660,
+    "shells": 1,
+    "main_shell_area_fraction": 1.0,
+    "winding_consistent": true,
+    "watertight": true
+  },
+  "meets_hosted_standard": true
+}
