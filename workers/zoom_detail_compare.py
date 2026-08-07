@@ -25,6 +25,9 @@ REGIONS = {
                 ("hull bottom aft", (0.55, 0.72, 1.00, 1.06)),
                 ("mid decks + railings", (0.34, 0.20, 0.68, 0.62)),
                 ("bow ornament", (0.76, 0.15, 1.00, 0.70))],
+    "three_quarter": [("lower hull under wheel", (0.00, 0.55, 0.40, 1.05)),
+                      ("lower hull midships", (0.30, 0.60, 0.72, 1.10)),
+                      ("lower hull aft", (0.62, 0.55, 1.02, 1.05))],
     "end_plus": [("arch + fan", (0.10, 0.00, 0.90, 0.40)),
                  ("tier windows", (0.05, 0.35, 0.95, 0.80))],
 }[VIEW]
