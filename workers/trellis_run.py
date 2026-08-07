@@ -31,13 +31,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
 import time
 from pathlib import Path
 
-CLI = r"C:\AI\trellis-cpp\build-mmq\Release\trellis-cli.exe"
+#: Overridable so a differently-compiled binary can be A/B'd against this one
+#: without editing code. The stock build is build-mmq, compiled with
+#: GGML_CUDA_FORCE_MMQ=ON, which forces every quantized MUL_MAT through ggml's
+#: own kernels -- and MUL_MAT is where this card's "misaligned address" faults
+#: land. build-cublas is the same source with GGML_CUDA_FORCE_CUBLAS=ON.
+CLI = os.environ.get(
+    "TRELLIS_CLI", r"C:\AI\trellis-cpp\build-mmq\Release\trellis-cli.exe")
 MODELS = r"C:\AI\trellis-cpp\models"
 
 #: Latent size is reported, and by default no longer aborts. It was worth a try

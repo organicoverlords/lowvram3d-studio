@@ -1,0 +1,46 @@
+{
+  "schema_version": "auto_matte_v1",
+  "image": "C:\\Users\\Lauri\\Downloads\\glados_eva_titan_4k_four_views\\glados_eva_titan_4k_pack\\01_front_4k.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\titan\\matte.png",
+  "selection": "measured",
+  "criterion": "largest tolerance whose removed pixels are still smooth; a shadow has no texture and a subject does",
+  "selected_tolerance": 240,
+  "shadow_from": 0.72,
+  "subject_texture_energy": 20.551,
+  "background_texture_energy": 0.003,
+  "cut_threshold": 7.195,
+  "subject_texture_fraction": 0.35,
+  "subject_coverage": 0.1543,
+  "trace": [
+    {
+      "tolerance": 60,
+      "removed_px": 52680,
+      "texture_energy": 3.23,
+      "verdict": "smooth -> shadow"
+    },
+    {
+      "tolerance": 120,
+      "removed_px": 150859,
+      "texture_energy": 4.973,
+      "verdict": "smooth -> shadow"
+    },
+    {
+      "tolerance": 180,
+      "removed_px": 218217,
+      "texture_energy": 6.118,
+      "verdict": "smooth -> shadow"
+    },
+    {
+      "tolerance": 240,
+      "removed_px": 236506,
+      "texture_energy": 6.801,
+      "verdict": "smooth -> shadow"
+    },
+    {
+      "tolerance": 300,
+      "removed_px": 256134,
+      "texture_energy": 7.733,
+      "verdict": "textured -> would eat the subject"
+    }
+  ]
+}
