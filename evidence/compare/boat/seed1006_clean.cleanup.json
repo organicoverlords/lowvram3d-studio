@@ -1,0 +1,90 @@
+{
+  "schema": "lowvram3d_mesh_cleanup_gate_v1",
+  "mesh_in": "evidence\\compare\\boat\\tournament\\seed1006.glb",
+  "mesh_out": "evidence\\compare\\boat\\seed1006_clean.glb",
+  "target_faces": 500000,
+  "seconds": 306.8,
+  "before": {
+    "step": "weld",
+    "faces": 2035434,
+    "vertices": 946863,
+    "shells": 51502,
+    "main_shell_area_fraction": 0.7552,
+    "winding_consistent": false,
+    "watertight": false
+  },
+  "steps": [
+    {
+      "step": "weld",
+      "faces": 2035434,
+      "vertices": 946863,
+      "shells": 51502,
+      "main_shell_area_fraction": 0.7552,
+      "winding_consistent": false,
+      "watertight": false
+    },
+    {
+      "step": "remove_degenerate",
+      "faces": 2035434,
+      "vertices": 946863,
+      "shells": 51502,
+      "main_shell_area_fraction": 0.7552,
+      "winding_consistent": false,
+      "watertight": false
+    },
+    {
+      "step": "drop_debris",
+      "faces": 1628088,
+      "vertices": 821036,
+      "shells": 7,
+      "main_shell_area_fraction": 0.9849,
+      "winding_consistent": false,
+      "watertight": false,
+      "components_kept": 23,
+      "components_dropped": 51479
+    },
+    {
+      "step": "repair_winding",
+      "faces": 1628088,
+      "vertices": 821036,
+      "shells": 7,
+      "main_shell_area_fraction": 0.9849,
+      "winding_consistent": false,
+      "watertight": false
+    },
+    {
+      "step": "fill_holes",
+      "faces": 1629308,
+      "vertices": 821036,
+      "shells": 7,
+      "main_shell_area_fraction": 0.9849,
+      "winding_consistent": false,
+      "watertight": false
+    },
+    {
+      "step": "manifold",
+      "rejected": true,
+      "faces_returned": 0,
+      "faces_in": 1629308,
+      "reason": "returned under half the input; kept previous mesh"
+    },
+    {
+      "step": "decimate",
+      "faces": 499999,
+      "vertices": 246278,
+      "shells": 21,
+      "main_shell_area_fraction": 0.9849,
+      "winding_consistent": false,
+      "watertight": false
+    }
+  ],
+  "after": {
+    "faces": 499999,
+    "vertices": 246278,
+    "shells": 21,
+    "main_shell_area_fraction": 0.9849,
+    "winding_consistent": false,
+    "watertight": false
+  },
+  "meets_hosted_standard": false
+}

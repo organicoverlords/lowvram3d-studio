@@ -1,0 +1,27 @@
+C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803\workers\preview_generated_mesh.py:161: DeprecationWarning: 'mode' parameter is deprecated and will be removed in Pillow 13 (2026-10-15)
+  sheet.paste(Image.fromarray(pixels, mode="L").convert("RGB"),
+{
+  "body_count": 86322,
+  "classification": "PROVEN",
+  "euler_number": -20834,
+  "extent": [
+    0.4866,
+    0.6601,
+    0.999
+  ],
+  "glb": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\boat_trellis512.glb",
+  "merged_vertices": 1236656,
+  "preview_png": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\boat\\preview_trellis512.png",
+  "schema_version": "generated_mesh_preview_v1",
+  "triangles": 2812060,
+  "unwelded": false,
+  "vertex_split_ratio": 1.001,
+  "vertices": 1238486,
+  "view_coverage": {
+    "front": 0.3214,
+    "side": 0.2367,
+    "three_quarter": 0.3419,
+    "top": 0.2968
+  },
+  "watertight": false
+}
