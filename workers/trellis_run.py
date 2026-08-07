@@ -97,12 +97,35 @@ VRAM_OOM_PATTERN = re.compile(
 FIXED_FLAGS = ["--no-fa", "--require-gpu"]
 
 
+def missing_weights(res: str, tex_res: int | None, no_texture: bool) -> list[str]:
+    """GGUFs this configuration will need, that are not on disk.
+
+    A res-1024 run reached stage 6 after 610 s of HR flow and a successful
+    3.56M-voxel decode, and then died on
+
+        failed to open GGUF file '.../tex_flow_1024.gguf' (No such file)
+
+    Ten minutes of the most expensive compute this machine does, discarded for
+    a missing file that could have been checked in a millisecond. The fetch
+    script pulled the res-512 texture weights and the res-1024 SHAPE weights,
+    so geometry at 1024 works and texture at 1024 cannot -- which is invisible
+    until the run is nearly over.
+    """
+    needed = ["dinov3.gguf", "ss_flow.gguf", "ss_dec.gguf",
+              f"shape_flow_{res}.gguf", "shape_dec.gguf"]
+    if not no_texture:
+        needed += [f"tex_flow_{tex_res or res}.gguf", "tex_dec.gguf"]
+    return [n for n in needed if not (Path(MODELS) / n).is_file()]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", required=True, help="Pre-matted RGBA input.")
     parser.add_argument("--out", required=True)
     parser.add_argument("--res", default="512", choices=("512", "1024", "1536"))
-    parser.add_argument("--atlas", type=int, default=1024)
+    parser.add_argument("--atlas", type=int, default=0,
+                        help="0 lets trellis-cli pick by resolution "
+                             "(2048 at res 1024, 1024 at res 512)")
     parser.add_argument("--seed", type=int, default=12345)
     parser.add_argument("--no-texture", action="store_true",
                         help="UNFINISHED GEOMETRY. This does not merely skip "
@@ -133,10 +156,18 @@ def main(argv: list[str] | None = None) -> int:
     if not image.is_file():
         raise SystemExit(f"IMAGE_MISSING:{image}")
 
+    missing = missing_weights(args.res, args.tex_res, args.no_texture)
+    if missing:
+        raise SystemExit("WEIGHTS_MISSING:" + ",".join(missing))
+
     command = [CLI, str(image), str(Path(args.out).resolve()),
                "--models", MODELS, "--res", args.res,
-               "--atlas", str(args.atlas), "--seed", str(args.seed),
-               *FIXED_FLAGS]
+               "--seed", str(args.seed), *FIXED_FLAGS]
+    # Only pass --atlas when the caller asked for one. trellis-cli picks by
+    # resolution (2048 at 1024, 1024 at 512); forwarding this worker's own
+    # default silently overrode that on every cascade run ever made here.
+    if args.atlas:
+        command += ["--atlas", str(args.atlas)]
     if args.no_texture:
         command.append("--no-texture")
     if args.tex_res:
