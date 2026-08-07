@@ -738,7 +738,18 @@ numbers as texture quality: coverage counts texels painted, not texels painted
 *correctly*. Read the retraction at the top of
 `docs/JANUS-six-view-defect-20260806.md` before running another sequence.
 
-## 12. Mini Turbo octree resolution — measured, and it buys nothing
+## 12. Mini Turbo octree resolution — above 384 it bought nothing here
+
+**Scope this claim carefully.** It is about the Mini Turbo decode grid on one
+tested subject. It is NOT a statement about generator resolution in general, and
+in particular it does not transfer to TRELLIS: raising TRELLIS from 512 to 1024
+genuinely produced structure that was absent before -- railing gaps, wheel
+spokes, roof detail. Those are different mechanisms. TRELLIS 512→1024 changes
+what the latent resolves; Mini Turbo's octree only changes how finely an already
+fixed latent is meshed.
+
+The accurate phrasing of what was measured: *Mini Turbo octree above 384 did not
+improve this tested latent reconstruction.*
 
 The Mini Turbo decode grid is settable via `--octree-ladder res:chunks`. The
 default ladder is `384:3000,320:2000,256:1500`. All three of the rungs above the
@@ -758,7 +769,9 @@ separation, no clarity gain across the ladder. The user's own read agreed.
 
 So going from 1.2M to 2.1M triangles subdivides surfaces that already exist and
 creates no new structure. The fused toes are fused in the latent, not in the
-mesh. **Keep the 384 default.** 512 costs 2.6× the wall clock and spills 1.5 GB
+mesh -- which is exactly why this says nothing about TRELLIS, where the
+resolution knob moves the latent itself. **Keep the 384 default for Mini
+Turbo.** 512 costs 2.6× the wall clock and spills 1.5 GB
 into system RAM for triangles carrying no extra information.
 
 If thin structure matters, the levers are conditioning (§ "Conditioning beats
@@ -818,9 +831,16 @@ the heron is nearly monochrome, so flat charts next to flat charts differ by
 nothing — and obvious on high-contrast ones: the fennec is pale linen against
 dark leather and the identical defect lands as camouflage.
 
-The rule is an asset-class one, not a per-asset patch: **aim for ≥32 texels per
-face.** At texture 4096 with ~80% atlas utilisation that is roughly 420k faces.
-Do not raise the face count without raising the atlas with it.
+The rule is an asset-class one, not a per-asset patch: face count has to be
+matched to the texture budget, not chosen independently of it.
+
+**≥32 texels per face is an engineering target, not a proven threshold.** Five
+texels per triangle is demonstrably inadequate -- that much is measured. Where
+the real cutoff sits, and whether it is the same for a shaggy character and a
+hard-surface building, has not been A/B'd. 32 is the number that makes a chart
+able to hold a gradient rather than a colour; treat it as a starting point and
+replace it when the A/B exists. At texture 4096 with ~80% atlas utilisation it
+works out to roughly 420k faces.
 
 ## 15. Serialising GPU jobs — use a lock, not a process check
 
@@ -829,7 +849,19 @@ When the octree-448 job exited, two waiting scripts polled within seven seconds
 of each other, both saw zero, and both started; one then starved the other to
 death as described in §13.
 
-`scratchpad/gpu_lock.sh` replaces it. `mkdir` is atomic — the directory either
+`tools/gpu_lock.sh` replaces it, with the lock at an application-level path
+(`%LOCALAPPDATA%/LowVRAM3DStudio/locks/gpu.lock`) rather than inside any one
+agent's session directory -- two agents holding two different lock paths
+serialise against nobody.
+
+**Status: implemented helper, not yet end-to-end proven.** Every wrapper script
+written today acquires it, but the workers themselves -- `trellis_run.py`,
+`hunyuan_paint_texture.py`, `mini_turbo_generate.py`, the Blender render workers
+-- do not acquire it internally. Anything invoking them directly still bypasses
+mutual exclusion entirely. Wiring the lock into the entrypoints, and
+demonstrating two competing jobs actually serialising, is outstanding work.
+
+`mkdir` is atomic — the directory either
 did not exist and this process created it, or it existed and mkdir fails, with no
 window in between. A lock *file* would not do: `[ -f lock ] || touch lock` has
 exactly the same race. The lock records its owner PID so a lock left by a killed

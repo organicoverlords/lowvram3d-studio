@@ -14,7 +14,12 @@
 #
 # The lock records its owner PID so a lock left behind by a killed script can be
 # recognised as stale rather than blocking every later run forever.
-GPU_LOCK="${GPU_LOCK:-C:/Users/Lauri/AppData/Local/Temp/claude/C--Users-Lauri-Desktop/bef7e8c6-36b0-437d-85a9-2492519bc896/scratchpad/gpu.lock}"
+# Application-level, not session-level. The first version of this defaulted into
+# a disposable Claude session directory, which meant two agents in different
+# sessions would take two different locks and serialise against nobody. The lock
+# has to live where every process on this machine can see the same one.
+GPU_LOCK="${GPU_LOCK:-C:/Users/Lauri/AppData/Local/LowVRAM3DStudio/locks/gpu.lock}"
+mkdir -p "$(dirname "$GPU_LOCK")" 2>/dev/null
 
 gpu_busy() {
   # Anything already running that this lock did not start. Blender counts: a
