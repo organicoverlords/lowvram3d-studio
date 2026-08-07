@@ -1,0 +1,6 @@
+{
+  "classification": "NOT_APPLICABLE",
+  "glb": "evidence\\compare\\fennec\\fennec_miniturbo.glb",
+  "reason": "mesh carries no UVs or no base colour texture",
+  "schema_version": "textured_views_v1"
+}

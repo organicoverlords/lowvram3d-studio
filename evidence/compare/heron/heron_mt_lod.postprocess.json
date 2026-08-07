@@ -1,0 +1,34 @@
+{
+  "schema": "lowvram3d_hunyuan_postprocess_v1",
+  "mesh_in": "evidence\\compare\\heron\\heron_miniturbo.glb",
+  "mesh_out": "evidence\\compare\\heron\\heron_mt_lod.glb",
+  "target_faces": 400000,
+  "steps": [
+    {
+      "step": "load",
+      "faces": 1201338,
+      "seconds": 0.2
+    },
+    {
+      "step": "floater_remover",
+      "faces": 1153642,
+      "seconds": 1.4
+    },
+    {
+      "step": "degenerate_face_remover",
+      "faces": 1153642,
+      "seconds": 1.2
+    },
+    {
+      "step": "face_reducer",
+      "faces": 400000,
+      "seconds": 14.6
+    }
+  ],
+  "faces_out": 400000,
+  "shells_welded": 1,
+  "winding_consistent": true,
+  "watertight": true,
+  "seconds": 17.9,
+  "note": "Hunyuan's own postprocessors, which the generator workers on this project have never called; every prior Mini Turbo verdict was recorded against unfinished output"
+}

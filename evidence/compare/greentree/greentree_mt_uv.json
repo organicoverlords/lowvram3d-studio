@@ -1,0 +1,33 @@
+{
+  "atlas_size": [
+    3234,
+    3233
+  ],
+  "atlas_utilization": 0.7666,
+  "chart_count": 8288,
+  "classification": "PROVEN",
+  "contested_texels": 0,
+  "covered_texels": 1308328,
+  "degenerate_uv_triangles": 30,
+  "errors": [],
+  "faces": 400000,
+  "gates": {
+    "max_degenerate_fraction": 0.005,
+    "max_overlap_fraction": 0.0001
+  },
+  "gates_not_applied": [
+    "chart_count -- packing quality, not bake correctness",
+    "tiny_chart_surface_percent -- packing quality, not bake correctness"
+  ],
+  "input": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\greentree\\greentree_mt_lod.glb",
+  "input_vertices": 198992,
+  "out_of_bounds_triangles": 0,
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\greentree\\greentree_mt_uv.glb",
+  "output_bytes": 10731268,
+  "output_vertices": 296493,
+  "overlap_fraction_upper_bound": 0.0,
+  "padding": 4,
+  "resolution": 2048,
+  "schema_version": "mesh_uv_unwrap_v1",
+  "vertex_split_ratio": 1.49
+}

@@ -1,0 +1,1 @@
+{"schema": "lowvram3d_gpu_fault_probe_v1", "label": "baseline 596.49 factory-OC", "device": "NVIDIA GeForce GTX 1660 SUPER", "seconds_requested": 45.0, "seconds_elapsed": 45.0, "launches": 104900, "launches_per_second": 2329.9, "faulted": false, "fault": null, "verdict": "clean for 104900 launches"}

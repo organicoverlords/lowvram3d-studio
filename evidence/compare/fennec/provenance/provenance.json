@@ -1,0 +1,82 @@
+{
+  "schema": "lowvram3d_paint_provenance_v1",
+  "mesh": "evidence/compare/fennec/fennec_t_uv.glb",
+  "render_size": 512,
+  "texture_size": 1024,
+  "bake_exp": 4,
+  "unowned_texels_pct": 85.0,
+  "views": [
+    {
+      "index": 0,
+      "name": "front",
+      "elev": 0,
+      "azim": 0,
+      "weight": 1,
+      "texels_covered": 41751,
+      "already_painted_fraction": 0.0,
+      "dropped_by_99pct_rule": false,
+      "texels_won": 40231,
+      "texels_won_pct": 3.84
+    },
+    {
+      "index": 1,
+      "name": "right",
+      "elev": 0,
+      "azim": 90,
+      "weight": 0.1,
+      "texels_covered": 35787,
+      "already_painted_fraction": 0.1429,
+      "dropped_by_99pct_rule": false,
+      "texels_won": 27226,
+      "texels_won_pct": 2.6
+    },
+    {
+      "index": 2,
+      "name": "back",
+      "elev": 0,
+      "azim": 180,
+      "weight": 0.5,
+      "texels_covered": 44009,
+      "already_painted_fraction": 0.0898,
+      "dropped_by_99pct_rule": false,
+      "texels_won": 41521,
+      "texels_won_pct": 3.96
+    },
+    {
+      "index": 3,
+      "name": "left",
+      "elev": 0,
+      "azim": 270,
+      "weight": 0.1,
+      "texels_covered": 32885,
+      "already_painted_fraction": 0.2934,
+      "dropped_by_99pct_rule": false,
+      "texels_won": 23894,
+      "texels_won_pct": 2.28
+    },
+    {
+      "index": 4,
+      "name": "top",
+      "elev": 90,
+      "azim": 0,
+      "weight": 0.05,
+      "texels_covered": 23506,
+      "already_painted_fraction": 0.7316,
+      "dropped_by_99pct_rule": false,
+      "texels_won": 7864,
+      "texels_won_pct": 0.75
+    },
+    {
+      "index": 5,
+      "name": "bottom",
+      "elev": -90,
+      "azim": 180,
+      "weight": 0.05,
+      "texels_covered": 21822,
+      "already_painted_fraction": 0.303,
+      "dropped_by_99pct_rule": false,
+      "texels_won": 16501,
+      "texels_won_pct": 1.57
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "lowvram3d_hunyuan_postprocess_v1",
+  "mesh_in": "evidence\\compare\\fennec\\fennec_t1024.glb",
+  "mesh_out": "evidence\\compare\\fennec\\fennec_t_lod.glb",
+  "target_faces": 400000,
+  "steps": [
+    {
+      "step": "load",
+      "faces": 299120,
+      "seconds": 0.5
+    },
+    {
+      "step": "floater_remover",
+      "faces": 284142,
+      "seconds": 0.9
+    },
+    {
+      "step": "degenerate_face_remover",
+      "faces": 284142,
+      "seconds": 0.7
+    },
+    {
+      "step": "face_reducer",
+      "faces": 284142,
+      "seconds": 0.4
+    }
+  ],
+  "faces_out": 284142,
+  "shells_welded": 2,
+  "winding_consistent": false,
+  "watertight": false,
+  "seconds": 2.9,
+  "note": "Hunyuan's own postprocessors, which the generator workers on this project have never called; every prior Mini Turbo verdict was recorded against unfinished output"
+}

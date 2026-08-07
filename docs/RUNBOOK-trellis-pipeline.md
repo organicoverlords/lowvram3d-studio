@@ -813,6 +813,25 @@ at a time and never as headroom to run two.
 
 ## 14. Texel starvation — face count must match the texture budget
 
+> **RETRACTED IN PART, 2026-08-07.** The *visible* symptom this section reports
+> -- surfaces reading as a mosaic of flat plates -- was an artifact of
+> `render_textured_views.py`, which sampled textures with a nearest-neighbour
+> lookup and no filtering. A face covering one or two texels took a single
+> texel's colour across its whole area, and neighbouring faces landing in
+> different texels met at a hard edge. Blender, which filters properly, shows
+> none of it.
+>
+> Controlled test: the same fennec mesh baked at 1024 (1.40 median texels/face)
+> and at 2048 (5.59), rendered through Blender, differ by **mean absolute
+> 0.45/255, with 1.54% of pixels differing by more than 8**. A 4x atlas bought
+> nothing visible.
+>
+> The measurements below stand. The conclusion drawn from them -- that the
+> assets were visibly damaged by texel starvation -- does not. Section 18's rule
+> was applied to crops and framing but never to the renderer itself, and two
+> vision models confirmed the false reading because they were shown the same bad
+> picture. `render_textured_views.py` now samples bilinearly.
+
 Measured on the finished painted assets, texels per face (median):
 
 | asset | faces | atlas | texels/face | atlas colour std |
@@ -957,3 +976,71 @@ gets answered anyway.** A crop containing only reed tips drew a detailed
 description of a beak's rotation from one model and "beak fully visible in all 9
 views, crop adequate, no occlusion" from the other. Open the image yourself
 first. Their disagreement was the only reason the fabrication surfaced.
+
+## 19. The atlas is confetti — thousands of independently-owned UV charts
+
+> **THE SYMPTOM THIS EXPLAINS WAS NOT REAL, 2026-08-07.** This section was
+> written to account for hard-edged plates on the painted fennec. Those plates
+> came from a nearest-neighbour texture sampler in
+> `render_textured_views.py`, not from the bake -- see the retraction in
+> section 14. Rendered through Blender the same asset is clean.
+>
+> Everything measured here is still true and still worth knowing: 5,609 UV
+> charts with a median of 14 faces, 36.7% atlas utilisation, 85% of the atlas
+> reached by no camera, and the three discontinuities in the vendor blend. What
+> is withdrawn is the causal story -- the defect/trigger/amplifier model at the
+> end -- because there was no defect in the output to explain. Treat this as a
+> characterisation of the unwrap, not as a diagnosis of a failure.
+
+`tools/paint_view_provenance.py` replays the vendor's exact projection and blend
+with the generated views replaced by one flat colour per camera. Nothing else
+changes, so any structure in the output comes from geometry and blending alone.
+
+On the TRELLIS fennec at 1024 it returned **85% of the atlas owned by no camera
+at all**, and the owned 15% shattered into thousands of specks whose winning
+camera differs from that of the speck beside it.
+
+The cause is the unwrap, and it is universal:
+
+| mesh | faces | UV charts | median faces/chart | atlas used |
+|---|---:|---:|---:|---:|
+| boat | 149,720 | 3,232 | 4 | 44.4% |
+| fennec Mini Turbo | 400,000 | 7,249 | 3 | 39.6% |
+| fennec TRELLIS | 284,142 | 5,609 | 14 | 36.7% |
+| heron Mini Turbo | 400,000 | 9,806 | 5 | 33.1% |
+| panda Mini Turbo | 400,000 | 7,382 | 15 | 36.7% |
+| shaman Mini Turbo | 400,000 | 4,686 | 4 | 45.2% |
+| whale Mini Turbo | 400,000 | 8,086 | 3 | 37.5% |
+
+Two consequences follow.
+
+**Only about a third of the atlas holds any surface**, so the naive
+`width x height / faces` figure overstates density by roughly 3x. Always weight
+by UV triangle area, the way section 14 does. Quoting the naive number is what
+made a 1.00-texel-per-face bake look like 3.69.
+
+**Roughly 60% of the surface that *is* unwrapped receives no projected pixel**
+and is filled by `uv_inpaint`. Raising the atlas does not change this — coverage
+is geometric, not resolution-dependent.
+
+Three separate discontinuities in the vendor bake turn per-chart ownership into
+hard edges rather than a gradient:
+
+```python
+cos_image[cos_image < cos_thres] = 0                 # a cut, not a falloff
+project_cos_map = weight * cos_map ** self.config.bake_exp    # bake_exp 4
+if painted_sum / view_sum > 0.99: continue           # whole view dropped, in fixed order
+```
+
+The camera weights are `[1, 0.1, 0.5, 0.1, 0.05, 0.05]` for front, right, back,
+left, top, bottom -- so a chart facing right is coloured at a tenth the
+confidence of one facing front, and the last two views can be discarded whole.
+
+**Do not read "universal" as "harmless."** This is a latent structural weakness
+present in every asset shipped so far. It stays invisible until something else
+exposes it. The current causal model for the fennec:
+
+- **defect** — thousands of tiny independently-owned charts
+- **trigger** — a quarter-resolution texture budget (median 1.00 texels/face)
+- **amplifier** — high-contrast cream-and-dark markings making cross-camera
+  disagreement visible where the near-monochrome whale and shaman hid it

@@ -1,0 +1,19 @@
+{
+  "schema": "lowvram3d_hunyuan_paint_v1",
+  "mesh_in": "evidence\\compare\\fennec\\fennec_t_uv.glb",
+  "image": "evidence\\compare\\fennec\\matte_512.png",
+  "mesh_out": "evidence\\compare\\fennec\\fennec_t_hypaint2048.glb",
+  "paint_checkpoint": "hunyuan3d-paint-v2-0-turbo",
+  "baked_texture_size": null,
+  "renderer_texture_size": [
+    2048,
+    2048
+  ],
+  "model_cpu_offload": true,
+  "render_size": 512,
+  "texture_size": 2048,
+  "cudnn_enabled": false,
+  "load_seconds": 176.2,
+  "paint_seconds": 535.7,
+  "note": "vendor texture stage; no fitted camera, no silhouette objective, no hand-rolled projection"
+}

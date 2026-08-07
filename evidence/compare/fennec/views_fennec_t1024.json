@@ -1,0 +1,17 @@
+{
+  "classification": "PROVEN",
+  "glb": "evidence\\compare\\fennec\\fennec_t_hypaint1024.glb",
+  "out": "evidence\\compare\\fennec\\views_fennec_t1024.png",
+  "schema_version": "textured_views_v1",
+  "texture_size": [
+    1024,
+    1024
+  ],
+  "triangles": 284142,
+  "views": [
+    "front",
+    "three_quarter",
+    "side",
+    "rear"
+  ]
+}

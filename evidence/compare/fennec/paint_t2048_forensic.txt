@@ -1,0 +1,7 @@
+=== fennec 2048 bake, started 23:14:55
+free_ram_gb 9,22
+708 MiB, 6144 MiB
+bake_pid 176550
+exit_status 0 at 23:27:39
+free_ram_gb_at_exit 7,71
+python_traceback_present no   -> native crash or external kill
