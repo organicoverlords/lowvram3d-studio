@@ -1,0 +1,119 @@
+{
+  "schema": "lowvram3d_internal_structure_v1",
+  "size": 512,
+  "results": [
+    {
+      "mesh": "evidence\\compare\\boat\\stage6_s1006.glb",
+      "faces": 146076,
+      "views": [
+        {
+          "view": "front",
+          "covered_pixels": 97887,
+          "edge_pixels": 30734,
+          "density": 0.314,
+          "components": 187,
+          "pixels_per_component": 164.35
+        },
+        {
+          "view": "back",
+          "covered_pixels": 97887,
+          "edge_pixels": 31958,
+          "density": 0.3265,
+          "components": 149,
+          "pixels_per_component": 214.48
+        },
+        {
+          "view": "left",
+          "covered_pixels": 70269,
+          "edge_pixels": 31708,
+          "density": 0.4512,
+          "components": 120,
+          "pixels_per_component": 264.23
+        },
+        {
+          "view": "right",
+          "covered_pixels": 70269,
+          "edge_pixels": 31477,
+          "density": 0.448,
+          "components": 105,
+          "pixels_per_component": 299.78
+        },
+        {
+          "view": "top",
+          "covered_pixels": 0,
+          "edge_pixels": 0,
+          "density": 0.0,
+          "components": 0,
+          "pixels_per_component": 0.0
+        },
+        {
+          "view": "three_quarter",
+          "covered_pixels": 98778,
+          "edge_pixels": 41049,
+          "density": 0.4156,
+          "components": 375,
+          "pixels_per_component": 109.46
+        }
+      ],
+      "mean_density": 0.3259,
+      "mean_pixels_per_component": 175.38
+    },
+    {
+      "mesh": "evidence\\compare\\boat\\stage6_1024_s1006.glb",
+      "faces": 297634,
+      "views": [
+        {
+          "view": "front",
+          "covered_pixels": 95551,
+          "edge_pixels": 33719,
+          "density": 0.3529,
+          "components": 138,
+          "pixels_per_component": 244.34
+        },
+        {
+          "view": "back",
+          "covered_pixels": 95551,
+          "edge_pixels": 35635,
+          "density": 0.3729,
+          "components": 217,
+          "pixels_per_component": 164.22
+        },
+        {
+          "view": "left",
+          "covered_pixels": 71753,
+          "edge_pixels": 34357,
+          "density": 0.4788,
+          "components": 142,
+          "pixels_per_component": 241.95
+        },
+        {
+          "view": "right",
+          "covered_pixels": 71753,
+          "edge_pixels": 34370,
+          "density": 0.479,
+          "components": 142,
+          "pixels_per_component": 242.04
+        },
+        {
+          "view": "top",
+          "covered_pixels": 0,
+          "edge_pixels": 0,
+          "density": 0.0,
+          "components": 0,
+          "pixels_per_component": 0.0
+        },
+        {
+          "view": "three_quarter",
+          "covered_pixels": 100908,
+          "edge_pixels": 42710,
+          "density": 0.4233,
+          "components": 448,
+          "pixels_per_component": 95.33
+        }
+      ],
+      "mean_density": 0.3512,
+      "mean_pixels_per_component": 164.65
+    }
+  ],
+  "note": "supporting measure only; density separates melted from detailed, fragmentation separates crisp from speckled, and neither is a verdict without a clay render"
+}
