@@ -1,0 +1,23 @@
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  33%|###3      | 2/6 [00:00<00:00,  5.42it/s]Loading pipeline components...:  50%|#####     | 3/6 [00:03<00:04,  1.50s/it]Loading pipeline components...: 100%|##########| 6/6 [00:03<00:00,  1.75it/s]Loading pipeline components...: 100%|##########| 6/6 [00:03<00:00,  1.55it/s]
+Loading pipeline components...:   0%|          | 0/6 [00:00<?, ?it/s]Loading pipeline components...:  33%|###3      | 2/6 [00:01<00:03,  1.09it/s]Loading pipeline components...:  50%|#####     | 3/6 [00:45<00:56, 18.74s/it]Loading pipeline components...:  67%|######6   | 4/6 [00:45<00:23, 11.86s/it]Loading pipeline components...:  83%|########3 | 5/6 [00:45<00:07,  7.78s/it]An error occurred while trying to fetch C:\AI\HY3D2\HuggingFaceHub\models--tencent--Hunyuan3D-2\snapshots\9cd649ba6913f7a852e3286bad86bfa9a2d83dcf\hunyuan3d-paint-v2-0-turbo\vae: Error no file named diffusion_pytorch_model.safetensors found in directory C:\AI\HY3D2\HuggingFaceHub\models--tencent--Hunyuan3D-2\snapshots\9cd649ba6913f7a852e3286bad86bfa9a2d83dcf\hunyuan3d-paint-v2-0-turbo\vae.
+Defaulting to unsafe serialization. Pass `allow_pickle=False` to raise an error instead.
+Loading pipeline components...: 100%|##########| 6/6 [00:46<00:00,  5.38s/it]Loading pipeline components...: 100%|##########| 6/6 [00:46<00:00,  7.75s/it]
+Expected types for unet: (<class 'diffusers_modules.local.unet.modules.UNet2p5DConditionModel'>,), got <class 'diffusers_modules.local.modules.UNet2p5DConditionModel'>.
+C:\Users\Lauri\.cache\huggingface\modules\diffusers_modules\local\pipeline.py:598: UserWarning: torch.range is deprecated and will be removed in a future release because its behavior is inconsistent with Python's range builtin. Instead, use torch.arange, which produces values in [start, end).
+  index = torch.range(29, 0, -bsz, device='cuda').long()
+The first timestep on the custom timestep schedule is 989, not `self.config.num_train_timesteps - 1`: 999. You may get unexpected results when using this timestep schedule.
+The custom timestep schedule contains the following timesteps which are not on the original training/distillation timestep schedule: [tensor(890), tensor(791), tensor(692), tensor(593), tensor(494), tensor(395), tensor(296), tensor(197), tensor(98)]. You may get unexpected results when using this timestep schedule.
+{
+  "schema": "lowvram3d_hunyuan_paint_v1",
+  "mesh_in": "evidence\\compare\\titan\\titan_1024.glb",
+  "image": "evidence\\compare\\titan\\matte.png",
+  "mesh_out": "evidence\\compare\\titan\\titan_1024_hypaint.glb",
+  "paint_checkpoint": "hunyuan3d-paint-v2-0-turbo",
+  "model_cpu_offload": true,
+  "render_size": 1024,
+  "texture_size": 2048,
+  "cudnn_enabled": false,
+  "load_seconds": 51.0,
+  "paint_seconds": 622.9,
+  "note": "vendor texture stage; no fitted camera, no silhouette objective, no hand-rolled projection"
+}
