@@ -104,7 +104,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--res", default="512", choices=("512", "1024", "1536"))
     parser.add_argument("--atlas", type=int, default=1024)
     parser.add_argument("--seed", type=int, default=12345)
-    parser.add_argument("--no-texture", action="store_true")
+    parser.add_argument("--no-texture", action="store_true",
+                        help="UNFINISHED GEOMETRY. This does not merely skip "
+                             "colour: trellis-cli only enters its geometry "
+                             "finalizer when PBR exists, so without a texture "
+                             "it writes the RAW FlexiDualGrid decode and skips "
+                             "weld, narrow-band remesh, winding repair, "
+                             "component filtering and QEM simplification. "
+                             "Measured on seed 1006: 2,035,434 faces, 51,502 "
+                             "shells, 116,785 boundary edges against 146,076 / "
+                             "161 / 0 with stage 6. Do not publish this.")
     parser.add_argument("--tex-res", type=int, choices=(512, 1024), default=None,
                         help="PBR decode volume resolution. The stage-6 CUDA "
                              "graph is the second capacity wall; dropping this "
@@ -184,8 +193,18 @@ def main(argv: list[str] | None = None) -> int:
             else "typical" if latent <= LATENT_WARN
             else "large")
 
+    failure_stage = None
+    if process.returncode != 0:
+        # Which stage it died in, so a failed attempt is data rather than a
+        # blank. Stage 3 faults ("misaligned address", "illegal instruction")
+        # are the shape-dependent TU116 kernel family and are expected at
+        # roughly half of attempts; stage 5 is the host-RAM decode wall and
+        # stage 6 is the VRAM one. They need different responses.
+        stages = re.findall(r"\[(\d)/\d\]\s*(.+)", "\n".join(lines))
+        failure_stage = stages[-1][1].strip()[:80] if stages else "before stage 1"
+
     receipt = {
-        "schema_version": "trellis_run_v1",
+        "schema_version": "trellis_run_v2",
         "image": str(image),
         "output": str(output.resolve()),
         "command": command,
@@ -204,6 +223,20 @@ def main(argv: list[str] | None = None) -> int:
         # geometry was real; only the texture was lost.
         "vram_oom_mib": vram_oom_mib,
         "geometry_decoded": voxels is not None,
+        # The single most important field in this receipt. False means the mesh
+        # is the raw decoder output with none of the vendor finalization, and
+        # is not a deliverable -- see --no-texture.
+        "geometry_finalized": not args.no_texture,
+        "finalizer_note": (
+            "raw FlexiDualGrid decode; vendor stage 6 skipped"
+            if args.no_texture else
+            "vendor stage 6: weld, hole fill, narrow-band remesh, winding "
+            "repair, component filter, QEM to 150k @512"),
+        # Survival is per ATTEMPT, not per seed. Seed 1006 completed and then
+        # died with "illegal instruction" on an identical rerun the same day.
+        # Nothing here should be read as reproducible.
+        "seed_reproducible": False,
+        "failure_stage": failure_stage,
         "tex_res": args.tex_res,
         "exit_code": process.returncode,
         "success": bool(produced and not aborted),
