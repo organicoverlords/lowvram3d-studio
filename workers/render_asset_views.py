@@ -84,6 +84,34 @@ def align_long_axis_to_x(meshes):
     bpy.context.view_layer.update()
     return True
 
+def has_image_texture(obj):
+    for slot in obj.material_slots:
+        tree = slot.material and slot.material.node_tree
+        if tree and any(n.type == "TEX_IMAGE" for n in tree.nodes):
+            return True
+    return False
+
+
+def apply_clay(meshes):
+    """Mid-grey matte on everything, so form reads instead of blowing out.
+
+    A shape-only mesh arrives with vertex colours and no texture, and the glTF
+    import gives it a white material. White material, white world, and the
+    tile comes back 255 everywhere -- a silhouette that is exactly as blank as
+    a failed import, which is how this cost a debugging round. Clay also
+    happens to be the correct shading for comparing geometry: colour differences
+    between candidates are not what is being judged.
+    """
+    clay = bpy.data.materials.new("clay")
+    clay.use_nodes = True
+    bsdf = clay.node_tree.nodes["Principled BSDF"]
+    bsdf.inputs["Base Color"].default_value = (0.55, 0.54, 0.52, 1.0)
+    bsdf.inputs["Roughness"].default_value = 0.62
+    for obj in meshes:
+        obj.data.materials.clear()
+        obj.data.materials.append(clay)
+
+
 payload = json.loads(sys.argv[-1])
 bpy.ops.wm.read_factory_settings(use_empty=True)
 
@@ -98,7 +126,7 @@ world = bpy.data.worlds.new("w")
 scene.world = world
 world.use_nodes = True
 world.node_tree.nodes["Background"].inputs[0].default_value = (1, 1, 1, 1)
-world.node_tree.nodes["Background"].inputs[1].default_value = 1.4
+background = world.node_tree.nodes["Background"]
 
 camera_data = bpy.data.cameras.new("cam")
 camera_data.type = "ORTHO"
@@ -108,7 +136,6 @@ scene.camera = camera
 camera.rotation_mode = "QUATERNION"
 
 sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", type="SUN"))
-sun.data.energy = 3.0
 sun.rotation_mode = "QUATERNION"
 scene.collection.objects.link(sun)
 
@@ -118,7 +145,15 @@ for job in payload["jobs"]:
     bpy.ops.import_scene.gltf(filepath=job["mesh"])
     meshes = [o for o in scene.objects if o.type == "MESH"]
     turned = align_long_axis_to_x(meshes) if payload["align"] else False
-    print("ALIGNED %s %s" % (job["prefix"], turned), flush=True)
+    clayed = payload["clay"] or not any(has_image_texture(o) for o in meshes)
+    if clayed:
+        apply_clay(meshes)
+    # Exposure follows the shading mode. The textured meshes on this
+    # project are dark tarred timber and want a bright fill; mid-grey clay
+    # under that same fill clips to white and reads as an empty tile.
+    background.inputs[1].default_value = 0.25 if clayed else 1.4
+    sun.data.energy = 2.0 if clayed else 3.0
+    print("ALIGNED %s %s %s" % (job["prefix"], turned, clayed), flush=True)
     lo, hi = bounds(meshes)
     centre = (lo + hi) / 2
     radius = max((hi - lo)) * 0.72
@@ -145,7 +180,8 @@ for job in payload["jobs"]:
 
 
 def run(meshes: list[Path], out_path: Path, view_names: list[str],
-        size: int, align: bool = True, half: bool = False) -> dict:
+        size: int, align: bool = True, half: bool = False,
+        clay: bool = False) -> dict:
     from PIL import Image, ImageDraw
 
     started = time.time()
@@ -156,15 +192,17 @@ def run(meshes: list[Path], out_path: Path, view_names: list[str],
     jobs = [{"mesh": str(m.resolve()), "prefix": str(scratch / f"m{i}"),
              "views": [[n, *VIEWS[n]] for n in view_names]}
             for i, m in enumerate(meshes)]
-    payload = json.dumps({"size": size, "align": bool(align), "half": bool(half), "jobs": jobs})
+    payload = json.dumps({"size": size, "align": bool(align), "half": bool(half), "clay": bool(clay), "jobs": jobs})
 
     completed = subprocess.run(
         [str(BLENDER), "-b", "--python", str(script), "--", payload],
         capture_output=True, text=True)
     rendered = [line.split(" ", 1)[1] for line in completed.stdout.splitlines()
                 if line.startswith("RENDERED ")]
-    aligned = [line.split(" ")[-1] == "True" for line in completed.stdout.splitlines()
-               if line.startswith("ALIGNED ")]
+    marks = [line.split(" ")[-2:] for line in completed.stdout.splitlines()
+             if line.startswith("ALIGNED ")]
+    aligned = [m[0] == "True" for m in marks]
+    clayed = [m[1] == "True" for m in marks]
     if not rendered:
         raise SystemExit("blender produced nothing:\n"
                          + (completed.stdout + completed.stderr)[-1200:])
@@ -194,6 +232,7 @@ def run(meshes: list[Path], out_path: Path, view_names: list[str],
         "sheet": str(out_path),
         "align_long_axis_to_x": bool(align),
         "near_half_only": bool(half),
+        "clay_shaded": clayed,
         "quarter_turn_applied": aligned,
         "surface_qa_valid": True,
         "note": ("rasterised; a point splat renders solid surfaces as "
@@ -210,6 +249,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--views", default="profile,end_plus,three_quarter")
     parser.add_argument("--size", type=int, default=520)
+    parser.add_argument("--clay", action="store_true",
+                        help="force neutral clay; applied automatically to any "
+                             "mesh with no image texture, which would otherwise "
+                             "render white-on-white and look like a failed import")
     parser.add_argument("--half", action="store_true",
                         help="clip at the mid-plane so only the near half is "
                              "visible; separates far-end occlusion from a "
@@ -224,7 +267,8 @@ def main(argv: list[str] | None = None) -> int:
     if unknown:
         raise SystemExit(f"unknown views {unknown}; have {sorted(VIEWS)}")
 
-    result = run(args.mesh, args.out, names, args.size, args.align, args.half)
+    result = run(args.mesh, args.out, names, args.size, args.align, args.half,
+                 args.clay)
     print(json.dumps(result, indent=2))
     return 0
 

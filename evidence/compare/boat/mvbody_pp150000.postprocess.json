@@ -1,0 +1,34 @@
+{
+  "schema": "lowvram3d_hunyuan_postprocess_v1",
+  "mesh_in": "evidence\\compare\\boat\\boat_mv_body384.glb",
+  "mesh_out": "evidence\\compare\\boat\\mvbody_pp150000.glb",
+  "target_faces": 150000,
+  "steps": [
+    {
+      "step": "load",
+      "faces": 1291064,
+      "seconds": 0.2
+    },
+    {
+      "step": "floater_remover",
+      "faces": 1283604,
+      "seconds": 1.5
+    },
+    {
+      "step": "degenerate_face_remover",
+      "faces": 1283604,
+      "seconds": 1.4
+    },
+    {
+      "step": "face_reducer",
+      "faces": 150000,
+      "seconds": 19.4
+    }
+  ],
+  "faces_out": 150000,
+  "shells_welded": 1,
+  "winding_consistent": true,
+  "watertight": false,
+  "seconds": 22.7,
+  "note": "Hunyuan's own postprocessors, which the generator workers on this project have never called; every prior Mini Turbo verdict was recorded against unfinished output"
+}
