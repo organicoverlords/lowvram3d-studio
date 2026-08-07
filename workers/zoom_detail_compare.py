@@ -12,8 +12,8 @@ from PIL import Image, ImageDraw
 import render_asset_views as r
 
 SIZE = 1800
-MESHES = [("res 512  146k", "evidence/compare/boat/stage6_s1006.glb"),
-          ("res 1024 298k", "evidence/compare/boat/stage6_1024_s1006.glb")]
+import os
+MESHES = [(os.environ.get("L0","a"), os.environ["M0"]), (os.environ.get("L1","b"), os.environ["M1"])]
 VIEW = sys.argv[1] if len(sys.argv) > 1 else "profile"
 # Fractional (x0, y0, x1, y1) boxes in the square tile.
 REGIONS = {
@@ -21,7 +21,8 @@ REGIONS = {
     # not fill the tile and the two meshes do not fill it identically, so tile
     # fractions crop different parts of each boat -- which is how the first
     # attempt cropped empty background.
-    "profile": [("paddle wheel", (0.00, 0.45, 0.22, 1.00)),
+    "profile": [("hull bottom fwd", (0.00, 0.72, 0.45, 1.06)),
+                ("hull bottom aft", (0.55, 0.72, 1.00, 1.06)),
                 ("mid decks + railings", (0.34, 0.20, 0.68, 0.62)),
                 ("bow ornament", (0.76, 0.15, 1.00, 0.70))],
     "end_plus": [("arch + fan", (0.10, 0.00, 0.90, 0.40)),
@@ -34,7 +35,7 @@ script.write_text(r.SCRIPT, encoding="utf-8")
 jobs = [{"mesh": str(Path(p).resolve()), "prefix": str(scratch / f"m{i}"),
          "views": [[VIEW, *r.VIEWS[VIEW]]]} for i, (_, p) in enumerate(MESHES)]
 payload = json.dumps({"size": SIZE, "align": True, "half": False,
-                      "clay": True, "jobs": jobs})
+                      "clay": os.environ.get("CLAY","1")=="1", "jobs": jobs})
 subprocess.run([str(r.BLENDER), "-b", "--python", str(script), "--", payload],
                capture_output=True, text=True)
 
