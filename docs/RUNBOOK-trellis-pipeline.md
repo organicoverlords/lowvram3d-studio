@@ -900,3 +900,60 @@ because it was violated:
   heron's skull, so a head band anchored to the bbox top captures reeds only.
   Verify a derived mask by printing its per-row widths — a mask covering every
   pixel of every row is a broken mask, not a large subject.
+
+## 17. The latent cannot represent hair topology — and no setting fixes that
+
+The weeping willow is the clearest result of the day. Mini Turbo at octree 384,
+no decimation:
+
+    tris 4,253,066   1062.5 s   peak VRAM 9,254 MB on a 6,143 MB card
+
+3.5x the heron's triangle count at identical settings, 3.8x the time, and 3.1 GB
+spilled into system RAM — the largest overflow recorded here, and it completed.
+
+And the result is unusable. Both vision models, independently, on the raw clay:
+
+| feature | verdict |
+|---|---|
+| thousands of fine hanging strands | fused; "no strand separation anywhere, even in silhouette" |
+| ~20 teardrop lanterns | **zero** present; "not even approximated as bumps" |
+| braided twisted trunk | a fat lumpy column; roots fused into a solid base disk |
+| canopy | "smooth melted shell"; "classic minimal-surface collapse" |
+
+Both rejected polygon budget as the cause unprompted. Spark: *"4.25M tris is
+~100x more than needed to represent the braid/strands — the mesh is subdividing
+a smooth blob."* The sparse-voxel latent with a diffusion prior trained on solid
+Objaverse objects has no way to express hair topology or twenty separate small
+instances, so it reconstructs the thinnest thing it can represent: a closed,
+smoothed shell.
+
+This closes §12 properly. Octree 384 -> 448 -> 512 changed nothing on the heron,
+and the reason generalises: **decode resolution cannot add what the latent never
+encoded.** More grid subdivides the blob more finely. For subjects made of thin
+separated structures — foliage, hair, rope, chains, railings, small hanging
+props — the generator is the wrong tool, not the settings.
+
+Expect the same on any subject whose defining feature is thin-and-separated.
+Judge those on the raw clay before spending a paint pass on them.
+
+## 18. Vision-model verification — the three silent failures
+
+Procedure lives in `.claude/skills/visual-verify/SKILL.md`. The traps that
+produce a confident wrong answer rather than an error:
+
+1. **Image outside the workspace.** The model reads the file with a tool; a path
+   outside the working directory is refused, and the run exits **0** having
+   printed only its opening sentence. `evidence/compare/<subject>/source.png`
+   already exists for this reason — never point at `Downloads`. Confirm with
+   `--output-format json` and look for `"stopReason": "permission_denied"` in
+   the `run_end` event; the plain text output never mentions it.
+2. **A preamble-only reply is a dead call, not a terse verdict.**
+3. **`--effort` is Luna-only.** Spark answers `Muse Spark 1.2 Contributor has no
+   adjustable reasoning effort` and does nothing else. Luna must always run at
+   `--effort high` or `xhigh` — at default it confirms; at high it diagnoses.
+
+And the failure that has nothing to do with the CLI: **an empty or wrong frame
+gets answered anyway.** A crop containing only reed tips drew a detailed
+description of a beak's rotation from one model and "beak fully visible in all 9
+views, crop adequate, no occlusion" from the other. Open the image yourself
+first. Their disagreement was the only reason the fabrication surfaced.

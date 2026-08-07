@@ -76,10 +76,33 @@ def run(mesh_path: Path, image_path: Path, out_path: Path,
     if offload:
         pipeline.enable_model_cpu_offload()
 
-    # Set after construction: the sizes are read at bake time, and the renderer
-    # is built from the config when __call__ runs.
+    # The renderer is built inside Hunyuan3DTexGenPipeline.__init__, which runs
+    # during from_pretrained -- not lazily at __call__ as this code previously
+    # assumed. Setting config afterwards therefore changed nothing: every run
+    # silently used the vendor defaults of 2048/2048, and --render-size and
+    # --texture-size were decorative. A "4096" bake came out with a 2048 atlas
+    # and byte-for-byte the same texel density as the 2048 run, which is what
+    # exposed it.
+    #
+    # So the renderer has to be rebuilt after the config is changed. It is a
+    # plain object holding rasteriser state, not something the loaded weights
+    # point back into, so replacing it is safe.
+    from hy3dgen.texgen.differentiable_renderer.mesh_render import MeshRender
+
     pipeline.config.render_size = int(render_size)
     pipeline.config.texture_size = int(texture_size)
+    pipeline.render = MeshRender(
+        default_resolution=pipeline.config.render_size,
+        texture_size=pipeline.config.texture_size)
+
+    # Fail loudly rather than emit another file whose name lies about its atlas.
+    # MeshRender stores this as a (width, height) tuple, not the int it was
+    # given, so read it back the way it is actually held.
+    actual = pipeline.render.texture_size
+    actual_side = int(actual[0]) if isinstance(actual, (tuple, list)) else int(actual)
+    if actual_side != int(texture_size):
+        raise RuntimeError(
+            f"renderer texture_size is {actual}, asked for {texture_size}")
     loaded = time.time()
 
     scene = trimesh.load(mesh_path, process=False)
@@ -93,12 +116,25 @@ def run(mesh_path: Path, image_path: Path, out_path: Path,
     textured.export(out_path)
     finished = time.time()
 
+    # What the atlas actually came out as, read off the exported material rather
+    # than echoed back from the arguments. Receipts that only repeated the
+    # request said render_size 1024 / texture_size 2048 for every asset today
+    # while the pipeline was silently using its own 2048/2048 defaults.
+    baked = None
+    try:
+        texture = textured.visual.material.baseColorTexture
+        baked = list(texture.size)
+    except Exception:  # pragma: no cover - depends on the vendor's return type
+        pass
+
     return {
         "schema": "lowvram3d_hunyuan_paint_v1",
         "mesh_in": str(mesh_path),
         "image": str(image_path),
         "mesh_out": str(out_path),
         "paint_checkpoint": PAINT_SUBFOLDER,
+        "baked_texture_size": baked,
+        "renderer_texture_size": list(actual) if isinstance(actual, (tuple, list)) else actual,
         "model_cpu_offload": bool(offload),
         "render_size": int(render_size),
         "texture_size": int(texture_size),

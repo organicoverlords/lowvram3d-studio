@@ -1,0 +1,167 @@
+{
+  "schema": "lowvram3d_fbx_deliverables_v1",
+  "target": "Unreal Engine",
+  "units": "centimetres; scaled to REAL_SIZES.json then x100, applied to the mesh",
+  "axes": "Z up, -Y forward, glTF Y-up correction baked into the mesh",
+  "textures": "embedded in the FBX",
+  "origin": "base of the mesh sits on the world origin",
+  "unverified": "No Unreal editor was running when these were written. Axis and scale rest on the measured mapping and the exporter settings, not on an observed import. Check one before trusting all.",
+  "files": [
+    {
+      "fbx": "snail_trellis1024_tex2048.fbx",
+      "from": "snail_trellis1024_tex2048.glb",
+      "bytes": 14937788,
+      "dimensions_cm": [
+        1237.1,
+        614.4,
+        1000.0
+      ],
+      "target_metres": 10.0,
+      "target_axis": "height"
+    },
+    {
+      "fbx": "titan_trellis1024_tex2048.fbx",
+      "from": "titan_trellis1024_tex2048.glb",
+      "bytes": 14975708,
+      "dimensions_cm": [
+        1529.4,
+        1078.5,
+        4000.0
+      ],
+      "target_metres": 40.0,
+      "target_axis": "height"
+    },
+    {
+      "fbx": "whale_trellis1024_tex2048.fbx",
+      "from": "whale_trellis1024_tex2048.glb",
+      "bytes": 15740540,
+      "dimensions_cm": [
+        1400.0,
+        787.7,
+        666.1
+      ],
+      "target_metres": 14.0,
+      "target_axis": "longest"
+    },
+    {
+      "fbx": "heron_trellis1024_tex2048.fbx",
+      "from": "heron_trellis1024_tex2048.glb",
+      "bytes": 15598748,
+      "dimensions_cm": [
+        91.0,
+        93.8,
+        200.0
+      ],
+      "target_metres": 2.0,
+      "target_axis": "height"
+    },
+    {
+      "fbx": "shaman_trellis1024_tex2048.fbx",
+      "from": "shaman_trellis1024_tex2048.glb",
+      "bytes": 16469228,
+      "dimensions_cm": [
+        145.0,
+        74.7,
+        190.0
+      ],
+      "target_metres": 1.9,
+      "target_axis": "height"
+    },
+    {
+      "fbx": "frog_trellis512_tex2048.fbx",
+      "from": "frog_trellis512_tex2048.glb",
+      "bytes": 9905436,
+      "dimensions_cm": [
+        81.8,
+        76.8,
+        130.0
+      ],
+      "target_metres": 1.3,
+      "target_axis": "height"
+    },
+    {
+      "fbx": "shaman_miniturbo384_tex2048.fbx",
+      "from": "shaman_miniturbo384_tex2048.glb",
+      "bytes": 19139100,
+      "dimensions_cm": [
+        158.2,
+        60.0,
+        190.0
+      ],
+      "target_metres": 1.9,
+      "target_axis": "height"
+    },
+    {
+      "fbx": "heron_miniturbo384_tex2048.fbx",
+      "from": "heron_miniturbo384_tex2048.glb",
+      "bytes": 20057356,
+      "dimensions_cm": [
+        92.4,
+        104.5,
+        200.0
+      ],
+      "target_metres": 2.0,
+      "target_axis": "height"
+    },
+    {
+      "fbx": "fennec_miniturbo384_tex2048.fbx",
+      "from": "fennec_miniturbo384_tex2048.glb",
+      "bytes": 21166076,
+      "dimensions_cm": [
+        74.8,
+        74.6,
+        150.0
+      ],
+      "target_metres": 1.5,
+      "target_axis": "height"
+    },
+    {
+      "fbx": "boat_trellis1024_tex2048.fbx",
+      "from": "boat_trellis1024_tex2048.glb",
+      "bytes": 15805468,
+      "dimensions_cm": [
+        569.3,
+        1200.0,
+        785.3
+      ],
+      "target_metres": 12.0,
+      "target_axis": "longest"
+    },
+    {
+      "fbx": "panda_miniturbo384_tex2048.fbx",
+      "from": "panda_miniturbo384_tex2048.glb",
+      "bytes": 20847756,
+      "dimensions_cm": [
+        122.4,
+        120.5,
+        160.0
+      ],
+      "target_metres": 1.6,
+      "target_axis": "height"
+    },
+    {
+      "fbx": "whale_miniturbo384_tex2048_earlypaint.fbx",
+      "from": "whale_miniturbo384_tex2048_earlypaint.glb",
+      "bytes": 20381932,
+      "dimensions_cm": [
+        1400.0,
+        803.4,
+        753.4
+      ],
+      "target_metres": 14.0,
+      "target_axis": "longest"
+    },
+    {
+      "fbx": "shaman_miniturbo384_tex2048_earlypaint.fbx",
+      "from": "shaman_miniturbo384_tex2048_earlypaint.glb",
+      "bytes": 19300540,
+      "dimensions_cm": [
+        158.2,
+        60.0,
+        190.0
+      ],
+      "target_metres": 1.9,
+      "target_axis": "height"
+    }
+  ]
+}

@@ -78,9 +78,53 @@ Both models, through `command-code` — never codex. DeepSeek is never used here
 it has no vision.
 
 ```bash
-command-code -p "Look at <absolute image path>. <specific question>" -m gpt-5.6-luna
-command-code -p "Look at <absolute image path>. <specific question>" -m meta/muse-spark-1.2-contributor
+# Luna takes --effort. Spark does NOT and will refuse the whole call.
+command-code --effort high -p "... evidence/compare/<subject>/<image>.png ..." -m gpt-5.6-luna
+command-code               -p "... evidence/compare/<subject>/<image>.png ..." -m meta/muse-spark-1.2-contributor
 ```
+
+### The three ways these calls fail silently
+
+**1. The image must live inside the workspace.** The model opens it with a file
+tool. A path outside the working directory is refused, and the run then exits
+**0** having printed only its opening sentence. Copy the image into the repo
+first — the pipeline already stages sources at
+`evidence/compare/<subject>/source.png` — or pass `--add-dir`. Never hand it a
+path in `Downloads`.
+
+**2. A preamble-only reply is a failure, not a short answer.** If the output is
+`I'll inspect both images and compare...` and nothing else, the call died. Do
+not report it as a verdict and do not retry blindly. Diagnose it:
+
+```bash
+command-code --output-format json -p "..." -m gpt-5.6-luna > out.json
+```
+
+then look in the `run_end` event for `"stopReason"`. `permission_denied` means
+the file read was refused. The plain text output never mentions this.
+
+**3. `--effort` is Luna-only.** Spark replies `Muse Spark 1.2 Contributor has no
+adjustable reasoning effort` and does nothing else. Passing it to Spark wastes
+the call.
+
+**Always pass `--effort high` (or `xhigh`) to Luna. Never the default.** At
+default effort it returns a correct but shallow verdict. At high it reasons
+about mechanism: asked to diagnose a failed texture bake it ruled out texel
+density, baked lighting and gamma by name, with the evidence separating each,
+instead of just agreeing the texture was bad.
+
+### Sanity-check the reply before believing it
+
+A reply is only usable if it is **substantive and specific to the image**. Before
+reporting any model verdict, confirm it names things that are actually in the
+picture. Two failure modes look like answers:
+
+- the preamble-only stub above (call died)
+- a confident, detailed reading of something not in the frame (§0)
+
+Where a measurement exists, give it to the models with the image. A histogram or
+a texel-density figure turns "does this look wrong" into "which of these causes
+fits this distribution" -- a question whose answer can be checked.
 
 Write the question so it can come back negative:
 
@@ -112,6 +156,8 @@ Every rule above is a correction the user made, not a precaution:
 | octree 448 clearly better | asserted from a sheet at ~250 px/figure; user disagreed on sight |
 | Mini Turbo paint is good | atlas underneath was flat-filled at 4.5 texels/face |
 | TRELLIS geometry is bad | judged before the vendor finalizer had run |
+| fennec texture "clearly better" | both models: unusable; histogram confirmed the range had collapsed |
+| Luna "answered" the bluetree | exit 0, preamble only — the file read had been denied |
 
 The pattern is never a vision problem. It is one perspective stating a verdict
 with nothing independent able to contradict it.

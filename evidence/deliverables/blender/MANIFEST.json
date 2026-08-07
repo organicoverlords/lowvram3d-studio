@@ -1,0 +1,84 @@
+{
+  "schema": "lowvram3d_blend_deliverables_v1",
+  "note": "Each .blend opens directly -- textures are packed inside, Z-up applied, base sitting on the origin.",
+  "files": [
+    {
+      "blend": "snail_trellis1024_tex2048.blend",
+      "from": "snail_trellis1024_tex2048.glb",
+      "bytes": 12881951,
+      "meshes": 1
+    },
+    {
+      "blend": "titan_trellis1024_tex2048.blend",
+      "from": "titan_trellis1024_tex2048.glb",
+      "bytes": 12787756,
+      "meshes": 1
+    },
+    {
+      "blend": "whale_trellis1024_tex2048.blend",
+      "from": "whale_trellis1024_tex2048.glb",
+      "bytes": 13592783,
+      "meshes": 1
+    },
+    {
+      "blend": "heron_trellis1024_tex2048.blend",
+      "from": "heron_trellis1024_tex2048.glb",
+      "bytes": 13540316,
+      "meshes": 1
+    },
+    {
+      "blend": "shaman_trellis1024_tex2048.blend",
+      "from": "shaman_trellis1024_tex2048.glb",
+      "bytes": 14450235,
+      "meshes": 1
+    },
+    {
+      "blend": "frog_trellis512_tex2048.blend",
+      "from": "frog_trellis512_tex2048.glb",
+      "bytes": 8583737,
+      "meshes": 1
+    },
+    {
+      "blend": "shaman_miniturbo384_tex2048.blend",
+      "from": "shaman_miniturbo384_tex2048.glb",
+      "bytes": 17327750,
+      "meshes": 1
+    },
+    {
+      "blend": "heron_miniturbo384_tex2048.blend",
+      "from": "heron_miniturbo384_tex2048.glb",
+      "bytes": 18084602,
+      "meshes": 1
+    },
+    {
+      "blend": "fennec_miniturbo384_tex2048.blend",
+      "from": "fennec_miniturbo384_tex2048.glb",
+      "bytes": 19201354,
+      "meshes": 1
+    },
+    {
+      "blend": "boat_trellis1024_tex2048.blend",
+      "from": "boat_trellis1024_tex2048.glb",
+      "bytes": 13764442,
+      "meshes": 1
+    },
+    {
+      "blend": "panda_miniturbo384_tex2048.blend",
+      "from": "panda_miniturbo384_tex2048.glb",
+      "bytes": 18847618,
+      "meshes": 1
+    },
+    {
+      "blend": "whale_miniturbo384_tex2048_earlypaint.blend",
+      "from": "whale_miniturbo384_tex2048_earlypaint.glb",
+      "bytes": 18493814,
+      "meshes": 1
+    },
+    {
+      "blend": "shaman_miniturbo384_tex2048_earlypaint.blend",
+      "from": "shaman_miniturbo384_tex2048_earlypaint.glb",
+      "bytes": 17489116,
+      "meshes": 1
+    }
+  ]
+}
