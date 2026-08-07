@@ -1,0 +1,14 @@
+{
+  "schema": "lowvram3d_hunyuan_paint_v1",
+  "mesh_in": "evidence\\compare\\boat\\seed1006_multipass.glb",
+  "image": "evidence\\compare\\boat\\matte.png",
+  "mesh_out": "evidence\\compare\\boat\\seed1006_painted.glb",
+  "paint_checkpoint": "hunyuan3d-paint-v2-0-turbo",
+  "model_cpu_offload": true,
+  "render_size": 1024,
+  "texture_size": 1024,
+  "cudnn_enabled": false,
+  "load_seconds": 46.8,
+  "paint_seconds": 529.8,
+  "note": "vendor texture stage; no fitted camera, no silhouette objective, no hand-rolled projection"
+}
