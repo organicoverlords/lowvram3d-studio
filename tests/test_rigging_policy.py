@@ -16,7 +16,7 @@ def _passing_report(plan):
     }
 
 
-def test_humanoid_routes_to_mia_without_pre_segmentation():
+def test_humanoid_routes_to_stock_mia_without_pre_segmentation():
     plan = build_rigging_plan("avatar", rig_kind="humanoid")
     assert plan.backend == "mia"
     assert plan.dtype == "fp16"
@@ -26,18 +26,27 @@ def test_humanoid_routes_to_mia_without_pre_segmentation():
     assert plan.fallback_backends == ("unirig",)
 
 
-def test_general_creature_routes_to_puppeteer_sdpa():
+def test_general_creature_routes_to_stock_unirig_first():
     plan = build_rigging_plan("creature")
-    assert plan.backend == "puppeteer"
+    assert plan.backend == "unirig"
     assert plan.attention_backend == "sdpa"
+    assert plan.fallback_backends == ()
     assert "skeletal_lod_generation" == pipeline_stage_order(plan)[-1]
     assert pipeline_stage_order(plan).index("deformation_qa") < pipeline_stage_order(plan).index("skeletal_lod_generation")
+
+
+def test_puppeteer_requires_explicit_override_until_vendor_route_is_measured():
+    default = build_rigging_plan("creature")
+    experimental = build_rigging_plan("creature", preferred_backend="puppeteer")
+    assert default.backend == "unirig"
+    assert experimental.backend == "puppeteer"
+    assert experimental.attention_backend == "sdpa"
 
 
 def test_ambiguous_character_is_not_silently_assumed_humanoid():
     general = build_rigging_plan("character")
     humanoid = build_rigging_plan("character", rig_kind="humanoid")
-    assert general.backend == "puppeteer"
+    assert general.backend == "unirig"
     assert humanoid.backend == "mia"
 
 

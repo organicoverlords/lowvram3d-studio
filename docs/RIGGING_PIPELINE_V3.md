@@ -1,120 +1,155 @@
-# Rigging Pipeline V3 — low-VRAM integration lane
+# Rigging Pipeline V3 — vendor-first low-VRAM integration lane
 
-Status: **IMPLEMENTATION STARTED / GPU RUNTIME NOT PROVEN**
+Status: **VENDOR-FIRST TEST LANE / GPU RUNTIME NOT YET PROVEN**
 
-Branch baseline: `agent/scene-pipeline-smoke-20260803` at commit `1ab67b5be3c9c5b266c1da4848081578a1e37bf2` (tree `a82793de3c859369e5dedfad9546d7a605c703ea`).
+Working foundation: `agent/scene-pipeline-smoke-20260803` at commit `9533cf8eef4309cdcacc213b9f1bbfbb920e044e`.
 
-This lane replaces the assumption that every organic mesh should be split and then passed to the hand-authored `rig_animate.py` route.  It keeps 3D Gen Studio as the control layer, but treats neural riggers as isolated backends with one shared receipt and promotion contract.
+This lane keeps the proven image-to-3D foundation and studies what comes after it. It does **not** replace TRELLIS/Hunyuan generation or invent a new rigging stack before existing solutions are measured.
 
-## Required ordering
+## Non-negotiable rule
 
-For an organic asset after texture completion:
+Use known upstream implementations unchanged first. Only after a stock backend is actually run, visually graded, and rejected on the target hardware may this branch patch or replace it.
+
+That means:
+
+1. stock 3D Gen Studio / ComfyUI tooling first;
+2. stock Make-It-Animatable / UniRig nodes first;
+3. existing Studio animation-retarget path first;
+4. existing Unreal retarget/LOD tooling first;
+5. only then custom adapters, patched attention, custom segmentation, or new rig algorithms if a measured failure requires them.
+
+Unreferenced experimental adapter ideas are not part of the branch until that proof boundary is crossed.
+
+## Foundation inherited from smoke
+
+The branch deliberately follows the current smoke work rather than rebuilding earlier stages.
+
+Current production geometry/paint direction remains:
 
 ```text
-textured LOD0 (preserve byte-for-byte source copy)
-  -> select rig backend without loading a model
-  -> rig + skin
-  -> static rig QA
-  -> five-pose deformation QA
-  -> animation retarget
+source image
+  -> TRELLIS.2 high-quality geometry
+  -> native Stage 6 finalization
+  -> Hunyuan3D-Paint
+  -> truthful Blender raster QA
+```
+
+The latest smoke commit also corrects two assumptions that downstream work must inherit:
+
+- Hunyuan Paint `--render-size` / `--texture-size` had previously been set too late; old runs silently used vendor 2048/2048. Future texture-size A/Bs must use the fixed renderer and record the baked atlas rather than echo the request.
+- Deliverables now carry real-world size metadata instead of a flat scale multiplier. Rig/export tests must preserve or explicitly restore that scale before Unreal validation.
+
+## Required post-texture ordering
+
+For an organic asset:
+
+```text
+preserve textured LOD0
+  -> stock rigger
+  -> structural rig QA
+  -> deformation QA
+  -> stock animation retarget
   -> engine export
   -> skeletal LOD generation
 ```
 
-The old ordering `LOD0/LOD1/LOD2 -> rig LOD0` is not the target architecture for skeletal characters.  Until weight transfer between independently generated LOD meshes is proven, lower skeletal LODs are generated only after a valid rigged LOD0 exists (preferably in Unreal for the game deliverable).
+Do not return to the old `LOD0/LOD1/LOD2 -> rig LOD0` ordering for skeletal characters unless weight transfer across independent LODs is proven.
 
-Semantic segmentation is **not** a mandatory organic pre-rig stage.  It is invoked only when deformation evidence proves weight bleed or when a rigid accessory needs isolation.
+Semantic segmentation is **not** a mandatory organic pre-rig stage. Use it only when deformation evidence proves weight bleed or a rigid accessory must be isolated.
 
-## Backend policy
+## Test order — known solutions first
 
-### Humanoid / avatar
+### A. Humanoid
 
-Primary: **Make-It-Animatable (MIA)**
+First runtime candidate: **Make-It-Animatable through the existing ComfyUI-UniRig nodes**, unchanged.
 
-- FP16 first.
-- Preserve original mesh/materials.
-- Reset to rest pose only in a derived output; never overwrite the textured source.
-- Mixamo-compatible skeleton for the first benchmark.
-- Fallback: UniRig, explicitly recorded.  No silent backend substitution.
+Use the upstream graph components already provided by `PozzettiAndrea/ComfyUI-UniRig`:
 
-### General organic creature
+```text
+UniRigLoadMesh
+  -> MIALoadModel (FP16 first)
+  -> MIAAutoRig
+```
 
-Primary experimental backend: **Puppeteer**
+Do not write a separate MIA inference implementation before this path is tested.
 
-- Run skeleton and skinning sequentially.
-- The GTX 1660 SUPER lane requires an SDPA/eager-compatible attention path; do not assume FlashAttention-2.
-- Published upstream memory numbers justify a bounded 6 GB experiment, but local peak VRAM is **NOT PROVEN** until measured on the target card.
-- Fallback: UniRig, explicitly recorded.
+Acceptance evidence:
 
-### Mechanical / rigid multipart
+- runtime on the GTX 1660 SUPER;
+- measured peak VRAM/RAM;
+- original texture/material preservation;
+- armature and skin weights present;
+- rest, elbow, knee, crouch and shoulder-raise deformation renders;
+- Mixamo/Studio animation retarget test;
+- Unreal import after deformation proof.
 
-Keep the existing rigid hierarchy route.  Do not spend neural skinning memory on a machine or vehicle that can be animated as rigid parts.
+If stock MIA fails for a reason that stock **UniRig** can address, test stock UniRig next before writing custom rig code.
 
-### Static asset
+### B. General creature
 
-No rig.
+First runtime candidate: **stock UniRig through ComfyUI-UniRig**, FP16/SDPA where the existing node exposes it.
+
+Puppeteer is a later challenger, not the default. Its upstream skeleton path assumes FlashAttention-2, so changing that to SDPA/eager would already be a code modification. That modification is justified only after the known stock general-rig route has been measured and rejected.
+
+### C. 3D Gen Studio TokenRig
+
+Keep it in the comparison set because Studio already integrates it well, including rig transfer, naming templates and animation workflow. But do not make it the first 6 GB runtime target: the stock implementation loads the model directly on CUDA and upstream SkinTokens documents a much larger VRAM requirement.
+
+A bounded compatibility/load test is useful; repeated OOM tuning is not, unless upstream adds an actual low-VRAM mode.
+
+### D. Animation
+
+Use **3D Gen Studio's existing retarget system** before authoring new animation code. Validate at least idle, walk and one high-motion clip.
+
+For the game deliverable, use Unreal's existing IK Retargeter/Auto Retarget tools rather than duplicating retarget mathematics in Python.
+
+### E. Segmentation
+
+Do not segment organic characters by default.
+
+Known tools can be benchmarked only when required by a visible failure:
+
+- Studio/ComfyUI SAM3 for 2D source masks;
+- existing 3D segmentation tools for accessory isolation if deformation QA proves the need.
+
+No new semantic-mesh segmenter is to be built before that point.
+
+## CPU-only planning already implemented
+
+`src/lowvram3d/rigging_policy.py` and `workers/rig_backend_preflight.py` remain deliberately lightweight. They do not implement rigging; they choose/probe known backends without loading torch or CUDA.
+
+Current default policy:
+
+- humanoid -> stock MIA first, stock UniRig fallback;
+- general organic creature -> stock UniRig first;
+- Puppeteer -> explicit later experiment only;
+- mechanical -> existing rigid hierarchy;
+- static -> no rig.
 
 ## Promotion gates
 
-A neural rig is not promoted merely because an FBX/GLB was written.  Machine-readable evidence must prove:
+A written FBX/GLB is not success. Promotion requires:
 
 - armature present;
 - skin weights present;
 - materials preserved;
-- peak VRAM does not exceed the configured ceiling when peak measurement is available;
-- rest pose passes;
-- elbow bend passes;
-- knee bend passes;
-- hip crouch passes;
-- shoulder raise passes.
+- measured peak memory within the configured ceiling when available;
+- required deformation poses visually pass;
+- animation retarget works;
+- final Blender raster review passes.
 
-A human reviewer may still reject a machine-pass result.  Visual rejection overrides automatic metrics.
+Visual rejection overrides automatic metrics.
 
-## CPU-only preflight
+## Current CI note
 
-`workers/rig_backend_preflight.py` chooses a backend and checks configured source/weight roots without importing torch, initializing CUDA, downloading weights or starting inference.
+The first PR-wide hosted test run failed during collection because both `tests/test_core.py` and `tests/scene_pipeline/test_core.py` import as `test_core`. That failure is outside this lane's four files and is not evidence against the rigging policy. The parallel session owns the pytest/conftest area, so this branch does not fix it by collision.
 
-Example shape:
+## Next action
 
-```text
-python workers/rig_backend_preflight.py \
-  --asset-type avatar \
-  --rig-kind humanoid \
-  --mia-root <path> \
-  --puppeteer-root <path> \
-  --unirig-root <path> \
-  --output <job>/reports/rig_backend_preflight.json
-```
-
-The report is `READY` only when the selected backend is locally present.  It never silently chooses a different backend when the selected one is unavailable.
-
-## Implemented in the first slice
-
-- `src/lowvram3d/rigging_policy.py`
-  - deterministic backend selection;
-  - SDPA requirement for Puppeteer;
-  - segmentation-as-recovery policy;
-  - post-rig skeletal LOD ordering;
-  - common fail-closed promotion evaluator.
-- `workers/rig_backend_preflight.py`
-  - CPU-only availability check;
-  - no model imports/downloads/CUDA work.
-- `tests/test_rigging_policy.py`
-  - policy and promotion-gate coverage.
-
-## Deliberately not claimed yet
-
-- MIA inference on the target GTX 1660 SUPER: **NOT PROVEN**.
-- Puppeteer with SDPA on sm75: **NOT PROVEN**.
-- UniRig fallback on 6 GB: **NOT PROVEN**.
-- five-pose Blender deformation contact sheet: **NOT IMPLEMENTED in this first slice**.
-- 3D Gen Studio graph/MCP wiring for these isolated rig services: **NOT IMPLEMENTED in this first slice**.
-- Unreal skeletal LOD proof: **NOT STARTED**.
-
-## Next bounded implementation slice
-
-1. Add an isolated MIA runtime adapter that consumes a textured GLB and emits a rigged GLB/FBX plus a receipt, without mutating the input.
-2. Add Blender structural QA and deterministic five-pose render generation.
-3. Run one humanoid FP16 benchmark under the 5,600 MB ceiling and record peak VRAM.
-4. Only after MIA is graded, add Puppeteer with an explicit SDPA/eager attention switch and run one creature benchmark.
-5. Wire the proven backend into the main postprocess route; leave the old `rig_animate.py` path as mechanical/fallback behavior rather than the organic default.
+1. Sync this branch with the newest smoke commit.
+2. Keep the new CPU-only policy/preflight.
+3. Do **not** merge a custom MIA runtime adapter yet.
+4. On the target machine, run the stock ComfyUI-UniRig MIA graph on one proven humanoid while respecting the shared GPU lock.
+5. Produce the five-pose Blender contact sheet and memory receipt.
+6. Only if stock MIA is rejected, test stock UniRig.
+7. Only after stock known routes are rejected should we patch/build a better backend.

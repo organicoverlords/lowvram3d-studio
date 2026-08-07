@@ -1,14 +1,12 @@
 """Fail-closed rigging policy for the low-VRAM character pipeline.
 
-This module deliberately contains no backend imports.  It is safe to evaluate on a
-CPU-only coordinator before any large model is loaded.  Runtime adapters may use
-MIA, Puppeteer, UniRig or the existing rigid hierarchy implementation, but they
-must satisfy the same promotion contract.
+This module deliberately contains no backend imports. It is safe to evaluate on a
+CPU-only coordinator before any large model is loaded.
 
-The important ordering invariant is that an organic asset is rigged before
-skeletal LOD generation.  Semantic segmentation is not a prerequisite for
-organic rigging; it is a bounded recovery tool when deformation evidence shows
-weight bleed or when a rigid accessory must be isolated.
+Policy rule: use known upstream implementations unchanged first. Only after a
+stock backend is measured and rejected may this lane introduce a patched or
+custom runtime for the same job. The working image->mesh->paint foundation is
+not replaced by rigging experiments.
 """
 from __future__ import annotations
 
@@ -57,8 +55,6 @@ class RiggingPlan:
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
-        # JSON receipts use lists, not tuples, so their shape stays stable across
-        # dataclass/asdict and hand-written JSON consumers.
         data["fallback_backends"] = list(self.fallback_backends)
         data["required_deformation_poses"] = list(self.required_deformation_poses)
         return data
@@ -75,17 +71,17 @@ def build_rigging_plan(
     vram_ceiling_mb: int = 5600,
     preferred_backend: str | None = None,
 ) -> RiggingPlan:
-    """Select the cheapest credible backend without loading a model.
+    """Select a known upstream backend without loading a model.
 
-    Selection is intentionally conservative:
-    * humanoids -> Make-It-Animatable first;
-    * arbitrary organic creatures -> Puppeteer with SDPA, never hard-coded FA2;
-    * mechanical assets -> the existing rigid hierarchy route;
+    Default order intentionally avoids writing our own rigger first:
+    * humanoids -> stock Make-It-Animatable through ComfyUI-UniRig;
+    * arbitrary organic creatures -> stock UniRig through ComfyUI-UniRig;
+    * mechanical assets -> existing rigid hierarchy route;
     * static assets -> no rig.
 
-    ``character`` is ambiguous, so ``rig_kind=humanoid`` selects MIA while the
-    default routes it through the general-creature path.  Callers that know a
-    character is humanoid should say so explicitly rather than silently guessing.
+    Puppeteer remains an explicit experiment because making it work on sm75 may
+    require replacing its upstream FlashAttention-2 assumption. That patch is
+    not attempted until the stock general-rigging route has been measured.
     """
     asset = _normalise(asset_type)
     kind = _normalise(rig_kind) or "auto"
@@ -101,7 +97,7 @@ def build_rigging_plan(
             attention = "sdpa"
             dtype = "fp16"
         elif backend in {"mia", "unirig"}:
-            attention = None
+            attention = "sdpa" if backend == "unirig" else None
             dtype = "fp16"
         else:
             attention = None
@@ -126,17 +122,17 @@ def build_rigging_plan(
         dtype = "fp16"
         fallbacks = ("unirig",)
         reasons = (
-            "Make-It-Animatable is the first low-VRAM humanoid candidate.",
-            "Keep UniRig as a fallback, not a silent replacement.",
+            "Test stock Make-It-Animatable via ComfyUI-UniRig before writing a custom humanoid runtime.",
+            "Keep stock UniRig as the known fallback; no silent backend substitution.",
         )
     else:
-        backend = "puppeteer"
+        backend = "unirig"
         attention = "sdpa"
         dtype = "fp16"
-        fallbacks = ("unirig",)
+        fallbacks = ()
         reasons = (
-            "General organic assets need a non-humanoid skeleton/skin model.",
-            "Puppeteer must use SDPA/eager-compatible attention on sm75; FlashAttention-2 is not assumed.",
+            "Test stock ComfyUI-UniRig for arbitrary organic assets first.",
+            "Puppeteer+SDPA is a later challenger only if the known route fails its measured gates.",
         )
 
     return RiggingPlan(
@@ -156,7 +152,6 @@ def build_rigging_plan(
 
 
 def pipeline_stage_order(plan: RiggingPlan) -> tuple[str, ...]:
-    """Return the required post-texture stage order for a plan."""
     if plan.backend == "none":
         return ("preserve_textured_lod0", "engine_export")
     if plan.backend == "legacy_rigid":
@@ -172,11 +167,7 @@ def pipeline_stage_order(plan: RiggingPlan) -> tuple[str, ...]:
 
 
 def evaluate_rig_promotion(report: Mapping[str, Any], plan: RiggingPlan) -> tuple[bool, list[str]]:
-    """Evaluate machine-readable rig evidence and fail closed.
-
-    Visual review can still reject a result that passes these structural gates;
-    this function only prevents obviously incomplete outputs from being promoted.
-    """
+    """Evaluate machine-readable rig evidence and fail closed."""
     if plan.backend == "none":
         return True, []
 
