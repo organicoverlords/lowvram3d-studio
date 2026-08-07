@@ -159,11 +159,27 @@ QEM decimation to ~147k → UV bake.
   like success.
 - `--decim 0` — add this for **geometry evaluation only**; it keeps the full
   2.8M-face mesh. Do not use it for a production asset.
-- **`--res 1024` does not work on this GPU.** Three attempts, all
-  `MUL_MAT: misaligned address` at the shape SLAT flow, including with `--f32`.
-  The sparse-structure stage is nondeterministic, so each run hands the shape
-  flow differently-shaped tensors and some shapes hit a kernel bug. Not a config
-  error. Same for `--atlas 2048`, which fails in the same stage.
+- **`--res 1024` works, with retries.** This entry used to say it did not. Four
+  subjects cleared it in one session, each within two attempts:
+
+    | subject | HR tokens | attempts | s/step (HR flow) |
+    |---|---|---|---|
+    | snail | 13,615 | 2 | 80.2 |
+    | whale | -- | 2 | -- |
+    | heron | -- | 2 | -- |
+    | shaman | -- | 2 | -- |
+    | frog | 18,559 | **0 for 4**, cleared res-512 first try | 157.0 |
+
+  So it is a size ceiling, not a hard block. Cost scales superlinearly in HR
+  tokens, which track *occupied volume*, not source resolution: the frog is 36%
+  more tokens than the snail for 96% more time per step, and dies. Use `--res
+  1024 --tex-res 512` with a retry loop, and fall back to 512 for the biggest
+  subjects.
+
+  Conditioning is resolution-invariant, so a bigger source image buys nothing
+  here: a 659x484 input and a 4322x7680 input both produce exactly
+  `cond tokens=1029 / 1024-cond tokens=4101`, because preprocess crops to the
+  alpha box and DINOv3 samples at a fixed size.
 
 Geometry-only (`--no-texture`) takes 249 s and is useful for A/B on shape alone.
 
@@ -460,6 +476,43 @@ by about 0.09 on every candidate equally.
 
 The candidate must be under roughly 1M faces. A 2.81M-face mesh exhausts 16 GB
 during the render; run the debris-removed or LOD version and say so in the label.
+
+## 9b. Hunyuan3D-Paint: keep the conditioning image at ~512
+
+**Feed paint a ~512 conditioning image. Not the 4K or 8K matte.**
+
+This cost four failed paint runs to find. The shaman failed on
+`shaman4k_matte.png` (3072x3840) four times across three different meshes:
+
+    TRELLIS res-512  138k faces   render 1024   illegal memory access
+    TRELLIS res-1024 290k faces   render 1024   illegal memory access
+    TRELLIS res-1024 290k faces   render 1024   illegal memory access
+    Mini Turbo       400k faces   render 1024   illegal memory access
+    Mini Turbo       400k faces   render  768   CUBLAS_STATUS_EXECUTION_FAILED
+
+Swapping in `shaman_512.png` and changing nothing else -- same meshes, same
+`--texture-size 2048`, same render size, same quiet GPU -- succeeded on the
+first try, twice:
+
+    TRELLIS res-1024 290k faces   620.6s
+    Mini Turbo       400k faces   446.6s
+
+The mechanism is in the second error, which names it. The multiview pipeline
+loads as `torch_dtype=torch.float16` (`hy3dgen/texgen/utils/multiview_utils.py`
+line 36), so every GEMM in it is `CUDA_R_16F`, and cuBLAS picks an algorithm per
+shape. Some shapes get `CUBLAS_GEMM_DEFAULT_TENSOR_OP` -- a tensor-core path.
+TU116 reports compute capability 7.5 but has no tensor cores, which is the same
+silicon gap that forces `--no-fa` and the virtual-Pascal build for trellis.cpp.
+
+So it is shape-dependent, not size-dependent. The conditioning image sets those
+shapes. The whale and heron both painted fine on large mattes; the shaman did
+not. That is why it looked random for hours: retrying re-rolls nothing, and
+changing `--render-size` only perturbs the shapes and hopes to miss the bad
+path.
+
+Large mattes remain correct for TRELLIS geometry -- it is only the paint stage
+that cares. Build the paint input by cropping the matte to its alpha box,
+squaring it, and resizing to 512.
 
 ## 10. Subject classes — what to expect
 

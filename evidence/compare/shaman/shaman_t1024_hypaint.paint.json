@@ -1,0 +1,14 @@
+{
+  "schema": "lowvram3d_hunyuan_paint_v1",
+  "mesh_in": "evidence\\compare\\shaman\\shaman_t1024.glb",
+  "image": "evidence\\compare\\shaman\\shaman_512.png",
+  "mesh_out": "evidence\\compare\\shaman\\shaman_t1024_hypaint.glb",
+  "paint_checkpoint": "hunyuan3d-paint-v2-0-turbo",
+  "model_cpu_offload": true,
+  "render_size": 1024,
+  "texture_size": 2048,
+  "cudnn_enabled": false,
+  "load_seconds": 49.4,
+  "paint_seconds": 620.6,
+  "note": "vendor texture stage; no fitted camera, no silhouette objective, no hand-rolled projection"
+}
