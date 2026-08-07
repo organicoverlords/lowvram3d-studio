@@ -45,13 +45,21 @@ from pathlib import Path
 #: land. build-cublas is the same source with GGML_CUDA_FORCE_CUBLAS=ON, so
 #: ggml_cuda_should_use_mmq() returns false and those kernels never run.
 #:
-#: build-cublas is now the default. It is not yet proven: the fault is ~50% per
-#: attempt and shape-dependent, so it takes a run of attempts to tell a real
-#: reduction from luck. Every receipt records the binary in `command[0]`, so
-#: the fault rate accumulates as evidence from ordinary production runs rather
-#: than needing a dedicated A/B that ties up the GPU.
+#: build-cublas was made the default and then reverted, because it is a
+#: regression. Measured on the sparse-structure flow, which runs on a fixed 32^3
+#: latent grid and so costs the same whatever the subject:
+#:
+#:      build-mmq       7.3 - 7.6 s/step   (snail, boat)
+#:      build-cublas   36.2 s/step         (frog, steady over 4 steps)
+#:
+#: 4.8x. That is the cost of the fix working the way it does: with the quantized
+#: kernels disabled, weights are dequantized to F16 and multiplied through cuBLAS
+#: GEMM on a card with no tensor cores. Against a fault that costs ~50% of
+#: attempts at ~21 min each -- about 42 min expected -- a 90 min run that never
+#: faults is still the worse trade. It stays built and reachable through
+#: TRELLIS_CLI for anyone who wants the fault rate measured properly.
 CLI = os.environ.get(
-    "TRELLIS_CLI", r"C:\AI\trellis-cpp\build-cublas\Release\trellis-cli.exe")
+    "TRELLIS_CLI", r"C:\AI\trellis-cpp\build-mmq\Release\trellis-cli.exe")
 MODELS = r"C:\AI\trellis-cpp\models"
 
 #: Latent size is reported, and by default no longer aborts. It was worth a try

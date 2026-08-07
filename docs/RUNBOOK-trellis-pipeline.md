@@ -41,6 +41,32 @@ cmake --build build-mmq --config Release --parallel 4
 **CUDA 12.6 specifically.** CMake will auto-select 13.2 if allowed, and CUDA 13
 dropped Pascal: `nvcc fatal: Unsupported gpu architecture 'compute_61'`.
 
+#### Do not use build-cublas as the production binary
+
+There is a second build, `build-cublas`, identical except for
+`-DGGML_CUDA_FORCE_MMQ=OFF -DGGML_CUDA_FORCE_CUBLAS=ON`. It exists to test
+whether the residual `misaligned address` fault -- which lands in MUL_MAT,
+~50% of attempts, on shapes that vary per subject -- goes away when ggml's
+quantized kernels are never selected.
+
+It may well fix the fault. Nobody has measured that yet, because it is too slow
+to use. On the sparse-structure flow, which runs on a fixed 32^3 latent grid and
+therefore costs the same whatever the subject:
+
+| binary | s/step | subject |
+|---|---|---|
+| build-mmq | 7.3 - 7.6 | snail, boat, frog |
+| build-cublas | 36.2 | frog, steady over 4 steps |
+
+**4.8x slower.** That is inherent to how the flag works: with the quantized
+kernels off, weights are dequantized to F16 and multiplied through cuBLAS GEMM,
+on a card with no tensor cores. Projected to a full res-1024 run that is ~90 min
+against ~21 min. A fault that costs half of all attempts is ~42 min expected, so
+the always-slow binary is the worse trade even if it never faults once.
+
+Keep retry-on-fault on `build-mmq`. `TRELLIS_CLI` overrides the binary if you
+want to measure the cuBLAS fault rate properly.
+
 `CMakeLists.txt:152` also hardcodes `CUDA_ARCHITECTURES "86;120"` upstream. It is
 patched here to honour the configure-time value; re-apply after any pull.
 
