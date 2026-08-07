@@ -2,7 +2,7 @@
 
 Status: **IMPLEMENTATION STARTED / GPU RUNTIME NOT PROVEN**
 
-Branch baseline: `agent/scene-pipeline-smoke-20260803` at `a82793de3c859369e5dedfad9546d7a605c703ea`.
+Branch baseline: `agent/scene-pipeline-smoke-20260803` at commit `1ab67b5be3c9c5b266c1da4848081578a1e37bf2` (tree `a82793de3c859369e5dedfad9546d7a605c703ea`).
 
 This lane replaces the assumption that every organic mesh should be split and then passed to the hand-authored `rig_animate.py` route.  It keeps 3D Gen Studio as the control layer, but treats neural riggers as isolated backends with one shared receipt and promotion contract.
 
