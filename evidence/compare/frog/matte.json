@@ -1,0 +1,21 @@
+{
+  "tolerance": 40.0,
+  "background_rgb": [
+    255.0,
+    255.0,
+    255.0
+  ],
+  "candidate_regions": 313,
+  "subject_pixel_fraction": 0.4396629586514731,
+  "subject_components": 1,
+  "largest_component_fraction": 1.0,
+  "detached_components": 0,
+  "min_detached_fraction": 0.001,
+  "dropped_island_components": 166,
+  "dropped_island_pixels": 4638,
+  "feather_radius": 2,
+  "feather_band_pixels": 157124,
+  "feather_degenerate_pixels": 246,
+  "partial_alpha_fraction": 0.003839,
+  "unmixed_pixels": 80679
+}

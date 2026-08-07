@@ -1,0 +1,83 @@
+{
+  "schema_version": "trellis_run_v2",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\snail\\matte.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\snail\\snail_1024.glb",
+  "command": [
+    "C:\\AI\\trellis-cpp\\build-mmq\\Release\\trellis-cli.exe",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\snail\\matte.png",
+    "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\snail\\snail_1024.glb",
+    "--models",
+    "C:\\AI\\trellis-cpp\\models",
+    "--res",
+    "1024",
+    "--seed",
+    "1006",
+    "--no-fa",
+    "--require-gpu",
+    "--tex-res",
+    "512"
+  ],
+  "res": "1024",
+  "atlas": 0,
+  "seed": 1006,
+  "seconds": 1124.2,
+  "latent_size": null,
+  "latent_band": "unknown",
+  "latent_warn": 120000,
+  "latent_abort": 0,
+  "aborted_on_latent": false,
+  "decoded_voxels": 3977921,
+  "decoded_faces": 7925658,
+  "vram_oom_mib": null,
+  "geometry_decoded": true,
+  "geometry_finalized": true,
+  "finalizer_note": "vendor stage 6: weld, hole fill, narrow-band remesh, winding repair, component filter, QEM to 150k @512",
+  "seed_reproducible": false,
+  "failure_stage": "texture SLAT flow + PBR decode  (res-512 texture on res-1024 mesh)",
+  "tex_res": 512,
+  "exit_code": 3221226505,
+  "success": false,
+  "output_bytes": 0,
+  "reference_latents": [
+    [
+      82304,
+      "castle1",
+      "decoded"
+    ],
+    [
+      86784,
+      "boat",
+      "decoded"
+    ],
+    [
+      94528,
+      "castle2",
+      "died stage 5"
+    ],
+    [
+      96448,
+      "castle2",
+      "died stage 5"
+    ],
+    [
+      106496,
+      "castle2",
+      "geometry decoded, died stage 6"
+    ],
+    [
+      111520,
+      "castle2",
+      "full success, 3949828 faces"
+    ],
+    [
+      140480,
+      "red_panda",
+      "died stage 5"
+    ],
+    [
+      191744,
+      "blue_tree",
+      "died stage 5"
+    ]
+  ]
+}

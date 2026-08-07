@@ -1,0 +1,68 @@
+{
+  "schema": "lowvram3d_waterline_trim_v1",
+  "mesh_in": "evidence\\compare\\boat\\stage6_1024_s1006.glb",
+  "before": {
+    "faces": 297634,
+    "shells": 1,
+    "winding_consistent": true,
+    "bounds": [
+      [
+        -0.23581,
+        -0.32111,
+        -0.50175
+      ],
+      [
+        0.23563,
+        0.32927,
+        0.49206
+      ]
+    ]
+  },
+  "selection": {
+    "faces": 297634,
+    "in_band": 26668,
+    "band_and_flat": 13112,
+    "selected": 5405,
+    "selected_face_fraction": 0.01816,
+    "selected_area_fraction": 0.02606,
+    "band": 0.03,
+    "flatness": 0.85,
+    "opening_radius": 0.02,
+    "outline_cells": 28313,
+    "opened_cells": 18917,
+    "hair_cells": 9396
+  },
+  "note": "perimeter serration only: bottom band AND vertical normal AND in the plate's plan outline minus its morphological opening",
+  "after": {
+    "faces": 292229,
+    "shells": 7,
+    "winding_consistent": true,
+    "bounds": [
+      [
+        -0.23581,
+        -0.32051,
+        -0.50175
+      ],
+      [
+        0.23563,
+        0.32927,
+        0.49206
+      ]
+    ]
+  },
+  "acceptance": {
+    "checks": {
+      "area_within_bounds": true,
+      "shells_unchanged": false,
+      "height_preserved": true,
+      "plan_extent_preserved": true,
+      "winding_still_consistent": true,
+      "removed_only_plate_faces": true
+    },
+    "passed": false,
+    "height_before": 0.65038,
+    "height_after": 0.64978,
+    "plan_shrink_fraction": 0.0
+  },
+  "mode": "rejected"
+}

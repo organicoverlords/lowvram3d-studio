@@ -1,0 +1,159 @@
+{
+  "schema": "fast_texture_projection_v1",
+  "backend": "numpy_vectorised_rasteriser",
+  "blender_used": false,
+  "scene_ray_cast_calls": 0,
+  "bpy_pixel_accesses": 0,
+  "mesh": "evidence/compare/whale/whale_mt_uv.glb",
+  "mesh_sha256": "c27a2724c3308a956f18a143221bb460631c8a0a4d24124c24d417585bfbcb77",
+  "source_image": "evidence/compare/whale/whale_2048.png",
+  "source_image_sha256": "4ff61d20ada7cbb074871dd11cd20a0ee8310c66efe791bb07a61bd11e77dbca",
+  "alpha_mask_sha256": "aedd7a4a02ba9504ece9fc3b489737dfc4e21649def2db44a003bc3dbbd712cb",
+  "input_contract": {
+    "schema": "projection_input_contract_v1",
+    "mask_method": "BIREFNET_HARD_MASK",
+    "mask_method_accepted": true,
+    "source_image": "evidence\\compare\\whale\\whale_2048.png",
+    "source_image_sha256": "4ff61d20ada7cbb074871dd11cd20a0ee8310c66efe791bb07a61bd11e77dbca",
+    "alpha_mask": "evidence\\compare\\whale\\whale_2048_alpha.png",
+    "alpha_mask_sha256": "aedd7a4a02ba9504ece9fc3b489737dfc4e21649def2db44a003bc3dbbd712cb",
+    "normalized_conditioning_image": null,
+    "normalized_conditioning_sha256": null,
+    "original_plate": "evidence\\compare\\whale\\whale_source.png",
+    "original_plate_sha256": "3a95d93ebcf9623b53d4e3ab6c4f0157839957241fa28e5c8be131a74fa58f36",
+    "source_equals_original_plate": false,
+    "source_dimensions": [
+      2048,
+      2048
+    ],
+    "alpha_coverage": 0.219468,
+    "foreground_components": 1,
+    "crop_bounds_x0y0x1y1": [
+      74,
+      492,
+      1971,
+      1555
+    ],
+    "crop_transform": null,
+    "background_treatment": {
+      "estimated_plate_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "plate_like_halo_fraction_at_boundary": 0.009666,
+      "plate_like_fraction_deep_interior": 0.021242,
+      "interior_note": "interior plate-coloured pixels are the lit sign and lamps, not leakage",
+      "tolerance": 0.005
+    },
+    "ground_shadow_remains": false,
+    "ground_shadow_fraction": 0.0,
+    "checkerboard": {
+      "method": "two-tone plate-tile fraction, calibrated against the plate's own background and foreground",
+      "plate_tile_tones": [],
+      "positive_reference_plate_background": 0.0,
+      "negative_reference_plate_foreground": 0.0,
+      "observed_in_sampled_region": 0.0,
+      "decision_midpoint": 0.0,
+      "detected_in_sampled_region": false
+    },
+    "image_mask_agreement_iou": 1.0,
+    "transforms_match": true,
+    "failures": [],
+    "skipped_checks": [
+      "PLATE_BACKGROUND_HALO_AT_MATTE_BOUNDARY: plate has a fully transparent border (mean alpha 0.0), so it carries no background colour to compare against. Measured fraction would have been 0.0097."
+    ],
+    "contract_satisfied": true,
+    "classification": "PROJECTION_INPUT_ACCEPTED"
+  },
+  "atlas_size": 2048,
+  "padding_px": 1,
+  "camera": {
+    "yaw": -1.667,
+    "pitch": -18.333,
+    "roll": 0.0,
+    "silhouette_iou": 0.8759,
+    "scale": 960.6808091034521,
+    "offset": [
+      951.6211614579047,
+      1122.6335153742111
+    ],
+    "centre": [
+      -0.0862509244530691,
+      -0.1528803570853291,
+      -0.012025496534964162
+    ],
+    "image_size": [
+      2048,
+      2048
+    ],
+    "fore_aft_tie_broken_by": "dinov2_geometry_vs_source",
+    "fore_aft_flipped": false
+  },
+  "canonical_orientation": {
+    "painted_face_direction": [
+      -0.0276,
+      0.3145,
+      -0.9488
+    ],
+    "rotate_about_y_degrees": 178.33,
+    "note": "apply this Y rotation to put the painted face at +Z; derived from the projection camera, not from the silhouette"
+  },
+  "triangles": 400000,
+  "vertices": 278320,
+  "atlas": {
+    "owned_texels": 1764356,
+    "owned_fraction": 0.420655,
+    "observed_texels": 400659,
+    "observed_fraction_of_owned": 0.227085,
+    "synthesized_texels": 1363697,
+    "rejected_background_texels": 36857
+  },
+  "gates": {
+    "in_bounds": 1764356,
+    "matte_foreground": 1650611,
+    "front_facing": 818627,
+    "depth_consistent": 505865,
+    "accepted": 400659,
+    "rejected_as_background": 36857,
+    "depth_tolerance": 0.0100595,
+    "front_facing_min": 0.1
+  },
+  "artifacts": {
+    "basecolor": "evidence\\compare\\whale\\front_texture_regress\\basecolor.png",
+    "basecolor_sha256": "5eb5df399dcb75f34f84d6234ee4d5c6494ab2c245aed5049ebfcf1f51a0b8b0",
+    "observed_mask": "evidence\\compare\\whale\\front_texture_regress\\observed_mask.png",
+    "synthesized_mask": "evidence\\compare\\whale\\front_texture_regress\\synthesized_mask.png",
+    "rejected_background_mask": "evidence\\compare\\whale\\front_texture_regress\\rejected_background_mask.png",
+    "confidence": "evidence\\compare\\whale\\front_texture_regress\\confidence.png",
+    "depth_consistency": "evidence\\compare\\whale\\front_texture_regress\\depth_consistency.png",
+    "textured_glb": "evidence\\compare\\whale\\front_texture_regress\\textured.glb",
+    "textured_glb_sha256": "4bcabf4d2f3de2277a1dd150e30014bb6595c72dad868e4199b1387011a79e2a"
+  },
+  "materials_bound": 1,
+  "immutable_buffers_before": {
+    "position_bytes_sha256": "298dca20fdad82e09d77970111f3d3d20a4b06b4a4ab9e5838cbf65d480b3d3d",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "f3c4dd7b4c6ecaa75a74f5ef8e24e9614d6c38c2fcd2abfe2233077669dd0f47",
+    "index_bytes_sha256": "090e33db27de6def13bdca6c96e1a79ea11e86cfed6aa7f39ceb126b909ba2d5",
+    "geometry_uv_index_sha256": "5a8ee62f344d9d93175a6045feaac630fd6eac8f92c55d326267c2f31eab6d0a"
+  },
+  "immutable_buffers_after": {
+    "position_bytes_sha256": "298dca20fdad82e09d77970111f3d3d20a4b06b4a4ab9e5838cbf65d480b3d3d",
+    "normal_bytes_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uv_bytes_sha256": "f3c4dd7b4c6ecaa75a74f5ef8e24e9614d6c38c2fcd2abfe2233077669dd0f47",
+    "index_bytes_sha256": "090e33db27de6def13bdca6c96e1a79ea11e86cfed6aa7f39ceb126b909ba2d5",
+    "geometry_uv_index_sha256": "5a8ee62f344d9d93175a6045feaac630fd6eac8f92c55d326267c2f31eab6d0a"
+  },
+  "geometry_uv_index_preserved": true,
+  "timings_seconds": {
+    "load": 0.314,
+    "camera_fit": 83.727,
+    "depth_buffer": 1.318,
+    "atlas_raster": 1.03,
+    "sampling": 0.875,
+    "fill": 0.314,
+    "write_and_bind": 0.263,
+    "total": 88.415
+  }
+}

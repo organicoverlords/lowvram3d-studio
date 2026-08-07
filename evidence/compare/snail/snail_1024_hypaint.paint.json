@@ -1,0 +1,14 @@
+{
+  "schema": "lowvram3d_hunyuan_paint_v1",
+  "mesh_in": "evidence\\compare\\snail\\snail_1024.glb",
+  "image": "evidence\\compare\\snail\\matte.png",
+  "mesh_out": "evidence\\compare\\snail\\snail_1024_hypaint.glb",
+  "paint_checkpoint": "hunyuan3d-paint-v2-0-turbo",
+  "model_cpu_offload": true,
+  "render_size": 1024,
+  "texture_size": 2048,
+  "cudnn_enabled": false,
+  "load_seconds": 50.3,
+  "paint_seconds": 440.1,
+  "note": "vendor texture stage; no fitted camera, no silhouette objective, no hand-rolled projection"
+}

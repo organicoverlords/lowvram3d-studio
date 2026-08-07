@@ -31,3 +31,10 @@ jobs/
 
 # Raw point-cloud dumps alongside the GLB, same class as *.glb above.
 *.ply
+*.ply
+
+# 8K mattes, previews and source copies: large and regenerable from
+# workers/pipeline_matte.py, so kept out of history.
+evidence/**/matte.png
+evidence/**/matte_preview.png
+evidence/**/source.jpg
