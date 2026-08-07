@@ -46,6 +46,7 @@ VIEWS = {
     "end_plus": (90.0, 0.0),
     "end_minus": (270.0, 0.0),
     "plan": (0.0, 88.0),
+    "below": (0.0, -88.0),
     "three_quarter": (35.0, 18.0),
 }
 
