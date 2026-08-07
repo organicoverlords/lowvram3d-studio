@@ -1,0 +1,25 @@
+{
+  "schema": "lowvram3d_vendor_pin_v1",
+  "component": "ComfyUI-UniRig",
+  "repository": "PozzettiAndrea/ComfyUI-UniRig",
+  "commit": "69ee59dc459d2da7cb0291930c1f944886c31d7c",
+  "purpose": "Vendor-first rigging baseline. Run upstream workflows/nodes unchanged before any local algorithm patch.",
+  "workflows": {
+    "mia_humanoid.json": {
+      "upstream_path": "workflows/mia_humanoid.json",
+      "blob_sha": "851db1ce915652f4d6ff28cbdd1a9699f55487c3",
+      "role": "first humanoid rigging smoke"
+    },
+    "apply_animation.json": {
+      "upstream_path": "workflows/apply_animation.json",
+      "blob_sha": "e7b5258fbc3507e964d8220cea2eae8ffc24452c",
+      "role": "known animation application path after rig proof"
+    }
+  },
+  "rules": [
+    "Do not patch MIA, UniRig, attention, skinning, or skeleton code before the stock path is run and graded.",
+    "The first runtime smoke uses the vendor-bundled humanoid asset to separate installation/runtime failures from our generated-mesh failures.",
+    "After vendor-asset success, rerun the same stock graph on a preserved Hunyuan-painted production humanoid.",
+    "All GPU runs must respect the shared LowVRAM3DStudio GPU lock."
+  ]
+}
