@@ -67,6 +67,27 @@ the always-slow binary is the worse trade even if it never faults once.
 Keep retry-on-fault on `build-mmq`. `TRELLIS_CLI` overrides the binary if you
 want to measure the cuBLAS fault rate properly.
 
+#### `--f32` is unmeasured, not exonerated
+
+`--f32` ("f32 sparse-conv compute") was tried against the fault and the frog then
+went 0 for 3. That number proves nothing, because two variables moved at once:
+every `--f32` run was on the frog at 18,559 HR tokens, and every run without it
+was on a smaller subject. The frog is the largest res-1024 subject attempted, and
+size already correlates with failure in the reference-latent table the receipts
+carry. So "0 for 3" is equally consistent with `--f32` being neutral, with the
+frog being too big, and with `--f32` making things actively worse.
+
+A fault-rate claim needs one variable at a time: same subject, same seed, N
+attempts with and N without. Until that exists, do not describe `--f32` as
+"doesn't help" -- describe it as untested. Receipts record the full argv, so any
+run that uses it is already contributing evidence.
+
+Note also that the fault does not always announce itself the same way. On the
+frog it appeared as `misaligned address` twice and as `the function failed to
+launch on the GPU` once, 18 minutes in. `nvlddmkm` logged an event at each
+failure timestamp and there were no Event 4101 entries, so the launch failure was
+not a watchdog timeout -- same fault, different surface.
+
 `CMakeLists.txt:152` also hardcodes `CUDA_ARCHITECTURES "86;120"` upstream. It is
 patched here to honour the configure-time value; re-apply after any pull.
 
