@@ -1,0 +1,28 @@
+{
+  "schema": "lowvram3d_texture_grade_v1",
+  "mesh_in": "evidence\\compare\\boat\\stage6_s1006.glb",
+  "source": "evidence\\compare\\boat\\matte.png",
+  "mesh_out": "evidence\\compare\\boat\\stage6_graded.glb",
+  "atlas_size": [
+    1024,
+    1024
+  ],
+  "used_texel_fraction": 0.7706,
+  "texture_linear_mean": [
+    0.02349,
+    0.01721,
+    0.01412
+  ],
+  "source_linear_mean": [
+    0.04843,
+    0.04184,
+    0.03313
+  ],
+  "gain": [
+    2.0617,
+    2.4318,
+    2.346
+  ],
+  "input_channel_spread": 1.6633,
+  "note": "single per-channel gain in linear light; no per-pixel transfer, so no local colour is invented"
+}
