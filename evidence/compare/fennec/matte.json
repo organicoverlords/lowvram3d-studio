@@ -1,0 +1,112 @@
+{
+  "success": true,
+  "backend": "birefnet_pinned",
+  "model": "ZhengPeng7/BiRefNet",
+  "model_revision": "e2bf8e4460fc8fa32bba5ea4d94b3233d367b0e4",
+  "device": "cuda/fp32@768",
+  "original_input_size": [
+    1024,
+    1536
+  ],
+  "working_input_size": [
+    1024,
+    1536
+  ],
+  "output_size": [
+    1024,
+    1024
+  ],
+  "output": "evidence\\compare\\fennec\\matte.png",
+  "mask": "evidence\\compare\\fennec\\mask.png",
+  "model_error": "",
+  "pose": {
+    "detected": false,
+    "landmarks": [],
+    "world_landmarks": [],
+    "error": "mediapipe unavailable: No module named 'mediapipe'",
+    "source_landmarks": []
+  },
+  "source_framing": {
+    "ready": false,
+    "rig_ready": false,
+    "full_body_detected": false,
+    "coverage": 0.39949,
+    "bbox_pixels": [
+      170,
+      20,
+      978,
+      1514
+    ],
+    "margins": {
+      "left": 0.166016,
+      "right": 0.044922,
+      "top": 0.013021,
+      "bottom": 0.014323
+    },
+    "warnings": [
+      "Human pose landmarks were not detected"
+    ]
+  },
+  "framing": {
+    "ready": false,
+    "rig_ready": false,
+    "full_body_detected": false,
+    "coverage": 0.197923,
+    "bbox_pixels": [
+      295,
+      82,
+      759,
+      940
+    ],
+    "margins": {
+      "left": 0.288086,
+      "right": 0.258789,
+      "top": 0.080078,
+      "bottom": 0.082031
+    },
+    "warnings": [
+      "Human pose landmarks were not detected"
+    ]
+  },
+  "components": {
+    "component_count": 1,
+    "significant_component_count": 1,
+    "areas": [
+      626627
+    ],
+    "second_to_first_ratio": 0.0
+  },
+  "normalization": {
+    "canvas_size": 1024,
+    "subject_fill": 0.86,
+    "source_size": [
+      1024,
+      1536
+    ],
+    "crop_box": [
+      72,
+      0,
+      1024,
+      1536
+    ],
+    "resized_size": [
+      546,
+      881
+    ],
+    "offset": [
+      239,
+      71
+    ],
+    "scale": 0.57333333
+  },
+  "alpha": {
+    "transparent_fraction": 0.798699,
+    "opaque_fraction": 0.190156,
+    "mean": 0.195868
+  },
+  "edge_treatment": {
+    "guided_filter": true,
+    "foreground_color_decontamination": true,
+    "largest_subject_only": true
+  }
+}

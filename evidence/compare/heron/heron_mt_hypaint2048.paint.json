@@ -1,0 +1,14 @@
+{
+  "schema": "lowvram3d_hunyuan_paint_v1",
+  "mesh_in": "evidence\\compare\\heron\\heron_mt_uv.glb",
+  "image": "evidence\\compare\\heron\\matte_512.png",
+  "mesh_out": "evidence\\compare\\heron\\heron_mt_hypaint2048.glb",
+  "paint_checkpoint": "hunyuan3d-paint-v2-0-turbo",
+  "model_cpu_offload": true,
+  "render_size": 1024,
+  "texture_size": 2048,
+  "cudnn_enabled": false,
+  "load_seconds": 67.7,
+  "paint_seconds": 734.5,
+  "note": "vendor texture stage; no fitted camera, no silhouette objective, no hand-rolled projection"
+}

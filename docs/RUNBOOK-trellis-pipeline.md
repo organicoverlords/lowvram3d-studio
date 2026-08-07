@@ -737,3 +737,134 @@ been checked with `photo_vs_geometry`. Do that before trusting any of these
 numbers as texture quality: coverage counts texels painted, not texels painted
 *correctly*. Read the retraction at the top of
 `docs/JANUS-six-view-defect-20260806.md` before running another sequence.
+
+## 12. Mini Turbo octree resolution — measured, and it buys nothing
+
+The Mini Turbo decode grid is settable via `--octree-ladder res:chunks`. The
+default ladder is `384:3000,320:2000,256:1500`. All three of the rungs above the
+default were run on the same heron matte, same seed 1007, same steps:
+
+| octree | decode grid | raw triangles | peak VRAM | seconds |
+|---:|---|---:|---:|---:|
+| 384 | — | 1,201,338 | 5,440 MB | 280.9 |
+| 448 | `[111, 222, 444]` | 1,648,988 | 6,446 MB | 384.5 |
+| 512 | `[63, 126, 252, 504]` | 2,129,470 | 7,643 MB | 722.1 |
+
+**All three produce visually identical meshes.** This was checked on the raw,
+undecimated output at 2400 px, cropped to the feet and to the head and reeds, by
+two vision models and by eye. Luna on the feet: fused paddle at 384, still fused
+at 448, "looks the same" at 512. Spark on the reeds: same 3–4 stalks, same
+separation, no clarity gain across the ladder. The user's own read agreed.
+
+So going from 1.2M to 2.1M triangles subdivides surfaces that already exist and
+creates no new structure. The fused toes are fused in the latent, not in the
+mesh. **Keep the 384 default.** 512 costs 2.6× the wall clock and spills 1.5 GB
+into system RAM for triangles carrying no extra information.
+
+If thin structure matters, the levers are conditioning (§ "Conditioning beats
+resolution") or TRELLIS, which wins on discrete structure.
+
+### 512 fails intermittently, and the ladder will not catch it
+
+The first octree-512 attempt died with:
+
+    CUDA error: misaligned address
+
+at 4,223 MB peak — a gigabyte *below* what 384 already reaches. It is an
+alignment fault in the FlashVDM decode, not a memory ceiling. The identical
+settings succeeded on the next attempt in a fresh process, so it is allocator
+placement, not a property of the rung.
+
+`mini_turbo_generate.py` only steps down its ladder on
+`torch.cuda.OutOfMemoryError`; every other exception aborts the whole run. So a
+misaligned-address fault means **the lower rungs are never attempted**. Retry in
+a fresh process — the fault poisons the CUDA context, so an in-process retry
+fails for a reason unrelated to the settings.
+
+## 13. VRAM spill is real headroom, and it is taken from system RAM
+
+Octree 512 peaked at **7,643 MB on a 6,143 MB card** and completed. Windows WDDM
+grants a shared GPU memory budget of half system RAM — 15.3 GB ÷ 2 ≈ 7.6 GB — on
+top of the dedicated pool, which is where Task Manager's ~13.7 GB comes from.
+Reserved hit 11.4 GB on that run.
+
+The cost is not only speed. **Shared GPU memory is system RAM.** While that run
+held 11.4 GB, a concurrent Hunyuan3D-Paint process died with:
+
+    numpy._core._exceptions._ArrayMemoryError:
+    Unable to allocate 3.00 MiB for an array with shape (1, 512, 512, 3)
+
+Failing to allocate three megabytes is not a texture-size limit — it is the
+other job having eaten the machine. Treat the spill as usable for a single job
+at a time and never as headroom to run two.
+
+## 14. Texel starvation — face count must match the texture budget
+
+Measured on the finished painted assets, texels per face (median):
+
+| asset | faces | atlas | texels/face | atlas colour std |
+|---|---:|---:|---:|---|
+| fennec Mini Turbo | 400,000 | 2048 | 5.06 | 60 / 54 / 46 |
+| heron Mini Turbo | 400,000 | 2048 | 4.50 | 21 / 19 / 17 |
+| shaman TRELLIS | 289,838 | 2048 | 4.91 | — |
+| frog TRELLIS 512 | 145,084 | 2048 | 9.47 | — |
+
+A triangle with five texels holds one colour, and once chart padding takes its
+share there is nothing left. Every face becomes a flat fill and the surface
+reads as a mosaic.
+
+**Every delivered asset has this.** It is invisible on low-contrast subjects —
+the heron is nearly monochrome, so flat charts next to flat charts differ by
+nothing — and obvious on high-contrast ones: the fennec is pale linen against
+dark leather and the identical defect lands as camouflage.
+
+The rule is an asset-class one, not a per-asset patch: **aim for ≥32 texels per
+face.** At texture 4096 with ~80% atlas utilisation that is roughly 420k faces.
+Do not raise the face count without raising the atlas with it.
+
+## 15. Serialising GPU jobs — use a lock, not a process check
+
+Waiting for "no GPU processes running" before starting is a check-then-act race.
+When the octree-448 job exited, two waiting scripts polled within seven seconds
+of each other, both saw zero, and both started; one then starved the other to
+death as described in §13.
+
+`scratchpad/gpu_lock.sh` replaces it. `mkdir` is atomic — the directory either
+did not exist and this process created it, or it existed and mkdir fails, with no
+window in between. A lock *file* would not do: `[ -f lock ] || touch lock` has
+exactly the same race. The lock records its owner PID so a lock left by a killed
+script is recognised as stale rather than blocking every later run.
+
+Blender counts as a GPU job in the busy set. A Blender render during a paint run
+has killed two paint runs.
+
+## 16. Judging a render — the procedure, not the instinct
+
+See `.claude/skills/visual-verify/SKILL.md`. Three rules, each of which exists
+because it was violated:
+
+1. **Open the image yourself before showing it or sending it anywhere.** A
+   cropping bug produced a "head" sheet containing only reed tips and empty
+   backdrop. It was sent to both vision models unexamined. Luna described a beak
+   yawing sideways with a downward roll; Spark reported "beak fully visible in
+   all 9 views, crop adequate, no occlusion". Both fabricated a detailed reading
+   of an empty frame. A confident model answer is not evidence the image was
+   valid.
+2. **Size the evidence.** Fine features cannot be judged from a contact sheet at
+   250–400 px per subject. Render one view at 2000 px+, crop, upscale, judge
+   that. If the feature is not legible, the answer is "cannot tell".
+3. **Two models plus your own eyes**, via `command-code` — Luna is
+   `gpt-5.6-luna`, Spark is `meta/muse-spark-1.2-contributor`. Report all three
+   readings including disagreement. Their contradiction on the empty crop is the
+   only reason the fabrication surfaced.
+
+### Two cropping traps on these renders
+
+- **Contact sheets carry a white caption band.** Sampling background at `a[5,5]`
+  hits the caption, so "not background" matches the entire backdrop, the bounding
+  box becomes the whole image, and every relative crop lands in empty space.
+  Sample from inside the render area.
+- **The topmost pixel is not the top of the head.** Reeds project above the
+  heron's skull, so a head band anchored to the bbox top captures reeds only.
+  Verify a derived mask by printing its per-row widths — a mask covering every
+  pixel of every row is a broken mask, not a large subject.
