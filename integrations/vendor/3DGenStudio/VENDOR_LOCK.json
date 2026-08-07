@@ -1,0 +1,14 @@
+{
+  "schema": "lowvram3d_vendor_pin_v1",
+  "component": "3DGenStudio-ComfyUI-orchestration",
+  "repository": "visualbruno/3DGenStudio",
+  "commit": "4c2c3f8da9cbd4ef04ebf59f79738be7c9d774ad",
+  "source_path": "mcp/tools/workflows.js",
+  "reuse": [
+    "inspect_workflow",
+    "import_workflow",
+    "run_workflow",
+    "get_run_status"
+  ],
+  "rule": "Do not build a second ComfyUI submission/progress/asset-attachment client until the existing 3D Gen Studio workflow tools have been exercised and rejected with evidence."
+}
