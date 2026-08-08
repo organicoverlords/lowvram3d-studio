@@ -24,6 +24,10 @@ import sys
 from pathlib import Path
 
 import bpy
+from mathutils import Vector
+
+sys.path.insert(0, str(Path(__file__).parent))
+import real_sizes
 
 REPO = Path(r"C:\Users\Lauri\Desktop\lowvram3d-scene-smoke-20260803")
 SRC = REPO / "evidence" / "deliverables"
@@ -47,6 +51,19 @@ def main():
         reset()
         bpy.ops.import_scene.gltf(filepath=str(glb))
 
+        for mat in bpy.data.materials:
+            if not mat.use_nodes or mat.node_tree is None:
+                continue
+            tc = next((n for n in mat.node_tree.nodes
+                       if n.bl_idname == "ShaderNodeTexCoord"), None)
+            for node in mat.node_tree.nodes:
+                if (node.bl_idname == "ShaderNodeTexImage"
+                        and not node.inputs["Vector"].is_linked):
+                    if tc is None:
+                        tc = mat.node_tree.nodes.new("ShaderNodeTexCoord")
+                    mat.node_tree.links.new(tc.outputs["UV"],
+                                            node.inputs["Vector"])
+
         objects = [o for o in bpy.context.scene.objects if o.type == "MESH"]
         if not objects:
             print("NO MESH", glb.name)
@@ -57,6 +74,25 @@ def main():
             obj.select_set(True)
         # Bake the importer's Y-up to Z-up correction into the mesh data.
         bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+
+        # Apply the shared real-world scale before grounding the asset.
+        corners = [obj.matrix_world @ Vector(c)
+                   for obj in objects for c in obj.bound_box]
+        lo = Vector((min(c.x for c in corners), min(c.y for c in corners),
+                     min(c.z for c in corners)))
+        hi = Vector((max(c.x for c in corners), max(c.y for c in corners),
+                     max(c.z for c in corners)))
+        factor, metres, axis = real_sizes.scale_for(
+            glb.stem, (hi.x - lo.x, hi.y - lo.y, hi.z - lo.z))
+        for obj in objects:
+            obj.scale = (factor, factor, factor)
+        bpy.context.view_layer.update()
+        for obj in objects:
+            bpy.context.view_layer.objects.active = obj
+            obj.select_set(True)
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        for obj in objects:
+            obj.select_set(False)
 
         # Sit the asset on the floor rather than straddling it.
         lowest = min((obj.matrix_world @ v.co).z

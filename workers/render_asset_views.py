@@ -99,6 +99,24 @@ def has_image_texture(obj):
     return False
 
 
+def wire_uv_textures(meshes):
+    for obj in meshes:
+        for slot in obj.material_slots:
+            material = slot.material
+            tree = material and material.use_nodes and material.node_tree
+            if tree is None:
+                continue
+            texcoord = next((n for n in tree.nodes
+                             if n.bl_idname == "ShaderNodeTexCoord"), None)
+            for node in tree.nodes:
+                if (node.bl_idname == "ShaderNodeTexImage"
+                        and not node.inputs["Vector"].is_linked):
+                    if texcoord is None:
+                        texcoord = tree.nodes.new("ShaderNodeTexCoord")
+                    tree.links.new(texcoord.outputs["UV"],
+                                   node.inputs["Vector"])
+
+
 def apply_clay(meshes):
     """Mid-grey matte on everything, so form reads instead of blowing out.
 
@@ -183,6 +201,7 @@ for job in payload["jobs"]:
         bpy.data.objects.remove(obj, do_unlink=True)
     bpy.ops.import_scene.gltf(filepath=job["mesh"])
     meshes = [o for o in scene.objects if o.type == "MESH"]
+    wire_uv_textures(meshes)
     turned = align_long_axis_to_x(meshes) if payload["align"] else False
     textured = any(has_image_texture(o) for o in meshes)
     # --native asks for whatever appearance the mesh already carries. Without

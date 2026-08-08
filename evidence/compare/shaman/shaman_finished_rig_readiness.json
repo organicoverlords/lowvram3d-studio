@@ -1,0 +1,50 @@
+{
+  "mesh": "evidence/deliverables/shaman_trellis1024_tex2048.glb",
+  "profile": "humanoid_complex_accessories",
+  "vertices": 257863,
+  "triangles": 289838,
+  "failure_codes": [
+    "BLOCKED_FUSED_LEGS",
+    "FEET_TOO_CLOSE_FOR_RIGGING"
+  ],
+  "measured": {
+    "height_axis": 1,
+    "width_axis": 0,
+    "depth_axis": 2,
+    "extent": [
+      0.7594258487224579,
+      0.9953427910804749,
+      0.39142486453056335
+    ],
+    "height": 0.9953427910804749,
+    "width": 0.7594258487224579,
+    "depth": 0.39142486453056335,
+    "depth_to_height": 0.3932563414717253,
+    "upper_band_points": 86197,
+    "lower_band_points": 82507,
+    "shin_band_points": 30115,
+    "arm_valley_ratio": 0.0,
+    "arms_clear": true,
+    "leg_gap_ratio": 0.8968860580325546,
+    "full_lower_body_clear": false,
+    "shin_gap_ratio": 0.6497920286421311,
+    "shins_clear": false,
+    "garment_aware_profile": true,
+    "garment_clearance_applied": false,
+    "legs_clear": false,
+    "feet": {
+      "lower_vertices": 9313,
+      "centre_vertices": 1174,
+      "centre_fraction": 0.12606034575324815,
+      "left_vertices": 3012,
+      "right_vertices": 5127,
+      "minimum_lobe_vertices": 1117,
+      "lower_band": 0.08,
+      "centre_half_width_fraction": 0.06,
+      "feet_clear": false
+    },
+    "depth_clear": true
+  },
+  "ready": false,
+  "rig_required": true
+}

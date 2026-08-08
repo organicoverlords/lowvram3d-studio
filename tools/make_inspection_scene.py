@@ -19,7 +19,10 @@ snail and the lineup measures nothing but normalisation.
 """
 
 import json
+import math
+import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import bpy
@@ -45,14 +48,97 @@ def bounds(objs):
     return lo, hi
 
 
+def receipt_index():
+    index = {}
+    for path in (REPO / "evidence" / "compare").rglob("*.json"):
+        if "rig_readiness" not in path.name and "rig_report" not in path.name:
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        mesh = str(data.get("mesh", "")).replace("\\\\", "/")
+        index[mesh] = data
+        index[path.stem] = data
+    return index
+
+
+def metadata(asset, glb, readiness):
+    stat = glb.stat()
+    created = datetime.fromtimestamp(stat.st_ctime).astimezone()
+    subject = asset["subject"]
+    rig = readiness.get(glb.stem, readiness.get(subject, {}))
+    if rig:
+        rig_status = "readiness_ready" if rig.get("ready") else "readiness_not_ready"
+    else:
+        rig_status = "readiness_unknown"
+    return {
+        "asset_name": asset["name"],
+        "subject": subject,
+        "generation_route": asset.get("generator", "unknown"),
+        "date": created.strftime("%Y-%m-%d %H:%M"),
+        "date_source": "filesystem_creation",
+        "file_size_bytes": stat.st_size,
+        "source_path": asset.get("source", "unknown"),
+        "rigging_status": rig_status,
+        "animation_status": "unknown",
+        "version": "v1",
+        "version_source": "inspection_metadata_schema",
+        "texture_or_atlas": asset.get("texture", "unknown"),
+        "faces": asset.get("faces", "unknown"),
+        "sort_time": stat.st_ctime,
+    }
+
+
+def placard_text(meta):
+    size = f"{meta['file_size_bytes'] / 1e6:.1f} MB"
+    return (f"{meta['subject']}\\n"
+            f"{meta['generation_route']} | {meta['date']}\\n"
+            f"{size} | {meta['faces']} faces\\n"
+            f"tex {meta['texture_or_atlas']} | rig {meta['rigging_status']}\\n"
+            f"anim {meta['animation_status']} | v {meta['version']}")
+
+
+def add_placard(meta, location, width):
+    curve = bpy.data.curves.new(f"placard_{meta['subject']}", "FONT")
+    curve.body = placard_text(meta)
+    curve.align_x = "CENTER"
+    curve.size = max(min(width * 0.08, 0.8), 0.18)
+    curve.extrude = 0.002
+    obj = bpy.data.objects.new(f"placard_{meta['subject']}", curve)
+    obj.location = (location.x + width / 2.0, location.y - 0.12, location.z)
+    obj.rotation_euler = (math.radians(72), 0.0, 0.0)
+    bpy.context.scene.collection.objects.link(obj)
+    for key, value in meta.items():
+        if key != "sort_time":
+            obj[key] = value
+    return obj
+
+
 def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     manifest = json.loads((SRC / "MANIFEST.json").read_text(encoding="utf-8"))
-    assets = sorted(manifest["assets"], key=lambda a: a["name"])
+    readiness = {}
+    for path in (REPO / "evidence" / "compare").rglob("*_rig_readiness.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        subject = path.parent.name.removesuffix("_new")
+        readiness[subject] = data
+        mesh_name = Path(str(data.get("mesh", ""))).stem
+        if mesh_name:
+            readiness[mesh_name] = data
+    assets = []
+    for asset in manifest["assets"]:
+        glb = SRC / asset["name"]
+        if glb.exists():
+            assets.append((metadata(asset, glb, readiness), asset))
+    assets.sort(key=lambda item: (item[0]["sort_time"], item[0]["asset_name"]))
 
     cursor = 0.0
     placed = []
-    for asset in assets:
+    for meta, asset in assets:
         glb = SRC / asset["name"]
         if not glb.exists():
             continue
@@ -92,11 +178,16 @@ def main():
         for obj in new:
             obj.location += shift
         new[0].name = glb.stem
+        for key, value in meta.items():
+            if key != "sort_time":
+                new[0][key] = value
+        add_placard(meta, Vector((cursor, 0.0, 0.0)), width)
 
         placed.append({"name": glb.stem, "x_start": round(cursor, 3),
                        "width": round(width, 3), "height": round(hi.z - lo.z, 3),
-                       "target_metres": metres, "target_axis": axis})
-        cursor += width * (1.0 + GAP)
+                       "target_metres": metres, "target_axis": axis,
+                       "date": meta["date"], "rig": meta["rigging_status"]})
+        cursor += max(width, width * (1.0 + GAP))
 
     scene = bpy.context.scene
     tallest = max((p["height"] for p in placed), default=1.0)
@@ -121,6 +212,24 @@ def main():
     world.use_nodes = True
     world.node_tree.nodes["Background"].inputs[1].default_value = 0.6
     scene.world = world
+
+    # Global safety net for implicit-UV failure in Blender 5.2 EEVEE
+    # (Material Preview): mirrors in-place fix applied to
+    # evidence/deliverables/blender/ALL_ASSETS_inspection.blend
+    # (13 mats wired TexCoord UV -> Image Texture.Vector, 198.1 MB,
+    # Blender 5.2). bpy.ops.import_scene.gltf leaves Vector unlinked,
+    # relying on implicit UV which EEVEE 5.2 ignores. Iterate all
+    # materials after the import loop and before pack_all().
+    for mat in bpy.data.materials:
+        if not mat.use_nodes or mat.node_tree is None:
+            continue
+        # Reuse existing TexCoord if present, else create one per material
+        tc = next((n for n in mat.node_tree.nodes if n.bl_idname == "ShaderNodeTexCoord"), None)
+        for node in mat.node_tree.nodes:
+            if node.bl_idname == "ShaderNodeTexImage" and not node.inputs["Vector"].is_linked:
+                if tc is None:
+                    tc = mat.node_tree.nodes.new("ShaderNodeTexCoord")
+                mat.node_tree.links.new(tc.outputs["UV"], node.inputs["Vector"])
 
     try:
         bpy.ops.file.pack_all()

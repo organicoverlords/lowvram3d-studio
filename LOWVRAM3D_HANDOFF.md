@@ -6,6 +6,23 @@
 
 ---
 
+## UPDATE — castle texture and inspection handoff (2026-08-08)
+
+The promoted castle deliverable is now the CPU-projected, source-conditioned result:
+
+- `evidence/deliverables/castle_trellis512_tu116_cpu_projection_tex2048.glb`
+- `evidence/deliverables/blender/castle_trellis512_tu116_cpu_projection_tex2048.blend`
+- `evidence/deliverables/views9/castle_trellis512_tu116_cpu_projection_tex2048_9view_grid.png`
+- `evidence/compare/castle_new/cpu_projection_2048/projection_receipt.json`
+
+The original TU116 geometry and UV/index buffers are preserved byte-for-byte by the projection receipt (`geometry_uv_index_preserved=true`). The 2048 atlas has 2,431,817 owned texels, 17.0% observed coverage, and a fresh CPU native-texture render is `PROVEN`. The prior Hunyuan-painted castle variants remain comparison evidence only: their atlases were visibly muddy/dark and are not promoted.
+
+`ALL_ASSETS_inspection.blend` now sorts imported deliverables by filesystem creation time and adds one metadata placard per asset. Placards record name, route, creation date/source, file size, source path, atlas size, face count, rig-readiness, animation status, and inspection metadata version (`v1`). Rigging and animation are reported as unknown unless proven by a receipt; the shaman is marked readiness-not-ready and the finished frog readiness-ready.
+
+The frog CPU rig candidate was built only in the session scratchpad. It created a generic creature armature and `creature_idle`, but automatic bone weighting emitted a Blender warning and the exported GLB dropped the armature; therefore deformation and animation remain unproven and the candidate was not promoted. The finished frog GLB remains unchanged.
+
+---
+
 ## CURRENT STATE (latest session)
 
 Geometry repair and texturing are done and measured. Rigging is still untested and is the next

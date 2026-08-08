@@ -146,6 +146,19 @@
       "texel_starved": true
     },
     {
+      "name": "castle_trellis512_tu116_cpu_projection_tex2048.glb",
+      "subject": "castle",
+      "generator": "trellis512_tu116_cpu_projection",
+      "source": "evidence/compare/castle_new/cpu_projection_2048/textured.glb",
+      "bytes": 10534440,
+      "link": "hardlink",
+      "faces": 143812,
+      "texture": 2048,
+      "texels_per_face_median": 11.24,
+      "texels_per_face_p90": 34.6,
+      "texel_starved": true
+    },
+    {
       "name": "whale_miniturbo384_tex2048_earlypaint.glb",
       "subject": "whale",
       "generator": "miniturbo384",

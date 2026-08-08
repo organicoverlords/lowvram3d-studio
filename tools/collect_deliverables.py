@@ -51,6 +51,7 @@ ASSETS = [
     ("fennec/fennec_mt_hypaint2048.glb",    "fennec", "miniturbo384", ""),
     ("boat/stage6_1024_hypaint2048.glb",    "boat",   "trellis1024",  ""),
     ("panda2/panda_hypaint.glb",            "panda",  "miniturbo384", ""),
+    ("castle_new/cpu_projection_2048/textured.glb", "castle", "trellis512_tu116_cpu_projection", ""),
     ("whale/whale_hypaint.glb",             "whale",  "miniturbo384", "earlypaint"),
     ("shaman/shaman_hypaint.glb",           "shaman", "miniturbo384", "earlypaint"),
 ]

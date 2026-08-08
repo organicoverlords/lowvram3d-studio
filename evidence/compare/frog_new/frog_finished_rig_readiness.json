@@ -1,0 +1,47 @@
+{
+  "mesh": "evidence/deliverables/frog_trellis512_tex2048.glb",
+  "profile": "humanoid_complex_accessories",
+  "vertices": 159834,
+  "triangles": 145084,
+  "failure_codes": [],
+  "measured": {
+    "height_axis": 1,
+    "width_axis": 0,
+    "depth_axis": 2,
+    "extent": [
+      0.6114463210105896,
+      0.9714710712432861,
+      0.5741169154644012
+    ],
+    "height": 0.9714710712432861,
+    "width": 0.6114463210105896,
+    "depth": 0.5741169154644012,
+    "depth_to_height": 0.5909768519711533,
+    "upper_band_points": 38671,
+    "lower_band_points": 73556,
+    "shin_band_points": 27738,
+    "arm_valley_ratio": 0.0,
+    "arms_clear": true,
+    "leg_gap_ratio": 0.4917276646946756,
+    "full_lower_body_clear": true,
+    "shin_gap_ratio": 0.5409587620642896,
+    "shins_clear": true,
+    "garment_aware_profile": true,
+    "garment_clearance_applied": true,
+    "legs_clear": true,
+    "feet": {
+      "lower_vertices": 7090,
+      "centre_vertices": 35,
+      "centre_fraction": 0.004936530324400564,
+      "left_vertices": 3696,
+      "right_vertices": 3359,
+      "minimum_lobe_vertices": 850,
+      "lower_band": 0.08,
+      "centre_half_width_fraction": 0.06,
+      "feet_clear": true
+    },
+    "depth_clear": true
+  },
+  "ready": true,
+  "rig_required": true
+}

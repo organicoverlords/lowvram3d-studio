@@ -1,0 +1,20 @@
+{
+  "schema": "lowvram3d_hunyuan_paint_v1",
+  "mesh_in": "evidence\\compare\\castle_new\\castle_new_512_tu116.glb",
+  "image": "evidence\\compare\\castle_new\\source.jpg",
+  "mesh_out": "evidence\\compare\\castle_new\\castle_new_512_tu116_painted.glb",
+  "paint_checkpoint": "hunyuan3d-paint-v2-0-turbo",
+  "baked_texture_size": null,
+  "renderer_texture_size": [
+    1024,
+    1024
+  ],
+  "model_cpu_offload": true,
+  "render_size": 1024,
+  "texture_size": 1024,
+  "cudnn_enabled": false,
+  "cpu_rng": true,
+  "load_seconds": 76.6,
+  "paint_seconds": 390.5,
+  "note": "vendor texture stage; no fitted camera, no silhouette objective, no hand-rolled projection"
+}

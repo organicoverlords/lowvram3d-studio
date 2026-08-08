@@ -1,0 +1,22 @@
+{
+  "classification": "PROVEN",
+  "glb": "evidence\\compare\\castle_new\\cpu_projection_2048\\textured.glb",
+  "native_kind": "texture",
+  "out": "evidence\\compare\\castle_new\\cpu_projection_2048\\texture_views.png",
+  "rows": [
+    "native texture",
+    "clay"
+  ],
+  "schema_version": "textured_views_v2",
+  "texture_size": [
+    2048,
+    2048
+  ],
+  "triangles": 143812,
+  "views": [
+    "front",
+    "three_quarter",
+    "side",
+    "rear"
+  ]
+}
