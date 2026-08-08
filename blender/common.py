@@ -36,13 +36,28 @@ def import_mesh(path: str) -> list[bpy.types.Object]:
     return [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
 
 
-def export_glb(path: str, selected_only: bool = False) -> None:
+def export_glb(path: str, selected_only: bool = False,
+               apply_modifiers: bool = True) -> None:
+    """Write a GLB. Pass apply_modifiers=False for anything rigged.
+
+    `export_apply=True` evaluates every mesh through the depsgraph with its
+    modifiers applied. For a static asset that is what you want. For a rigged
+    one it is fatal: the Armature modifier is consumed along with the rest, and
+    the exporter emits a mesh that still carries JOINTS_0 and WEIGHTS_0 from the
+    vertex groups but has no `skins` array to point them at, then logs
+    "GLTF has no skin, skipping adding neutral bone data on it" and exits 0.
+
+    That is what shipped twice -- the frog and the moss titan -- as a 49.8 MB
+    file with bones, weights and an animation that could not deform anything.
+    Blender's exit code says nothing about it; tools/validate_rig_export.py is
+    the check that does.
+    """
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.export_scene.gltf(
         filepath=path,
         export_format="GLB",
         use_selection=selected_only,
-        export_apply=True,
+        export_apply=apply_modifiers,
         export_materials="EXPORT",
         export_animations=True,
     )

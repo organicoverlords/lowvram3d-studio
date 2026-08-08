@@ -157,18 +157,109 @@ def make_armature(kind: str, objects: list[bpy.types.Object], pose_report: dict)
     return armature, object_bones, pose_guided
 
 
+def weighted_fraction(obj, bone_names: set[str]) -> float:
+    """Fraction of vertices carrying a non-zero weight in some deform group.
+
+    The number that decides whether a bind worked. `parent_set` reports a
+    bone-heat failure through the operator report, not through an exception, so
+    it returns {'FINISHED'} either way and the caller cannot tell. Counting the
+    vertices it actually weighted can.
+    """
+    indices = {group.index for group in obj.vertex_groups
+               if group.name in bone_names}
+    if not indices:
+        return 0.0
+    weighted = sum(
+        1 for vertex in obj.data.vertices
+        if any(g.group in indices and g.weight > 1e-4 for g in vertex.groups))
+    return weighted / max(len(obj.data.vertices), 1)
+
+
+def bind_by_proximity(obj, armature, bone_names: list[str]) -> None:
+    """Assign each vertex to its nearest bone segment, blended over the two
+    nearest, so a failed bone-heat solve still yields a deformable mesh.
+
+    Not as good as a heat solve -- there is no surface-geodesic term, so a
+    weight can bleed between limbs that are close in space but far along the
+    body. It is, however, a rig that moves, which is strictly more than the
+    silent no-skin export it replaces.
+    """
+    bones = [armature.data.bones[name] for name in bone_names
+             if name in armature.data.bones]
+    if not bones:
+        return
+    segments = [(bone.name, bone.head_local, bone.tail_local) for bone in bones]
+    groups = {name: obj.vertex_groups.get(name) or obj.vertex_groups.new(name=name)
+              for name, _, _ in segments}
+
+    for vertex in obj.data.vertices:
+        point = obj.matrix_world @ vertex.co
+        distances = []
+        for name, head, tail in segments:
+            axis = tail - head
+            length_squared = axis.length_squared
+            if length_squared < 1e-9:
+                closest = head
+            else:
+                t = max(0.0, min(1.0, (point - head).dot(axis) / length_squared))
+                closest = head + axis * t
+            distances.append(((point - closest).length, name))
+        distances.sort()
+        (near_d, near_n) = distances[0]
+        # Blend with the runner-up so joints bend instead of shearing.
+        if len(distances) > 1:
+            (far_d, far_n) = distances[1]
+            total = near_d + far_d
+            near_w = 1.0 if total < 1e-9 else far_d / total
+            groups[near_n].add([vertex.index], near_w, "REPLACE")
+            groups[far_n].add([vertex.index], 1.0 - near_w, "REPLACE")
+        else:
+            groups[near_n].add([vertex.index], 1.0, "REPLACE")
+
+    if not any(m.type == "ARMATURE" for m in obj.modifiers):
+        modifier = obj.modifiers.new("Armature", "ARMATURE")
+        modifier.object = armature
+    obj.parent = armature
+
+
+# A bind that weights less than this fraction of the mesh is treated as failed.
+# Bone heat either solves broadly or collapses; a partial solve in between has
+# not been observed, so the threshold only has to sit clear of both.
+BIND_COVERAGE_FLOOR = 0.60
+
+
 def bind_organic(objects, armature) -> str:
     select_only(objects + [armature])
     bpy.context.view_layer.objects.active = armature
+    bone_names = [bone.name for bone in armature.data.bones]
+    names = set(bone_names)
+
     try:
         bpy.ops.object.parent_set(type="ARMATURE_AUTO")
+    except RuntimeError as error:
+        print(f"[rig] parent_set raised: {error}", flush=True)
+
+    # Verify rather than trust. `Bone Heat Weighting: failed to find solution
+    # for one or more bones` is printed as a report and the operator still
+    # returns FINISHED, so the only way to know is to count the weights.
+    coverage = {obj.name: weighted_fraction(obj, names) for obj in objects}
+    for name, fraction in coverage.items():
+        print(f"[rig] {name}: {fraction * 100:.1f}% of vertices weighted",
+              flush=True)
+
+    failed = [obj for obj in objects
+              if coverage[obj.name] < BIND_COVERAGE_FLOOR]
+    if not failed:
         return "automatic_weights"
-    except RuntimeError:
-        for obj in objects:
-            modifier = obj.modifiers.new("Armature", "ARMATURE")
-            modifier.object = armature
-            obj.parent = armature
-        return "armature_modifier_fallback"
+
+    print(f"[rig] bone heat did not weight {len(failed)} mesh(es) -- "
+          f"falling back to proximity weights", flush=True)
+    for obj in failed:
+        bind_by_proximity(obj, armature, bone_names)
+        after = weighted_fraction(obj, names)
+        print(f"[rig] {obj.name}: {after * 100:.1f}% weighted after fallback",
+              flush=True)
+    return "proximity_weights"
 
 
 def bind_rigid(objects, armature, object_bones: dict[str, str]) -> str:
@@ -233,11 +324,204 @@ def add_dance(armature) -> str:
         key_rotation(armature, "thigh.R", frame, (0.18 * sway, 0.0, 0.08 * sway))
         key_rotation(armature, "shin.L", frame, (0.20 * max(0.0, sway), 0.0, 0.0))
         key_rotation(armature, "shin.R", frame, (0.20 * max(0.0, -sway), 0.0, 0.0))
-    for fcurve in bpy.context.object.animation_data.action.fcurves:
+    cycle_and_smooth(armature)
+    return "dance_loop"
+
+
+def action_fcurves(action):
+    """The action's F-curves, on both the old and the slotted data model.
+
+    Blender 4.4 moved animation into layers, strips and channelbags, and
+    `Action.fcurves` no longer exists on 5.2 -- reading it raises
+    AttributeError. Every loop here that sets interpolation or attaches a CYCLES
+    modifier went through that attribute, so on 5.2 the walk crashed outright
+    and `add_dance` had the same latent break. Blender still exits 0 when its
+    Python raises, so this surfaced as an export that silently lacked the action
+    rather than as a failure.
+
+    Returns a flat list so callers do not care which model is in use.
+    """
+    curves = getattr(action, "fcurves", None)
+    if curves is not None:
+        return list(curves)
+    collected = []
+    for layer in getattr(action, "layers", []):
+        for strip in getattr(layer, "strips", []):
+            for channelbag in getattr(strip, "channelbags", []):
+                collected.extend(channelbag.fcurves)
+    return collected
+
+
+def cycle_and_smooth(armature) -> None:
+    """Bezier interpolation on every key, and a cycle modifier per curve."""
+    action = armature.animation_data.action
+    for fcurve in action_fcurves(action):
         for keyframe in fcurve.keyframe_points:
             keyframe.interpolation = "BEZIER"
-        fcurve.modifiers.new(type="CYCLES")
-    return "dance_loop"
+        if not any(m.type == "CYCLES" for m in fcurve.modifiers):
+            fcurve.modifiers.new(type="CYCLES")
+
+
+def smooth_only(armature) -> None:
+    action = armature.animation_data.action
+    for fcurve in action_fcurves(action):
+        for keyframe in fcurve.keyframe_points:
+            keyframe.interpolation = "BEZIER"
+
+
+def key_scale(armature, bone_name: str, frame: int, xyz: tuple[float, float, float]) -> None:
+    bone = armature.pose.bones.get(bone_name)
+    if bone is None:
+        return
+    bone.scale = xyz
+    bone.keyframe_insert("scale", frame=frame)
+
+
+def add_breathe(armature) -> str:
+    """Chest expansion on a slow asymmetric cycle.
+
+    Rotation alone cannot read as a breath -- a ribcage gets bigger, it does not
+    tip -- so the chest bone is scaled, and the shoulders are carried outward
+    with it. The cycle is deliberately not a sine: a real breath is a quick
+    intake and a longer release, so the peak sits at frame 36 of 96 rather than
+    at the midpoint. An even cycle reads as a machine.
+
+    Amplitudes are small on purpose. At 4% chest scale this survives being
+    layered under idle or sitting; at the 15% that looks right in isolation it
+    turns a diver's drysuit into a bellows.
+    """
+    new_action(armature, "breathe", 96)
+    # frame, inflation 0..1
+    for frame, amount in ((1, 0.0), (36, 1.0), (60, 0.45), (96, 0.0)):
+        key_scale(armature, "chest", frame,
+                  (1.0 + 0.045 * amount, 1.0 + 0.02 * amount, 1.0 + 0.035 * amount))
+        key_scale(armature, "spine", frame, (1.0, 1.0 + 0.015 * amount, 1.0))
+        key_rotation(armature, "chest", frame, (-0.03 * amount, 0.0, 0.0))
+        key_rotation(armature, "clavicle.L", frame, (0.0, 0.0, -0.05 * amount))
+        key_rotation(armature, "clavicle.R", frame, (0.0, 0.0, 0.05 * amount))
+        key_rotation(armature, "head", frame, (0.012 * amount, 0.0, 0.0))
+        key_location(armature, "root", frame, (0.0, 0.0, 0.004 * amount))
+
+    cycle_and_smooth(armature)
+    return "breathe"
+
+
+def add_sit(armature) -> str:
+    """Stand, lower into a seated pose, settle.
+
+    Not a loop -- it plays once and holds, so it is keyed pose-to-pose with a
+    settle beat at the end rather than cycled. The root drops by 0.42 of the
+    thigh length rather than a fixed distance, because the same action has to
+    work on a 1.9 m shaman and a 120 m titan.
+
+    The thigh rotates to roughly a right angle and the shin takes the rest. The
+    shin sign is negative for the same reason as in the walk: a knee bends one
+    way, and letting the interpolator choose puts it through the joint.
+    """
+    thigh = armature.data.bones.get("thigh.L")
+    drop = (thigh.length * 0.42) if thigh else 0.2
+
+    new_action(armature, "sit", 72)
+    #  frame, how far into the sit (0 standing, 1 seated)
+    for frame, amount in ((1, 0.0), (30, 0.85), (46, 1.0), (72, 1.0)):
+        key_location(armature, "root", frame, (0.0, -drop * 0.35 * amount,
+                                               -drop * amount))
+        key_rotation(armature, "pelvis", frame, (-0.35 * amount, 0.0, 0.0))
+        key_rotation(armature, "spine", frame, (0.22 * amount, 0.0, 0.0))
+        key_rotation(armature, "chest", frame, (0.10 * amount, 0.0, 0.0))
+        key_rotation(armature, "head", frame, (-0.10 * amount, 0.0, 0.0))
+        for side, sign in (("L", 1.0), ("R", -1.0)):
+            key_rotation(armature, f"thigh.{side}", frame,
+                         (1.50 * amount, 0.0, 0.10 * amount * sign))
+            key_rotation(armature, f"shin.{side}", frame, (-1.45 * amount, 0.0, 0.0))
+            key_rotation(armature, f"foot.{side}", frame, (-0.10 * amount, 0.0, 0.0))
+            key_rotation(armature, f"upper_arm.{side}", frame,
+                         (0.30 * amount, 0.0, -0.18 * amount * sign))
+            key_rotation(armature, f"forearm.{side}", frame, (-0.55 * amount, 0.0, 0.0))
+
+    smooth_only(armature)
+    return "sit"
+
+
+def add_walk(armature) -> str:
+    """A contralateral walk cycle: opposite arm and leg swing together.
+
+    Driven by one phase angle so the loop closes exactly at the wrap frame
+    rather than approximately. The legs run on sin(phase) and the arms on
+    -sin(phase), which is what makes it read as walking rather than as
+    marching; a same-side swing looks wrong immediately even to an untrained
+    eye. The pelvis rises on |cos| because the body lifts twice per cycle, once
+    over each supporting leg, not once.
+
+    Knees only ever bend one way: shin rotation is clamped to the negative side
+    so the leg cannot hyperextend through the joint on the passing pose.
+    """
+    frames = (1, 9, 17, 25, 33, 41, 49)
+    new_action(armature, "walk_loop", frames[-1])
+    for index, frame in enumerate(frames):
+        phase = (index / (len(frames) - 1)) * math.tau
+        swing = math.sin(phase)
+        lift = abs(math.cos(phase))
+
+        key_location(armature, "root", frame, (0.0, 0.0, lift * 0.02))
+        key_rotation(armature, "pelvis", frame, (0.0, 0.0, -0.06 * swing))
+        key_rotation(armature, "spine", frame, (0.04, 0.05 * swing, 0.05 * swing))
+        key_rotation(armature, "chest", frame, (0.0, -0.09 * swing, 0.0))
+        key_rotation(armature, "head", frame, (0.0, 0.04 * swing, 0.0))
+
+        # Legs: one forward while the other is back.
+        key_rotation(armature, "thigh.L", frame, (0.55 * swing, 0.0, 0.0))
+        key_rotation(armature, "thigh.R", frame, (-0.55 * swing, 0.0, 0.0))
+        key_rotation(armature, "shin.L", frame, (-0.65 * max(0.0, -swing), 0.0, 0.0))
+        key_rotation(armature, "shin.R", frame, (-0.65 * max(0.0, swing), 0.0, 0.0))
+        # The foot counter-rotates against the thigh so the sole stays roughly
+        # level through the stride instead of pointing wherever the shin does.
+        key_rotation(armature, "foot.L", frame, (-0.30 * swing, 0.0, 0.0))
+        key_rotation(armature, "foot.R", frame, (0.30 * swing, 0.0, 0.0))
+
+        # Arms opposite the legs on the same side.
+        key_rotation(armature, "upper_arm.L", frame, (-0.45 * swing, 0.0, -0.12))
+        key_rotation(armature, "upper_arm.R", frame, (0.45 * swing, 0.0, 0.12))
+        key_rotation(armature, "forearm.L", frame, (-0.25 - 0.20 * max(0.0, -swing), 0.0, 0.0))
+        key_rotation(armature, "forearm.R", frame, (-0.25 - 0.20 * max(0.0, swing), 0.0, 0.0))
+
+    cycle_and_smooth(armature)
+    return "walk_loop"
+
+
+def add_creature_walk(armature) -> str:
+    """A lumbering two-leg creature walk on the creature skeleton.
+
+    The creature rig has `leg.L`/`leg.R`, `spine`, `neck`, `head`, `tail` and a
+    pair of `wing` bones, and no knees -- so this cannot be the humanoid cycle
+    with different names. Each leg is a single bone that swings from the body,
+    and the weight shift has to be carried by the spine roll and the body lift
+    instead of by a knee bend.
+
+    Amplitudes are deliberately smaller than the humanoid walk (0.34 rad against
+    0.55). A creature rigged from a bounding box has no anatomy underneath the
+    bones, so a big swing shears the mass rather than articulating it -- which
+    is exactly what the humanoid rig did to the moss titan.
+    """
+    frames = (1, 9, 17, 25, 33, 41, 49)
+    new_action(armature, "creature_walk", frames[-1])
+    for index, frame in enumerate(frames):
+        phase = (index / (len(frames) - 1)) * math.tau
+        swing = math.sin(phase)
+        lift = abs(math.cos(phase))
+
+        key_location(armature, "root", frame, (0.0, 0.0, lift * 0.025))
+        key_rotation(armature, "spine", frame, (0.05 * swing, 0.0, 0.07 * swing))
+        key_rotation(armature, "neck", frame, (-0.04 * swing, 0.0, -0.05 * swing))
+        key_rotation(armature, "head", frame, (0.05 * lift, 0.0, -0.04 * swing))
+        key_rotation(armature, "tail", frame, (0.0, 0.0, -0.12 * swing))
+        key_rotation(armature, "leg.L", frame, (0.34 * swing, 0.0, 0.0))
+        key_rotation(armature, "leg.R", frame, (-0.34 * swing, 0.0, 0.0))
+        key_rotation(armature, "wing.L", frame, (0.0, 0.10 * swing, 0.0))
+        key_rotation(armature, "wing.R", frame, (0.0, -0.10 * swing, 0.0))
+
+    cycle_and_smooth(armature)
+    return "creature_walk"
 
 
 def add_mechanical_actions(armature) -> list[str]:
@@ -253,7 +537,13 @@ def add_mechanical_actions(armature) -> list[str]:
 def add_actions(armature, kind: str, animation_preset: str) -> list[str]:
     if kind == "humanoid":
         actions = [add_idle(armature)]
-        if animation_preset in {"dance", "all", "auto"}:
+        if animation_preset in {"walk", "all", "auto"}:
+            actions.append(add_walk(armature))
+        if animation_preset in {"breathe", "all", "auto"}:
+            actions.append(add_breathe(armature))
+        if animation_preset in {"sit", "all", "auto"}:
+            actions.append(add_sit(armature))
+        if animation_preset in {"dance", "all"}:
             actions.append(add_dance(armature))
         return actions
     if kind == "creature":
@@ -261,7 +551,10 @@ def add_actions(armature, kind: str, animation_preset: str) -> list[str]:
         for frame, amount in ((1, 0.0), (24, 0.15), (48, 0.0)):
             key_rotation(armature, "head", frame, (0.0, amount, 0.0))
             key_rotation(armature, "tail", frame, (0.0, -amount, 0.0))
-        return ["creature_idle"]
+        actions = ["creature_idle"]
+        if animation_preset in {"walk", "all", "auto"}:
+            actions.append(add_creature_walk(armature))
+        return actions
     return add_mechanical_actions(armature)
 
 
@@ -272,7 +565,7 @@ def main() -> None:
     parser.add_argument("--report", required=True)
     parser.add_argument("--kind", choices=("auto", "humanoid", "creature", "mechanical", "static"), default="auto")
     parser.add_argument("--prompt", default="")
-    parser.add_argument("--animation-preset", choices=("none", "idle", "dance", "all", "auto"), default="auto")
+    parser.add_argument("--animation-preset", choices=("none", "idle", "walk", "breathe", "sit", "dance", "all", "auto"), default="auto")
     parser.add_argument("--pose-report", default="")
     args = parser.parse_args(argv_after_double_dash())
     reset_scene()
@@ -293,7 +586,9 @@ def main() -> None:
     armature, object_bones, pose_guided = make_armature(kind, objects, pose_report)
     binding = bind_rigid(objects, armature, object_bones) if kind == "mechanical" else bind_organic(objects, armature)
     actions = add_actions(armature, kind, args.animation_preset)
-    export_glb(args.output)
+    # apply_modifiers=False: applying them consumes the Armature modifier and
+    # exports a skinless mesh that still carries JOINTS_0/WEIGHTS_0.
+    export_glb(args.output, apply_modifiers=False)
     save_json(args.report, {
         "success": True,
         "kind": kind,
