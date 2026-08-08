@@ -158,85 +158,47 @@ def wire_imported_material_uvs(materials):
     return image_nodes, linked_nodes
 
 
-DISPLAY_ANCHOR = 4.0
-DISPLAY_EXPONENT = 0.45
-"""Compress the size range FOR DISPLAY ONLY.
+# Not called. Kept because the measurement behind it is worth not repeating:
+# TRELLIS's own atlases average RGB [35.6 37.2 21.1] against the vendor paint's
+# [74.8 73.6 29.4], so under a bright sky a prepaint asset reflects mostly sky
+# ambient and reads slate-blue beside its painted twin. That is exposure, not
+# hue -- a first attempt treated it as saturation and made everything lurid
+# without touching the cast.
+CONTRAST = 0.12
+"""Contrast lift for the ORIGINAL (prepaint) atlases only.
 
-True scale is honest and unreadable. The set runs from a 1.3 m frog to a 45 m
-titan, and at true scale one frame either shows the titan with the frog under a
-pixel, or shows the frog with everything else outside the border. Neither is an
-inspection scene.
+TRELLIS's own atlases are flatter than the vendor paint's, so a small contrast
+lift makes them read better in the showroom. It is applied to nothing else.
 
-    displayed = ANCHOR * (real / ANCHOR) ** EXPONENT
+**The painted assets are never touched.** They are the output of a stage whose
+quality is the thing under evaluation, and quietly grading them would make that
+comparison meaningless -- the whole reason both variants are in the scene is to
+see the paint stage's effect unaltered.
 
-An exponent of 1.0 is true scale; 0.0 makes everything identical. 0.45 takes a
-1.3 m to 45 m span (35x) down to about 2.4 m to 11 m (4.5x), which fits one
-frame while keeping every ordering intact -- the titan is still plainly the
-biggest thing present and the frog still the smallest.
-
-This is a property of THIS SCENE and nothing else. REAL_SIZES.json is untouched,
-and the FBX export and Unreal import still use true metres, because a compressed
-size is exactly the wrong thing to hand an engine.
+Non-destructive either way: this edits the material in this .blend, not the
+atlas on disk, so the deliverable an engine loads is unchanged.
 """
 
 
-def display_metres(metres: float) -> float:
-    if metres <= 0.0:
-        return DISPLAY_ANCHOR
-    return DISPLAY_ANCHOR * (metres / DISPLAY_ANCHOR) ** DISPLAY_EXPONENT
+def grade_base_colour(mat) -> bool:
+    """Add a small contrast lift between base-colour image and shader."""
+    tree = mat.node_tree
+    bsdf = next((n for n in tree.nodes
+                 if n.bl_idname == "ShaderNodeBsdfPrincipled"), None)
+    if bsdf is None:
+        return False
+    socket = bsdf.inputs.get("Base Color")
+    if socket is None or not socket.is_linked:
+        return False
+    source = socket.links[0].from_node
+    if source.bl_idname != "ShaderNodeTexImage":
+        return False
 
-
-ROW_TARGET = float("inf")
-"""Never wrap. The scene is one chronological line, by design.
-
-It was briefly wrapped into rows to make the set easier to frame, and that was
-the wrong fix for the right problem. The line IS the artefact: read left to
-right it is the order things were generated in, and breaking it into rows throws
-that away to save some camera distance.
-
-The framing problem is solved by DISPLAY_EXPONENT instead. Compressing a 35x
-size range to about 4.5x is what makes a single row viewable, so the row does
-not have to be folded up as well.
-"""
-
-
-def frame_viewport(centre, reach):
-    """Point the SAVED viewport at the whole set, and open the clipping range.
-
-    Blender opens on the viewport, not on scene.camera, so a correctly placed
-    camera does not by itself mean the file looks right when opened -- it opens
-    wherever the startup file was pointing, which for a scene hundreds of units
-    across is somewhere inside one asset.
-
-    The other half is clipping. A 3D viewport defaults to a 1000-unit far clip
-    and this scene needs several times that, so without this the back of the
-    layout is simply not drawn.
-    """
-    # view_distance is the orbit radius, so the bounding sphere's radius with
-    # margin puts the whole set inside the frame regardless of orbit angle.
-    distance = reach * 0.75
-    touched = 0
-    for screen in bpy.data.screens:
-        for area in screen.areas:
-            if area.type != "VIEW_3D":
-                continue
-            for space in area.spaces:
-                if space.type != "VIEW_3D":
-                    continue
-                space.clip_start = max(0.05, reach * 0.0005)
-                space.clip_end = reach * 8.0
-                region = space.region_3d
-                region.view_location = Vector(centre)
-                region.view_distance = distance
-                # A three-quarter view from above: 62 degrees off vertical and
-                # swung 32 degrees round, so rows read as rows instead of
-                # occluding one another the way a level view makes them.
-                region.view_rotation = Euler(
-                    (math.radians(62.0), 0.0, math.radians(32.0)), "XYZ").to_quaternion()
-                region.view_perspective = "PERSP"
-                touched += 1
-    print(f"viewport framed on {touched} 3D view(s): distance {distance:.1f}, "
-          f"clip_end {reach * 8.0:.1f}")
+    contrast = tree.nodes.new("ShaderNodeBrightContrast")
+    contrast.inputs["Contrast"].default_value = CONTRAST
+    tree.links.new(source.outputs["Color"], contrast.inputs["Color"])
+    tree.links.new(contrast.outputs["Color"], socket)
+    return True
 
 
 def add_placard(meta, location, width):

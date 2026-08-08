@@ -82,6 +82,16 @@
       "metres": 28.0,
       "axis": "height",
       "source": "estimate"
+    },
+    "oakhamlet": {
+      "metres": 26.0,
+      "axis": "height",
+      "source": "estimate"
+    },
+    "treecity": {
+      "metres": 24.0,
+      "axis": "height",
+      "source": "estimate"
     }
   }
 }

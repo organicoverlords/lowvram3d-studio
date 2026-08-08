@@ -1,0 +1,21 @@
+{
+  "extents": [
+    0.994,
+    0.8083,
+    0.9862
+  ],
+  "faces": 146938,
+  "volume": 0.043478,
+  "area": 11.1126,
+  "fill": 0.0549,
+  "quad_ratio": 3.1151,
+  "spread_per_axis": [
+    0.1868,
+    0.242,
+    0.1549
+  ],
+  "worst_spread": 0.242,
+  "billboard": false,
+  "reasons": [],
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\treecity\\treecity_t512.glb"
+}

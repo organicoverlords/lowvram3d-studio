@@ -740,6 +740,26 @@ full canopy, bbox y 5..1809 of 1825 against rembg's 833..1809.
 seal diver's foggy teal gradient, on which auto_matte kept 73% of the frame.
 Neither is the default for everything, and the failure is silent either way.
 
+**The controlled re-run.** The tree city was generated again with the corrected
+matte and nothing else changed -- same generator, seed 12345, res 512:
+
+| | bad matte | corrected matte |
+|---|---|---|
+| decoded faces | 3,589,268 | **9,243,764** |
+| fill | 0.0311 | **0.0549** |
+| quad_ratio | 1.696 | **3.115** |
+| worst spread | 0.389 | **0.242** |
+| extents | 1.00 x **0.49** x 0.97 | 0.99 x **0.81** x 0.99 |
+| shape flow | 9 s/step | 31 s/step |
+
+Full canopy, and the hanging rope baskets survived -- which had been predicted
+to be lost as sub-cell filaments. Both sets are kept side by side in
+`evidence/compare/treecity/`, the old one prefixed `badmatte_`, because a
+controlled pair where only the input changed is worth more than either half.
+
+The step rate is a cheap early tell: a decode that is going to be thin runs
+visibly faster per step than one that is not.
+
 ## 10b. The token ceiling — ~38k tokens does not fit in 6 GB, and past it the cliff is 23x
 
 The latent-size table in the receipts predicts whether the *sparse structure*

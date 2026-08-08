@@ -83,8 +83,18 @@ ASSETS = [
     # tree or only filamentous ones. The greentree collapsed because its
     # structure is thin aerial roots; this one is a single massive trunk with a
     # walkway on it, which is the shape TRELLIS handles well.
-    ("fattree/fattree_t1024_paint2048.glb", "fattree", "trellis1024", ""),
-    ("fattree/fattree_t1024.glb",           "fattree", "trellis1024", "prepaint"),
+    # 512, not 1024: the fat tree at 1024 turned on the LR->HR cascade, whose
+    # ~38k tokens do not fit 6 GB, and it ran at 23x cost per step until it was
+    # killed. These were registered as t1024 before that was known, which the
+    # collector would have skipped silently -- a missing entry looks exactly
+    # like a subject that was never generated.
+    ("fattree/fattree_t512_paint2048.glb",  "fattree", "trellis512", ""),
+    ("fattree/fattree_t512.glb",            "fattree", "trellis512", "prepaint"),
+    # The cleanest tree in the set: full canopy with separated leaf clusters,
+    # houses, balconies, railings, staircases and the trunk door, at fill 0.055
+    # and quad_ratio 2.93.
+    ("oakhamlet/oakhamlet_t512_paint2048.glb", "oakhamlet", "trellis512", ""),
+    ("oakhamlet/oakhamlet_t512.glb",           "oakhamlet", "trellis512", "prepaint"),
 ]
 
 
