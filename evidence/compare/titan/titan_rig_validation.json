@@ -1,0 +1,18 @@
+{
+  "schema": "lowvram3d_rig_export_validation_v1",
+  "mesh": "evidence\\compare\\titan\\titan_rigged_creature.glb",
+  "nodes": 12,
+  "skins": 0,
+  "skinned_mesh_nodes": 0,
+  "primitives_with_joint_weights": 1,
+  "animations": 1,
+  "weights": null,
+  "notes": [
+    "1 primitive(s) carry JOINTS_0/WEIGHTS_0 with no skin -- the weights survived the export and only the binding was lost",
+    "animation 0 drives 9 node(s), none of which are joints of any skin"
+  ],
+  "failures": [
+    "no `skins` array: the file has no mesh-to-skeleton binding, so any bone nodes in it are inert and no importer will build an armature"
+  ],
+  "skinned": false
+}

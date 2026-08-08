@@ -162,6 +162,47 @@ def bind_texture(input_glb: Path, output_glb: Path, png: bytes) -> int:
 
 
 # --------------------------------------------------------------------------- rasterisation
+def push_pull_fill(colour: np.ndarray, weight: np.ndarray) -> np.ndarray:
+    """Spread observed colour into unobserved texels smoothly, not in cells.
+
+    The fill this replaces gave every unobserved texel the colour of its nearest
+    observed one. Texels sharing a nearest neighbour form a Voronoi cell, so the
+    result is a mosaic of hard-edged flat plates -- and since a single view of the
+    castle observed 9.9% of the atlas while 48.1% needed filling, the plates
+    covered most of the asset. Measured on that atlas: 15.8% of texels sat on a
+    hard edge.
+
+    That is the same shape of defect as the nearest-neighbour texture lookup in
+    render_textured_views.py, one stage earlier: a nearest-neighbour operation
+    manufacturing edges that are not in the data. The difference is that this one
+    is baked into the atlas, so a correct renderer shows it faithfully.
+
+    Push-pull instead. Pull: repeatedly halve the premultiplied colour and its
+    weight, so coarse levels carry an average of whatever was observed nearby.
+    Push: walk back up, and wherever a level is short of weight, take the
+    upsampled coarser estimate for the remainder. Colour therefore diffuses
+    outward from observed texels at a rate set by distance, with no cell
+    boundaries anywhere. Cost is O(texels) and runs in well under a second at
+    2048.
+
+    `colour` must be premultiplied by `weight`; `weight` is 1 where observed.
+    """
+    colours, weights = [colour], [weight]
+    while min(colours[-1].shape[:2]) > 2:
+        colours.append(cv2.pyrDown(colours[-1]))
+        weights.append(cv2.pyrDown(weights[-1]))
+    for level in range(len(colours) - 1, 0, -1):
+        height, width = colours[level - 1].shape[:2]
+        coarse_c = cv2.pyrUp(colours[level], dstsize=(width, height))
+        coarse_w = cv2.pyrUp(weights[level], dstsize=(width, height))
+        # How much of this texel is still unaccounted for. Saturating at 1 keeps
+        # an already-covered texel from being pulled back toward the blur.
+        short = 1.0 - np.clip(weights[level - 1], 0.0, 1.0)
+        colours[level - 1] = colours[level - 1] + coarse_c * short[..., None]
+        weights[level - 1] = weights[level - 1] + coarse_w * short
+    return colours[0] / np.maximum(weights[0], 1e-6)[..., None]
+
+
 def _barycentric_grid(steps: int) -> np.ndarray:
     """Sample points inside the unit triangle, as (S, 2) barycentric (wa, wb) pairs."""
     ticks = (np.arange(steps) + 0.5) / steps
@@ -602,6 +643,10 @@ def main() -> None:
     parser.add_argument("--output-root", required=True)
     parser.add_argument("--atlas-size", type=int, default=2048)
     parser.add_argument("--padding-px", type=int, default=1)
+    parser.add_argument("--fill", choices=("pushpull", "nearest"), default="pushpull",
+                        help="how unobserved owned texels are filled. nearest is the "
+                             "original and lays down Voronoi plates wherever coverage "
+                             "is low, which on the castle was most of the surface")
     parser.add_argument("--skip-contract", action="store_true",
                         help="benchmark harness only; never for a production atlas")
     args = parser.parse_args()
@@ -728,19 +773,30 @@ def main() -> None:
     margin = np.clip(1.0 - np.abs(sz - nearest) / max(tolerance, 1e-9), 0.0, 1.0)
     depth_map[ys[in_bounds], xs[in_bounds]] = margin[in_bounds].astype(np.float32)
 
-    # ---- fill unobserved owned texels from nearest observed colour -------------------
+    # ---- fill unobserved owned texels ------------------------------------------------
+    # (push_pull_fill is defined at module scope; see its docstring for why the
+    #  nearest-neighbour fill it replaces produced plates.)
     started = time.time()
     synthesized = owned & ~observed
     if observed.any() and synthesized.any():
-        # Distance transform on the complement gives, for every texel, the nearest observed texel.
-        _dist, labels = cv2.distanceTransformWithLabels(
-            (~observed).astype(np.uint8), cv2.DIST_L2, 3,
-            labelType=cv2.DIST_LABEL_PIXEL)
-        oy, ox = np.nonzero(observed)
-        lookup = np.zeros(labels.max() + 1, np.int64)
-        lookup[labels[oy, ox]] = np.arange(oy.size)
-        picked = lookup[labels[synthesized]]
-        atlas[synthesized] = atlas[oy[picked], ox[picked]]
+        if args.fill == "nearest":
+            # Every unobserved texel copies its nearest observed texel. The regions
+            # that share a nearest neighbour are Voronoi cells, so the fill comes out
+            # as hard-edged flat plates -- and on the castle only 9.9% of the atlas
+            # was observed against 48.1% synthesized, which put plates over most of
+            # the asset. Kept only so the two fills can be compared on one mesh.
+            _dist, labels = cv2.distanceTransformWithLabels(
+                (~observed).astype(np.uint8), cv2.DIST_L2, 3,
+                labelType=cv2.DIST_LABEL_PIXEL)
+            oy, ox = np.nonzero(observed)
+            lookup = np.zeros(labels.max() + 1, np.int64)
+            lookup[labels[oy, ox]] = np.arange(oy.size)
+            picked = lookup[labels[synthesized]]
+            atlas[synthesized] = atlas[oy[picked], ox[picked]]
+        else:
+            atlas[synthesized] = push_pull_fill(
+                atlas.astype(np.float32) * observed[..., None],
+                observed.astype(np.float32))[synthesized]
         confidence[synthesized] = 0.0
     # bleed a little past chart edges so bilinear filtering never reaches the gutter
     if args.padding_px > 0 and owned.any():
@@ -789,6 +845,7 @@ def main() -> None:
         "input_contract": contract,
         "atlas_size": size,
         "padding_px": args.padding_px,
+        "fill": args.fill,
         "camera": {k: v for k, v in camera.items() if k != "matrix"},
         "canonical_orientation": canonical_orientation(camera["matrix"]),
         "triangles": int(len(triangles)),

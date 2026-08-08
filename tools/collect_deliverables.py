@@ -54,6 +54,18 @@ ASSETS = [
     ("castle_new/cpu_projection_2048/textured.glb", "castle", "trellis512_tu116_cpu_projection", ""),
     ("whale/whale_hypaint.glb",             "whale",  "miniturbo384", "earlypaint"),
     ("shaman/shaman_hypaint.glb",           "shaman", "miniturbo384", "earlypaint"),
+    # "mosstitan", not "moss_titan" -- real_sizes.subject_of() splits the
+    # filename on the first underscore, so moss_titan_* would look up "moss",
+    # miss the table, and fall through to the 2 m default. This one is 120 m.
+    # It is also a different creature from the existing "titan" entry above,
+    # which stays at 40 m; sharing the subject name would collide on filename
+    # and the collector would refuse the whole run.
+    ("moss_titan/titan_t1024_paint2048.glb", "mosstitan", "trellis1024", ""),
+    # The same titan before the vendor paint, carrying only TRELLIS's own
+    # atlas. Kept as a deliverable so the lineup shows the two side by side:
+    # this is the one pair in the set where the only difference is the paint
+    # stage, on identical geometry from an identical seed.
+    ("moss_titan/titan_t1024.glb",           "mosstitan", "trellis1024", "prepaint"),
 ]
 
 

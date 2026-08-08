@@ -139,10 +139,89 @@ def run(mesh_path: Path, image_path: Path, out_path: Path,
 
     if cpu_rng:
         torch.Generator = cpu_generator
+    # The vendor call is opaque -- one function in, a textured mesh out -- so
+    # these two lines are the only visibility this worker can offer. They matter
+    # because of what falls between them: the vendor preprocesses the mesh on the
+    # CPU before any diffusion starts, and on a large undecimated mesh that phase
+    # runs for many minutes emitting nothing. Its own progress bars only appear
+    # once sampling begins, so "loaded, then silence" is not a hang -- it is
+    # preprocessing, and the face count below is what predicts how long it lasts.
+    faces = getattr(getattr(mesh, "faces", None), "__len__", lambda: None)()
+    print(f"[paint] entering vendor pipeline: {faces} faces, "
+          f"render {render_size}, texture {texture_size}", flush=True)
+
+    # Stage boundaries, taken from the vendor pipeline itself.
+    #
+    # Hunyuan3DPaintPipeline.__call__ is one opaque call from outside, and its
+    # own progress bars only exist for the diffusion step. Everything around
+    # that -- multiview normal and position rendering, the bake, the inpaint --
+    # runs silently, and on this machine those phases have run for tens of
+    # minutes with nothing on screen. Wrapping the named methods turns "blank
+    # console" into "which phase, and how long it has been in it", which is the
+    # difference between waiting and knowing.
+    #
+    # Instance-level, so nothing about the vendor package on disk changes.
+    def instrument(target, names):
+        for name in names:
+            original = getattr(target, name, None)
+            if not callable(original):
+                continue
+
+            def wrapper(*args, _name=name, _original=original, **kwargs):
+                print(f"[paint] >> {_name}", flush=True)
+                begun = time.time()
+                try:
+                    return _original(*args, **kwargs)
+                finally:
+                    print(f"[paint] << {_name} took {time.time() - begun:.1f}s",
+                          flush=True)
+
+            setattr(target, name, wrapper)
+
+    instrument(pipeline, ("render_normal_multiview", "render_position_multiview",
+                          "bake_from_multiview", "texture_inpaint",
+                          "recenter_image"))
+
+    # Do not re-unwrap a mesh that already has UVs.
+    #
+    # pipelines.__call__ calls mesh_uv_wrap unconditionally, and that is
+    # xatlas.parametrize over every face, single threaded, printing nothing.
+    # On the moss titan -- 286,994 faces whose surface is thousands of thin
+    # hanging strands, each its own chart to pack -- it ran past 25 minutes
+    # with the GPU idle and no output, twice, and was mistaken for a hung run
+    # and for the UNet executing on the CPU. It was neither.
+    #
+    # The work is also redundant here: TRELLIS exports TEXCOORD_0 with a 2048
+    # atlas, so a valid parameterisation already exists. The bake writes a new
+    # texture into whatever layout the mesh carries; it does not require
+    # xatlas's particular packing. Meshes that genuinely lack UVs still get
+    # unwrapped, so nothing silently paints without a parameterisation.
+    from hy3dgen.texgen import pipelines as vendor_pipelines
+
+    vendor_unwrap = vendor_pipelines.mesh_uv_wrap
+
+    def unwrap_only_if_needed(target):
+        uv = getattr(getattr(target, "visual", None), "uv", None)
+        if uv is not None and len(uv) == len(target.vertices):
+            print(f"[paint] >> mesh_uv_wrap SKIPPED: mesh already carries "
+                  f"{len(uv)} UVs", flush=True)
+            return target
+        print("[paint] >> mesh_uv_wrap: no usable UVs, running xatlas "
+              "(slow on high face counts)", flush=True)
+        begun = time.time()
+        result = vendor_unwrap(target)
+        print(f"[paint] << mesh_uv_wrap took {time.time() - begun:.1f}s",
+              flush=True)
+        return result
+
+    vendor_pipelines.mesh_uv_wrap = unwrap_only_if_needed
+    entered = time.time()
     try:
         textured = pipeline(mesh, image=image)
     finally:
         torch.Generator = real_generator
+        print(f"[paint] vendor pipeline returned after "
+              f"{time.time() - entered:.1f}s", flush=True)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     textured.export(out_path)
     finished = time.time()

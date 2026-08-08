@@ -1,0 +1,158 @@
+{
+  "schema": "fast_texture_projection_v1",
+  "backend": "numpy_vectorised_rasteriser",
+  "blender_used": false,
+  "scene_ray_cast_calls": 0,
+  "bpy_pixel_accesses": 0,
+  "mesh": "evidence/compare/castle_new/castle_new_512_tu116.glb",
+  "mesh_sha256": "2d34cd99a942ab3f04a0a3000c5d10e70987c2f7d2b21b1f19194f106a051afc",
+  "source_image": "evidence/compare/castle_new/paint_input_512.png",
+  "source_image_sha256": "b2385ae363ad264ee5fe82c1a1be6011cd120c72acdfcf58f11c271c3cd80b3c",
+  "alpha_mask_sha256": "9e47897538bca383829f3a78e3f9fc823e619fbbef054ec501d288ef55634ea4",
+  "input_contract": {
+    "schema": "projection_input_contract_v1",
+    "mask_method": "BIREFNET_HARD_MASK",
+    "mask_method_accepted": true,
+    "source_image": "evidence\\compare\\castle_new\\paint_input_512.png",
+    "source_image_sha256": "b2385ae363ad264ee5fe82c1a1be6011cd120c72acdfcf58f11c271c3cd80b3c",
+    "alpha_mask": "evidence\\compare\\castle_new\\paint_input_512_alpha.png",
+    "alpha_mask_sha256": "9e47897538bca383829f3a78e3f9fc823e619fbbef054ec501d288ef55634ea4",
+    "normalized_conditioning_image": null,
+    "normalized_conditioning_sha256": null,
+    "original_plate": "evidence\\compare\\castle_new\\source.jpg",
+    "original_plate_sha256": "e34f13bb4d130cf02bbb89b88bc53fa9df70a153f4e4b7ab4d4e157138c3bcba",
+    "source_equals_original_plate": false,
+    "source_dimensions": [
+      512,
+      512
+    ],
+    "alpha_coverage": 0.29845,
+    "foreground_components": 2,
+    "crop_bounds_x0y0x1y1": [
+      18,
+      91,
+      492,
+      420
+    ],
+    "crop_transform": null,
+    "background_treatment": {
+      "estimated_plate_rgb": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "plate_like_halo_fraction_at_boundary": 0.001495,
+      "plate_like_fraction_deep_interior": 1.3e-05,
+      "interior_note": "interior plate-coloured pixels are the lit sign and lamps, not leakage",
+      "tolerance": 0.005
+    },
+    "ground_shadow_remains": false,
+    "ground_shadow_fraction": 0.0,
+    "checkerboard": {
+      "method": "two-tone plate-tile fraction, calibrated against the plate's own background and foreground",
+      "plate_tile_tones": [],
+      "positive_reference_plate_background": 0.0,
+      "negative_reference_plate_foreground": 0.0,
+      "observed_in_sampled_region": 0.0,
+      "decision_midpoint": 0.0,
+      "detected_in_sampled_region": false
+    },
+    "image_mask_agreement_iou": 1.0,
+    "transforms_match": true,
+    "failures": [],
+    "skipped_checks": [],
+    "contract_satisfied": true,
+    "classification": "PROJECTION_INPUT_ACCEPTED"
+  },
+  "atlas_size": 2048,
+  "padding_px": 2,
+  "fill": "pushpull",
+  "camera": {
+    "yaw": 6.667,
+    "pitch": 36.667,
+    "roll": 0.0,
+    "silhouette_iou": 0.7093,
+    "scale": 477.0213176653112,
+    "offset": [
+      269.50688249112414,
+      250.99605954039157
+    ],
+    "centre": [
+      0.018294705905192776,
+      -0.0325389277615365,
+      -0.019026216268663278
+    ],
+    "image_size": [
+      512,
+      512
+    ],
+    "fore_aft_tie_broken_by": "dinov2_geometry_vs_source",
+    "fore_aft_flipped": false
+  },
+  "canonical_orientation": {
+    "painted_face_direction": [
+      0.0931,
+      -0.5972,
+      -0.7967
+    ],
+    "rotate_about_y_degrees": -173.33,
+    "note": "apply this Y rotation to put the painted face at +Z; derived from the projection camera, not from the silhouette"
+  },
+  "triangles": 143812,
+  "vertices": 109121,
+  "atlas": {
+    "owned_texels": 2431817,
+    "owned_fraction": 0.57979,
+    "observed_texels": 413331,
+    "observed_fraction_of_owned": 0.169968,
+    "synthesized_texels": 2018486,
+    "rejected_background_texels": 134735
+  },
+  "gates": {
+    "in_bounds": 2431817,
+    "matte_foreground": 1848987,
+    "front_facing": 1142518,
+    "depth_consistent": 640737,
+    "accepted": 413331,
+    "rejected_as_background": 134735,
+    "depth_tolerance": 0.00510742,
+    "front_facing_min": 0.1
+  },
+  "artifacts": {
+    "basecolor": "evidence\\compare\\castle_new\\cpu_projection_pushpull\\basecolor.png",
+    "basecolor_sha256": "ce668a4cacfa504314994f68bbe3375487929467c12a845b32a7cdb332957ee0",
+    "observed_mask": "evidence\\compare\\castle_new\\cpu_projection_pushpull\\observed_mask.png",
+    "synthesized_mask": "evidence\\compare\\castle_new\\cpu_projection_pushpull\\synthesized_mask.png",
+    "rejected_background_mask": "evidence\\compare\\castle_new\\cpu_projection_pushpull\\rejected_background_mask.png",
+    "confidence": "evidence\\compare\\castle_new\\cpu_projection_pushpull\\confidence.png",
+    "depth_consistency": "evidence\\compare\\castle_new\\cpu_projection_pushpull\\depth_consistency.png",
+    "textured_glb": "evidence\\compare\\castle_new\\cpu_projection_pushpull\\textured.glb",
+    "textured_glb_sha256": "27277797c318aea10b75872064e548157c8136d0eaa66890d44d509bebfebe0c"
+  },
+  "materials_bound": 1,
+  "immutable_buffers_before": {
+    "position_bytes_sha256": "e001a31742dd1a4b3dd388f38f66ef8df6b71fdd28e0f63298f7fa81198c247c",
+    "normal_bytes_sha256": "8871affcec1c4843a2d105eb632417f6214c470aa3ddf14ab75e276e6e498586",
+    "uv_bytes_sha256": "ca033c835a439142c4d15a741ed31f86f5b8cccfa97cb24f3e5f461321f29e7b",
+    "index_bytes_sha256": "ba9e7c68cb3153ccba3cfe303f174a7fde4acfc7142596f6acf3125385db7d2d",
+    "geometry_uv_index_sha256": "9b4350da91f9e018f3941eda30a98940074173cdd6dce1e2d922f43cdc65523c"
+  },
+  "immutable_buffers_after": {
+    "position_bytes_sha256": "e001a31742dd1a4b3dd388f38f66ef8df6b71fdd28e0f63298f7fa81198c247c",
+    "normal_bytes_sha256": "8871affcec1c4843a2d105eb632417f6214c470aa3ddf14ab75e276e6e498586",
+    "uv_bytes_sha256": "ca033c835a439142c4d15a741ed31f86f5b8cccfa97cb24f3e5f461321f29e7b",
+    "index_bytes_sha256": "ba9e7c68cb3153ccba3cfe303f174a7fde4acfc7142596f6acf3125385db7d2d",
+    "geometry_uv_index_sha256": "9b4350da91f9e018f3941eda30a98940074173cdd6dce1e2d922f43cdc65523c"
+  },
+  "geometry_uv_index_preserved": true,
+  "timings_seconds": {
+    "load": 0.066,
+    "camera_fit": 23.837,
+    "depth_buffer": 0.279,
+    "atlas_raster": 0.876,
+    "sampling": 1.185,
+    "fill": 0.519,
+    "write_and_bind": 0.241,
+    "total": 27.534
+  }
+}

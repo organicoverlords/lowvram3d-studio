@@ -1,0 +1,20 @@
+{
+  "schema": "lowvram3d_hunyuan_paint_v1",
+  "mesh_in": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\moss_titan\\titan_t1024.glb",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\moss_titan\\paint_input_512.png",
+  "mesh_out": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\moss_titan\\titan_t1024_paint2048.glb",
+  "paint_checkpoint": "hunyuan3d-paint-v2-0-turbo",
+  "baked_texture_size": null,
+  "renderer_texture_size": [
+    2048,
+    2048
+  ],
+  "model_cpu_offload": true,
+  "render_size": 1024,
+  "texture_size": 2048,
+  "cudnn_enabled": false,
+  "cpu_rng": true,
+  "load_seconds": 74.4,
+  "paint_seconds": 365.1,
+  "note": "vendor texture stage; no fitted camera, no silhouette objective, no hand-rolled projection"
+}

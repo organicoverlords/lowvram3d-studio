@@ -92,27 +92,243 @@ def metadata(asset, glb, readiness):
 
 def placard_text(meta):
     size = f"{meta['file_size_bytes'] / 1e6:.1f} MB"
-    return (f"{meta['subject']}\\n"
-            f"{meta['generation_route']} | {meta['date']}\\n"
-            f"{size} | {meta['faces']} faces\\n"
-            f"tex {meta['texture_or_atlas']} | rig {meta['rigging_status']}\\n"
+    # Real newlines. These were written "\\n" -- a literal backslash and an n --
+    # so every placard rendered as one run-on line with the escapes visible on
+    # the board. A Blender FONT body takes actual line breaks; nothing in the
+    # build logs would ever have flagged this, because the text was set fine.
+    return (f"{meta['subject']}\n"
+            f"{meta['generation_route']} | {meta['date']}\n"
+            f"{size} | {meta['faces']} faces\n"
+            f"tex {meta['texture_or_atlas']} | rig {meta['rigging_status']}\n"
             f"anim {meta['animation_status']} | v {meta['version']}")
 
 
+def flat_material(name, colour, roughness=0.8):
+    """One material per name, reused. Signposts share a post and a board."""
+    existing = bpy.data.materials.get(name)
+    if existing is not None:
+        return existing
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    bsdf = mat.node_tree.nodes["Principled BSDF"]
+    bsdf.inputs["Base Color"].default_value = colour
+    bsdf.inputs["Roughness"].default_value = roughness
+    return mat
+
+
 def add_placard(meta, location, width):
+    """A standing signpost -- post, board, and text carved on the board.
+
+    Everything is proportional to the asset it labels, not a fixed size. The
+    lineup runs from a 1.3 m frog to a 120 m titan; a signpost sized for one is
+    either a toothpick or a billboard beside the other. Scaling with the asset
+    keeps every label the same apparent size relative to its own subject, which
+    is what makes the row readable at a single zoom.
+
+    The board faces -Y because that is where the camera stands, and it tilts
+    back a few degrees so it catches the sky light instead of rendering as a
+    flat dark rectangle edge-on to the sun.
+    """
+    board_w = max(min(width * 0.62, 24.0), 1.4)
+    board_h = board_w * 0.52
+    post_h = max(min(width * 0.42, 16.0), 1.1)
+    post_r = max(board_w * 0.022, 0.02)
+    # Stand clear of the asset. These meshes are roughly as deep as they are
+    # wide, so width is a fair proxy for how far forward the sign has to sit.
+    stand_y = -(width * 0.38 + board_w * 0.5)
+    centre_x = location.x + width / 2.0
+    tilt = math.radians(-8.0)
+
+    bpy.ops.mesh.primitive_cylinder_add(
+        radius=post_r, depth=post_h, vertices=12,
+        location=(centre_x, stand_y, post_h / 2.0))
+    post = bpy.context.active_object
+    post.name = f"signpost_{meta['subject']}"
+    post.data.materials.append(flat_material("signpost_wood", (0.09, 0.055, 0.03, 1.0)))
+
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0.0, 0.0, 0.0))
+    board = bpy.context.active_object
+    board.name = f"signboard_{meta['subject']}"
+    board.scale = (board_w, board_w * 0.035, board_h)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    board.location = (centre_x, stand_y, post_h + board_h * 0.42)
+    board.rotation_euler = (tilt, 0.0, 0.0)
+    board.data.materials.append(flat_material("signboard_face", (0.42, 0.31, 0.18, 1.0)))
+
     curve = bpy.data.curves.new(f"placard_{meta['subject']}", "FONT")
     curve.body = placard_text(meta)
     curve.align_x = "CENTER"
-    curve.size = max(min(width * 0.08, 0.8), 0.18)
-    curve.extrude = 0.002
-    obj = bpy.data.objects.new(f"placard_{meta['subject']}", curve)
-    obj.location = (location.x + width / 2.0, location.y - 0.12, location.z)
-    obj.rotation_euler = (math.radians(72), 0.0, 0.0)
-    bpy.context.scene.collection.objects.link(obj)
+    curve.align_y = "CENTER"
+    # Five lines have to fit the board height with margin, so the type size is
+    # derived from the board rather than picked and hoped for.
+    curve.size = board_h / 7.4
+    curve.extrude = board_w * 0.002
+    text = bpy.data.objects.new(f"placard_{meta['subject']}", curve)
+    # Font objects lie in XY facing +Z; stand it up to face the camera at -Y,
+    # then sit it just proud of the board's front face.
+    text.rotation_euler = (math.radians(90.0) + tilt, 0.0, 0.0)
+    text.location = (centre_x,
+                     stand_y - board_w * 0.021 - board_h * 0.02,
+                     post_h + board_h * 0.42)
+    bpy.context.scene.collection.objects.link(text)
+    text.data.materials.append(
+        flat_material("signboard_text", (0.02, 0.02, 0.02, 1.0), roughness=0.6))
+
+    # One rigid unit, so the sign can be moved or hidden as a whole.
+    for child in (board, text):
+        child.parent = post
+        child.matrix_parent_inverse = post.matrix_world.inverted()
+
     for key, value in meta.items():
         if key != "sort_time":
-            obj[key] = value
-    return obj
+            post[key] = value
+            text[key] = value
+    return post
+
+
+def add_ground(span, depth):
+    """A grass field under the row, sized to whatever the row turned out to be.
+
+    Procedural rather than scattered geometry, and that is a choice worth
+    stating. The lineup spans hundreds of metres and the tallest subject is a
+    40 m titan; a particle or geometry-nodes grass field covering that at a
+    blade density that reads as grass is millions of instances, on a machine
+    with 15 GB of RAM that already renders on the CPU to stay out of the GPU's
+    way. A layered-noise material costs nothing, holds up at the distance this
+    camera actually views from, and does not put the lineup at risk.
+
+    Two noise scales, because one reads as plastic: a coarse one for the patchy
+    lighter/darker drift a real field has, a fine one driving bump so the
+    surface catches the sun instead of returning flat colour.
+    """
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=(span / 2.0, 0.0, 0.0))
+    ground = bpy.context.active_object
+    ground.name = "ground_grass"
+    # Generous margin: the row is centred, and the field has to reach past the
+    # camera's pull-back distance or the horizon shows the plane's own edge.
+    ground.scale = (span * 3.0 + 40.0, span * 3.0 + 40.0, 1.0)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+
+    mat = bpy.data.materials.new("grass_field")
+    mat.use_nodes = True
+    tree = mat.node_tree
+    bsdf = tree.nodes["Principled BSDF"]
+    bsdf.inputs["Roughness"].default_value = 0.92
+    if "Specular IOR Level" in bsdf.inputs:
+        bsdf.inputs["Specular IOR Level"].default_value = 0.18
+
+    coordinate = tree.nodes.new("ShaderNodeTexCoord")
+
+    # Noise Scale is a multiplier on the incoming coordinate, and this plane's
+    # scale has been applied, so its object coordinates run to +-1000 units.
+    # The first version used Scale 1.6 and 240 -- values that suit a mesh about
+    # a metre across. Here they drove the noise to coordinates in the hundreds
+    # of thousands, far past any feature size that survives to a pixel, so both
+    # layers averaged to flat colour and the field rendered as green paint.
+    #
+    # Sized to the subject instead: patches of roughly 80 units across a field
+    # holding 120 m creatures, and a blade layer at roughly 2 units, which is
+    # the smallest thing still worth more than a pixel from this camera.
+    patch = tree.nodes.new("ShaderNodeTexNoise")
+    patch.inputs["Scale"].default_value = 0.012
+    patch.inputs["Detail"].default_value = 6.0
+    patch.inputs["Roughness"].default_value = 0.62
+    tree.links.new(coordinate.outputs["Object"], patch.inputs["Vector"])
+
+    ramp = tree.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.36
+    ramp.color_ramp.elements[0].color = (0.018, 0.055, 0.010, 1.0)
+    ramp.color_ramp.elements[1].position = 0.64
+    ramp.color_ramp.elements[1].color = (0.105, 0.215, 0.035, 1.0)
+    tree.links.new(patch.outputs["Fac"], ramp.inputs["Fac"])
+    tree.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
+
+    # Clumping between the patch drift and the blades, so the field does not
+    # read as one uniform frequency at every distance.
+    clump = tree.nodes.new("ShaderNodeTexNoise")
+    clump.inputs["Scale"].default_value = 0.09
+    clump.inputs["Detail"].default_value = 8.0
+    tree.links.new(coordinate.outputs["Object"], clump.inputs["Vector"])
+
+    blades = tree.nodes.new("ShaderNodeTexNoise")
+    blades.inputs["Scale"].default_value = 0.55
+    blades.inputs["Detail"].default_value = 10.0
+    blades.inputs["Roughness"].default_value = 0.75
+    tree.links.new(coordinate.outputs["Object"], blades.inputs["Vector"])
+
+    mix = tree.nodes.new("ShaderNodeMixRGB")
+    mix.blend_type = "OVERLAY"
+    mix.inputs["Fac"].default_value = 0.65
+    tree.links.new(clump.outputs["Fac"], mix.inputs["Color1"])
+    tree.links.new(blades.outputs["Fac"], mix.inputs["Color2"])
+
+    bump = tree.nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.85
+    bump.inputs["Distance"].default_value = 0.4
+    tree.links.new(mix.outputs["Color"], bump.inputs["Height"])
+    tree.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+
+    ground.data.materials.append(mat)
+    return ground
+
+
+def add_sky(scene, sun):
+    """A physical sky, with the sun light pointed the same way as the sun in it.
+
+    If these two disagree the shadows fall one way and the bright part of the
+    sky sits another, which reads as wrong without being obviously identifiable
+    as wrong. So the elevation and rotation are set once here and the sun lamp
+    is rotated to match rather than kept at its old hand-picked angle.
+    """
+    # 22 degrees put the sun low and behind a camera that looks level at the
+    # horizon, so the frame filled with the dullest band of the dome and the
+    # sky rendered grey. Higher and swung round to the side gives the camera
+    # the blue part of the sky and rakes the light across the subjects instead
+    # of flattening them from behind.
+    elevation = math.radians(38.0)
+    rotation = math.radians(58.0)
+
+    world = bpy.data.worlds.new("sky")
+    world.use_nodes = True
+    background = world.node_tree.nodes["Background"]
+    background.inputs[1].default_value = 1.0
+    try:
+        sky = world.node_tree.nodes.new("ShaderNodeTexSky")
+        # Blender renamed these between versions: what was NISHITA is
+        # MULTIPLE_SCATTERING in 5.2, and hardcoding either one fails on the
+        # other with an enum error that says nothing useful. Ask the property
+        # what it accepts and take the best available.
+        available = [item.identifier for item in
+                     sky.bl_rna.properties["sky_type"].enum_items]
+        for candidate in ("MULTIPLE_SCATTERING", "NISHITA",
+                          "SINGLE_SCATTERING", "HOSEK_WILKIE", "PREETHAM"):
+            if candidate in available:
+                sky.sky_type = candidate
+                print(f"sky_type {candidate}  (available: {', '.join(available)})")
+                break
+        for attribute, value in (("sun_elevation", elevation),
+                                 ("sun_rotation", rotation),
+                                 ("sun_intensity", 1.0),
+                                 # A little haze reads as air rather than as a
+                                 # flat gradient; ozone deepens the blue.
+                                 ("dust_density", 0.9),
+                                 ("air_density", 1.0),
+                                 ("ozone_density", 2.2),
+                                 ("sun_disc", True)):
+            if hasattr(sky, attribute):
+                setattr(sky, attribute, value)
+        world.node_tree.links.new(sky.outputs["Color"], background.inputs[0])
+    except (RuntimeError, AttributeError, TypeError, KeyError) as exc:
+        # A missing Sky Texture is survivable -- a plain blue keeps the scene
+        # usable -- but it must not pass silently as "sky added".
+        print("SKY_FALLBACK", exc)
+        background.inputs[0].default_value = (0.30, 0.48, 0.78, 1.0)
+    scene.world = world
+
+    # Blender's sun points down -Z at rotation zero; tilt it up to the sky's
+    # elevation and swing it round to the sky's compass bearing.
+    sun.rotation_euler = (math.pi / 2.0 - elevation, 0.0, rotation)
+    return world
 
 
 def main():
@@ -208,10 +424,8 @@ def main():
     scene.collection.objects.link(camera)
     scene.camera = camera
 
-    world = bpy.data.worlds.new("w")
-    world.use_nodes = True
-    world.node_tree.nodes["Background"].inputs[1].default_value = 0.6
-    scene.world = world
+    add_sky(scene, light)
+    add_ground(span, tallest)
 
     # Global safety net for implicit-UV failure in Blender 5.2 EEVEE
     # (Material Preview): mirrors in-place fix applied to

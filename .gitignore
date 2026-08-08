@@ -38,3 +38,4 @@ jobs/
 evidence/**/matte.png
 evidence/**/matte_preview.png
 evidence/**/source.jpg
+*.ply

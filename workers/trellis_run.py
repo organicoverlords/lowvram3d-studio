@@ -204,11 +204,25 @@ def main(argv: list[str] | None = None) -> int:
     mesh_faces = None
     vram_oom_mib = None
 
+    # The log is opened before the child starts and flushed per line, so a run
+    # in progress can be read instead of guessed at. Writing it after
+    # process.wait() -- which is what this did -- means a 40-minute stage
+    # produces an empty path the whole time it matters, and a file only once
+    # nobody needs it. That is the same defect as piping a long stage into
+    # `tail`: the record exists only after the question has been answered.
+    log_handle = None
+    if args.log:
+        Path(args.log).parent.mkdir(parents=True, exist_ok=True)
+        log_handle = open(args.log, "w", encoding="utf-8", errors="replace")
+
     process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, text=True,
                                encoding="utf-8", errors="replace", bufsize=1)
     for line in process.stdout:
         lines.append(line.rstrip("\n"))
+        if log_handle:
+            log_handle.write(line)
+            log_handle.flush()
         sys.stdout.write(line)
         sys.stdout.flush()
         if voxels is None:
@@ -239,8 +253,8 @@ def main(argv: list[str] | None = None) -> int:
 
     output = Path(args.out)
     produced = output.is_file() and output.stat().st_size > 4096
-    if args.log:
-        Path(args.log).write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if log_handle:
+        log_handle.close()
 
     band = ("unknown" if latent is None
             else "typical" if latent <= LATENT_WARN
