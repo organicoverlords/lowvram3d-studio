@@ -1,0 +1,121 @@
+{
+  "schema": "lowvram3d_offline_rig_scaffold_verification_v1",
+  "generated_epoch": "2026-08-07T00:00:00+03:00",
+  "gpu_work_started": false,
+  "note": "Offline scaffold only — no ComfyUI /prompt, no model download, no CUDA, no Blender render executed. Template+verify artifacts are specced and py_compile-checked.",
+  "tasks": {
+    "1_rig_animate_structure": {
+      "file": "blender/rig_animate.py",
+      "lines": 311,
+      "humanoid_bones_function": "humanoid_bones @ L58-112",
+      "bone_count_distinct": 20,
+      "bone_inventory": [
+        "root (pelvis center → pelvis, parent None)",
+        "pelvis (pelvis → pelvis.lerp(chest,0.32), parent root)",
+        "spine (pelvis.lerp(chest,0.32) → chest, parent pelvis)",
+        "chest (chest → shoulders, parent spine)",
+        "neck (shoulders → neck, parent chest)",
+        "head (neck → head_top, parent neck)",
+        "clavicle.L (shoulders → l_sh, parent chest)",
+        "upper_arm.L (l_sh → l_el, parent clavicle.L)",
+        "forearm.L (l_el → l_wr, parent upper_arm.L)",
+        "hand.L (l_wr → l_hand, parent forearm.L)",
+        "clavicle.R (shoulders → r_sh, parent chest)",
+        "upper_arm.R (r_sh → r_el, parent clavicle.R)",
+        "forearm.R (r_el → r_wr, parent upper_arm.R)",
+        "hand.R (r_wr → r_hand, parent forearm.R)",
+        "thigh.L (l_hip → l_knee, parent pelvis)",
+        "shin.L (l_knee → l_ankle, parent thigh.L)",
+        "foot.L (l_ankle → l_toe, parent shin.L)",
+        "thigh.R (r_hip → r_knee, parent pelvis)",
+        "shin.R (r_knee → r_ankle, parent thigh.R)",
+        "foot.R (r_ankle → r_toe, parent shin.R)"
+      ],
+      "task_prompt_claimed": 21,
+      "discrepancy": "File truth is 20; the 21st bone does not exist in rig_animate.py. Likely confusion with pipeline_auto_rig.py's split spine_01/spine_02. Recorded as-is, not papered over.",
+      "pose_guided": {
+        "landmark_mapper": "L36-55",
+        "humanoid_bones_pose_arg": "report: dict @ L58",
+        "assignment": "make_armature @ L152-153: pose_guided = kind == 'humanoid' and bool(pose_report.get('pose',{}).get('detected'))",
+        "report_key": "pose_guided_proportions @ L304",
+        "fallback": "visibility < 0.25 or index OOB → fallback Vector"
+      },
+      "bind_organic_vs_bind_rigid": {
+        "bind_organic": "L160-172: ARMATURE_AUTO heat diffusion; fallback armature_modifier_fallback",
+        "bind_rigid": "L174-179: parent_type BONE per part_###_<obj>",
+        "selection": "L294: binding = bind_rigid if kind == 'mechanical' else bind_organic",
+        "static_branch": "L289-291: kind == 'static' → none"
+      },
+      "other_kinds": {
+        "creature_bones": "L115-128, 8 bones Y-up (root/spine/neck/head/wing.L/wing.R/leg.L/leg.R/tail)",
+        "mechanical": "L141-150 per-object root children"
+      },
+      "status": "VERIFIED"
+    },
+    "2_five_pose_proof_spec": {
+      "file": "blender/five_pose_proof.py",
+      "lines": 456,
+      "compile_check": "py_compile OK without Blender",
+      "five_poses": ["rest", "elbow_bend", "knee_bend", "hip_crouch", "shoulder_raise"],
+      "pose_angles": {
+        "elbow_bend": "forearm.L/R -75deg X",
+        "knee_bend": "shin.L/R 80deg X",
+        "hip_crouch": "thigh.L/R -55deg X + spine 12deg X",
+        "shoulder_raise": "clavicle.L/R +-25deg Z + upper_arm.L/R 35deg X / +-35deg Z"
+      },
+      "ortho_scale": 2.6,
+      "views": ["front", "three_quarter", "side"],
+      "render_size": 512,
+      "engine": "BLENDER_WORKBENCH",
+      "shading_light": "STUDIO",
+      "shading_color_types": ["MATERIAL (BASECOLOR_EMISSION)", "VERTEX (heatmap)"],
+      "fresh_process": "bpy.ops.wm.read_factory_settings(use_empty=True) per invocation",
+      "basecolor_emission": "_ensure_basemission_materials() Principled Base Color -> Emission",
+      "heatmap": {
+        "attribute": "proof_weight_heat BYTE_COLOR",
+        "encoding": "R=weight, B=1-weight",
+        "renders": "heatmap_rest/{front,three_quarter,side}"
+      },
+      "weight_bleed_px": {
+        "metric": "posed silhouette bleed of torso_core/opposite_side/rear_cape during isolated limb poses",
+        "gate": "weight_bleed_px == 0 (fail closed)",
+        "scaffold_proxy": "vertex displacement > EPSILON(1e-5) in protected regions",
+        "gpu_realization": "alpha-mask raster comparison"
+      },
+      "invocation": "blender --background --python blender/five_pose_proof.py -- --input <rigged.glb|fbx|blend> --output-dir <dir> --report <json>",
+      "status": "SPECCED_AND_SCAFFOLDED"
+    },
+    "3_mia_humanoid_fp16_api_binding": {
+      "file": "configs/rig/mia_humanoid_fp16_api.json",
+      "schema": "lowvram3d_mia_api_binding_v1",
+      "source_workflow": "integrations/vendor/ComfyUI-UniRig/mia_humanoid.json",
+      "source_vendor_pin": "integrations/vendor/ComfyUI-UniRig/VENDOR_LOCK.json @ 69ee59dc",
+      "binding_map": {
+        "INPUT_MESH": "node 27 UniRigLoadMesh candidates [file_path, path, mesh_path] via object_info probe, placeholder ${INPUT_MESH}",
+        "OUTPUT_DIR": "node 10 UniRigPreviewRiggedMesh, output ${OUTPUT_DIR}/mia_rigged.fbx via _collect_direct_outputs polling",
+        "model": "node 41 MIALoadModel precision=fp16 attn_backend=auto cache_to_gpu=false (delta fp32->fp16; conditional injection if schema exposes cache_to_gpu)"
+      },
+      "upstream_widgets_values": ["fp32", "auto"],
+      "status": "SPECCED"
+    },
+    "4_comfyui_client_ui_to_api_reuse": {
+      "file": "src/lowvram3d/comfyui_client.py",
+      "lines": 234,
+      "reusable_unchanged": "load_api_workflow() + _replace() token substitution for API-form workflows",
+      "not_reusable_as_is": "ui_to_api() hard-codes _shape_save_node() -> Save 3D Mesh; MIA graph has no Save 3D Mesh so it raises. Needs dispatcher: MIA target -> UniRigPreviewRiggedMesh/MIAAutoRig else Save 3D Mesh.",
+      "output_collection_gap": "_collect_direct_outputs allowed set lacks .fbx — must add for MIA FBX harvesting",
+      "ancestor_walk": "_ancestor_ids correct for MIA once target is fixed",
+      "template_verify_gate": "assert api[41].precision==fp16 and api[27].file_path endswith INPUT_MESH basename before /prompt",
+      "status": "VERIFIED_WITH_ADAPTER_REQUIRED"
+    }
+  },
+  "gate_summary": {
+    "overall": "PASS_OFFLINE_SCAFFOLD",
+    "gpu_execution": "NOT_STARTED_BY_DESIGN",
+    "next_gpu_gates": [
+      "resolve_mia_api_template() template+verify (precision fp16, cache_to_gpu false, INPUT_MESH probe)",
+      "ComfyUIClient.run_api_workflow with peak_vram_mb <= 5600",
+      "blender/five_pose_proof.py --input mia_rigged.fbx --output-dir proof/rig/mia_<asset>_five_pose (5 poses x 3 views + heatmap, weight_bleed_px==0)"
+    ]
+  }
+}
