@@ -1,0 +1,88 @@
+{
+  "schema": "lowvram3d_mia_api_binding_v1",
+  "description": "Offline binding map for MIA humanoid fp16 — ComfyUI API form of integrations/vendor/ComfyUI-UniRig/mia_humanoid.json. No GPU execution; template+verify only.",
+  "source_workflow": "integrations/vendor/ComfyUI-UniRig/mia_humanoid.json",
+  "source_vendor_pin": "integrations/vendor/ComfyUI-UniRig/VENDOR_LOCK.json",
+  "binding_map": {
+    "INPUT_MESH": {
+      "node": "27",
+      "class_type": "UniRigLoadMesh",
+      "input_key_candidates": ["file_path", "path", "mesh_path"],
+      "comment": "Vendor workflow uses Combo widgets [source_folder='input', file_path='3d/realistic_male_character.glb'] with no link. API binding injects the preserved Hunyuan-painted GLB path here. Tooling must probe object_info() to resolve which key the installed UniRig version actually exposes (vendor has used both file_path and path).",
+      "fallback_strategy": "Probe UniRigLoadMesh input schema; inject into the one key that exists. If both absent, fail closed — do not guess filesystem conventions.",
+      "value_placeholder": "${INPUT_MESH}"
+    },
+    "OUTPUT_DIR": {
+      "node": "10",
+      "class_type": "UniRigPreviewRiggedMesh",
+      "comment": "Preview node writes mixamo.fbx; API form resolves Save path via OUTPUT_DIR. When paired with comfyui_client.py _collect_direct_outputs, the FBX is harvested even if /history returns no file record (mini_turbo heritage).",
+      "value_placeholder": "${OUTPUT_DIR}"
+    },
+    "output_file": {
+      "value": "${OUTPUT_DIR}/mia_rigged.fbx",
+      "comment": "Single-file output contract for the downstream five_pose_proof.py (FBX input)."
+    }
+  },
+  "model": {
+    "node": "41",
+    "class_type": "MIALoadModel",
+    "params": {
+      "precision": "fp16",
+      "attn_backend": "auto",
+      "cache_to_gpu": false
+    },
+    "upstream_widgets_values": ["fp32", "auto"],
+    "delta_from_vendor": {
+      "precision": "fp32 -> fp16 (explicit binding; MIALoadModel supports fp32/fp16/bf16; fp16 is the project's VRAM-5600 budget; keep weight path auditing in rig_backend_preflight.py MIA_WEIGHT_FILES)",
+      "cache_to_gpu": "false (prevents persistent VRAM residency between the MIA pass and the subsequent Blender proof in a shared 1660S 6GB session; mirrors atlas_detail_fill-style offload discipline)"
+    },
+    "api_injection": {
+      "node_id": "41",
+      "inputs": {
+        "precision": "fp16",
+        "cache_to_gpu": false
+      },
+      "comment": "Not all UniRig releases expose cache_to_gpu. Injection is conditional: if object_info()['MIALoadModel'].input.required has no cache_to_gpu key, the injector skips it and the low-VRAM posture is achieved by unloading the model (drop reference) immediately after the MIAAutoRig node completes. No custom attention patch here."
+    }
+  },
+  "rig_node": {
+    "node": "42",
+    "class_type": "MIAAutoRig",
+    "inputs": {
+      "fbx_name": "rigatoni",
+      "no_fingers": false,
+      "use_normal": false,
+      "reset_to_rest": true
+    },
+    "comment": "MIAAutoRig is NOT Save 3D Mesh — it outputs an FBX path string linked to UniRigPreviewRiggedMesh. The stock comfyui_client.py _shape_save_node guard (Save 3D Mesh only) does NOT apply; the MIA API workflow keeps the native FBX-through-preview topology. See comfyui reuse note below."
+  },
+  "comfyui_client_reuse": {
+    "verdict": "PARTIALLY REUSABLE — adapter needed for MIA topology",
+    "detail": [
+      "load_api_workflow(workflow_path, replacements) is reusable unchanged when the workflow is already in API format: it is just json.loads + _replace(copy.deepcopy) token substitution.",
+      "ui_to_api() is NOT directly reusable for MIA workflows on the current implementation: it hard-codes _shape_save_node() to search for 'Save 3D Mesh' and traces ancestors from that single node (_ancestor_ids). MIAAutoRig does not contain 'Save 3D Mesh'; the MIA graph's terminal is UniRigPreviewRiggedMesh[String] and its upstream MIAAutoRig, so _shape_save_node() raises 'UI workflow contains no Save 3D Mesh node'.",
+      "Reuse strategy (no rewrite of the existing Mini-Turbo path): add a small dispatcher — _shape_save_node_for_workflow(nodes): if any node.type contains 'MIAAutoRig' or 'UniRigPreviewRiggedMesh', target that node; else use existing Save 3D Mesh logic. Ancestor walk and widget-value -> inputs mapping are otherwise correct for MIA nodes (checked: MIALoadModel and MIAAutoRig schemas follow the same required/optional ordering convention).",
+      "_replace() INPUT_MESH / OUTPUT_DIR token scheme is correct for MIA at the String level, but UniRigLoadMesh's file_path Combo needs the String injected via the Mapped Combo handling in _replace (resolved by object_info probe above). A Template+Verify harness should assert that the round-tripped API prompt contains the injected INPUT_MESH basename before submitting to /prompt.",
+      "Output collection: MIA writes FBX, not GLB. _collect_direct_outputs already allows .fbx? It currently allows {.glb,.gltf,.obj,.ply,.stl,.png,.jpg,.jpeg,.webp,.json} — add .fbx to the allowed set for the MIA route, or add a dedicated MiaCollectOutput step. Otherwise the MIA FBX will be classified as missing and the harness will exhaust retries.",
+      "_collect_files() / /view history path still applies, but UniRig's preview nodes almost always rely on direct file write, so the 10x polling fallback in run_api_workflow is the primary success path for MIA (same as Mini Turbo)."
+    ]
+  },
+  "template_and_verify": {
+    "flow": [
+      "resolve_mia_api_template(workflow_path=mia_humanoid.json, input_mesh=INPUT_MESH, output_dir=OUTPUT_DIR, precision=fp16) -> api_prompt dict (no network)",
+      "verify_api_prompt(api_prompt): assert node 41 precision == 'fp16' and node 27 file_path endswith INPUT_MESH basename and no Save 3D Mesh node is assumed; also assert that only ancestors of Mia target nodes are kept (no spurious graph retention)",
+      "on GPU stage: ComfyUIClient(base_url).run_api_workflow on the verified prompt; gate on peak_vram_mb <= 5600; harvest ${OUTPUT_DIR}/mia_rigged.fbx via direct-output polling",
+      "pipe FBX into blender/five_pose_proof.py --input mia_rigged.fbx --output-dir proof/rig/mia_<asset>_five_pose --report proof/rig/mia_<asset>_five_pose/report.json"
+    ],
+    "offline_artifacts_produced_here": [
+      "configs/rig/mia_humanoid_fp16_api.json (this file)",
+      "blender/five_pose_proof.py (spec + scaffold implementation — py_compile clean without Blender)",
+      "proof/rig/README.md (offline pack overview + invocation contracts)"
+    ],
+    "not_done_here": [
+      "No ComfyUI /history poll, no /prompt submission, no model .pth download, no CUDA import.",
+      "No Blender render execution (that requires a display-capable Blender and a rigged asset; the scaffold is invocable as blender --background --python blender/five_pose_proof.py -- --input ...)."
+    ]
+  },
+  "depth": "thorough — every deferred GPU decision is recorded with file:line and fallback, not silently assumed."
+}
