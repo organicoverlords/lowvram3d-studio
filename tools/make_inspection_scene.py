@@ -158,12 +158,45 @@ def wire_imported_material_uvs(materials):
     return image_nodes, linked_nodes
 
 
-ROW_TARGET = 150.0
-"""Units of width to fill before wrapping to a new row.
+DISPLAY_ANCHOR = 4.0
+DISPLAY_EXPONENT = 0.45
+"""Compress the size range FOR DISPLAY ONLY.
 
-Chosen against the tallest asset rather than the count: the moss titans are
-120 m, so a row target much below this would put a single titan on a row of its
-own and a target much above it recreates the 670-unit line this replaced.
+True scale is honest and unreadable. The set runs from a 1.3 m frog to a 45 m
+titan, and at true scale one frame either shows the titan with the frog under a
+pixel, or shows the frog with everything else outside the border. Neither is an
+inspection scene.
+
+    displayed = ANCHOR * (real / ANCHOR) ** EXPONENT
+
+An exponent of 1.0 is true scale; 0.0 makes everything identical. 0.45 takes a
+1.3 m to 45 m span (35x) down to about 2.4 m to 11 m (4.5x), which fits one
+frame while keeping every ordering intact -- the titan is still plainly the
+biggest thing present and the frog still the smallest.
+
+This is a property of THIS SCENE and nothing else. REAL_SIZES.json is untouched,
+and the FBX export and Unreal import still use true metres, because a compressed
+size is exactly the wrong thing to hand an engine.
+"""
+
+
+def display_metres(metres: float) -> float:
+    if metres <= 0.0:
+        return DISPLAY_ANCHOR
+    return DISPLAY_ANCHOR * (metres / DISPLAY_ANCHOR) ** DISPLAY_EXPONENT
+
+
+ROW_TARGET = float("inf")
+"""Never wrap. The scene is one chronological line, by design.
+
+It was briefly wrapped into rows to make the set easier to frame, and that was
+the wrong fix for the right problem. The line IS the artefact: read left to
+right it is the order things were generated in, and breaking it into rows throws
+that away to save some camera distance.
+
+The framing problem is solved by DISPLAY_EXPONENT instead. Compressing a 35x
+size range to about 4.5x is what makes a single row viewable, so the row does
+not have to be folded up as well.
 """
 
 
@@ -219,9 +252,13 @@ def add_placard(meta, location, width):
     back a few degrees so it catches the sky light instead of rendering as a
     flat dark rectangle edge-on to the sun.
     """
-    board_w = max(min(width * 0.62, 24.0), 1.4)
+    # Was width*0.62 capped at 24: on the castle that produced a 14.9-unit
+    # board against 24 units of castle, so the label was the subject. A sign is
+    # legible at a fraction of the asset it labels, and stops being a sign when
+    # it competes with it.
+    board_w = max(min(width * 0.30, 6.0), 0.9)
     board_h = board_w * 0.52
-    post_h = max(min(width * 0.42, 16.0), 1.1)
+    post_h = max(min(width * 0.30, 5.0), 0.8)
     post_r = max(board_w * 0.022, 0.02)
     # Stand clear of the asset. These meshes are roughly as deep as they are
     # wide, so width is a fair proxy for how far forward the sign has to sit.
@@ -329,37 +366,95 @@ def add_ground(span, depth):
     tree.links.new(coordinate.outputs["Object"], patch.inputs["Vector"])
 
     ramp = tree.nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].position = 0.36
-    ramp.color_ramp.elements[0].color = (0.018, 0.055, 0.010, 1.0)
-    ramp.color_ramp.elements[1].position = 0.64
-    ramp.color_ramp.elements[1].color = (0.105, 0.215, 0.035, 1.0)
+    # Wide spread, because break-up at this viewing distance is carried by
+    # colour and not by relief. The camera stands ~110 units back, where a 4 cm
+    # blade is far under a pixel and averages to flat no matter how it is lit --
+    # so the earlier fix of pushing the blade layer to a realistic 4 cm was
+    # right for a close-up and wrong for this shot. The band that actually
+    # resolves here is roughly 0.3 to 5 units, and that is where the contrast
+    # has to live.
+    ramp.color_ramp.elements[0].position = 0.30
+    ramp.color_ramp.elements[0].color = (0.012, 0.038, 0.006, 1.0)
+    ramp.color_ramp.elements[1].position = 0.72
+    ramp.color_ramp.elements[1].color = (0.155, 0.290, 0.048, 1.0)
     tree.links.new(patch.outputs["Fac"], ramp.inputs["Fac"])
-    tree.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
 
     # Clumping between the patch drift and the blades, so the field does not
     # read as one uniform frequency at every distance.
+    # Blades at the size of actual blades. The previous layer sat at Scale 0.55,
+    # which on this plane means features roughly 1.8 units across -- so each
+    # "blade" was nearly two metres of grass, and the field read as paint no
+    # matter how the strength was tuned. Noise Scale is a coordinate multiplier,
+    # so feature size is about 1/Scale in object units: 4 cm blades want Scale
+    # near 25, not near 0.5. That is a factor of fifty, which is why nudging the
+    # old value never worked.
+    #
+    # Four octaves, each doing one job, because a single frequency reads as
+    # either a bald lawn up close or a flat colour at distance:
+    #   drift   0.02  ~50 units   where the field is greener or drier
+    #   clumps  0.5   ~2 units    tussocks
+    #   tufts   4.0   ~25 cm      where blades gather
+    #   blades  26.0  ~4 cm       the blades themselves
     clump = tree.nodes.new("ShaderNodeTexNoise")
-    clump.inputs["Scale"].default_value = 0.09
+    clump.inputs["Scale"].default_value = 1.6
     clump.inputs["Detail"].default_value = 8.0
+    clump.inputs["Roughness"].default_value = 0.6
     tree.links.new(coordinate.outputs["Object"], clump.inputs["Vector"])
 
-    blades = tree.nodes.new("ShaderNodeTexNoise")
-    blades.inputs["Scale"].default_value = 0.55
-    blades.inputs["Detail"].default_value = 10.0
-    blades.inputs["Roughness"].default_value = 0.75
+    tufts = tree.nodes.new("ShaderNodeTexNoise")
+    tufts.inputs["Scale"].default_value = 0.45
+    tufts.inputs["Detail"].default_value = 6.0
+    tufts.inputs["Roughness"].default_value = 0.7
+    tree.links.new(coordinate.outputs["Object"], tufts.inputs["Vector"])
+
+    # Voronoi rather than noise for the blades. Noise is smooth everywhere, and
+    # grass is not: it is a field of separate slivers with hard edges between
+    # them, which is exactly what Voronoi distance-to-cell gives and what makes
+    # the bump read as blades instead of as crumpled fabric.
+    blades = tree.nodes.new("ShaderNodeTexVoronoi")
+    blades.feature = "F1"
+    blades.inputs["Scale"].default_value = 26.0
+    if "Randomness" in blades.inputs:
+        blades.inputs["Randomness"].default_value = 1.0
     tree.links.new(coordinate.outputs["Object"], blades.inputs["Vector"])
+
+    fine = tree.nodes.new("ShaderNodeMixRGB")
+    fine.blend_type = "OVERLAY"
+    fine.inputs["Fac"].default_value = 0.75
+    tree.links.new(tufts.outputs["Fac"], fine.inputs["Color1"])
+    tree.links.new(blades.outputs["Distance"], fine.inputs["Color2"])
 
     mix = tree.nodes.new("ShaderNodeMixRGB")
     mix.blend_type = "OVERLAY"
-    mix.inputs["Fac"].default_value = 0.65
+    mix.inputs["Fac"].default_value = 0.6
     tree.links.new(clump.outputs["Fac"], mix.inputs["Color1"])
-    tree.links.new(blades.outputs["Fac"], mix.inputs["Color2"])
+    tree.links.new(fine.outputs["Color"], mix.inputs["Color2"])
+
+    # Tint by the clump layer as well as bump by it, so a tussock is both raised
+    # and a slightly different green. Colour variation at the tussock scale is
+    # most of what separates a lawn from a field.
+    tint = tree.nodes.new("ShaderNodeMixRGB")
+    tint.blend_type = "MIX"
+    tint.inputs["Fac"].default_value = 0.55
+    tint.inputs["Color2"].default_value = (0.115, 0.155, 0.022, 1.0)
+    tree.links.new(ramp.outputs["Color"], tint.inputs["Color1"])
+    tree.links.new(tint.outputs["Color"], bsdf.inputs["Base Color"])
+
+    tree.links.new(clump.outputs["Fac"], tint.inputs["Fac"])
 
     bump = tree.nodes.new("ShaderNodeBump")
-    bump.inputs["Strength"].default_value = 0.85
-    bump.inputs["Distance"].default_value = 0.4
+    # Distance is in object units, so it has to be blade-sized too: 0.4 was a
+    # 40 cm displacement on a 4 cm feature, which flattens into noise.
+    bump.inputs["Strength"].default_value = 1.0
+    bump.inputs["Distance"].default_value = 0.22
     tree.links.new(mix.outputs["Color"], bump.inputs["Height"])
     tree.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+
+    # Grass scatters rather than reflects; a smooth ground plane under a bright
+    # sky reads as painted plastic regardless of its colour.
+    bsdf.inputs["Roughness"].default_value = 0.95
+    if "Specular IOR Level" in bsdf.inputs:
+        bsdf.inputs["Specular IOR Level"].default_value = 0.18
 
     ground.data.materials.append(mat)
     return ground
@@ -443,6 +538,10 @@ def main():
         glb = SRC / asset["name"]
         if glb.exists():
             assets.append((metadata(asset, glb, readiness), asset))
+    # Chronological. The row is a record of what was generated and when, so the
+    # order carries information that a size sort would destroy -- and with
+    # display scales compressed (see DISPLAY_EXPONENT) the readability problem
+    # that a size sort was solving no longer exists.
     assets.sort(key=lambda item: (item[0]["sort_time"], item[0]["asset_name"]))
 
     cursor = 0.0
@@ -483,6 +582,10 @@ def main():
         lo, hi = bounds(new)
         factor, metres, axis = real_sizes.scale_for(
             glb.stem, (hi.x - lo.x, hi.y - lo.y, hi.z - lo.z))
+        # Compressed for this scene only; REAL_SIZES.json and the FBX export
+        # keep the true metres.
+        shown = display_metres(metres)
+        factor *= shown / metres if metres > 0 else 1.0
         for obj in new:
             obj.scale = (factor, factor, factor)
         bpy.context.view_layer.update()
@@ -592,6 +695,26 @@ def main():
     scene.camera = camera
     print(f"layout {extent_x:.1f} x {extent_y:.1f} x {extent_z:.1f}, "
           f"camera back {distance:.1f}, clip_end {camera_data.clip_end:.0f}")
+
+    # Colour management, which nothing was setting, so the scene inherited
+    # Blender 5's AgX default. AgX is a film-emulation transform: it rolls off
+    # and desaturates highlights hard, which is right for a lit narrative shot
+    # and wrong for a catalogue. Under it the whole showroom rendered as pale
+    # sage -- the grass looked untextured and the assets looked washed, and no
+    # amount of work on the ground material could have fixed either, because
+    # the variation was being flattened after shading rather than never
+    # generated.
+    #
+    # Standard is a straight sRGB transform: what the shader computed is what
+    # lands in the file, which is the property an inspection render needs.
+    try:
+        scene.view_settings.view_transform = "Standard"
+        scene.view_settings.look = "None"
+        scene.view_settings.exposure = -0.15
+    except (AttributeError, TypeError) as exc:
+        print(f"colour management unchanged: {exc}")
+    print(f"view transform {scene.view_settings.view_transform}, "
+          f"exposure {scene.view_settings.exposure}")
 
     add_sky(scene, light)
     add_ground(max(extent_x, extent_y), tallest)

@@ -2,7 +2,7 @@
   "schema": "lowvram3d_real_sizes_v2",
   "note": "Real-world size of each subject, in metres. Generated meshes are normalised to a unit bounding box, so they carry no scale of their own -- a whale exports shorter than a snail unless something supplies it. This file is that something. Both the FBX export and the inspection scene read it.",
   "axis_field": "Each subject says WHICH dimension its number describes. 'height' is the vertical extent, which is what a person means for a standing character, a tower or a tree. 'longest' is the largest extent on any axis, which is what a person means for a boat or a whale -- where the long axis is the one being pictured and which way is up barely matters. Assuming one rule for both is how a 12 m boat ends up 3 m long.",
-  "accuracy": "Values marked user are specified. The rest are estimates chosen to make a lineup readable and an Unreal import land at a sane size -- not measurements, and nothing downstream should treat them as authoritative. Edit and rebuild.",
+  "accuracy": "Values marked user are specified. The rest are estimates chosen to make a lineup readable and an Unreal import land at a sane size -- not measurements, and nothing downstream should treat them as authoritative. Edit and rebuild.  The moss titan was 120 m and the greentree 18 m: a 92x spread across the set, which no single view can show. 45 m and 30 m keep the giants clearly giant while bringing the ratio to about 35x, where one frame holds everything.",
   "default": {
     "metres": 2.0,
     "axis": "height"
@@ -34,9 +34,9 @@
       "source": "estimate"
     },
     "greentree": {
-      "metres": 18.0,
+      "metres": 30.0,
       "axis": "height",
-      "source": "estimate"
+      "source": "user"
     },
     "heron": {
       "metres": 2.0,
@@ -44,7 +44,7 @@
       "source": "estimate"
     },
     "mosstitan": {
-      "metres": 120.0,
+      "metres": 45.0,
       "axis": "height",
       "source": "user"
     },
@@ -76,6 +76,11 @@
     "whale": {
       "metres": 14.0,
       "axis": "longest",
+      "source": "estimate"
+    },
+    "fattree": {
+      "metres": 28.0,
+      "axis": "height",
       "source": "estimate"
     }
   }

@@ -250,6 +250,36 @@ def add_mechanical_actions(armature) -> list[str]:
     return ["mechanical_cycle"]
 
 
+def validate_rig(objects: list[bpy.types.Object], armature: bpy.types.Object, kind: str) -> dict:
+    """Fail closed before export when the rig cannot survive glTF export."""
+    if armature.type != "ARMATURE" or not armature.data.bones:
+        raise RuntimeError("rig has no armature bones")
+    bpy.context.view_layer.update()
+    modifiers = 0
+    weighted_objects = 0
+    rigid_objects = 0
+    for obj in objects:
+        armature_modifiers = [m for m in obj.modifiers
+                              if m.type == "ARMATURE" and m.object == armature]
+        if kind == "mechanical":
+            if obj.parent != armature or obj.parent_type != "BONE" or not obj.parent_bone:
+                raise RuntimeError(f"mechanical part is not bone-parented: {obj.name}")
+            rigid_objects += 1
+            continue
+        if not armature_modifiers:
+            raise RuntimeError(f"mesh has no armature modifier: {obj.name}")
+        modifiers += len(armature_modifiers)
+        groups = {group.name for group in obj.vertex_groups}
+        if not groups.intersection({bone.name for bone in armature.data.bones}):
+            raise RuntimeError(f"mesh has no bone vertex groups: {obj.name}")
+        if not any(vertex.groups for vertex in obj.data.vertices):
+            raise RuntimeError(f"mesh has no vertex weights: {obj.name}")
+        weighted_objects += 1
+    return {"armature": armature.name, "bones": len(armature.data.bones),
+            "armature_modifiers": modifiers, "weighted_meshes": weighted_objects,
+            "rigid_parts": rigid_objects}
+
+
 def add_actions(armature, kind: str, animation_preset: str) -> list[str]:
     if kind == "humanoid":
         actions = [add_idle(armature)]
@@ -292,6 +322,7 @@ def main() -> None:
     pose_report = load_pose_report(args.pose_report)
     armature, object_bones, pose_guided = make_armature(kind, objects, pose_report)
     binding = bind_rigid(objects, armature, object_bones) if kind == "mechanical" else bind_organic(objects, armature)
+    rig_validation = validate_rig(objects, armature, kind)
     actions = add_actions(armature, kind, args.animation_preset)
     export_glb(args.output)
     save_json(args.report, {
@@ -303,7 +334,8 @@ def main() -> None:
         "animation_preset": args.animation_preset,
         "pose_guided_proportions": pose_guided,
         "deformation_proven": False,
-        "warning": "Pose-guided template fitting and automatic weights require visual deformation inspection before shipping.",
+        "rig_validation": rig_validation,
+        "warning": "Rig structure and weights validated; visual deformation inspection is still required before shipping.",
     })
 
 

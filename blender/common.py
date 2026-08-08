@@ -45,6 +45,10 @@ def export_glb(path: str, selected_only: bool = False) -> None:
         export_apply=True,
         export_materials="EXPORT",
         export_animations=True,
+        # Keep these explicit: a rigged export must carry the armature,
+        # skinning modifiers, and vertex-group weights rather than relying on
+        # exporter defaults that have changed between Blender releases.
+        export_skins=True,
     )
 
 

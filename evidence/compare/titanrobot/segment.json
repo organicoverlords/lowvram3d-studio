@@ -1,0 +1,101 @@
+{
+  "schema": "lowvram3d_segment_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\deliverables\\titan_trellis1024_tex2048.glb",
+  "backend": "geometry",
+  "licence": "none -- scipy and trimesh only",
+  "licence_encumbered": false,
+  "faces": 284670,
+  "requested_parts": 14,
+  "parts": 15,
+  "concavity_penalty": 6.0,
+  "face_counts": [
+    17000,
+    12771,
+    17861,
+    9602,
+    22416,
+    21503,
+    9022,
+    9830,
+    33273,
+    7119,
+    7260,
+    75100,
+    24362,
+    16393,
+    1158
+  ],
+  "notes": [
+    "16 connected shell(s)",
+    "1 shell(s) over 1138 faces; 15 smaller shell(s) collected as one debris part",
+    "debris part holds 1158 faces (0.4% of the mesh)",
+    "0 part(s) merged as smaller than 0.40% of the mesh"
+  ],
+  "parts_written": [
+    {
+      "part": 0,
+      "faces": 17000
+    },
+    {
+      "part": 1,
+      "faces": 12771
+    },
+    {
+      "part": 2,
+      "faces": 17861
+    },
+    {
+      "part": 3,
+      "faces": 9602
+    },
+    {
+      "part": 4,
+      "faces": 22416
+    },
+    {
+      "part": 5,
+      "faces": 21503
+    },
+    {
+      "part": 6,
+      "faces": 9022
+    },
+    {
+      "part": 7,
+      "faces": 9830
+    },
+    {
+      "part": 8,
+      "faces": 33273
+    },
+    {
+      "part": 9,
+      "faces": 7119
+    },
+    {
+      "part": 10,
+      "faces": 7260
+    },
+    {
+      "part": 11,
+      "faces": 75100
+    },
+    {
+      "part": 12,
+      "faces": 24362
+    },
+    {
+      "part": 13,
+      "faces": 16393
+    },
+    {
+      "part": 14,
+      "faces": 1158
+    }
+  ],
+  "parts_file": "titan_trellis1024_tex2048_parts.glb",
+  "separate_files": false,
+  "hulls": 15,
+  "hulls_failed": 0,
+  "hull_file": "titan_trellis1024_tex2048_hulls.glb"
+}
