@@ -88,19 +88,81 @@ POSES: dict[str, dict[str, tuple[float, float, float]]] = {
 }
 
 # Alias table so both naming conventions are covered without branching the report.
+#
+# The previous table listed the OPPOSITE side first on nearly every left-hand
+# entry -- forearm.L tried lowerarm_r before lowerarm_l, upper_arm.L tried
+# upperarm_r before upperarm_l, upper_arm.R tried upperarm_l first -- and
+# thigh.L resolved to upperarm_l, an arm, before it ever tried thigh_l. Only
+# thigh.R was clean, so it was not even consistently wrong.
+#
+# That does not fail loudly. The wrong-side bone exists, so the pose applies,
+# `applied` counts it, and the proof renders a rig flexing the wrong limb and
+# calls it a pass. A verifier that can pass a rig it just posed incorrectly is
+# worse than no verifier, because it converts an unknown into a false positive.
+#
+# Two rules now, enforced below rather than trusted:
+#   * an alias for a .L key may not end in a right-side marker, and vice versa
+#   * an alias may not cross limb type -- no arm bone standing in for a leg
 BONE_ALIASES: dict[str, list[str]] = {
-    "forearm.L": ["forearm.L", "lowerarm_r", "lowerarm_l", "forearm_l"],
-    "forearm.R": ["forearm.R", "lowerarm_l", "lowerarm_r", "forearm_r"],
-    "shin.L": ["shin.L", "shin_l", "lowerleg_l"],
-    "shin.R": ["shin.R", "shin_r", "lowerleg_r"],
-    "thigh.L": ["thigh.L", "upperarm_l", "thigh_l"],
-    "thigh.R": ["thigh.R", "thigh_r"],
+    "forearm.L": ["forearm.L", "forearm_l", "lowerarm_l"],
+    "forearm.R": ["forearm.R", "forearm_r", "lowerarm_r"],
+    "shin.L": ["shin.L", "shin_l", "lowerleg_l", "calf_l"],
+    "shin.R": ["shin.R", "shin_r", "lowerleg_r", "calf_r"],
+    "thigh.L": ["thigh.L", "thigh_l", "upperleg_l"],
+    "thigh.R": ["thigh.R", "thigh_r", "upperleg_r"],
     "spine": ["spine", "spine_01", "spine_02", "chest"],
-    "clavicle.L": ["clavicle.L", "clavicle_l", "clavicle_r"],
-    "clavicle.R": ["clavicle.R", "clavicle_r", "clavicle_l"],
-    "upper_arm.L": ["upper_arm.L", "upperarm_r", "upperarm_l"],
-    "upper_arm.R": ["upper_arm.R", "upperarm_l", "upperarm_r"],
+    "clavicle.L": ["clavicle.L", "clavicle_l", "shoulder_l"],
+    "clavicle.R": ["clavicle.R", "clavicle_r", "shoulder_r"],
+    "upper_arm.L": ["upper_arm.L", "upperarm_l", "arm_l"],
+    "upper_arm.R": ["upper_arm.R", "upperarm_r", "arm_r"],
 }
+
+#: Tokens that mark a bone name as belonging to one side.
+_LEFT_MARKERS = (".l", "_l", "-l")
+_RIGHT_MARKERS = (".r", "_r", "-r")
+#: Limb words that must not be substituted for one another.
+_ARM_WORDS = ("arm", "clavicle", "shoulder", "hand")
+_LEG_WORDS = ("thigh", "shin", "leg", "calf", "foot")
+
+
+def _side_of(name: str) -> str | None:
+    lowered = name.lower()
+    if lowered.endswith(_LEFT_MARKERS):
+        return "L"
+    if lowered.endswith(_RIGHT_MARKERS):
+        return "R"
+    return None
+
+
+def _limb_of(name: str) -> str | None:
+    lowered = name.lower()
+    # Check legs first: "upperleg" contains neither arm word, but "lowerarm"
+    # would match "arm" and must not also match a leg word.
+    if any(word in lowered for word in _LEG_WORDS):
+        return "leg"
+    if any(word in lowered for word in _ARM_WORDS):
+        return "arm"
+    return None
+
+
+def audit_bone_aliases(table: dict[str, list[str]] = BONE_ALIASES) -> list[str]:
+    """Return every alias that would pose the wrong bone. Empty means sound.
+
+    Run as a gate, not as documentation -- this is the check that the shipped
+    table failed.
+    """
+    problems: list[str] = []
+    for key, aliases in table.items():
+        key_side, key_limb = _side_of(key), _limb_of(key)
+        for alias in aliases:
+            alias_side, alias_limb = _side_of(alias), _limb_of(alias)
+            if key_side and alias_side and alias_side != key_side:
+                problems.append(
+                    f"{key} -> {alias}: {alias_side} bone aliased to a {key_side} key")
+            if key_limb and alias_limb and alias_limb != key_limb:
+                problems.append(
+                    f"{key} -> {alias}: {alias_limb} bone aliased to a {key_limb} key")
+    return problems
 
 # Render contract
 ORTHO_SCALE = 2.6
@@ -127,9 +189,16 @@ def _argv_after_double_dash() -> list[str]:
     return sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 
 
-def _apply_pose(armature, pose: dict[str, tuple[float, float, float]]) -> int:
-    """Apply a pose dict to the armature; returns number of bones keyed."""
+def _apply_pose(armature, pose: dict[str, tuple[float, float, float]]) -> dict:
+    """Apply a pose dict to the armature.
+
+    Returns the count AND which bone each key actually resolved to. The count
+    alone was what let a wrong-side alias look like a pass: five bones posed,
+    five bones reported, no way to see that two of them were the wrong limb.
+    """
     applied = 0
+    resolved: dict[str, str] = {}
+    unresolved: list[str] = []
     for bone_key, euler in pose.items():
         # Try primary name, then aliases
         candidates = [bone_key] + BONE_ALIASES.get(bone_key, [])
@@ -137,13 +206,15 @@ def _apply_pose(armature, pose: dict[str, tuple[float, float, float]]) -> int:
         for name in candidates:
             target = armature.pose.bones.get(name)
             if target is not None:
+                resolved[bone_key] = name
                 break
         if target is None:
+            unresolved.append(bone_key)
             continue
         target.rotation_mode = "XYZ"
         target.rotation_euler = euler
         applied += 1
-    return applied
+    return {"applied": applied, "resolved": resolved, "unresolved": unresolved}
 
 
 def _reset_pose(armature) -> None:
@@ -375,6 +446,14 @@ def main() -> None:
     renders: dict[str, list[str]] = {}
     bleed_reports: dict[str, dict] = {}
     failures: list[str] = []
+    pose_bindings: dict[str, dict] = {}
+
+    # Gate the verifier on itself before it judges anything. The shipped alias
+    # table pointed .L keys at .R bones and thigh.L at an upper arm, which posed
+    # the wrong limb and still counted as applied.
+    alias_problems = audit_bone_aliases()
+    for problem in alias_problems:
+        failures.append(f"bone_alias_unsound:{problem}")
 
     # Bake once for heatmap path
     heatmap_dir = out / "heatmap"
@@ -396,9 +475,16 @@ def main() -> None:
         armature = armatures[0]
         _reset_pose(armature)
         if pose:
-            n = _apply_pose(armature, pose)
-            if n == 0 and pose_name != "rest":
+            outcome = _apply_pose(armature, pose)
+            pose_bindings[pose_name] = outcome
+            if outcome["applied"] == 0 and pose_name != "rest":
                 failures.append(f"pose_has_no_matching_bone:{pose_name}")
+            # A pose that only reached some of its bones tests something other
+            # than what it is named after, so say which ones were missed rather
+            # than reporting a pass on a partial pose.
+            if outcome["unresolved"] and pose_name != "rest":
+                failures.append(
+                    f"pose_incomplete:{pose_name}:{','.join(outcome['unresolved'])}")
         bpy.context.view_layer.update()
         # Validate no NaN
         for mesh in meshes:
@@ -435,6 +521,10 @@ def main() -> None:
         "input": args.input,
         "passed": not failures,
         "failures": failures,
+        # Which bone each pose key actually resolved to. Without this the report
+        # could not distinguish "posed the elbow" from "posed the other elbow".
+        "pose_bindings": pose_bindings,
+        "bone_alias_audit": alias_problems or "sound",
         "renders": renders,
         "bleed_proxy": bleed_reports,
         "notes": [
