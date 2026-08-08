@@ -1,0 +1,22 @@
+{
+  "schema_version": "auto_matte_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\sealdiver\\source.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\sealdiver\\matte.png",
+  "selection": "measured",
+  "criterion": "largest tolerance whose removed pixels are still smooth; a shadow has no texture and a subject does",
+  "selected_tolerance": 0,
+  "shadow_from": 0.72,
+  "subject_texture_energy": 14.631,
+  "background_texture_energy": 0.082,
+  "cut_threshold": 5.174,
+  "subject_texture_fraction": 0.35,
+  "subject_coverage": 0.7351,
+  "trace": [
+    {
+      "tolerance": 60,
+      "removed_px": 43612,
+      "texture_energy": 13.546,
+      "verdict": "textured -> would eat the subject"
+    }
+  ]
+}

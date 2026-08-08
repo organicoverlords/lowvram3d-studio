@@ -1,0 +1,24 @@
+{
+  "extents": [
+    0.6246,
+    1.0038,
+    0.5563
+  ],
+  "faces": 294126,
+  "volume": 0.009694,
+  "area": 4.3793,
+  "fill": 0.0278,
+  "quad_ratio": 1.8473,
+  "spread_per_axis": [
+    0.1965,
+    0.1456,
+    0.1928
+  ],
+  "worst_spread": 0.1965,
+  "billboard": true,
+  "reasons": [
+    "fill 0.0278 < 0.03 (mesh encloses almost no volume)",
+    "quad_ratio 1.8473 > 0.75 (surface area is that of crossed flat panels)"
+  ],
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\sealdiver\\sealdiver_t1024_conditioned.glb"
+}

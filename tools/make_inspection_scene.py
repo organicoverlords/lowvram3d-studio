@@ -65,7 +65,13 @@ def receipt_index():
 
 def metadata(asset, glb, readiness):
     stat = glb.stat()
-    created = datetime.fromtimestamp(stat.st_ctime).astimezone()
+    # ctime is metadata-change time on Windows and is not a reliable creation
+    # order after hard-linking/copying deliverables. Prefer the manifest's
+    # authoritative source timestamp, then fall back to the deliverable.
+    source_value = asset.get("source")
+    source_path = REPO / source_value if source_value else None
+    source_stat = source_path.stat() if source_path and source_path.is_file() else stat
+    created = datetime.fromtimestamp(source_stat.st_ctime).astimezone()
     subject = asset["subject"]
     rig = readiness.get(glb.stem, readiness.get(subject, {}))
     if rig:
@@ -114,6 +120,42 @@ def flat_material(name, colour, roughness=0.8):
     bsdf.inputs["Base Color"].default_value = colour
     bsdf.inputs["Roughness"].default_value = roughness
     return mat
+
+
+def wire_imported_material_uvs(materials):
+    """Make imported image textures use the mesh UV map explicitly.
+
+    Blender 5.2 EEVEE Material Preview does not reliably evaluate the
+    implicit UV source left by the glTF importer.  An explicit TexCoord UV
+    link keeps packed textures visible after the scene is rebuilt.
+    """
+    image_nodes = 0
+    linked_nodes = 0
+    for mat in materials:
+        if not mat or not mat.use_nodes or mat.node_tree is None:
+            continue
+        nodes = mat.node_tree.nodes
+        links = mat.node_tree.links
+        texcoord = next(
+            (node for node in nodes if node.bl_idname == "ShaderNodeTexCoord"),
+            None,
+        )
+        for image in (node for node in nodes
+                      if node.bl_idname == "ShaderNodeTexImage"):
+            image_nodes += 1
+            vector = image.inputs.get("Vector")
+            if vector is None:
+                continue
+            # Relink even if the importer supplied a different coordinate
+            # source: every imported image must explicitly use mesh UVs.
+            for link in list(vector.links):
+                links.remove(link)
+            if texcoord is None:
+                texcoord = nodes.new("ShaderNodeTexCoord")
+            links.new(texcoord.outputs["UV"], vector)
+            if vector.is_linked:
+                linked_nodes += 1
+    return image_nodes, linked_nodes
 
 
 def add_placard(meta, location, width):
@@ -365,6 +407,15 @@ def main():
         if not new:
             continue
 
+        imported_materials = {
+            slot.material
+            for obj in new
+            for slot in obj.material_slots
+            if slot.material is not None
+        }
+        image_nodes, linked_nodes = wire_imported_material_uvs(imported_materials)
+        print(f"{glb.name}: explicit UV links {linked_nodes}/{image_nodes}")
+
         for obj in new:
             obj.select_set(True)
             bpy.context.view_layer.objects.active = obj
@@ -427,23 +478,29 @@ def main():
     add_sky(scene, light)
     add_ground(span, tallest)
 
-    # Global safety net for implicit-UV failure in Blender 5.2 EEVEE
-    # (Material Preview): mirrors in-place fix applied to
-    # evidence/deliverables/blender/ALL_ASSETS_inspection.blend
-    # (13 mats wired TexCoord UV -> Image Texture.Vector, 198.1 MB,
-    # Blender 5.2). bpy.ops.import_scene.gltf leaves Vector unlinked,
-    # relying on implicit UV which EEVEE 5.2 ignores. Iterate all
-    # materials after the import loop and before pack_all().
-    for mat in bpy.data.materials:
-        if not mat.use_nodes or mat.node_tree is None:
-            continue
-        # Reuse existing TexCoord if present, else create one per material
-        tc = next((n for n in mat.node_tree.nodes if n.bl_idname == "ShaderNodeTexCoord"), None)
-        for node in mat.node_tree.nodes:
-            if node.bl_idname == "ShaderNodeTexImage" and not node.inputs["Vector"].is_linked:
-                if tc is None:
-                    tc = mat.node_tree.nodes.new("ShaderNodeTexCoord")
-                mat.node_tree.links.new(tc.outputs["UV"], node.inputs["Vector"])
+    # Verify the invariant before packing: every imported image texture must
+    # have an explicit TexCoord UV -> Image Texture.Vector link.  The links
+    # are created immediately after each glTF import above, rather than as a
+    # late repair that can be omitted by a future builder change.
+    image_nodes = [
+        node
+        for mat in bpy.data.materials
+        if mat.use_nodes and mat.node_tree is not None
+        for node in mat.node_tree.nodes
+        if node.bl_idname == "ShaderNodeTexImage"
+    ]
+    linked_nodes = [
+        node for node in image_nodes
+        if node.inputs.get("Vector") is not None
+        and node.inputs["Vector"].is_linked
+        and node.inputs["Vector"].links[0].from_node.bl_idname == "ShaderNodeTexCoord"
+        and node.inputs["Vector"].links[0].from_socket.name == "UV"
+    ]
+    print(f"final explicit UV links {len(linked_nodes)}/{len(image_nodes)}")
+    if len(linked_nodes) != len(image_nodes):
+        raise RuntimeError(
+            f"unlinked imported image textures: {len(image_nodes) - len(linked_nodes)}"
+        )
 
     try:
         bpy.ops.file.pack_all()

@@ -57,12 +57,18 @@ def main():
             tc = next((n for n in mat.node_tree.nodes
                        if n.bl_idname == "ShaderNodeTexCoord"), None)
             for node in mat.node_tree.nodes:
-                if (node.bl_idname == "ShaderNodeTexImage"
-                        and not node.inputs["Vector"].is_linked):
-                    if tc is None:
-                        tc = mat.node_tree.nodes.new("ShaderNodeTexCoord")
-                    mat.node_tree.links.new(tc.outputs["UV"],
-                                            node.inputs["Vector"])
+                if node.bl_idname != "ShaderNodeTexImage":
+                    continue
+                vector = node.inputs.get("Vector")
+                if vector is None:
+                    continue
+                # Do not trust the importer's implicit/generated coordinate
+                # choice: Material Preview must use the mesh UV map explicitly.
+                for link in list(vector.links):
+                    mat.node_tree.links.remove(link)
+                if tc is None:
+                    tc = mat.node_tree.nodes.new("ShaderNodeTexCoord")
+                mat.node_tree.links.new(tc.outputs["UV"], vector)
 
         objects = [o for o in bpy.context.scene.objects if o.type == "MESH"]
         if not objects:

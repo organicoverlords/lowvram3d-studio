@@ -477,6 +477,61 @@ by about 0.09 on every candidate equally.
 The candidate must be under roughly 1M faces. A 2.81M-face mesh exhausts 16 GB
 during the render; run the debris-removed or LOD version and say so in the label.
 
+## 9a. Hunyuan3D-Paint: never let it re-unwrap UVs it already has
+
+**If the mesh carries TEXCOORD_0, skip `mesh_uv_wrap`. This is the difference
+between a paint that finishes in six minutes and one that never finishes.**
+
+`Hunyuan3DPaintPipeline.__call__` calls `mesh_uv_wrap` unconditionally, and that
+is `xatlas.parametrize` over every face -- single threaded, and printing
+nothing. It sits between "pipeline loaded" and the first progress bar, so while
+it runs the console is blank, the GPU is idle, and three CPU cores are pinned.
+
+On the moss titan it never completed. Three runs died in it at 25, 25 and 7
+minutes. The geometry is the worst case xatlas can be handed: 286,994 faces
+whose surface is thousands of thin hanging strands, each a separate chart to
+pack.
+
+It is also wasted work. TRELLIS exports `TEXCOORD_0` with one UV per vertex and
+a 2048 atlas. The bake writes a new texture into whatever layout the mesh
+already carries; it does not require xatlas's particular packing. Skipping the
+unwrap when valid UVs exist took the same asset to **365.1 s of paint --
+faster than all 21 previous paints on this machine**, on the largest mesh in
+the set.
+
+`workers/hunyuan_paint_texture.py` patches `mesh_uv_wrap` at the module level
+for the duration of the run. Meshes that genuinely lack UVs still get
+unwrapped, and the skip prints itself either way, so nothing silently paints
+without a parameterisation.
+
+### The diagnostic lesson, which cost more than the bug
+
+Three wrong answers came first, each derived from watching resource *shapes*
+rather than asking the process what it was doing:
+
+| theory | why it was wrong |
+|---|---|
+| the mesh is too big | the heron is 295,108 faces and painted in 881 s |
+| conditioning is too large | both inputs were already 512, byte-identical |
+| the UNet is running on CPU | it was not -- that GPU burst was the delight model |
+
+One command settled it:
+
+    py-spy dump --pid <pid>
+
+which printed `mesh_uv_wrap (hy3dgen/texgen/utils/uv_warp_utils.py:26)` in about
+a second, without touching the running process. **Reach for the stack before
+reaching for a theory.** Flat VRAM at 100% utilisation is a healthy sampler;
+flat VRAM at ~11% with cores pinned means the work is not on the card -- but
+neither tells you *which function*, and that is the only thing worth knowing.
+
+Two supporting fixes are in the tooling now. `trellis_run.py` opens its `--log`
+before the child starts and flushes per line, instead of writing it after
+`process.wait()` -- a 40-minute stage used to produce an empty path for exactly
+as long as it mattered. `hunyuan_paint_texture.py` wraps the vendor's named
+stages (`render_normal_multiview`, `bake_from_multiview`, `texture_inpaint`) so
+the phases the vendor does not announce announce themselves.
+
 ## 9b. Hunyuan3D-Paint: keep the conditioning image at ~512
 
 **Feed paint a ~512 conditioning image. Not the 4K or 8K matte.**
@@ -529,6 +584,55 @@ Predicted, not yet measured:
 - **Rock formations**: succeed at mid-ground range, generic erosion detail.
 - **Furry creatures**: high failure risk on both capacity and quality.
 - **Trees with real foliage**: likely to exceed the latent budget outright.
+
+## 10a. TRELLIS can return a billboard and call it success
+
+On 2026-08-08 the greentree was generated at `--res 512`. It finished in 264 s
+and wrote a receipt with `success: true`, `geometry_decoded: true`,
+`geometry_finalized: true`, `exit_code: 0`, 806,990 decoded voxels, a
+1024 atlas, and a finalizer note listing weld, hole fill, narrow-band remesh,
+winding repair, component filter and QEM. The log showed every stage running.
+
+The asset was two crossed flat panels.
+
+Nothing in the receipt is false. Every field it records was true of the mesh it
+made. The failure is not detectable from any of them, and it is not detectable
+from the face count either — 146,326 faces, because a subdivided plane has as
+many triangles as you like.
+
+**The three numbers that do detect it** (`tools/check_not_billboard.py`):
+
+| measure | what it is | billboard | solid |
+|---|---|---|---|
+| `fill` | volume / bounding-box volume | 0.010 | 0.025 – 0.171 |
+| `quad_ratio` | area / area of the crossed quads the box allows | **0.998** | 1.75 – 2.85 |
+| `worst_spread` | vertex fraction in the two busiest bins of 20, per axis | **0.554** | 0.178 – 0.231 |
+
+`quad_ratio` is the sharp one, and its direction is counter-intuitive enough
+that the first version of the gate had it backwards. A billboard does not have
+*too much* area; it has *exactly* the area of the crossed quads, so it sits at
+1.0 and every solid sits **above** it. Written as a ceiling of 0.75 the test
+fired on every real asset in the project and falsely aborted a good 20-minute
+seal-diver run. It is a lower bound: flag `quad_ratio < 1.30`.
+
+`fill` cannot carry the test alone. The seal diver is a genuine solid at 0.025
+because flippers, ropes, an anchor and a swinging lantern inflate the bounding
+box far beyond the body inside it. The gate requires **two of three** symptoms.
+
+**Cause, and the retry that is worth running.** The sparse-structure stage runs
+on a 32³ grid at `--res 512`, so one structural cell is 16 source pixels. A
+banyan's aerial roots are thinner than that and lose their cells to the canopy
+above them, and the subject collapses onto the two planes carrying most of its
+silhouette. At `--res 1024` the grid is 64³. Every asset in this project that
+came out solid was generated at 1024; the tree was the only one that was not.
+
+So the gate belongs **between geometry and paint**, not at the end — the paint
+is the forty-minute stage, and painting cardboard is the whole cost of the bug.
+
+Corollary for §10 above: "trees with real foliage" does not fail by exceeding
+the latent budget, which is what was predicted. The greentree's latent was
+102,400 — squarely in the *typical* band, lower than the castle that succeeded.
+It fails by collapsing to a billboard while reporting success.
 
 ## 11. Texturing a geometry-only generator — the six-view route
 

@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "kind": "creature",
+  "binding": "proximity_weights",
+  "bones": [
+    "root",
+    "spine",
+    "neck",
+    "head",
+    "wing.L",
+    "wing.R",
+    "leg.L",
+    "leg.R",
+    "tail"
+  ],
+  "actions": [
+    "creature_idle",
+    "creature_walk"
+  ],
+  "animation_preset": "all",
+  "pose_guided_proportions": false,
+  "deformation_proven": false,
+  "warning": "Pose-guided template fitting and automatic weights require visual deformation inspection before shipping."
+}

@@ -178,6 +178,19 @@ def main(argv: list[str] | None = None) -> int:
     if not image.is_file():
         raise SystemExit(f"IMAGE_MISSING:{image}")
 
+    # The verified 1024 cascade route uses a 512x512 prepared input. Passing a
+    # true 1024x1024 prepared image changes the DINO/shape conditioning route;
+    # Titan's successful 1024 run used a file named paint_input_1024.png whose
+    # actual dimensions were 512x512. Fail before GPU allocation rather than
+    # silently running the unvalidated route.
+    if args.res == "1024":
+        from PIL import Image
+        with Image.open(image) as prepared:
+            if prepared.size != (512, 512):
+                raise SystemExit(
+                    f"RES1024_INPUT_CONTRACT:{image} is {prepared.size}; "
+                    "the verified 1024 cascade requires a 512x512 prepared input")
+
     missing = missing_weights(args.res, args.tex_res, args.no_texture)
     if missing:
         raise SystemExit("WEIGHTS_MISSING:" + ",".join(missing))

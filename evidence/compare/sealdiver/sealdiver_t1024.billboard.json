@@ -1,0 +1,21 @@
+{
+  "extents": [
+    0.6341,
+    1.0037,
+    0.576
+  ],
+  "faces": 298334,
+  "volume": 0.00929,
+  "area": 4.2559,
+  "fill": 0.0253,
+  "quad_ratio": 1.752,
+  "spread_per_axis": [
+    0.1782,
+    0.175,
+    0.1715
+  ],
+  "worst_spread": 0.1782,
+  "billboard": false,
+  "reasons": [],
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\sealdiver\\sealdiver_t1024.glb"
+}

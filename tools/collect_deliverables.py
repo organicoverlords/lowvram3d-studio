@@ -66,6 +66,12 @@ ASSETS = [
     # this is the one pair in the set where the only difference is the paint
     # stage, on identical geometry from an identical seed.
     ("moss_titan/titan_t1024.glb",           "mosstitan", "trellis1024", "prepaint"),
+    # First asset generated with the billboard gate in the lane. The greentree
+    # ahead of it came back from TRELLIS as two crossed cardboard panels with a
+    # receipt that said success, which is why check_not_billboard.py now runs
+    # between geometry and paint.
+    ("sealdiver/sealdiver_t1024_paint2048.glb", "sealdiver", "trellis1024", ""),
+    ("sealdiver/sealdiver_t1024.glb",           "sealdiver", "trellis1024", "prepaint"),
 ]
 
 

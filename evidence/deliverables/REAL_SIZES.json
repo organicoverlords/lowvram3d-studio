@@ -53,6 +53,11 @@
       "axis": "height",
       "source": "estimate"
     },
+    "sealdiver": {
+      "metres": 2.1,
+      "axis": "height",
+      "source": "estimate"
+    },
     "shaman": {
       "metres": 1.9,
       "axis": "height",

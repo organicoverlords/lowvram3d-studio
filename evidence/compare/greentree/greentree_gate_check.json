@@ -1,0 +1,25 @@
+{
+  "extents": [
+    0.777,
+    1.0031,
+    0.7736
+  ],
+  "faces": 146326,
+  "volume": 0.006081,
+  "area": 3.1042,
+  "fill": 0.0101,
+  "quad_ratio": 0.9978,
+  "spread_per_axis": [
+    0.5539,
+    0.1269,
+    0.5497
+  ],
+  "worst_spread": 0.5539,
+  "billboard": true,
+  "reasons": [
+    "fill 0.0101 < 0.03 (mesh encloses almost no volume)",
+    "quad_ratio 0.9978 > 0.75 (surface area is that of crossed flat panels)",
+    "spread [0.5539, 0.1269, 0.5497] (vertices pile onto planes on two axes)"
+  ],
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\greentree\\greentree_t512.glb"
+}
