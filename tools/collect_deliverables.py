@@ -95,6 +95,12 @@ ASSETS = [
     # and quad_ratio 2.93.
     ("oakhamlet/oakhamlet_t512_paint2048.glb", "oakhamlet", "trellis512", ""),
     ("oakhamlet/oakhamlet_t512.glb",           "oakhamlet", "trellis512", "prepaint"),
+    # Generated twice. The first run used a matte that had deleted the canopy,
+    # and produced a stump that passed every check; these are the re-run with a
+    # corrected matte and nothing else changed. The earlier outputs are kept
+    # beside them in evidence/compare/treecity as badmatte_* -- see runbook 10c.
+    ("treecity/treecity_t512_paint2048.glb", "treecity", "trellis512", ""),
+    ("treecity/treecity_t512.glb",           "treecity", "trellis512", "prepaint"),
 ]
 
 
