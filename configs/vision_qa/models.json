@@ -1,0 +1,43 @@
+{
+  "schema": "vision_qa_model_profiles_v1",
+  "hardware": {
+    "gpu": "NVIDIA GTX 1660 SUPER",
+    "vram_mib": 6144,
+    "reserved_ceiling_mib": 5600,
+    "concurrency": 1,
+    "policy": "one heavy GPU process at a time"
+  },
+  "profiles": {
+    "supervisor_primary": {
+      "model_id": "qwen3.5-2b-supervisor",
+      "max_images": 8,
+      "max_long_edge": 768,
+      "max_context_tokens": 8192,
+      "thinking": false,
+      "temperature": 0.0,
+      "required_receipts": ["load", "inference", "peak_vram", "json_validity", "cleanup"]
+    },
+    "supervisor_secondary": {
+      "model_id": "minicpm-v-4.6-secondary",
+      "load_policy": "only after primary process exits",
+      "max_images": 8,
+      "max_long_edge": 768,
+      "temperature": 0.0
+    },
+    "labels": {
+      "model_id": "florence2-base-ft-labels",
+      "tasks": ["<CAPTION>", "<OD>", "<OCR>", "<DENSE_REGION_CAPTION>"],
+      "load_policy": "separate process"
+    },
+    "masks": {
+      "model_id": "edgetam-masks",
+      "prompts": ["box", "positive_points", "negative_points"],
+      "load_policy": "separate process"
+    },
+    "independent_depth": {
+      "model_id": "da3-small-depth-check",
+      "max_long_edge_candidates": [448, 518, 672],
+      "load_policy": "separate process; stop at first proven quality profile"
+    }
+  }
+}
