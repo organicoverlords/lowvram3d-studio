@@ -643,10 +643,42 @@ active voxels and finalised 6,489,556 faces before decimation, against
 the collapse does not happen for want of grid resolution, and it is not fixed by
 spending 1361 s instead of 264 s.
 
-**What to do instead.** For a filamentous subject, use Mini Turbo. Its greentree
-is a correct 4M-face banyan with a layered canopy and hanging aerial roots, from
-the same source image, and it scores fill 0.171 / quad_ratio 2.85. TRELLIS is
-the wrong generator for this subject class, at any setting tried so far.
+**It is not "trees". It is filaments.** A second tree settles this. The fat tree
+-- a baobab whose silhouette is one enormous solid trunk with a walkway on it --
+went through TRELLIS at 512 and passed the gate comfortably:
+
+| subject | dominant structure | fill | quad_ratio | verdict |
+|---|---|---|---|---|
+| greentree (banyan) | thin aerial roots | 0.010 | 0.998 | **billboard** at 512 and 1024 |
+| fat tree (baobab) | massive solid trunk | **0.101** | **2.716** | **solid** |
+
+The fat tree decoded 23,229,058 faces -- the largest decode in this project,
+against the moss titan's 16.9M -- and kept its walkway and railings through
+decimation to 148,852. Its weld merged 5,793 vertices of 7.64M (0.08%); the
+greentree billboard's weld merged 402,820 of 807,036 (50%), which is itself a
+usable early tell.
+
+So the failure condition is that the subject's silhouette is carried by
+structures thinner than one sparse-structure cell. A solid mass anchors the
+decode even when it is wrapped in foliage. Reach for Mini Turbo when the subject
+is mostly filament -- its greentree is a correct 4M-face banyan at fill 0.171 --
+and not merely because the subject happens to be a plant.
+
+**A leafy canopy is not a filament.** The fat tree left this ambiguous because
+its canopy is dense slabs. The oak hamlet settles it: separated leaf clusters
+throughout, all of them decoded, along with the houses, wrap-around balconies,
+railings, staircases and the trunk door.
+
+| tree | silhouette carried by | matte | fill | quad_ratio | spread | result |
+|---|---|---|---|---|---|---|
+| greentree | thin aerial roots | good | 0.010 | 0.998 | 0.554 | **billboard** |
+| fat tree | massive trunk | good | 0.101 | 2.716 | 0.265 | solid, 23.2M |
+| tree city | massive trunk | **broken** | 0.031 | 1.696 | 0.389 | stump -- see 10c |
+| oak hamlet | trunk + leafy canopy | good | 0.055 | **2.929** | **0.225** | solid, 6.8M |
+
+Read together: TRELLIS handles trunks, canopies, buildings, railings and stairs.
+The one thing it will not represent is a structure thinner than a cell that is
+also carrying the silhouette -- aerial roots, rope lines, spanish moss.
 
 The gate is what makes that cheap to discover: it aborted before the paint on
 both runs, so the whole cost of the second experiment was the geometry stage.
@@ -658,6 +690,120 @@ Corollary for §10 above: "trees with real foliage" does not fail by exceeding
 the latent budget, which is what was predicted. The greentree's latent was
 102,400 — squarely in the *typical* band, lower than the castle that succeeded.
 It fails by collapsing to a billboard while reporting success.
+
+## 10c. The matte can amputate the subject, and every downstream check will pass
+
+The tree city decoded as a stump: root mass, trunk, walkway, railings and root
+doorways all present and well formed, and no canopy at all. The high-poly master
+was checked and had no canopy either, which ruled out the finalizer and the
+decimation. TRELLIS was then blamed for not representing branches.
+
+**TRELLIS was faithful. `rembg`/u2net had deleted the canopy before the generator
+ever saw the image.** The matte's opaque region began 46% of the way down the
+frame; everything above was cut.
+
+Every check in the lane passed it:
+
+| check | value | verdict |
+|---|---|---|
+| corner alpha | 0,0,0,0 | pass -- background removed |
+| coverage | 0.24 | pass -- inside 0.01..0.92 |
+| matte receipt | `"ok": true` | pass |
+| billboard gate | fill 0.031, quad 1.70 | pass -- the stump IS solid |
+
+The gate cannot help here by construction: it detects *cardboard*, and what
+remained was genuinely solid geometry. An asset can lose 60% of itself and score
+as healthy.
+
+**The check that does work** is in `tools/matte_rembg.py`: how far down the frame
+the subject starts. A subject shot against a plain backdrop is framed to fill its
+plate, so a large empty band at one edge means something was removed rather than
+framed out. The tree city scored 46% against a 25% threshold.
+
+An aspect-ratio comparison between the decoded mesh and the silhouette was tried
+first and **does not work** -- measured, not assumed:
+
+| asset | mesh aspect | silhouette | ratio | truth |
+|---|---|---|---|---|
+| tree city | 0.491 | 0.500 | **0.982** | truncated |
+| fat tree | 0.659 | 0.659 | 1.000 | complete |
+| moss titan | 0.761 | 0.947 | **0.804** | complete |
+
+The truncated asset scores *better* than a known-good one, because the mesh
+faithfully matches the matte it was given. Comparing the output to a bad input
+cannot detect a bad input.
+
+**Choose the matte by backdrop, not by habit.** `workers/auto_matte.py` keys on
+colour distance and is right for a plain backdrop -- it recovered the tree city's
+full canopy, bbox y 5..1809 of 1825 against rembg's 833..1809.
+`tools/matte_rembg.py` is right where the background is not flat, such as the
+seal diver's foggy teal gradient, on which auto_matte kept 73% of the frame.
+Neither is the default for everything, and the failure is silent either way.
+
+## 10b. The token ceiling — ~38k tokens does not fit in 6 GB, and past it the cliff is 23x
+
+The latent-size table in the receipts predicts whether the *sparse structure*
+decodes. It says nothing about whether the shape cascade will fit, and that is a
+separate limit with a much sharper edge.
+
+Measured on the fat tree, 2026-08-08:
+
+| run | tokens at HR cascade | seconds per step |
+|---|---|---|
+| LR half, same run | — | **29** |
+| HR cascade, 1024 | **38,147** | **691** |
+
+That is not a gradual slowdown, it is **23x**, and it appears the moment the job
+stops fitting. The mechanism is that Windows pages VRAM instead of raising OOM:
+nothing errors, nothing warns, the GPU still reads 100% utilisation, and every
+access to the spilled portion crosses PCIe instead of hitting the card. The run
+projected **2 h 07 m remaining** for eleven more steps of a stage that takes six
+minutes when it fits.
+
+**The arithmetic, on this machine:**
+
+    trellis-cli at 38k tokens   5.2 GB
+    dwm (Windows compositor)    1.3 GB   <- two 1080p monitors, always present
+    ------------------------------------
+    required                    6.5 GB
+    card                        6.1 GB
+    spilled to system RAM       258 MB   -> 23x per-step penalty
+
+`dwm` is not optional and cannot be killed; it restarts itself. Budget for it.
+The usable ceiling is therefore about **4.7 GB**, not 6.1 GB.
+
+**How to see it.** `nvidia-smi` does not attribute per-process VRAM on Windows
+and will not show the spill at all. This does:
+
+    Get-Counter "\GPU Process Memory(*)\Dedicated Usage"
+    Get-Counter "\GPU Process Memory(*)\Shared Usage"
+
+`Shared Usage` above zero on the compute process **is** the spill. Any non-zero
+value there means the run is now paging, and no setting will make it fast again.
+
+**It is the cascade, not the resolution.** `--res 1024` does not merely run the
+same stage on a bigger grid; it switches stage 4 from
+
+    [4/7] shape SLAT flow (512)
+
+to
+
+    [4/7] shape SLAT flow (LR 512 -> upsample -> HR 1024 cascade, max_tok=49152)
+
+and it is the HR half of that cascade whose token count does not fit. At 512 the
+upsample never happens, so the 38k-token step does not exist at all. Measured
+back to back on the same subject: 3149 MiB peak at 512 against 5746 MiB at 1024,
+on a card with about 4.7 GB usable. So the question to ask of a heavy subject is
+not "how big is the grid" but "does this turn the cascade on".
+
+**What to do.** Drop `--res`. The same subject at 512 produced roughly a third
+of the tokens and ran at 8 s/step. That is the only lever with real leverage:
+freeing desktop VRAM buys back maybe 20%, and waiting buys nothing, because the
+decode stage that follows the cascade needs *more* memory than the cascade does.
+
+Corollary for §10a: a subject can fail two different ways. The greentree
+billboarded at both 512 and 1024 -- a *quality* failure the gate catches. The
+fat tree decoded fine and hit a *capacity* wall. Neither shows up as an error.
 
 ## 11. Texturing a geometry-only generator — the six-view route
 

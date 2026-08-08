@@ -1,0 +1,101 @@
+{
+  "schema": "lowvram3d_segment_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\fattree\\fattree_t512_paint2048.glb",
+  "backend": "geometry",
+  "licence": "none -- scipy and trimesh only",
+  "licence_encumbered": false,
+  "faces": 148852,
+  "requested_parts": 14,
+  "parts": 15,
+  "concavity_penalty": 6.0,
+  "face_counts": [
+    17511,
+    5227,
+    9391,
+    3523,
+    6661,
+    22958,
+    3536,
+    9662,
+    8855,
+    5242,
+    12111,
+    5194,
+    3408,
+    35057,
+    516
+  ],
+  "notes": [
+    "76 connected shell(s)",
+    "1 shell(s) over 595 faces; 75 smaller shell(s) collected as one debris part",
+    "debris part holds 516 faces (0.3% of the mesh)",
+    "0 part(s) merged as smaller than 0.40% of the mesh"
+  ],
+  "parts_written": [
+    {
+      "part": 0,
+      "faces": 17511
+    },
+    {
+      "part": 1,
+      "faces": 5227
+    },
+    {
+      "part": 2,
+      "faces": 9391
+    },
+    {
+      "part": 3,
+      "faces": 3523
+    },
+    {
+      "part": 4,
+      "faces": 6661
+    },
+    {
+      "part": 5,
+      "faces": 22958
+    },
+    {
+      "part": 6,
+      "faces": 3536
+    },
+    {
+      "part": 7,
+      "faces": 9662
+    },
+    {
+      "part": 8,
+      "faces": 8855
+    },
+    {
+      "part": 9,
+      "faces": 5242
+    },
+    {
+      "part": 10,
+      "faces": 12111
+    },
+    {
+      "part": 11,
+      "faces": 5194
+    },
+    {
+      "part": 12,
+      "faces": 3408
+    },
+    {
+      "part": 13,
+      "faces": 35057
+    },
+    {
+      "part": 14,
+      "faces": 516
+    }
+  ],
+  "parts_file": "fattree_t512_paint2048_parts.glb",
+  "separate_files": false,
+  "hulls": 15,
+  "hulls_failed": 0,
+  "hull_file": "fattree_t512_paint2048_hulls.glb"
+}

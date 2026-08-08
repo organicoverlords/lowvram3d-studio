@@ -92,6 +92,31 @@ def main(argv: list[str] | None = None) -> int:
     if coverage < 0.01:
         failures.append(f"coverage {coverage:.3f} -- the subject was removed")
 
+    # Does the subject still have a top? u2net deleted the entire canopy of the
+    # tree city -- kept the trunk, roots, walkway and railings, dropped every
+    # branch and leaf -- and the checks above all passed it: corners clean,
+    # coverage 0.24, "ok": true. The generator then faithfully produced a stump,
+    # and the failure was blamed on the generator for an hour.
+    #
+    # A subject photographed against a plain backdrop is usually framed to fill
+    # its plate. When the matte leaves a large empty band at one edge, something
+    # was removed rather than framed out. This is a warning rather than a
+    # failure because a genuinely off-centre subject exists, but it puts the
+    # question in the receipt where it can be seen.
+    if len(rows):
+        height = alpha.shape[0]
+        top_gap = box[2] / height
+        bottom_gap = (height - 1 - box[3]) / height
+        if top_gap > 0.25:
+            failures.append(
+                f"subject starts {top_gap * 100:.0f}% down the frame -- the top "
+                f"of the subject was probably removed (this is how the tree "
+                f"city lost its canopy)")
+        if bottom_gap > 0.25:
+            failures.append(
+                f"subject ends {bottom_gap * 100:.0f}% above the bottom -- the "
+                f"base of the subject was probably removed")
+
     print(f"[matte] {original[0]}x{original[1]} -> {cut.size[0]}x{cut.size[1]}, "
           f"coverage {coverage:.4f}, corners {corners}", flush=True)
     print(f"[matte] subject box x {box[0]}..{box[1]} y {box[2]}..{box[3]}",

@@ -1,0 +1,34 @@
+{
+  "schema_version": "auto_matte_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\treecity\\source_2048.png",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\treecity\\matte_auto.png",
+  "selection": "measured",
+  "criterion": "largest tolerance whose removed pixels are still smooth; a shadow has no texture and a subject does",
+  "selected_tolerance": 0,
+  "shadow_from": 0.72,
+  "subject_texture_energy": 30.189,
+  "background_texture_energy": 0.029,
+  "cut_threshold": 10.585,
+  "subject_texture_fraction": 0.35,
+  "subject_coverage": 0.6884,
+  "trace": [
+    {
+      "tolerance": 60,
+      "removed_px": 1051,
+      "texture_energy": 37.303,
+      "verdict": "negligible"
+    },
+    {
+      "tolerance": 120,
+      "removed_px": 1888,
+      "texture_energy": 57.709,
+      "verdict": "negligible"
+    },
+    {
+      "tolerance": 180,
+      "removed_px": 2493,
+      "texture_energy": 59.359,
+      "verdict": "textured -> would eat the subject"
+    }
+  ]
+}

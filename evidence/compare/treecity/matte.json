@@ -1,0 +1,29 @@
+{
+  "schema": "lowvram3d_matte_rembg_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\treecity\\source.jpg",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\treecity\\matte.png",
+  "model": "u2net",
+  "source_size": [
+    7680,
+    6847
+  ],
+  "matte_size": [
+    2048,
+    1825
+  ],
+  "coverage": 0.2406,
+  "corner_alpha": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subject_box": [
+    26,
+    1978,
+    833,
+    1809
+  ],
+  "failures": [],
+  "ok": true
+}

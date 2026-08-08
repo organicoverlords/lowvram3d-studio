@@ -92,6 +92,64 @@ def measure(mesh: trimesh.Trimesh) -> dict:
     }
 
 
+# A decode that keeps only part of the subject is a different failure from a
+# billboard, and the three measures above cannot see it: the part that survives
+# is genuinely solid, so fill, quad_ratio and spread all read healthy. The tree
+# city decoded its root mass, trunk, walkway and doorways beautifully and simply
+# omitted the entire canopy -- 60% of the subject gone, gate passed.
+#
+# The matte knows what the subject's proportions actually are. Comparing the
+# decoded mesh's upright aspect against the silhouette's catches truncation for
+# the cost of reading one PNG.
+ASPECT_TOLERANCE = 0.45
+
+
+def silhouette_aspect(matte_path: str) -> float | None:
+    """Height / width of the matte's opaque region, or None if unreadable."""
+    try:
+        from PIL import Image
+        Image.MAX_IMAGE_PIXELS = None
+        alpha = np.array(Image.open(matte_path).convert("RGBA"))[..., 3]
+    except Exception as error:
+        print(f"  (matte unreadable: {error})", flush=True)
+        return None
+    rows, columns = np.where(alpha > 128)
+    if len(rows) < 16:
+        return None
+    height = float(rows.max() - rows.min() + 1)
+    width = float(columns.max() - columns.min() + 1)
+    return height / width if width > 0 else None
+
+
+def check_truncation(mesh, matte_path: str) -> tuple[dict, str | None]:
+    """Compare the mesh's upright aspect with the source silhouette's.
+
+    The generated mesh is normalised to a unit box and is Y-up, so its height is
+    extents[1] and its footprint is the larger of the two horizontal extents.
+    A subject that lost its top reads much squatter than its own photograph.
+    """
+    source_aspect = silhouette_aspect(matte_path)
+    if source_aspect is None:
+        return {"silhouette_aspect": None, "mesh_aspect": None}, None
+
+    extents = mesh.bounds[1] - mesh.bounds[0]
+    footprint = max(float(extents[0]), float(extents[2]))
+    mesh_aspect = float(extents[1]) / footprint if footprint > 0 else 0.0
+
+    detail = {"silhouette_aspect": round(source_aspect, 4),
+              "mesh_aspect": round(mesh_aspect, 4),
+              "aspect_ratio_of_ratios": round(mesh_aspect / source_aspect, 4)
+              if source_aspect else None}
+
+    # Only flag SHORTER than the source. A mesh taller than its silhouette is
+    # usually a framing difference, not a loss.
+    if mesh_aspect < source_aspect * (1.0 - ASPECT_TOLERANCE):
+        return detail, (f"mesh aspect {mesh_aspect:.2f} against silhouette "
+                        f"{source_aspect:.2f} -- the decode is far squatter "
+                        f"than the subject, so part of it is missing")
+    return detail, None
+
+
 def verdict(stats: dict) -> tuple[bool, list[str]]:
     reasons = []
     if stats["fill"] < FILL_FLOOR:
@@ -113,6 +171,10 @@ def verdict(stats: dict) -> tuple[bool, list[str]]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mesh", required=True)
+    parser.add_argument("--matte",
+                        help="the subject's matte PNG; enables the truncation "
+                             "check, which compares the decoded mesh's upright "
+                             "aspect against the source silhouette's")
     parser.add_argument("--receipt")
     args = parser.parse_args(argv)
 
@@ -121,6 +183,12 @@ def main(argv: list[str] | None = None) -> int:
 
     stats = measure(mesh)
     failed, reasons = verdict(stats)
+
+    truncated = None
+    if args.matte and Path(args.matte).is_file():
+        detail, truncated = check_truncation(mesh, args.matte)
+        stats.update(detail)
+        stats["truncated"] = bool(truncated)
     stats["billboard"] = failed
     stats["reasons"] = reasons
     stats["mesh"] = str(Path(args.mesh).resolve())
@@ -131,6 +199,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.receipt:
         Path(args.receipt).parent.mkdir(parents=True, exist_ok=True)
         Path(args.receipt).write_text(json.dumps(stats, indent=2), encoding="utf-8")
+
+    if truncated:
+        print(f"  silhouette_aspect  {stats.get('silhouette_aspect')}", flush=True)
+        print(f"  mesh_aspect        {stats.get('mesh_aspect')}", flush=True)
+        print(f"TRUNCATION_WARNING: {truncated}", flush=True)
 
     if failed:
         print("BILLBOARD_ABORT: this mesh is flat panels, not a solid",

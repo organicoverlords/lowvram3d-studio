@@ -1,0 +1,21 @@
+{
+  "extents": [
+    0.8026,
+    0.9927,
+    0.8648
+  ],
+  "faces": 142776,
+  "volume": 0.038064,
+  "area": 9.6975,
+  "fill": 0.0552,
+  "quad_ratio": 2.9293,
+  "spread_per_axis": [
+    0.1576,
+    0.225,
+    0.1523
+  ],
+  "worst_spread": 0.225,
+  "billboard": false,
+  "reasons": [],
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\oakhamlet\\oakhamlet_t512.glb"
+}

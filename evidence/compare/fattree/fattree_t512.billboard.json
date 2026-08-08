@@ -1,0 +1,21 @@
+{
+  "extents": [
+    0.9931,
+    0.6544,
+    0.9743
+  ],
+  "faces": 148852,
+  "volume": 0.064076,
+  "area": 8.7863,
+  "fill": 0.1012,
+  "quad_ratio": 2.716,
+  "spread_per_axis": [
+    0.1663,
+    0.265,
+    0.1738
+  ],
+  "worst_spread": 0.265,
+  "billboard": false,
+  "reasons": [],
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\fattree\\fattree_t512.glb"
+}

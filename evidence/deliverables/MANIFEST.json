@@ -209,6 +209,45 @@
       "texels_per_face_median": 4.33,
       "texels_per_face_p90": 15.04,
       "texel_starved": true
+    },
+    {
+      "name": "sealdiver_trellis1024_tex2048.glb",
+      "subject": "sealdiver",
+      "generator": "trellis1024",
+      "source": "evidence/compare/sealdiver/sealdiver_t1024_paint2048.glb",
+      "bytes": 11393064,
+      "link": "hardlink",
+      "faces": 298334,
+      "texture": 2048,
+      "texels_per_face_median": 5.15,
+      "texels_per_face_p90": 15.82,
+      "texel_starved": true
+    },
+    {
+      "name": "sealdiver_trellis1024_tex2048_prepaint.glb",
+      "subject": "sealdiver",
+      "generator": "trellis1024",
+      "source": "evidence/compare/sealdiver/sealdiver_t1024.glb",
+      "bytes": 27778936,
+      "link": "hardlink",
+      "faces": 298334,
+      "texture": 2048,
+      "texels_per_face_median": 5.15,
+      "texels_per_face_p90": 15.82,
+      "texel_starved": true
+    },
+    {
+      "name": "greentree_miniturbo384_tex2048.glb",
+      "subject": "greentree",
+      "generator": "miniturbo384",
+      "source": "evidence/compare/greentree/greentree_mt_paint2048.glb",
+      "bytes": 13484432,
+      "link": "hardlink",
+      "faces": 400000,
+      "texture": 2048,
+      "texels_per_face_median": 2.45,
+      "texels_per_face_p90": 6.01,
+      "texel_starved": true
     }
   ]
 }

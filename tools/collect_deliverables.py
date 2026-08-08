@@ -79,6 +79,12 @@ ASSETS = [
     # with a layered canopy and hanging aerial roots, and this is its 400k LOD
     # carrying the vendor paint.
     ("greentree/greentree_mt_paint2048.glb", "greentree", "miniturbo384", ""),
+    # The second tree, and the one that tests whether TRELLIS billboards every
+    # tree or only filamentous ones. The greentree collapsed because its
+    # structure is thin aerial roots; this one is a single massive trunk with a
+    # walkway on it, which is the shape TRELLIS handles well.
+    ("fattree/fattree_t1024_paint2048.glb", "fattree", "trellis1024", ""),
+    ("fattree/fattree_t1024.glb",           "fattree", "trellis1024", "prepaint"),
 ]
 
 

@@ -1,0 +1,29 @@
+{
+  "schema": "lowvram3d_matte_rembg_v1",
+  "image": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\fattree\\source.jpg",
+  "output": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\fattree\\matte.png",
+  "model": "u2net",
+  "source_size": [
+    7680,
+    5120
+  ],
+  "matte_size": [
+    2048,
+    1365
+  ],
+  "coverage": 0.6275,
+  "corner_alpha": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subject_box": [
+    40,
+    2016,
+    36,
+    1338
+  ],
+  "failures": [],
+  "ok": true
+}
