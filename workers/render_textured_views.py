@@ -44,10 +44,26 @@ SHADE_STRENGTH = 0.22
 # whatever its texture, which is exactly the misjudgement this view exists to
 # prevent.
 BACKGROUND = 190
+# Neutral mid-grey, bright enough to read form against the 190 backdrop without
+# competing with it.
+CLAY_COLOUR = (158.0, 158.0, 158.0)
 
 
-def render(vertices, faces, uv, texture, forward, up, size):
-    """Orthographic z-buffered render with per-pixel texture lookup."""
+def render(vertices, faces, forward, up, size,
+           uv=None, texture=None, corner_colours=None, flat_colour=None):
+    """Orthographic z-buffered render.
+
+    Colour comes from exactly one of three sources, because the two generators
+    hand back different things and the clay pass needs neither:
+
+      texture + uv    per-pixel lookup -- TRELLIS bakes a real baseColorTexture
+      corner_colours  (F, 3, 3) per-face-corner RGB, interpolated -- Mini Turbo
+                      returns per-vertex COLOR_0 and no UVs at all
+      flat_colour     a single RGB, for clay
+
+    Before this, only the first existed, so a Mini Turbo mesh produced no file
+    and its native appearance went unseen.
+    """
     import numpy as np
 
     forward = np.asarray(forward, float)
@@ -79,7 +95,8 @@ def render(vertices, faces, uv, texture, forward, up, size):
     shade = np.clip(np.abs(normals @ light), 0.0, 1.0)
     shade = 1.0 - SHADE_STRENGTH + SHADE_STRENGTH * shade
 
-    height_px, width_px = texture.shape[:2]
+    if texture is not None:
+        height_px, width_px = texture.shape[:2]
     image = np.full((size, size, 3), float(BACKGROUND))
     zbuffer = np.full((size, size), np.inf)
 
@@ -109,13 +126,51 @@ def render(vertices, faces, uv, texture, forward, up, size):
             continue
         zbuffer[y0:y1, x0:x1][write] = z
 
-        corners = uv[faces[index]]
-        u = w0 * corners[0, 0] + w1 * corners[1, 0] + w2 * corners[2, 0]
-        v = w0 * corners[0, 1] + w1 * corners[1, 1] + w2 * corners[2, 1]
-        # glTF's v origin is the top of the image.
-        tx = np.clip((u * width_px).astype(int), 0, width_px - 1)
-        ty = np.clip((v * height_px).astype(int), 0, height_px - 1)
-        colour = texture[ty, tx] * shade[index]
+        if texture is not None:
+            corners = uv[faces[index]]
+            u = w0 * corners[0, 0] + w1 * corners[1, 0] + w2 * corners[2, 0]
+            v = w0 * corners[0, 1] + w1 * corners[1, 1] + w2 * corners[2, 1]
+
+            # Bilinear, not nearest. This mattered enormously: with a nearest
+            # lookup, a face covering only one or two texels takes a single
+            # texel's colour across its whole area, and adjacent faces landing
+            # in different texels meet at a hard edge. The result is a surface
+            # covered in hard-edged colour plates -- produced entirely by the
+            # sampler, from a texture that is perfectly fine.
+            #
+            # That artifact cost this project most of an evening. The fennec
+            # paints were declared unusable by me and by two vision models, a
+            # multiview-hallucination diagnosis was written up, an atlas was
+            # rebaked at 4x density to chase it, and a UV-fragmentation theory
+            # was documented -- all explaining plates that Blender, which
+            # filters properly, does not show at all. Rendering the same GLBs
+            # through Blender put mean absolute difference between the 1024 and
+            # 2048 bakes at 0.45/255.
+            #
+            # glTF's v origin is the top of the image.
+            # Names deliberately distinct from the tile bounds x0/y0/x1/y1
+            # above -- reusing them silently shadowed the loop's own bbox.
+            fx = u * width_px - 0.5
+            fy = v * height_px - 0.5
+            tx0 = np.floor(fx).astype(int)
+            ty0 = np.floor(fy).astype(int)
+            ax = (fx - tx0)[..., None]
+            ay = (fy - ty0)[..., None]
+            x0c = np.clip(tx0, 0, width_px - 1)
+            x1c = np.clip(tx0 + 1, 0, width_px - 1)
+            y0c = np.clip(ty0, 0, height_px - 1)
+            y1c = np.clip(ty0 + 1, 0, height_px - 1)
+            top = texture[y0c, x0c] * (1 - ax) + texture[y0c, x1c] * ax
+            bottom = texture[y1c, x0c] * (1 - ax) + texture[y1c, x1c] * ax
+            colour = (top * (1 - ay) + bottom * ay) * shade[index]
+        elif corner_colours is not None:
+            c = corner_colours[index]
+            colour = (w0[..., None] * c[0] + w1[..., None] * c[1]
+                      + w2[..., None] * c[2]) * shade[index]
+        else:
+            colour = np.broadcast_to(
+                np.asarray(flat_colour, float) * shade[index],
+                w0.shape + (3,))
         image[y0:y1, x0:x1][write] = colour[write]
     return np.clip(image, 0, 255).astype("uint8")
 
@@ -138,47 +193,64 @@ def main(argv: list[str] | None = None) -> int:
               if hasattr(scene, "geometry") else [scene])
     mesh = max(meshes, key=lambda m: len(m.faces))
 
+    vertices = np.asarray(mesh.vertices, dtype=np.float64)
+    faces = np.asarray(mesh.faces)
+
+    # Whichever appearance the mesh already carries. A mesh with neither still
+    # gets the clay row rather than the old empty NOT_APPLICABLE receipt, so
+    # "the renderer wrote nothing" stops being a silent outcome.
     visual = getattr(mesh, "visual", None)
     uv = getattr(visual, "uv", None)
     image_source = getattr(getattr(visual, "material", None),
                            "baseColorTexture", None)
-    if uv is None or image_source is None:
-        receipt = {"schema_version": "textured_views_v1",
-                   "classification": "NOT_APPLICABLE",
-                   "reason": "mesh carries no UVs or no base colour texture",
-                   "glb": str(source)}
-        Path(args.receipt or out.with_suffix(".json")).write_text(
-            json.dumps(receipt, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8")
-        print(json.dumps(receipt, indent=2, sort_keys=True))
-        return 0
+    texture = corner_colours = None
+    native_kind = "none"
+    texture_size = None
+    if uv is not None and image_source is not None:
+        texture = np.asarray(image_source.convert("RGB"), dtype=np.float64)
+        uv = np.asarray(uv, dtype=np.float64)
+        native_kind = "texture"
+        texture_size = [int(texture.shape[1]), int(texture.shape[0])]
+    else:
+        colours = getattr(visual, "vertex_colors", None)
+        if colours is not None and len(colours) == len(vertices):
+            rgb = np.asarray(colours, dtype=np.float64)[:, :3]
+            corner_colours = rgb[faces]
+            native_kind = "vertex_colour"
 
-    texture = np.asarray(image_source.convert("RGB"), dtype=np.float64)
-    vertices = np.asarray(mesh.vertices, dtype=np.float64)
-    faces = np.asarray(mesh.faces)
-    uv = np.asarray(uv, dtype=np.float64)
+    rows = []
+    if native_kind != "none":
+        rows.append(("native " + native_kind,
+                     dict(uv=uv, texture=texture,
+                          corner_colours=corner_colours)))
+    rows.append(("clay", dict(flat_colour=CLAY_COLOUR)))
 
-    panels = []
-    for _, forward in VIEWS:
-        panels.append(render(vertices, faces, uv, texture, forward,
-                             UP, args.size))
-
-    sheet = Image.new("RGB", (args.size * len(panels), args.size + 22),
-                      (BACKGROUND, BACKGROUND, BACKGROUND))
+    band = 22
+    sheet = Image.new(
+        "RGB",
+        (args.size * len(VIEWS), (args.size + band) * len(rows)),
+        (BACKGROUND, BACKGROUND, BACKGROUND))
     draw = ImageDraw.Draw(sheet)
-    for position, ((name, _), panel) in enumerate(zip(VIEWS, panels)):
-        sheet.paste(Image.fromarray(panel), (position * args.size, 22))
-        draw.text((position * args.size + 6, 6), name, fill="black")
+    for row, (label, kwargs) in enumerate(rows):
+        top = row * (args.size + band)
+        for position, (name, forward) in enumerate(VIEWS):
+            panel = render(vertices, faces, forward, UP, args.size, **kwargs)
+            sheet.paste(Image.fromarray(panel),
+                        (position * args.size, top + band))
+            draw.text((position * args.size + 6, top + 6),
+                      "%s  %s" % (label, name), fill="black")
     out.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(out)
 
     receipt = {
-        "schema_version": "textured_views_v1",
+        "schema_version": "textured_views_v2",
         "classification": "PROVEN",
         "glb": str(source),
         "out": str(out),
         "views": [name for name, _ in VIEWS],
-        "texture_size": [int(texture.shape[1]), int(texture.shape[0])],
+        "rows": [label for label, _ in rows],
+        "native_kind": native_kind,
+        "texture_size": texture_size,
         "triangles": int(len(faces)),
     }
     Path(args.receipt or out.with_suffix(".json")).write_text(

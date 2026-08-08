@@ -48,6 +48,12 @@ VIEWS = {
     "plan": (0.0, 88.0),
     "below": (0.0, -88.0),
     "three_quarter": (35.0, 18.0),
+    # The two rear three-quarters. With only one three-quarter defined, a
+    # turnaround jumped straight from 90 to 180 degrees and the two back
+    # corners -- where a paint has the least conditioning to work from and is
+    # most likely to be wrong -- were never rendered at all.
+    "three_quarter_rear": (145.0, 18.0),
+    "three_quarter_far": (215.0, 18.0),
 }
 
 SCRIPT = r'''
@@ -93,6 +99,24 @@ def has_image_texture(obj):
     return False
 
 
+def wire_uv_textures(meshes):
+    for obj in meshes:
+        for slot in obj.material_slots:
+            material = slot.material
+            tree = material and material.use_nodes and material.node_tree
+            if tree is None:
+                continue
+            texcoord = next((n for n in tree.nodes
+                             if n.bl_idname == "ShaderNodeTexCoord"), None)
+            for node in tree.nodes:
+                if (node.bl_idname == "ShaderNodeTexImage"
+                        and not node.inputs["Vector"].is_linked):
+                    if texcoord is None:
+                        texcoord = tree.nodes.new("ShaderNodeTexCoord")
+                    tree.links.new(texcoord.outputs["UV"],
+                                   node.inputs["Vector"])
+
+
 def apply_clay(meshes):
     """Mid-grey matte on everything, so form reads instead of blowing out.
 
@@ -111,6 +135,38 @@ def apply_clay(meshes):
     for obj in meshes:
         obj.data.materials.clear()
         obj.data.materials.append(clay)
+
+
+def apply_vertex_colours(meshes):
+    """Shade from COLOR_0 instead of falling back to clay.
+
+    Mini Turbo returns per-vertex colour and no UVs, so `has_image_texture` is
+    false for it and every Mini Turbo mesh was silently clayed -- the generator's
+    own appearance was never once looked at. The glTF import creates the colour
+    attribute but leaves the material ignoring it, so the node is wired here
+    explicitly.
+
+    Returns True only where colours were actually found, so the caller can fall
+    back to clay rather than render a white mesh against a white world.
+    """
+    wired = False
+    for obj in meshes:
+        attributes = getattr(obj.data, "color_attributes", None)
+        if not attributes:
+            continue
+        material = bpy.data.materials.new("native_vcol")
+        material.use_nodes = True
+        nodes = material.node_tree.nodes
+        bsdf = nodes["Principled BSDF"]
+        node = nodes.new("ShaderNodeVertexColor")
+        node.layer_name = attributes[0].name
+        material.node_tree.links.new(node.outputs["Color"],
+                                     bsdf.inputs["Base Color"])
+        bsdf.inputs["Roughness"].default_value = 0.7
+        obj.data.materials.clear()
+        obj.data.materials.append(material)
+        wired = True
+    return wired
 
 
 payload = json.loads(sys.argv[-1])
@@ -145,8 +201,13 @@ for job in payload["jobs"]:
         bpy.data.objects.remove(obj, do_unlink=True)
     bpy.ops.import_scene.gltf(filepath=job["mesh"])
     meshes = [o for o in scene.objects if o.type == "MESH"]
+    wire_uv_textures(meshes)
     turned = align_long_axis_to_x(meshes) if payload["align"] else False
-    clayed = payload["clay"] or not any(has_image_texture(o) for o in meshes)
+    textured = any(has_image_texture(o) for o in meshes)
+    # --native asks for whatever appearance the mesh already carries. Without
+    # it the old behaviour stands: anything lacking an image texture is clayed.
+    clayed = payload["clay"] or not (
+        textured or (payload.get("native") and apply_vertex_colours(meshes)))
     if clayed:
         apply_clay(meshes)
     # Exposure follows the shading mode. The textured meshes on this
@@ -182,7 +243,7 @@ for job in payload["jobs"]:
 
 def run(meshes: list[Path], out_path: Path, view_names: list[str],
         size: int, align: bool = True, half: bool = False,
-        clay: bool = False) -> dict:
+        clay: bool = False, native: bool = False) -> dict:
     from PIL import Image, ImageDraw
 
     started = time.time()
@@ -193,7 +254,7 @@ def run(meshes: list[Path], out_path: Path, view_names: list[str],
     jobs = [{"mesh": str(m.resolve()), "prefix": str(scratch / f"m{i}"),
              "views": [[n, *VIEWS[n]] for n in view_names]}
             for i, m in enumerate(meshes)]
-    payload = json.dumps({"size": size, "align": bool(align), "half": bool(half), "clay": bool(clay), "jobs": jobs})
+    payload = json.dumps({"size": size, "align": bool(align), "half": bool(half), "clay": bool(clay), "native": bool(native), "jobs": jobs})
 
     completed = subprocess.run(
         [str(BLENDER), "-b", "--python", str(script), "--", payload],
@@ -254,6 +315,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="force neutral clay; applied automatically to any "
                              "mesh with no image texture, which would otherwise "
                              "render white-on-white and look like a failed import")
+    parser.add_argument("--native", action="store_true",
+                        help="shade from the mesh's own appearance where it has "
+                             "one; wires COLOR_0 so Mini Turbo vertex colours "
+                             "render instead of being silently clayed")
     parser.add_argument("--half", action="store_true",
                         help="clip at the mid-plane so only the near half is "
                              "visible; separates far-end occlusion from a "
@@ -269,7 +334,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"unknown views {unknown}; have {sorted(VIEWS)}")
 
     result = run(args.mesh, args.out, names, args.size, args.align, args.half,
-                 args.clay)
+                 args.clay, args.native)
     print(json.dumps(result, indent=2))
     return 0
 

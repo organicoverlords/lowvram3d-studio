@@ -57,7 +57,8 @@ DEFAULT_TEXTURE_SIZE = 1024
 def run(mesh_path: Path, image_path: Path, out_path: Path,
         model_root: Path, offload: bool,
         render_size: int = DEFAULT_RENDER_SIZE,
-        texture_size: int = DEFAULT_TEXTURE_SIZE) -> dict:
+        texture_size: int = DEFAULT_TEXTURE_SIZE,
+        cpu_rng: bool = True) -> dict:
     # torch must be imported before custom_rasterizer_kernel: the extension links
     # against torch's CUDA DLLs and cannot find them until torch has put its own
     # directory on the DLL search path. Importing it the other way round fails
@@ -111,7 +112,37 @@ def run(mesh_path: Path, image_path: Path, out_path: Path,
     image = Image.open(image_path)
     image = image.convert("RGBA") if "A" in image.getbands() else image.convert("RGB")
 
-    textured = pipeline(mesh, image=image)
+    # Move the multiview sampler's RNG off the GPU.
+    #
+    # hy3dgen/texgen/utils/multiview_utils.py:69 builds
+    #     torch.Generator(device=self.pipeline.device).manual_seed(0)
+    # which is a CUDA generator, so every randn in the diffusion loop runs on
+    # the card. That is exactly where the bluetree paint died --
+    # diffusers/schedulers/scheduling_euler_ancestral_discrete.py:427 calling
+    # randn_tensor -- alongside an nvlddmkm Id 13 in the system log.
+    #
+    # diffusers' randn_tensor keys off the generator's device: give it a CPU
+    # generator and the noise is drawn on the host and copied over, removing
+    # those launches from the GPU entirely. It does not fix the underlying
+    # driver fault, and it is not a claim that it will; it removes one class of
+    # kernel launch from the window where the fault happens.
+    #
+    # Patched around the call rather than edited into the vendor tree, so the
+    # checkout stays pristine and this reverts by deleting these lines. The
+    # swap is global to torch for the duration, which is why it is scoped as
+    # tightly as possible and restored in the finally.
+    real_generator = torch.Generator
+
+    def cpu_generator(*args, **kwargs):
+        kwargs.pop("device", None)
+        return real_generator(*args, device="cpu", **kwargs)
+
+    if cpu_rng:
+        torch.Generator = cpu_generator
+    try:
+        textured = pipeline(mesh, image=image)
+    finally:
+        torch.Generator = real_generator
     out_path.parent.mkdir(parents=True, exist_ok=True)
     textured.export(out_path)
     finished = time.time()
@@ -120,10 +151,16 @@ def run(mesh_path: Path, image_path: Path, out_path: Path,
     # than echoed back from the arguments. Receipts that only repeated the
     # request said render_size 1024 / texture_size 2048 for every asset today
     # while the pipeline was silently using its own 2048/2048 defaults.
+    # The vendor sometimes returns a Scene rather than a Trimesh, and a Scene has
+    # no .visual -- so this silently logged null for a bake whose atlas was in
+    # fact exactly the size requested. Resolve to the geometry first. A null here
+    # now means the texture is genuinely missing, which is worth seeing.
     baked = None
     try:
-        texture = textured.visual.material.baseColorTexture
-        baked = list(texture.size)
+        geometry = textured
+        if hasattr(geometry, "geometry"):
+            geometry = next(iter(geometry.geometry.values()))
+        baked = list(geometry.visual.material.baseColorTexture.size)
     except Exception:  # pragma: no cover - depends on the vendor's return type
         pass
 
@@ -139,6 +176,7 @@ def run(mesh_path: Path, image_path: Path, out_path: Path,
         "render_size": int(render_size),
         "texture_size": int(texture_size),
         "cudnn_enabled": False,
+        "cpu_rng": bool(cpu_rng),
         "load_seconds": round(loaded - started, 1),
         "paint_seconds": round(finished - loaded, 1),
         "note": ("vendor texture stage; no fitted camera, no silhouette "
@@ -156,12 +194,18 @@ def main(argv: list[str] | None = None) -> int:
                         help="keep everything resident; needs far more than 6 GB")
     parser.add_argument("--render-size", type=int, default=DEFAULT_RENDER_SIZE)
     parser.add_argument("--texture-size", type=int, default=DEFAULT_TEXTURE_SIZE)
+    parser.add_argument("--gpu-rng", action="store_true",
+                        help="keep the multiview sampler's RNG on the GPU "
+                             "(vendor default). Off by default: the CUDA "
+                             "generator's randn is where the bluetree paint "
+                             "faulted, with a matching nvlddmkm Id 13")
     parser.add_argument("--receipt", type=Path, default=None)
     args = parser.parse_args(argv)
 
     result = run(args.mesh, args.image, args.out, args.model_root,
                  offload=not args.no_offload,
-                 render_size=args.render_size, texture_size=args.texture_size)
+                 render_size=args.render_size, texture_size=args.texture_size,
+                 cpu_rng=not args.gpu_rng)
     receipt = args.receipt or args.out.with_suffix(".paint.json")
     receipt.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2))
