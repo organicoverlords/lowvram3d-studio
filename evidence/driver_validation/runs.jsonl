@@ -1,0 +1,10 @@
+{"label":"debugmode+hagsoff+610.88","run":1,"verdict":"pass","seconds":362,"nvlddmkm_13_153":0}
+{"label":"debugmode+hagsoff+610.88","run":2,"verdict":"pass","seconds":348,"nvlddmkm_13_153":0}
+{"label":"debugmode+hagsoff+610.88","run":3,"verdict":"pass","seconds":317,"nvlddmkm_13_153":0}
+{"label":"debugmode+hagsoff+610.88","run":4,"verdict":"fail","seconds":76,"nvlddmkm_13_153":1}
+{"label":"debugmode+hagsoff+610.88","run":5,"verdict":"pass","seconds":318,"nvlddmkm_13_153":0}
+{"label":"debugmode+hagsoff+610.88","run":6,"verdict":"pass","seconds":334,"nvlddmkm_13_153":0}
+{"label":"debugmode+hagsoff+610.88","run":7,"verdict":"pass","seconds":347,"nvlddmkm_13_153":0}
+{"label":"debugmode+hagsoff+610.88","run":8,"verdict":"pass","seconds":340,"nvlddmkm_13_153":0}
+{"label":"debugmode+hagsoff+610.88","run":9,"verdict":"pass","seconds":347,"nvlddmkm_13_153":0}
+{"label":"debugmode+hagsoff+610.88","run":10,"verdict":"pass","seconds":327,"nvlddmkm_13_153":0}
