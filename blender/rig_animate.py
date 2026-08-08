@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 
 import bpy
+import numpy as np
 from mathutils import Vector
 
 from common import argv_after_double_dash, export_glb, import_mesh, reset_scene, save_json, select_only, world_bounds
@@ -55,7 +56,70 @@ def landmark_mapper(report: dict, minimum: Vector, maximum: Vector):
     return point
 
 
-def humanoid_bones(minimum: Vector, maximum: Vector, report: dict) -> list[tuple]:
+def estimate_leg_axes(objects, minimum: Vector, maximum: Vector):
+    """Find where the legs actually are, by looking at a slice through them.
+
+    The template placed hips at a fixed +/-9% of body width. Measured on the
+    seal diver that put thigh.L at x -0.056 and thigh.R at +0.058 on a body
+    0.634 wide -- 0.114 apart, both effectively in the midline, neither inside a
+    leg. Near the hips every leg vertex is then roughly equidistant from both
+    bones, ownership splits arbitrarily between them, and the mesh shears apart
+    the moment the walk plays. Geodesic weighting does not help, because the
+    weights were never the problem.
+
+    So take a horizontal band at shin height, where two legs are two separate
+    lumps of geometry, and use the mean x of each side. Where the legs are fused
+    or there is only one, both means collapse toward the centre, which is the
+    correct answer for that shape too.
+
+    Returns None when there is too little geometry in the band to be worth
+    trusting, so the caller keeps the old proportional guess.
+    """
+    size = maximum - minimum
+    if size.z <= 0:
+        return None
+
+    points = []
+    for obj in objects:
+        if obj.type != "MESH":
+            continue
+        raw = np.empty(len(obj.data.vertices) * 3)
+        obj.data.vertices.foreach_get("co", raw)
+        local = raw.reshape(-1, 3)
+        matrix = np.array(obj.matrix_world)
+        world = local @ matrix[:3, :3].T + matrix[:3, 3]
+        points.append(world)
+    if not points:
+        return None
+    world = np.concatenate(points)
+
+    # Shin height: below the knee so the legs have separated, above the ankle so
+    # feet and flippers -- which splay outward and would exaggerate the gap --
+    # are not what gets measured.
+    low = minimum.z + size.z * 0.12
+    high = minimum.z + size.z * 0.24
+    band = world[(world[:, 2] >= low) & (world[:, 2] <= high)]
+    if len(band) < 200:
+        return None
+
+    centre = (minimum.x + maximum.x) * 0.5
+    left = band[band[:, 0] < centre]
+    right = band[band[:, 0] >= centre]
+    if len(left) < 50 or len(right) < 50:
+        return None
+
+    left_x = float(np.median(left[:, 0]))
+    right_x = float(np.median(right[:, 0]))
+    # Refuse a split so wide it must be arms or gear rather than legs.
+    if (right_x - left_x) > size.x * 0.75:
+        return None
+    print(f"[rig] leg axes measured at x {left_x:.3f} and {right_x:.3f} "
+          f"(body width {size.x:.3f}, {len(band)} vertices in band)", flush=True)
+    return left_x, right_x
+
+
+def humanoid_bones(minimum: Vector, maximum: Vector, report: dict,
+                   leg_axes=None) -> list[tuple]:
     center = (minimum + maximum) * 0.5
     size = maximum - minimum
     z0, z1 = minimum.z, maximum.z
@@ -73,8 +137,17 @@ def humanoid_bones(minimum: Vector, maximum: Vector, report: dict) -> list[tuple
     r_wr = point(16, r_el + Vector((size.x * 0.18, 0, -size.z * 0.10)))
     l_hand = point(19, l_wr + Vector((-size.x * 0.06, 0, -size.z * 0.02)))
     r_hand = point(20, r_wr + Vector((size.x * 0.06, 0, -size.z * 0.02)))
-    l_hip = point(23, pelvis_f + Vector((-size.x * 0.09, 0, 0)))
-    r_hip = point(24, pelvis_f + Vector((size.x * 0.09, 0, 0)))
+    # Measured leg axes beat the proportional guess whenever they are available;
+    # the guess is only a fallback for a mesh too sparse to measure.
+    if leg_axes is not None:
+        left_x, right_x = leg_axes
+        hip_l_default = Vector((left_x, pelvis_f.y, pelvis_f.z))
+        hip_r_default = Vector((right_x, pelvis_f.y, pelvis_f.z))
+    else:
+        hip_l_default = pelvis_f + Vector((-size.x * 0.09, 0, 0))
+        hip_r_default = pelvis_f + Vector((size.x * 0.09, 0, 0))
+    l_hip = point(23, hip_l_default)
+    r_hip = point(24, hip_r_default)
     pelvis = (l_hip + r_hip) * 0.5
     l_knee = point(25, Vector((l_hip.x, center.y, z0 + size.z * 0.25)))
     r_knee = point(26, Vector((r_hip.x, center.y, z0 + size.z * 0.25)))
@@ -149,7 +222,11 @@ def make_armature(kind: str, objects: list[bpy.types.Object], pose_report: dict)
             add_bone(data, bone_name, pivot, pivot + Vector((0, 0, scale)), "root")
             object_bones[obj.name] = bone_name
     else:
-        bones = humanoid_bones(minimum, maximum, pose_report) if kind == "humanoid" else creature_bones(minimum, maximum)
+        if kind == "humanoid":
+            bones = humanoid_bones(minimum, maximum, pose_report,
+                                   estimate_leg_axes(objects, minimum, maximum))
+        else:
+            bones = creature_bones(minimum, maximum)
         pose_guided = kind == "humanoid" and bool(pose_report.get("pose", {}).get("detected"))
         for name, head, tail, parent in bones:
             add_bone(data, name, head, tail, parent)
@@ -173,6 +250,170 @@ def weighted_fraction(obj, bone_names: set[str]) -> float:
         1 for vertex in obj.data.vertices
         if any(g.group in indices and g.weight > 1e-4 for g in vertex.groups))
     return weighted / max(len(obj.data.vertices), 1)
+
+
+def welded_edges(vertices, faces, tolerance: float = 1e-6):
+    """Unique mesh edges in a position-welded index space.
+
+    A generated GLB duplicates a vertex at every UV seam, so the stored index
+    buffer is not the surface's connectivity: read literally, a painted seal
+    diver is 8,031 disconnected shells whose largest holds 1,450 faces. Welding
+    positions recovers the real thing -- 8 shells, one body, 0.4% debris.
+
+    This is almost certainly why bone heat weighting returns 0% on these meshes.
+    It needs a connected manifold and the index buffer never gave it one.
+
+    Returns (weld index per original vertex, unique edge pairs, edge lengths).
+    """
+    quantised = np.round(vertices / tolerance).astype(np.int64)
+    _, weld = np.unique(quantised, axis=0, return_inverse=True)
+    welded_faces = weld[faces]
+
+    edges = np.vstack([welded_faces[:, [0, 1]],
+                       welded_faces[:, [1, 2]],
+                       welded_faces[:, [2, 0]]])
+    edges = np.unique(np.sort(edges, axis=1), axis=0)
+    edges = edges[edges[:, 0] != edges[:, 1]]
+
+    count = int(weld.max()) + 1
+    positions = np.zeros((count, 3))
+    positions[weld] = vertices
+    lengths = np.linalg.norm(positions[edges[:, 0]] - positions[edges[:, 1]], axis=1)
+    return weld, edges, np.maximum(lengths, 1e-9), positions
+
+
+def geodesic_owner(positions, edges, lengths, seeds, seed_owner, rounds: int = 400):
+    """Multi-source shortest path over the surface, vectorised.
+
+    Blender bundles numpy but not scipy, so this is iterative edge relaxation --
+    Bellman-Ford in the shape a GPU would run it -- rather than a heap-based
+    Dijkstra. Each round is a handful of numpy operations over the whole edge
+    array, which is far faster in practice than a Python heap over 900k
+    vertices, and it converges once no edge improves.
+
+    Sorting candidates descending before the scatter makes the smallest value
+    the last write, so a single pass takes the best improvement per vertex
+    rather than an arbitrary one.
+    """
+    count = len(positions)
+    distance = np.full(count, np.inf)
+    owner = np.full(count, -1, dtype=np.int64)
+    distance[seeds] = 0.0
+    owner[seeds] = seed_owner
+
+    source = np.concatenate([edges[:, 0], edges[:, 1]])
+    target = np.concatenate([edges[:, 1], edges[:, 0]])
+    weight = np.concatenate([lengths, lengths])
+
+    for _ in range(rounds):
+        candidate = distance[source] + weight
+        better = candidate < distance[target]
+        if not better.any():
+            break
+        order = np.argsort(-candidate[better])
+        hit = target[better][order]
+        value = candidate[better][order]
+        from_owner = owner[source[better]][order]
+        keep = value < distance[hit]
+        distance[hit[keep]] = value[keep]
+        owner[hit[keep]] = from_owner[keep]
+    return distance, owner
+
+
+def bind_geodesic(obj, armature, bone_names: list[str], smoothing: int = 14) -> bool:
+    """Weight vertices by distance ALONG THE SURFACE to the nearest bone.
+
+    This is what proximity weighting cannot do. The left thigh bone is close in
+    space to right-leg vertices -- the gap between two legs is only a few
+    centimetres -- so Euclidean nearest-bone grabs across it and the legs shear
+    into each other when the walk cycle plays. Over the surface there is no such
+    shortcut: the only path from one leg to the other runs up through the
+    pelvis, so the weights cannot leak.
+
+    Hard ownership first, then Laplacian smoothing of the one-hot weights over
+    the same welded graph. Smoothing gives joints a gradient to bend through,
+    and because it only ever moves weight along real edges it cannot reintroduce
+    the leak the hard assignment just avoided.
+    """
+    mesh = obj.data
+    vertices = np.empty(len(mesh.vertices) * 3)
+    mesh.vertices.foreach_get("co", vertices)
+    vertices = vertices.reshape(-1, 3)
+    faces = np.array([polygon.vertices[:] for polygon in mesh.polygons
+                      if len(polygon.vertices) == 3], dtype=np.int64)
+    if len(faces) == 0:
+        return False
+
+    weld, edges, lengths, positions = welded_edges(vertices, faces)
+    if len(edges) == 0:
+        return False
+
+    bones = [armature.data.bones[name] for name in bone_names
+             if name in armature.data.bones]
+    if not bones:
+        return False
+
+    # Seed each bone with the welded vertices nearest its segment. A handful of
+    # seeds rather than one, so a single bad vertex cannot decide a whole limb,
+    # but kept local so a seed cannot land on the wrong side of a gap.
+    seeds, seed_owner = [], []
+    for index, bone in enumerate(bones):
+        head = np.array(bone.head_local)
+        axis = np.array(bone.tail_local) - head
+        length_squared = float(axis @ axis)
+        if length_squared < 1e-12:
+            closest = np.tile(head, (len(positions), 1))
+        else:
+            t = np.clip((positions - head) @ axis / length_squared, 0.0, 1.0)
+            closest = head + t[:, None] * axis
+        gap = np.linalg.norm(positions - closest, axis=1)
+        picked = np.argpartition(gap, min(6, len(gap) - 1))[:6]
+        seeds.extend(picked.tolist())
+        seed_owner.extend([index] * len(picked))
+
+    _, owner = geodesic_owner(positions, edges, lengths,
+                              np.array(seeds), np.array(seed_owner))
+    reached = (owner >= 0).mean()
+    print(f"[rig] geodesic ownership reached {reached * 100:.1f}% of welded "
+          f"vertices over {len(edges)} edges", flush=True)
+    if reached < 0.5:
+        return False
+
+    weights = np.zeros((len(positions), len(bones)), dtype=np.float32)
+    valid = owner >= 0
+    weights[np.where(valid)[0], owner[valid]] = 1.0
+
+    degree = np.zeros(len(positions))
+    np.add.at(degree, edges[:, 0], 1.0)
+    np.add.at(degree, edges[:, 1], 1.0)
+    degree = np.maximum(degree, 1.0)
+    for _ in range(smoothing):
+        neighbour = np.zeros_like(weights)
+        np.add.at(neighbour, edges[:, 0], weights[edges[:, 1]])
+        np.add.at(neighbour, edges[:, 1], weights[edges[:, 0]])
+        weights = (weights + neighbour / degree[:, None]) * 0.5
+    total = weights.sum(axis=1, keepdims=True)
+    weights = weights / np.maximum(total, 1e-8)
+
+    per_vertex = weights[weld]
+    groups = {bone.name: obj.vertex_groups.get(bone.name)
+              or obj.vertex_groups.new(name=bone.name) for bone in bones}
+    # Quantised so the vertices sharing a weight can go in one add() call.
+    # Per-vertex calls on a 900k mesh take minutes; this takes seconds.
+    levels = 48
+    for index, bone in enumerate(bones):
+        column = per_vertex[:, index]
+        bucket = np.clip((column * levels).astype(np.int64), 0, levels)
+        for step in range(1, levels + 1):
+            members = np.where(bucket == step)[0]
+            if len(members):
+                groups[bone.name].add(members.tolist(), step / levels, "REPLACE")
+
+    if not any(m.type == "ARMATURE" for m in obj.modifiers):
+        modifier = obj.modifiers.new("Armature", "ARMATURE")
+        modifier.object = armature
+    obj.parent = armature
+    return True
 
 
 def bind_by_proximity(obj, armature, bone_names: list[str]) -> None:
@@ -252,14 +493,26 @@ def bind_organic(objects, armature) -> str:
     if not failed:
         return "automatic_weights"
 
+    # Geodesic first, proximity only if that cannot run. Euclidean nearest-bone
+    # is the last resort because it reaches across gaps: the left thigh bone is
+    # centimetres from right-leg vertices, so it claims them, and the legs shear
+    # into each other as soon as the walk plays.
     print(f"[rig] bone heat did not weight {len(failed)} mesh(es) -- "
-          f"falling back to proximity weights", flush=True)
+          f"trying geodesic weights", flush=True)
+    used = []
     for obj in failed:
-        bind_by_proximity(obj, armature, bone_names)
+        if bind_geodesic(obj, armature, bone_names):
+            used.append("geodesic")
+        else:
+            print(f"[rig] {obj.name}: geodesic bind unavailable, "
+                  f"using proximity", flush=True)
+            bind_by_proximity(obj, armature, bone_names)
+            used.append("proximity")
         after = weighted_fraction(obj, names)
-        print(f"[rig] {obj.name}: {after * 100:.1f}% weighted after fallback",
-              flush=True)
-    return "proximity_weights"
+        print(f"[rig] {obj.name}: {after * 100:.1f}% weighted after "
+              f"{used[-1]} fallback", flush=True)
+    return ("geodesic_weights" if all(u == "geodesic" for u in used)
+            else "proximity_weights")
 
 
 def bind_rigid(objects, armature, object_bones: dict[str, str]) -> str:
