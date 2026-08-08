@@ -1,0 +1,21 @@
+{
+  "extents": [
+    1.7218,
+    1.9699,
+    1.7094
+  ],
+  "faces": 400000,
+  "volume": 0.984961,
+  "area": 36.5562,
+  "fill": 0.1699,
+  "quad_ratio": 2.7043,
+  "spread_per_axis": [
+    0.169,
+    0.2211,
+    0.1748
+  ],
+  "worst_spread": 0.2211,
+  "billboard": false,
+  "reasons": [],
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\greentree\\greentree_mt_uv.glb"
+}

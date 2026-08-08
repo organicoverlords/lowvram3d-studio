@@ -26,7 +26,7 @@ from datetime import datetime
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
+from mathutils import Euler, Vector
 
 sys.path.insert(0, str(Path(__file__).parent))
 import real_sizes
@@ -158,6 +158,54 @@ def wire_imported_material_uvs(materials):
     return image_nodes, linked_nodes
 
 
+ROW_TARGET = 150.0
+"""Units of width to fill before wrapping to a new row.
+
+Chosen against the tallest asset rather than the count: the moss titans are
+120 m, so a row target much below this would put a single titan on a row of its
+own and a target much above it recreates the 670-unit line this replaced.
+"""
+
+
+def frame_viewport(centre, reach):
+    """Point the SAVED viewport at the whole set, and open the clipping range.
+
+    Blender opens on the viewport, not on scene.camera, so a correctly placed
+    camera does not by itself mean the file looks right when opened -- it opens
+    wherever the startup file was pointing, which for a scene hundreds of units
+    across is somewhere inside one asset.
+
+    The other half is clipping. A 3D viewport defaults to a 1000-unit far clip
+    and this scene needs several times that, so without this the back of the
+    layout is simply not drawn.
+    """
+    # view_distance is the orbit radius, so the bounding sphere's radius with
+    # margin puts the whole set inside the frame regardless of orbit angle.
+    distance = reach * 0.75
+    touched = 0
+    for screen in bpy.data.screens:
+        for area in screen.areas:
+            if area.type != "VIEW_3D":
+                continue
+            for space in area.spaces:
+                if space.type != "VIEW_3D":
+                    continue
+                space.clip_start = max(0.05, reach * 0.0005)
+                space.clip_end = reach * 8.0
+                region = space.region_3d
+                region.view_location = Vector(centre)
+                region.view_distance = distance
+                # A three-quarter view from above: 62 degrees off vertical and
+                # swung 32 degrees round, so rows read as rows instead of
+                # occluding one another the way a level view makes them.
+                region.view_rotation = Euler(
+                    (math.radians(62.0), 0.0, math.radians(32.0)), "XYZ").to_quaternion()
+                region.view_perspective = "PERSP"
+                touched += 1
+    print(f"viewport framed on {touched} 3D view(s): distance {distance:.1f}, "
+          f"clip_end {reach * 8.0:.1f}")
+
+
 def add_placard(meta, location, width):
     """A standing signpost -- post, board, and text carved on the board.
 
@@ -177,7 +225,10 @@ def add_placard(meta, location, width):
     post_r = max(board_w * 0.022, 0.02)
     # Stand clear of the asset. These meshes are roughly as deep as they are
     # wide, so width is a fair proxy for how far forward the sign has to sit.
-    stand_y = -(width * 0.38 + board_w * 0.5)
+    # Relative to the row the asset sits in, not to y=0. The lineup wraps into
+    # several rows so the whole set can be framed at once, and a signpost pinned
+    # to y=0 would stand in front of a different row's asset.
+    stand_y = location.y - (width * 0.38 + board_w * 0.5)
     centre_x = location.x + width / 2.0
     tilt = math.radians(-8.0)
 
@@ -395,6 +446,10 @@ def main():
     assets.sort(key=lambda item: (item[0]["sort_time"], item[0]["asset_name"]))
 
     cursor = 0.0
+    row_y = 0.0
+    row_depth = 0.0
+    row_index = 0
+    span = 0.0
     placed = []
     for meta, asset in assets:
         glb = SRC / asset["name"]
@@ -440,25 +495,45 @@ def main():
 
         lo, hi = bounds(new)
         width = hi.x - lo.x
-        # Base on the floor, centred across the row, left edge at the cursor.
-        shift = Vector((cursor - lo.x, -(lo.y + hi.y) / 2.0, -lo.z))
+        depth = hi.y - lo.y
+
+        # Wrap into rows instead of one long line. At true scale the set runs
+        # from a 1.3 m frog to a 120 m titan, so a single row spanned 670 units:
+        # framing all of it put the frog under a pixel, and framing the frog lost
+        # everything else. Wrapping keeps the footprint roughly square, which is
+        # what lets one viewport show every asset at a usable size.
+        #
+        # Greedy rather than balanced, because a width is only known after the
+        # asset has been imported and scaled, and importing twice to plan the
+        # layout would double the most expensive part of this script.
+        if cursor > 0.0 and cursor + width > ROW_TARGET:
+            row_y -= row_depth * (1.0 + GAP) + row_depth * 0.35
+            cursor = 0.0
+            row_depth = 0.0
+            row_index += 1
+
+        # Base on the floor, centred across its own row, left edge at the cursor.
+        shift = Vector((cursor - lo.x, row_y - (lo.y + hi.y) / 2.0, -lo.z))
         for obj in new:
             obj.location += shift
         new[0].name = glb.stem
         for key, value in meta.items():
             if key != "sort_time":
                 new[0][key] = value
-        add_placard(meta, Vector((cursor, 0.0, 0.0)), width)
+        add_placard(meta, Vector((cursor, row_y, 0.0)), width)
 
         placed.append({"name": glb.stem, "x_start": round(cursor, 3),
+                       "row": row_index, "y": round(row_y, 3),
                        "width": round(width, 3), "height": round(hi.z - lo.z, 3),
                        "target_metres": metres, "target_axis": axis,
                        "date": meta["date"], "rig": meta["rigging_status"]})
         cursor += max(width, width * (1.0 + GAP))
+        row_depth = max(row_depth, depth)
+        span = max(span, cursor)
 
     scene = bpy.context.scene
     tallest = max((p["height"] for p in placed), default=1.0)
-    span = cursor
+    depth_total = abs(row_y) + row_depth
 
     light_data = bpy.data.lights.new("key", type="SUN")
     light_data.energy = 3.0
@@ -466,17 +541,61 @@ def main():
     light.rotation_euler = (0.9, 0.0, 0.7)
     scene.collection.objects.link(light)
 
+    # Frame on the bounds the assets ACTUALLY occupy, not on the counters used
+    # to place them. The first version of this derived the camera from `span`
+    # and the row offsets, and put the camera inside the moss titan: those
+    # counters describe where each asset's left edge was written, not how far
+    # the geometry then extended in depth and height around it.
+    subjects = [o for o in scene.objects
+                if o.type == "MESH" and o.name != "ground_grass"]
+    low, high = bounds(subjects)
+    centre = (low + high) * 0.5
+    extent_x = high.x - low.x
+    extent_y = high.y - low.y
+    extent_z = high.z - low.z
+    reach = math.sqrt(extent_x ** 2 + extent_y ** 2 + extent_z ** 2)
+
     camera_data = bpy.data.cameras.new("inspect")
     camera_data.lens = 50
+    # The default far clip is far too near for a scene hundreds of units across,
+    # and it silently deletes the back of the layout rather than warning.
+    camera_data.clip_start = max(0.1, reach * 0.0005)
+    camera_data.clip_end = reach * 8.0
+
+    # Pull back until both the width and the height fit the frame, from the
+    # lens and sensor rather than from a guessed multiplier. Depth counts too:
+    # a row at the back is further from the camera than the centre is.
+    half_h_fov = math.atan((camera_data.sensor_width * 0.5) / camera_data.lens)
+    aspect = 2600.0 / 1400.0
+    half_v_fov = math.atan(math.tan(half_h_fov) / aspect)
+    need_x = (extent_x * 0.5) / math.tan(half_h_fov)
+    need_z = (extent_z * 0.5) / math.tan(half_v_fov)
+    distance = max(need_x, need_z) * 1.25 + extent_y * 0.5
+
     camera = bpy.data.objects.new("inspect", camera_data)
-    # Far enough back to hold the whole row, lifted to mid-height, looking level.
-    camera.location = (span / 2.0, -span * 0.75, tallest * 0.55)
-    camera.rotation_euler = (1.5708, 0.0, 0.0)
+    # Looking DOWN at the layout, not across it. At ground level the front row
+    # simply hides the rest: this set is 457 units deep and its tallest members
+    # are 120 m, so a level camera renders two moss titans and eighteen things
+    # behind them. Elevating puts every row on its own band of the frame.
+    #
+    # 40 degrees is the compromise. Shallower and the titans keep occluding;
+    # steeper and the assets are seen from above, where a standing character
+    # reads as a pair of shoulders and the height comparison the lineup exists
+    # for stops being visible at all.
+    elevation = math.radians(40.0)
+    camera.location = (centre.x,
+                       centre.y - distance * math.cos(elevation),
+                       centre.z + distance * math.sin(elevation))
+    direction = centre - Vector(camera.location)
+    camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
     scene.collection.objects.link(camera)
     scene.camera = camera
+    print(f"layout {extent_x:.1f} x {extent_y:.1f} x {extent_z:.1f}, "
+          f"camera back {distance:.1f}, clip_end {camera_data.clip_end:.0f}")
 
     add_sky(scene, light)
-    add_ground(span, tallest)
+    add_ground(max(extent_x, extent_y), tallest)
+    frame_viewport(centre, reach)
 
     # Verify the invariant before packing: every imported image texture must
     # have an explicit TexCoord UV -> Image Texture.Vector link.  The links

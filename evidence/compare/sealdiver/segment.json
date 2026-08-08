@@ -1,0 +1,96 @@
+{
+  "schema": "lowvram3d_segment_v1",
+  "mesh": "C:\\Users\\Lauri\\Desktop\\lowvram3d-scene-smoke-20260803\\evidence\\compare\\sealdiver\\sealdiver_t1024_paint2048.glb",
+  "backend": "geometry",
+  "licence": "none -- scipy and trimesh only",
+  "licence_encumbered": false,
+  "faces": 298334,
+  "requested_parts": 14,
+  "parts": 14,
+  "concavity_penalty": 6.0,
+  "face_counts": [
+    2845,
+    8383,
+    11764,
+    14770,
+    19136,
+    26735,
+    22209,
+    11608,
+    56965,
+    11722,
+    30981,
+    50094,
+    29826,
+    1296
+  ],
+  "notes": [
+    "8 connected shell(s)",
+    "1 shell(s) over 1193 faces; 7 smaller shell(s) collected as one debris part",
+    "debris part holds 1296 faces (0.4% of the mesh)",
+    "1 part(s) merged as smaller than 0.40% of the mesh"
+  ],
+  "parts_written": [
+    {
+      "part": 0,
+      "faces": 2845
+    },
+    {
+      "part": 1,
+      "faces": 8383
+    },
+    {
+      "part": 2,
+      "faces": 11764
+    },
+    {
+      "part": 3,
+      "faces": 14770
+    },
+    {
+      "part": 4,
+      "faces": 19136
+    },
+    {
+      "part": 5,
+      "faces": 26735
+    },
+    {
+      "part": 6,
+      "faces": 22209
+    },
+    {
+      "part": 7,
+      "faces": 11608
+    },
+    {
+      "part": 8,
+      "faces": 56965
+    },
+    {
+      "part": 9,
+      "faces": 11722
+    },
+    {
+      "part": 10,
+      "faces": 30981
+    },
+    {
+      "part": 11,
+      "faces": 50094
+    },
+    {
+      "part": 12,
+      "faces": 29826
+    },
+    {
+      "part": 13,
+      "faces": 1296
+    }
+  ],
+  "parts_file": "sealdiver_t1024_paint2048_parts.glb",
+  "separate_files": false,
+  "hulls": 14,
+  "hulls_failed": 0,
+  "hull_file": "sealdiver_t1024_paint2048_hulls.glb"
+}

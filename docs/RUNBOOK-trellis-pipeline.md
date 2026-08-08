@@ -619,12 +619,37 @@ seal-diver run. It is a lower bound: flag `quad_ratio < 1.30`.
 because flippers, ropes, an anchor and a swinging lantern inflate the bounding
 box far beyond the body inside it. The gate requires **two of three** symptoms.
 
-**Cause, and the retry that is worth running.** The sparse-structure stage runs
-on a 32³ grid at `--res 512`, so one structural cell is 16 source pixels. A
-banyan's aerial roots are thinner than that and lose their cells to the canopy
-above them, and the subject collapses onto the two planes carrying most of its
-silhouette. At `--res 1024` the grid is 64³. Every asset in this project that
-came out solid was generated at 1024; the tree was the only one that was not.
+**Resolution is not the cause. This was tested and the theory was wrong.**
+
+The first explanation offered here was the sparse-structure grid: 32³ at
+`--res 512` makes one cell 16 source pixels, aerial roots are thinner than that,
+so they lose their cells and the subject collapses onto the two planes carrying
+most of its silhouette. It predicted that `--res 1024`, with a 64³ grid, would
+decode a real tree. Every other asset in the project was generated at 1024 and
+came out solid, and the tree was the only one that was not, which made the
+theory look well supported.
+
+It was run. **The 1024 retry is a billboard too, and by almost exactly the same
+numbers:**
+
+| run | faces at gate | fill | quad_ratio | worst spread |
+|---|---|---|---|---|
+| res 512 | 146,326 | 0.0101 | 0.9978 | 0.554 |
+| res 1024 | 282,626 | 0.0107 | 0.9984 | 0.555 |
+
+The intermediate stages were not degenerate: the 1024 run decoded 5,652,931
+active voxels and finalised 6,489,556 faces before decimation, against
+1,615,311 and 1,654,620 at 512. Four times the voxels, the same flat result. So
+the collapse does not happen for want of grid resolution, and it is not fixed by
+spending 1361 s instead of 264 s.
+
+**What to do instead.** For a filamentous subject, use Mini Turbo. Its greentree
+is a correct 4M-face banyan with a layered canopy and hanging aerial roots, from
+the same source image, and it scores fill 0.171 / quad_ratio 2.85. TRELLIS is
+the wrong generator for this subject class, at any setting tried so far.
+
+The gate is what makes that cheap to discover: it aborted before the paint on
+both runs, so the whole cost of the second experiment was the geometry stage.
 
 So the gate belongs **between geometry and paint**, not at the end — the paint
 is the forty-minute stage, and painting cardboard is the whole cost of the bug.

@@ -72,6 +72,13 @@ ASSETS = [
     # between geometry and paint.
     ("sealdiver/sealdiver_t1024_paint2048.glb", "sealdiver", "trellis1024", ""),
     ("sealdiver/sealdiver_t1024.glb",           "sealdiver", "trellis1024", "prepaint"),
+    # The greentree comes from Mini Turbo, not TRELLIS, and it is the only asset
+    # in this list for which that was a forced choice rather than a preference.
+    # TRELLIS returned two crossed cardboard panels for this subject at res 512
+    # and again at res 1024 -- see runbook 10a. Mini Turbo built a real banyan
+    # with a layered canopy and hanging aerial roots, and this is its 400k LOD
+    # carrying the vendor paint.
+    ("greentree/greentree_mt_paint2048.glb", "greentree", "miniturbo384", ""),
 ]
 
 
