@@ -1,0 +1,85 @@
+[CmdletBinding()]
+param(
+    [string]$ExpectedBranch = 'feature/procedural-jungle-playable-20260804'
+)
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+
+$RepoRoot = (git rev-parse --show-toplevel).Trim()
+if (-not $RepoRoot) { throw 'Not inside a Git repository' }
+Set-Location -LiteralPath $RepoRoot
+$Remote = (git config --get remote.origin.url).Trim()
+$Branch = (git branch --show-current).Trim()
+$Head = (git rev-parse HEAD).Trim()
+$Status = @(git status --short)
+if ($Remote -notmatch 'organicoverlords/lowvram3d-studio(\.git)?$') { throw "Repository mismatch: $Remote" }
+if ($Branch -ne $ExpectedBranch) { throw "Branch mismatch: $Branch" }
+if ($Status.Count -ne 0) { throw "Repository is dirty before V3 declaration-anchor wrapper: $($Status -join '; ')" }
+git fetch origin $Branch --quiet
+$RemoteHead = (git rev-parse "origin/$Branch").Trim()
+if ($Head -ne $RemoteHead) { throw "Checkout head differs from remote: $Head vs $RemoteHead" }
+
+$SourceCommit = '498e600c5873377fd0f55b8179b86ec62780b32c'
+$RelativePath = 'scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1'
+$SourceLines = @(git show "${SourceCommit}:${RelativePath}")
+if ($LASTEXITCODE -ne 0 -or $SourceLines.Count -lt 150) {
+    throw "Unable to recover protected-coexistence V3 wrapper from $SourceCommit"
+}
+$SourceText = ($SourceLines -join "`n") + "`n"
+$Anchor = '$CoexistencePreflight = @'''
+$AnchorCount = [regex]::Matches($SourceText, [regex]::Escape($Anchor)).Count
+if ($AnchorCount -ne 1) { throw "Coexistence declaration anchor count is not exactly one: $AnchorCount" }
+
+$Insertion = @'
+$DecodedBuildPath = Join-Path $ExtractRoot 'scripts\procedural_jungle\build-procedural-jungle.ps1'
+$GuardPatchScript = Join-Path $RepoRoot 'scripts\procedural_jungle\patch_decoded_build_unreal_guard.py'
+if (-not (Test-Path -LiteralPath $GuardPatchScript -PathType Leaf)) {
+    throw "Decoded build guard patch script is missing: $GuardPatchScript"
+}
+& $Python $GuardPatchScript --path $DecodedBuildPath
+if ($LASTEXITCODE -ne 0) {
+    throw "Decoded build-script Unreal guard patch failed with exit code $LASTEXITCODE"
+}
+$DecodedBuildText = Get-Content -LiteralPath $DecodedBuildPath -Raw
+if ($DecodedBuildText -notmatch 'JUNGLE_BUILD_INTERNAL_UNREAL_GUARD_DELEGATED=PROVEN') {
+    throw 'Decoded build-script delegation marker is missing after checked-in Python patch'
+}
+Write-Host 'JUNGLE_DECODED_BUILD_GUARD_CHECKED_IN_PATCH=PROVEN'
+
+$OffscreenCapturePatchScript = Join-Path $RepoRoot 'scripts\procedural_jungle\patch_v3_offscreen_capture.py'
+if (-not (Test-Path -LiteralPath $OffscreenCapturePatchScript -PathType Leaf)) {
+    throw "Off-screen capture patch script is missing: $OffscreenCapturePatchScript"
+}
+& $Python $OffscreenCapturePatchScript --root $ExtractRoot
+if ($LASTEXITCODE -ne 0) {
+    throw "V3 off-screen capture source patch failed with exit code $LASTEXITCODE"
+}
+$ProofDirectorSource = Join-Path $ExtractRoot 'project_template\Source\ProceduralJungle58\JungleProofDirector.cpp'
+$ProofDirectorText = Get-Content -LiteralPath $ProofDirectorSource -Raw
+if ($ProofDirectorText -notmatch 'SceneCapture2D_RenderTarget_PNG' -or
+    $ProofDirectorText -notmatch 'JUNGLE_OFFSCREEN_CAPTURE_NONBLACK_FRACTION') {
+    throw 'Off-screen capture source markers are missing after checked-in patch'
+}
+Write-Host 'JUNGLE_V3_OFFSCREEN_CAPTURE_PATCH=PROVEN'
+
+'@
+$PatchedSource = $SourceText.Replace($Anchor, $Anchor + "`n" + $Insertion.TrimEnd())
+if ($PatchedSource -notmatch 'JUNGLE_DECODED_BUILD_GUARD_CHECKED_IN_PATCH=PROVEN') {
+    throw 'Checked-in decoded-guard patch insertion marker is missing'
+}
+if ($PatchedSource -notmatch 'JUNGLE_V3_OFFSCREEN_CAPTURE_PATCH=PROVEN') {
+    throw 'Checked-in off-screen capture patch insertion marker is missing'
+}
+
+$TempRoot = Join-Path $env:RUNNER_TEMP "procedural-jungle-v3-offscreen-$Head"
+if (Test-Path -LiteralPath $TempRoot) { Remove-Item -LiteralPath $TempRoot -Recurse -Force }
+New-Item -ItemType Directory -Path $TempRoot -Force | Out-Null
+$PatchedWrapper = Join-Path $TempRoot 'run-procedural-jungle-v3-offscreen.ps1'
+[IO.File]::WriteAllText($PatchedWrapper, $PatchedSource, (New-Object Text.UTF8Encoding($false)))
+
+Write-Host "JUNGLE_V3_COEXISTENCE_WRAPPER_SOURCE=$SourceCommit"
+Write-Host 'JUNGLE_V3_COEXISTENCE_DECLARATION_INJECTION=PROVEN'
+Write-Host 'JUNGLE_V3_OFFSCREEN_CAPTURE_INJECTION=PROVEN'
+& powershell -NoProfile -ExecutionPolicy Bypass -File $PatchedWrapper -ExpectedBranch $ExpectedBranch
+if ($LASTEXITCODE -ne 0) { throw "Offscreen-capture V3 wrapper failed with exit code $LASTEXITCODE" }

@@ -1,0 +1,10 @@
+requested=2026-08-04T18:44:00+03:00
+mode=cloud-inner-unreal-guard-dedup-patch
+scope=scripts/procedural_jungle/run-procedural-jungle-local-worker.ps1
+workflow_commit=778138db0c309e636e62feefe34f4eb425482303
+policy=remove-exact-audited-four-line-duplicate-after-outer-coexistence-proof
+force_termination=false
+blender=false
+unreal=false
+gpu=false
+expected_result=JUNGLE_INNER_UNREAL_GUARD_DEDUP_WORKER_PATCH_PROVEN
